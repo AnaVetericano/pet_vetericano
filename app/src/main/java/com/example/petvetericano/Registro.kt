@@ -6,26 +6,20 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
-import com.example.petvetericano.databinding.ActivityMainBinding
 import com.example.petvetericano.databinding.ActivityRegistroBinding
+import kotlin.jvm.java
 
-class MainActivity : AppCompatActivity() {
-    private lateinit var binding: ActivityMainBinding
+class Registro : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        lateinit var binding: ActivityRegistroBinding
         super.onCreate(savedInstanceState)
-        binding = ActivityMainBinding.inflate(layoutInflater)
+        binding = ActivityRegistroBinding.inflate(layoutInflater)
         setContentView(binding.root)
-        binding.btnLoginWelcome.setOnClickListener { Login() }
-        binding.btnSignUpWelcome.setOnClickListener { SignUp() }
-
+        binding.btnSignUp.setOnClickListener { SignUp() }
     }
 
-    private fun Login(){
-        intent = Intent(this, Registro::class.java)
-        startActivity(intent)
-    }
     private fun SignUp(){
-        intent = Intent(this, Registro::class.java)
+        intent = Intent(this, inicio_sesion::class.java)
         startActivity(intent)
     }
 }

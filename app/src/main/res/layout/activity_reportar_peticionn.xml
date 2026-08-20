@@ -25,7 +25,7 @@
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Reportar Petición"
+        android:text="Reportar Peticiónn"
         android:textColor="#4D43B5"
         android:textSize="22sp"
         android:textStyle="bold"

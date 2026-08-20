@@ -1,5 +1,6 @@
 package com.example.petvetericano
 
+import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -18,11 +19,13 @@ class inicio_sesion : AppCompatActivity() {
         binding= ActivityInicioSesionBinding.inflate(layoutInflater)
         setContentView(binding.root)
         binding.btnIniciarSesion.setOnClickListener {
-            iniciarSesion()
+            val intent = Intent(this, bienvenida::class.java)
+            startActivity(intent)
+
         }
     }
 
-    private fun iniciarSesion() {
+   /* private fun iniciarSesion() {
 
         val username = binding.edtUsername.text.toString().trim()
         val password = binding.edtPassword.text.toString().trim()
@@ -36,8 +39,8 @@ class inicio_sesion : AppCompatActivity() {
             binding.edtPassword.error = "Ingrese su contraseña"
             return
         }
-        validarCredenciales(username, password)
-    }
+        validarCredenciales(username, password) -->
+    }*/
 
     private fun validarCredenciales(
         emailTelefono: String,

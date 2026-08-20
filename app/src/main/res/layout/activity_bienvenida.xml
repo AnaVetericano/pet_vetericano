@@ -1,119 +1,132 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#FFFFFF"
-    android:padding="20dp"
+    android:padding="0dp"
     tools:context=".bienvenida">
 
-
     <TextView
-        android:id="@+id/txtHola"
+        android:id="@+id/tvSaludo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
-        android:layout_marginStart="12dp"
-        android:text="Hola"
-        android:textColor="#000000"
-        android:textSize="22sp"
+        android:layout_marginStart="30dp"
+        android:layout_marginTop="42dp"
+        android:text="Hola,"
+        android:textColor="#4145A8"
+        android:textSize="20sp"
         android:textStyle="bold"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
 
     <TextView
-        android:id="@+id/txtGracias"
+        android:id="@+id/tvMensajeBienvenida"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="2dp"
         android:text="¡Gracias por ayudar!"
-        android:textColor="#666666"
-        android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="@id/txtHola"
-        app:layout_constraintTop_toBottomOf="@id/txtHola" />
+        android:textColor="#111111"
+        android:textSize="13sp"
+        android:textStyle="bold"
+        app:layout_constraintStart_toStartOf="@id/tvSaludo"
+        app:layout_constraintTop_toBottomOf="@id/tvSaludo" />
 
 
     <TextView
-        android:id="@+id/txtHacer"
+        android:id="@+id/tvTituloAcciones"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="36dp"
-        android:text="¿Qué desea hacer hoy?"
+        android:layout_marginTop="68dp"
+        android:text="¿Que desea hacer hoy?"
         android:textColor="#000000"
-        android:textSize="20sp"
+        android:textSize="19sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txtGracias" />
+        app:layout_constraintTop_toBottomOf="@id/tvMensajeBienvenida" />
 
+
+    <!-- ========================= -->
+    <!-- REPORTAR PETICION -->
+    <!-- ========================= -->
 
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/btnReportarPeticion"
-        android:layout_width="210dp"
-        android:layout_height="210dp"
-        android:layout_marginTop="28dp"
+        android:id="@+id/cardReportarPeticion"
+        android:layout_width="212dp"
+        android:layout_height="212dp"
+        android:layout_marginTop="72dp"
         android:clickable="true"
         android:focusable="true"
-        app:cardBackgroundColor="#F5C034"
-        app:cardCornerRadius="36dp"
-        app:cardElevation="6dp"
+        app:cardBackgroundColor="#F5C637"
+        app:cardCornerRadius="44dp"
+        app:cardElevation="5dp"
         app:strokeWidth="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txtHacer">
+        app:layout_constraintTop_toBottomOf="@id/tvTituloAcciones">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="15dp">
 
             <ImageView
-                android:layout_width="72dp"
-                android:layout_height="72dp"
-                android:src="@drawable/ic_huella"
-                app:tint="#0A1813" />
+                android:id="@+id/ivIconoReportar"
+                android:layout_width="78dp"
+                android:layout_height="78dp"
+                android:contentDescription="Reportar petición"
+                android:scaleType="fitCenter"
+                android:src="@drawable/paw_cat"
+                app:tint="#06140F" />
 
             <TextView
+                android:id="@+id/tvReportarPeticion"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="10dp"
                 android:gravity="center"
-                android:text="Reportar\nPetición"
-                android:textColor="#0A1813"
-                android:textSize="18sp"
+                android:text="Reportar&#10;Petición"
+                android:textColor="#06140F"
+                android:textSize="20sp"
                 android:textStyle="bold" />
+
         </LinearLayout>
+
     </com.google.android.material.card.MaterialCardView>
 
 
     <LinearLayout
-        android:id="@+id/containerSecundarios"
-        android:layout_width="match_parent"
+        android:id="@+id/layoutOpcionesSecundarias"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="14dp"
         android:gravity="center"
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnReportarPeticion">
+        app:layout_constraintTop_toBottomOf="@id/cardReportarPeticion">
+
 
 
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/btnAdopcion"
-            android:layout_width="125dp"
-            android:layout_height="125dp"
-            android:layout_marginEnd="10dp"
+            android:id="@+id/cardAdopcion"
+            android:layout_width="106dp"
+            android:layout_height="106dp"
+            android:layout_marginEnd="4dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="#EAEAEA"
-            app:cardCornerRadius="20dp"
+            app:cardBackgroundColor="#E9E9E5"
+            app:cardCornerRadius="15dp"
             app:cardElevation="0dp"
-            app:strokeColor="#D0D0D0"
+            app:strokeColor="#777777"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -121,37 +134,44 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:padding="8dp">
+                android:padding="6dp">
 
                 <ImageView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/"
-                    app:tint="#000000" />
+                    android:id="@+id/ivIconoAdopcion"
+                    android:layout_width="43dp"
+                    android:layout_height="43dp"
+                    android:contentDescription="Adopción"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/heart"
+                    app:tint="#444444" />
 
                 <TextView
+                    android:id="@+id/tvAdopcion"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="7dp"
                     android:text="Adopción"
                     android:textColor="#000000"
-                    android:textSize="13sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
+
             </LinearLayout>
+
         </com.google.android.material.card.MaterialCardView>
 
 
+
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/btnVoluntariado"
-            android:layout_width="125dp"
-            android:layout_height="125dp"
-            android:layout_marginStart="10dp"
+            android:id="@+id/cardVoluntariado"
+            android:layout_width="106dp"
+            android:layout_height="106dp"
+            android:layout_marginStart="4dp"
             android:clickable="true"
             android:focusable="true"
-            app:cardBackgroundColor="#EAEAEA"
-            app:cardCornerRadius="20dp"
+            app:cardBackgroundColor="#E9E9E5"
+            app:cardCornerRadius="15dp"
             app:cardElevation="0dp"
-            app:strokeColor="#D0D0D0"
+            app:strokeColor="#777777"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -159,43 +179,52 @@
                 android:layout_height="match_parent"
                 android:gravity="center"
                 android:orientation="vertical"
-                android:padding="8dp">
+                android:padding="6dp">
 
                 <ImageView
-                    android:layout_width="40dp"
-                    android:layout_height="40dp"
-                    android:src="@drawable/ic_manos"
-                    app:tint="#000000" />
+                    android:id="@+id/ivIconoVoluntariado"
+                    android:layout_width="43dp"
+                    android:layout_height="43dp"
+                    android:contentDescription="Voluntariado"
+                    android:scaleType="fitCenter"
+                    android:src="@drawable/location"
+                    app:tint="#777777" />
 
                 <TextView
+                    android:id="@+id/tvVoluntariado"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="7dp"
                     android:text="Voluntariado"
                     android:textColor="#000000"
-                    android:textSize="13sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
+
             </LinearLayout>
+
         </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/bottomNavigationCard"
-        android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="16dp"
+        android:id="@+id/cardNavegacionInferior"
+        android:layout_width="0dp"
+        android:layout_height="58dp"
+        android:layout_marginStart="40dp"
+        android:layout_marginEnd="40dp"
+        android:layout_marginBottom="12dp"
         app:cardBackgroundColor="#FFFFFF"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="8dp"
-        app:strokeWidth="0dp"
+        app:cardCornerRadius="20dp"
+        app:cardElevation="5dp"
+        app:strokeColor="#EEEEEE"
+        app:strokeWidth="1dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
+
         <LinearLayout
+            android:id="@+id/layoutNavegacion"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
@@ -203,68 +232,82 @@
 
 
             <ImageView
-                android:id="@+id/navHome"
+                android:id="@+id/ivNavInicio"
                 android:layout_width="0dp"
-                android:layout_height="26dp"
+                android:layout_height="25dp"
                 android:layout_weight="1"
                 android:clickable="true"
+                android:contentDescription="Inicio"
                 android:focusable="true"
-                android:src=""
-                app:tint="#3F46A6" />
+                android:src="@drawable/house"
+                app:tint="#4145A8" />
+
 
 
             <ImageView
-                android:id="@+id/navDocument"
+                android:id="@+id/ivNavDocumentos"
                 android:layout_width="0dp"
-                android:layout_height="26dp"
+                android:layout_height="25dp"
                 android:layout_weight="1"
                 android:clickable="true"
+                android:contentDescription="Documentos"
                 android:focusable="true"
-                android:src="@drawable/"
-                app:tint="#666666" />
+                android:src="@drawable/file_text"
+                app:tint="#555555" />
 
+
+            <!-- BOTON CENTRAL -->
 
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/navCentralPaw"
+                android:id="@+id/cardNavPrincipal"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardBackgroundColor="#F5C034"
+                app:cardBackgroundColor="#F5C637"
                 app:cardCornerRadius="22dp"
                 app:cardElevation="0dp"
                 app:strokeWidth="0dp">
 
                 <ImageView
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:id="@+id/ivNavPrincipal"
+                    android:layout_width="25dp"
+                    android:layout_height="25dp"
                     android:layout_gravity="center"
-                    android:src="@drawable/"
-                    app:tint="#0A1813" />
+                    android:contentDescription="Reportar petición"
+                    android:src="@drawable/paw_cat"
+                    app:tint="#06140F" />
+
             </com.google.android.material.card.MaterialCardView>
 
-            <ImageView
-                android:id="@+id/navFavorites"
-                android:layout_width="0dp"
-                android:layout_height="26dp"
-                android:layout_weight="1"
-                android:clickable="true"
-                android:focusable="true"
-                android:src="@drawable/"
-                app:tint="#666666" />
+
 
 
             <ImageView
-                android:id="@+id/navProfile"
+                android:id="@+id/ivNavFavoritos"
                 android:layout_width="0dp"
-                android:layout_height="26dp"
+                android:layout_height="25dp"
                 android:layout_weight="1"
                 android:clickable="true"
+                android:contentDescription="Favoritos"
                 android:focusable="true"
-                android:src="@drawable/"
-                app:tint="#666666" />
+                android:src="@drawable/heart"
+                app:tint="#555555" />
+
+
+            <ImageView
+                android:id="@+id/ivNavPerfil"
+                android:layout_width="0dp"
+                android:layout_height="25dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:contentDescription="Perfil"
+                android:focusable="true"
+                android:src="@drawable/user"
+                app:tint="#555555" />
 
         </LinearLayout>
+
     </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

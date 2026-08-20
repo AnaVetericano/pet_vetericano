@@ -3,24 +3,65 @@ package com.example.petvetericano
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
+import com.example.petvetericano.databinding.ActivityBienvenidaBinding
 import com.example.petvetericano.databinding.ActivityInicioBienvenidaBinding
-import com.example.petvetericano.databinding.ActivityInicioSesionBinding
 
 class inicio_bienvenida : AppCompatActivity() {
+
     private lateinit var binding: ActivityInicioBienvenidaBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-
         binding = ActivityInicioBienvenidaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+//        configurarEventos()
     }
 
-
+//    private fun configurarEventos() {
+//
+//        // Reportar la petición
+//        binding.cardReportarPeticion.setOnClickListener {
+//            val intent = Intent(this, reportar_peticion::class.java)
+//            startActivity(intent)
+//        }
+//
+//
+//        binding.cardAdopcion.setOnClickListener {
+//            val intent = Intent(this, adopcion::class.java)
+//            startActivity(intent)
+//        }
+//
+//        binding.cardVoluntariado.setOnClickListener {
+//            val intent = Intent(this, voluntariado::class.java)
+//            startActivity(intent)
+//        }
+//
+//
+//        binding.ivNavInicio.setOnClickListener {
+//            Toast.makeText(this, "Ya estás en Inicio", Toast.LENGTH_SHORT).show()
+//        }
+//
+//
+//        binding.ivNavDocumentos.setOnClickListener {
+//            Toast.makeText(this, "Documentos", Toast.LENGTH_SHORT).show()
+//        }
+//
+//        binding.cardNavPrincipal.setOnClickListener {
+//            val intent = Intent(this, reportar_peticion::class.java)
+//            startActivity(intent)
+//        }
+//
+//
+//        binding.ivNavFavoritos.setOnClickListener {
+//            Toast.makeText(this, "Favoritos", Toast.LENGTH_SHORT).show()
+//        }
+//
+//
+//        binding.ivNavPerfil.setOnClickListener {
+//            Toast.makeText(this, "Perfil", Toast.LENGTH_SHORT).show()
+//        }
+//    }
 }

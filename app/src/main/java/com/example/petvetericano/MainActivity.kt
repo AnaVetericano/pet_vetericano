@@ -21,7 +21,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun Login(){
-        intent = Intent(this, Inicio_sesion::class.java)
+        intent = Intent(this, inicio_sesion::class.java)
         startActivity(intent)
     }
     private fun SignUp(){

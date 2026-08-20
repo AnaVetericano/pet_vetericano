@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
@@ -11,12 +13,12 @@
 
 
     <TextView
-        android:id="@+id/txtHola"
+        android:id="@+id/tvSaludo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
         android:layout_marginStart="12dp"
-        android:text="Hola"
+        android:layout_marginTop="24dp"
+        android:text="Hola,"
         android:textColor="#000000"
         android:textSize="22sp"
         android:textStyle="bold"
@@ -25,19 +27,20 @@
 
 
     <TextView
-        android:id="@+id/txtGracias"
+        android:id="@+id/tvMensajeBienvenida"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:text="¡Gracias por ayudar!"
         android:textColor="#666666"
         android:textSize="14sp"
-        app:layout_constraintStart_toStartOf="@id/txtHola"
-        app:layout_constraintTop_toBottomOf="@id/txtHola" />
+        app:layout_constraintStart_toStartOf="@id/tvSaludo"
+        app:layout_constraintTop_toBottomOf="@id/tvSaludo" />
+
 
 
     <TextView
-        android:id="@+id/txtHacer"
+        android:id="@+id/tvTituloAcciones"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="36dp"
@@ -47,11 +50,12 @@
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txtGracias" />
+        app:layout_constraintTop_toBottomOf="@id/tvMensajeBienvenida" />
+
 
 
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/btnReportarPeticion"
+        android:id="@+id/cardReportarPeticion"
         android:layout_width="210dp"
         android:layout_height="210dp"
         android:layout_marginTop="28dp"
@@ -63,7 +67,7 @@
         app:strokeWidth="0dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/txtHacer">
+        app:layout_constraintTop_toBottomOf="@id/tvTituloAcciones">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -73,26 +77,31 @@
             android:padding="16dp">
 
             <ImageView
+                android:id="@+id/ivIconoReportar"
                 android:layout_width="72dp"
                 android:layout_height="72dp"
-                android:src="@drawable/ic_huella"
+                android:contentDescription="Reportar petición"
+                android:src="@drawable/"
                 app:tint="#0A1813" />
 
             <TextView
+                android:id="@+id/tvReportarPeticion"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:gravity="center"
-                android:text="Reportar\nPetición"
+                android:text="Reportar&#10;Petición"
                 android:textColor="#0A1813"
                 android:textSize="18sp"
                 android:textStyle="bold" />
+
         </LinearLayout>
+
     </com.google.android.material.card.MaterialCardView>
 
 
     <LinearLayout
-        android:id="@+id/containerSecundarios"
+        android:id="@+id/layoutOpcionesSecundarias"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
@@ -100,11 +109,11 @@
         android:orientation="horizontal"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnReportarPeticion">
+        app:layout_constraintTop_toBottomOf="@id/cardReportarPeticion">
 
 
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/btnAdopcion"
+            android:id="@+id/cardAdopcion"
             android:layout_width="125dp"
             android:layout_height="125dp"
             android:layout_marginEnd="10dp"
@@ -124,12 +133,15 @@
                 android:padding="8dp">
 
                 <ImageView
+                    android:id="@+id/ivIconoAdopcion"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
+                    android:contentDescription="Adopción"
                     android:src="@drawable/"
                     app:tint="#000000" />
 
                 <TextView
+                    android:id="@+id/tvAdopcion"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
@@ -137,12 +149,15 @@
                     android:textColor="#000000"
                     android:textSize="13sp"
                     android:textStyle="bold" />
+
             </LinearLayout>
+
         </com.google.android.material.card.MaterialCardView>
 
 
+
         <com.google.android.material.card.MaterialCardView
-            android:id="@+id/btnVoluntariado"
+            android:id="@+id/cardVoluntariado"
             android:layout_width="125dp"
             android:layout_height="125dp"
             android:layout_marginStart="10dp"
@@ -162,12 +177,15 @@
                 android:padding="8dp">
 
                 <ImageView
+                    android:id="@+id/ivIconoVoluntariado"
                     android:layout_width="40dp"
                     android:layout_height="40dp"
-                    android:src="@drawable/ic_manos"
+                    android:contentDescription="Voluntariado"
+                    android:src="@drawable/"
                     app:tint="#000000" />
 
                 <TextView
+                    android:id="@+id/tvVoluntariado"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
@@ -175,13 +193,18 @@
                     android:textColor="#000000"
                     android:textSize="13sp"
                     android:textStyle="bold" />
+
             </LinearLayout>
+
         </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 
+
+    <!-- BARRA DE NAVEGACIÓN -->
+
     <com.google.android.material.card.MaterialCardView
-        android:id="@+id/bottomNavigationCard"
+        android:id="@+id/cardNavegacionInferior"
         android:layout_width="match_parent"
         android:layout_height="64dp"
         android:layout_marginStart="16dp"
@@ -195,37 +218,47 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
+
         <LinearLayout
+            android:id="@+id/layoutNavegacion"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center"
             android:orientation="horizontal">
 
 
+            <!-- INICIO -->
+
             <ImageView
-                android:id="@+id/navHome"
+                android:id="@+id/ivNavInicio"
                 android:layout_width="0dp"
                 android:layout_height="26dp"
                 android:layout_weight="1"
                 android:clickable="true"
+                android:contentDescription="Inicio"
                 android:focusable="true"
-                android:src=""
+                android:src="@drawable/"
                 app:tint="#3F46A6" />
 
 
+            <!-- DOCUMENTOS -->
+
             <ImageView
-                android:id="@+id/navDocument"
+                android:id="@+id/ivNavDocumentos"
                 android:layout_width="0dp"
                 android:layout_height="26dp"
                 android:layout_weight="1"
                 android:clickable="true"
+                android:contentDescription="Documentos"
                 android:focusable="true"
                 android:src="@drawable/"
                 app:tint="#666666" />
 
 
+            <!-- BOTÓN CENTRAL -->
+
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/navCentralPaw"
+                android:id="@+id/cardNavPrincipal"
                 android:layout_width="44dp"
                 android:layout_height="44dp"
                 android:clickable="true"
@@ -236,35 +269,45 @@
                 app:strokeWidth="0dp">
 
                 <ImageView
+                    android:id="@+id/ivNavPrincipal"
                     android:layout_width="24dp"
                     android:layout_height="24dp"
                     android:layout_gravity="center"
+                    android:contentDescription="Reportar petición"
                     android:src="@drawable/"
                     app:tint="#0A1813" />
+
             </com.google.android.material.card.MaterialCardView>
 
+
+            <!-- FAVORITOS -->
+
             <ImageView
-                android:id="@+id/navFavorites"
+                android:id="@+id/ivNavFavoritos"
                 android:layout_width="0dp"
                 android:layout_height="26dp"
                 android:layout_weight="1"
                 android:clickable="true"
+                android:contentDescription="Favoritos"
                 android:focusable="true"
                 android:src="@drawable/"
                 app:tint="#666666" />
 
 
+
             <ImageView
-                android:id="@+id/navProfile"
+                android:id="@+id/ivNavPerfil"
                 android:layout_width="0dp"
                 android:layout_height="26dp"
                 android:layout_weight="1"
                 android:clickable="true"
+                android:contentDescription="Perfil"
                 android:focusable="true"
                 android:src="@drawable/"
                 app:tint="#666666" />
 
         </LinearLayout>
+
     </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

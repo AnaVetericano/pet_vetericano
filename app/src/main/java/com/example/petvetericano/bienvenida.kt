@@ -1,20 +1,69 @@
 package com.example.petvetericano
 
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import com.example.petvetericano.databinding.ActivityBienvenidaBinding
 
 class bienvenida : AppCompatActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContentView(R.layout.activity_bienvenida)
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
-        }
+
+private lateinit var binding: ActivityBienvenidaBinding
+
+override fun onCreate(savedInstanceState: Bundle?) {
+    super.onCreate(savedInstanceState)
+
+    binding = ActivityBienvenidaBinding.inflate(layoutInflater)
+    setContentView(binding.root)
+
+    configurarEventos()
+}
+
+private fun configurarEventos() {
+
+
+    binding.cardReportarPeticion.setOnClickListener {
+        val intent = Intent(this, reportar_peticion::class.java)
+        startActivity(intent)
     }
+
+
+    binding.cardAdopcion.setOnClickListener {
+        val intent = Intent(this, adopcion::class.java)
+        startActivity(intent)
+    }
+
+    binding.cardVoluntariado.setOnClickListener {
+        val intent = Intent(this, voluntariado::class.java)
+        startActivity(intent)
+    }
+
+
+    binding.ivNavInicio.setOnClickListener {
+        Toast.makeText(this, "Ya estás en Inicio", Toast.LENGTH_SHORT).show()
+    }
+
+
+    binding.ivNavDocumentos.setOnClickListener {
+        Toast.makeText(this, "Documentos", Toast.LENGTH_SHORT).show()
+    }
+
+    binding.cardNavPrincipal.setOnClickListener {
+        val intent = Intent(this, reportar_peticion::class.java)
+        startActivity(intent)
+    }
+
+
+    binding.ivNavFavoritos.setOnClickListener {
+        Toast.makeText(this, "Favoritos", Toast.LENGTH_SHORT).show()
+    }
+
+
+    binding.ivNavPerfil.setOnClickListener {
+        Toast.makeText(this, "Perfil", Toast.LENGTH_SHORT).show()
+    }
+}
 }

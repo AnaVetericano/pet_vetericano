@@ -7,6 +7,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import com.example.petvetericano.databinding.ActivityRegistroBinding
+import kotlin.jvm.java
 
 class Registro : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -18,7 +19,7 @@ class Registro : AppCompatActivity() {
     }
 
     private fun SignUp(){
-        intent = Intent(this, Inicio_sesion::class.java)
+        intent = Intent(this, inicio_sesion::class.java)
         startActivity(intent)
     }
 }

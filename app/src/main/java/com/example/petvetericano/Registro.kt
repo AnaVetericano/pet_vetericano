@@ -19,7 +19,7 @@ class Registro : AppCompatActivity() {
     }
 
     private fun SignUp(){
-        intent = Intent(this, inicio_sesion::class.java)
+        intent = Intent(this, Inicio_sesion::class.java)
         startActivity(intent)
     }
 }

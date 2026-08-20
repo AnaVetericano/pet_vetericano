@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">PetVetericano</string>
+    <string name="welcome_login_register">Bienvenido a</string>
+    <string name="vetericano_login_register">VETERICANO</string>
+    <string name="care_login_register">Cuidamos a quienes no tienen voz</string>
+    <string name="btn_login_login_register">Iniciar Sesión</string>
+    <string name="btn_sign_login_register">Registrar</string>
 </resources>

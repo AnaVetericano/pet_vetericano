@@ -54,7 +54,7 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".registro"
+            android:name=".Registro"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity

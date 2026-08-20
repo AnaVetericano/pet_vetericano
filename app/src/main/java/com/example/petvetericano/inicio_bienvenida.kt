@@ -19,7 +19,6 @@ class inicio_bienvenida : AppCompatActivity() {
 
         binding = ActivityInicioBienvenidaBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
     }
 
 

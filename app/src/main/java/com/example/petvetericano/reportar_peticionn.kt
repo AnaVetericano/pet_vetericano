@@ -1,6 +1,7 @@
 package com.example.petvetericano
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.os.Bundle
@@ -59,29 +60,20 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
 
         binding.btnLocation.setOnClickListener { verificarPermisosUbicacion()
         }
-
         binding.etSearch.setOnEditorActionListener { _, _, _ -> buscarDireccion()
             true
         }
-
-
         binding.btnContinue.setOnClickListener {
-
             if (selectedLatLng != null) {
-
-                Toast.makeText(
-                    this,
-                    "Ubicación seleccionada: " + "${selectedLatLng?.latitude}, " +
-                            "${selectedLatLng?.longitude}", Toast.LENGTH_LONG).show()
-
+                val intent = Intent(this, reportar_peticionnn::class.java)
+                startActivity(intent)
             } else {
+                Toast.makeText(this, "Por favor selecciona una ubicación en el mapa", Toast.LENGTH_SHORT).show()
+            }
+        }
 
-                Toast.makeText(
-                    this,
-                    "Por favor selecciona una ubicación en el mapa", Toast.LENGTH_SHORT
-                ).show()
-            }
-            }
+
+
           }
 
 

@@ -33,8 +33,9 @@
             android:name=".bienvenida"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+
         <activity
-            android:name=".adopcion"
+            android:name=".Adopcion"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity

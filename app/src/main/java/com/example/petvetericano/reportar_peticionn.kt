@@ -53,9 +53,10 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
 
 
-//        binding.btnBack.setOnClickListener {
-//            finish()
-//        }
+        binding.btnBack.setOnClickListener {
+            val intent= Intent(this, reportar_peticion::class.java)
+            startActivity(intent)
+        }
 
 
         binding.btnLocation.setOnClickListener { verificarPermisosUbicacion()

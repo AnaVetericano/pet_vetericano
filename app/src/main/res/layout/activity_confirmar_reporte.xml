@@ -136,7 +136,7 @@
                 android:id="@+id/imageView3"
                 android:layout_width="43dp"
                 android:layout_height="38dp"
-                app:srcCompat="@drawable/cam" />
+                app:srcCompat="@drawable/camera" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -180,7 +180,7 @@
             <ImageView
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:src="@drawable/ubi"
+                android:src="@drawable/location_icon"
                 />
 
             <LinearLayout
@@ -224,8 +224,7 @@
             <ImageView
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:src="@drawable/line"
-                />
+                android:src="@drawable/id_card" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -270,7 +269,7 @@
             <ImageView
                 android:layout_width="28dp"
                 android:layout_height="28dp"
-                android:src="@drawable/arch"
+                android:src="@drawable/paper_on_paper"
                 />
 
             <LinearLayout

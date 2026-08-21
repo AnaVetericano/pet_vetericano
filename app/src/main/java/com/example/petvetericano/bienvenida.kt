@@ -3,10 +3,7 @@ package com.example.petvetericano
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.petvetericano.databinding.ActivityBienvenidaBinding
 
 class bienvenida : AppCompatActivity() {
@@ -32,7 +29,7 @@ private fun configurarEventos() {
 
 
     binding.cardAdopcion.setOnClickListener {
-        val intent = Intent(this, adopcion::class.java)
+        val intent = Intent(this, Adopcion::class.java)
         startActivity(intent)
     }
 

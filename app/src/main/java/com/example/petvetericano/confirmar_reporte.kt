@@ -33,11 +33,11 @@ class confirmar_reporte : AppCompatActivity() {
             startActivity(intent)
         }
         binding.descripedit.setOnClickListener {
-            val intent = Intent(this, reportar_peticionn :: class.java)
+            val intent = Intent(this, reportar_peticionnn :: class.java)
             startActivity(intent)
         }
         binding.archivosedi.setOnClickListener {
-            val intent = Intent(this, reportar_peticionn :: class.java)
+            val intent = Intent(this, reportar_peticionnn :: class.java)
             startActivity(intent)
         }
         binding.btndev.setOnClickListener {

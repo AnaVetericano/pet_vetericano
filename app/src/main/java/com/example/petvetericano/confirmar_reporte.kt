@@ -19,6 +19,7 @@ class confirmar_reporte : AppCompatActivity() {
 
         binding= ActivityConfirmarReporteBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
         binding.btnenvR.setOnClickListener {
             val intent = Intent(this, reporte_enviado::class.java)
             startActivity(intent)
@@ -27,6 +28,23 @@ class confirmar_reporte : AppCompatActivity() {
             val intent = Intent(this, reportar_peticionn :: class.java)
             startActivity(intent)
         }
+        binding.tipoPeticion.setOnClickListener {
+            val intent = Intent(this, reportar_peticion :: class.java)
+            startActivity(intent)
+        }
+        binding.descripedit.setOnClickListener {
+            val intent = Intent(this, reportar_peticionn :: class.java)
+            startActivity(intent)
+        }
+        binding.archivosedi.setOnClickListener {
+            val intent = Intent(this, reportar_peticionn :: class.java)
+            startActivity(intent)
+        }
+        binding.btndev.setOnClickListener {
+            val intent = Intent(this, reportar_peticionnn :: class.java)
+            startActivity(intent)
+        }
+
 
 
         }

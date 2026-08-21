@@ -6,7 +6,7 @@ plugins {
 android {
     namespace = "com.example.petvetericano"
     compileSdk {
-        version = release(37) {
+        version = release(36) {
             minorApiLevel = 1
         }
     }

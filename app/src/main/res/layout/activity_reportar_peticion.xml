@@ -7,7 +7,7 @@
     android:layout_height="match_parent"
     tools:context=".reportar_peticion">
     <ImageButton
-        android:id="@+id/btnBack"
+        android:id="@+id/btndev"
         android:layout_width="48dp"
         android:layout_height="48dp"
         android:background="?attr/selectableItemBackgroundBorderless"

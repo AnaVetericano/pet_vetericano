@@ -61,7 +61,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.566" />
+        app:layout_constraintVertical_bias="0.579" />
 
     <TextView
         android:id="@+id/textView7"
@@ -99,8 +99,8 @@
 
     <Button
         android:id="@+id/contcba"
-        android:layout_width="142dp"
-        android:layout_height="48dp"
+        android:layout_width="210dp"
+        android:layout_height="54dp"
         android:text="contactar CBA"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -110,8 +110,8 @@
 
     <Button
         android:id="@+id/regremen"
-        android:layout_width="141dp"
-        android:layout_height="49dp"
+        android:layout_width="214dp"
+        android:layout_height="57dp"
         android:text="Regresar"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"

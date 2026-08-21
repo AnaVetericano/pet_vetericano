@@ -260,7 +260,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/cardCalle"
-        app:layout_setVerticalBias="1.0" />
+        />
 
 </androidx.constraintlayout.widget.ConstraintLayout>
 

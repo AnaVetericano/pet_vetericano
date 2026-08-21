@@ -60,6 +60,8 @@ private fun configurarEventos() {
 
 
     binding.ivNavPerfil.setOnClickListener {
+        val intent = Intent(this, editar_perfil::class.java)
+        startActivity(intent)
         Toast.makeText(this, "Perfil", Toast.LENGTH_SHORT).show()
     }
 }

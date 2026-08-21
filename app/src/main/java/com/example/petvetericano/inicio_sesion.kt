@@ -3,66 +3,69 @@ package com.example.petvetericano
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.petvetericano.databinding.ActivityInicioSesionBinding
-import com.example.petvetericano.databinding.ActivityMainBinding
+import com.google.firebase.auth.FirebaseAuth
 
 class inicio_sesion : AppCompatActivity() {
-    private lateinit var binding: ActivityInicioSesionBinding
 
+    private lateinit var binding: ActivityInicioSesionBinding
+    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        binding= ActivityInicioSesionBinding.inflate(layoutInflater)
-        setContentView(binding.root)
-        binding.btnIniciarSesion.setOnClickListener {
-            val intent = Intent(this, bienvenida::class.java)
-            startActivity(intent)
 
+        binding = ActivityInicioSesionBinding.inflate(layoutInflater)
+        setContentView(binding.root)
+
+        // Conectar con Firebase Authentication
+        auth = FirebaseAuth.getInstance()
+
+        binding.btnIniciarSesion.setOnClickListener {
+            iniciarSesion()
         }
     }
 
-   /* private fun iniciarSesion() {
+    private fun iniciarSesion() {
 
-        val username = binding.edtUsername.text.toString().trim()
+        val email = binding.editTextText.text.toString().trim()
         val password = binding.edtPassword.text.toString().trim()
 
-        if (username.isEmpty()) {
-            binding.edtUsername.error = "Ingrese su email o teléfono"
+        // Validar correo
+        if (email.isEmpty()) {
+            binding.editTextText.error = "Ingrese su correo electrónico"
+            binding.editTextText.requestFocus()
             return
         }
 
+        // Validar contraseña
         if (password.isEmpty()) {
             binding.edtPassword.error = "Ingrese su contraseña"
+            binding.edtPassword.requestFocus()
             return
         }
-        validarCredenciales(username, password) -->
-    }*/
 
-    private fun validarCredenciales(
-        emailTelefono: String,
-        contrasena: String
-    ) {
+        // Iniciar sesión con Firebase Authentication
+        auth.signInWithEmailAndPassword(email, password)
+            .addOnSuccessListener {
 
+                Toast.makeText(
+                    this,
+                    "Inicio de sesión exitoso",
+                    Toast.LENGTH_SHORT
+                ).show()
 
-        val emailCorrecto = "usuario@gmail.com"
-        val telefonoCorrecto = "3001234567"
-        val contrasenaCorrecta = "123456"
+                val intent = Intent(this, bienvenida::class.java)
+                startActivity(intent)
+                finish()
+            }
+            .addOnFailureListener { error ->
 
-        if (
-            (emailTelefono == emailCorrecto || emailTelefono == telefonoCorrecto) &&
-            contrasena == contrasenaCorrecta
-        ) {
-
-            Toast.makeText(this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show()
-
-
-        } else {
-            Toast.makeText(this, "Su correo electronico y su contraseña NO coinciden.Intentelo de nuevo", Toast.LENGTH_SHORT
-            ).show()
-        }
+                Toast.makeText(
+                    this,
+                    "No se pudo iniciar sesión: ${error.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
     }
 }

@@ -13,18 +13,7 @@ import com.example.petvetericano.databinding.ActivityRegistroBinding
 class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     override fun onCreate(savedInstanceState: Bundle?) {
-        val sharedPreferences = getSharedPreferences("ThemePrefs", MODE_PRIVATE)
-        val isDarkMode = sharedPreferences.getBoolean("isDarkMode", false)
 
-        if (isDarkMode) {
-            AppCompatDelegate.setDefaultNightMode(
-                AppCompatDelegate.MODE_NIGHT_YES
-            )
-        } else {
-            AppCompatDelegate.setDefaultNightMode(
-                AppCompatDelegate.MODE_NIGHT_NO
-            )
-        }
 
 
         super.onCreate(savedInstanceState)

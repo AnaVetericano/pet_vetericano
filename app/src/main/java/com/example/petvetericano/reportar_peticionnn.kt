@@ -17,7 +17,7 @@ class reportar_peticionnn : AppCompatActivity() {
         setContentView(binding.root)
 
         binding.btnContinue.setOnClickListener {
-            val intent = Intent(this, reporte_enviado::class.java)
+            val intent = Intent(this, confirmar_reporte::class.java)
             startActivity(intent)
 
         }

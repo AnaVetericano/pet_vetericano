@@ -17,6 +17,11 @@ class reportar_peticion : AppCompatActivity() {
         binding= ActivityReportarPeticionBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+
+        binding.btndev.setOnClickListener {
+            val intent= Intent(this, bienvenida::class.java)
+            startActivity(intent)
+        }
         binding.cardHerido.setOnClickListener {
             val intent = Intent(this, reportar_peticionn::class.java)
             startActivity(intent)

@@ -8,7 +8,7 @@
     android:layout_height="match_parent"
     android:padding="24dp"
     android:background="#FFFFFF"
-    tools:context=".reportar_peticionn">
+    tools:context=".reportar_peticionnn">
 
     <ImageButton
         android:id="@+id/btndev"

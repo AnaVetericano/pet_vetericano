@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ConstraintLayout: Contenedor principal altamente optimizado para evitar la anidación profunda de vistas.
+     xmlns:android y xmlns:app: Importan los espacios de nombres para usar los atributos nativos de Android y de Material Design.
+     xmlns:tools: Permite inyectar atributos exclusivos para el editor visual de Android Studio que no pesarán en la app compilada.
+     tools:context: Le dice al editor que este XML está controlado por la clase LenguajeActivity. -->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"
+    tools:context=".LenguajeActivity">
+
+    <!-- ImageButton: Botón interactivo para retroceder.
+         ?attr/selectableItemBackgroundBorderless: Llama al tema del sistema para pintar un efecto de onda (ripple) circular al tocar, dando feedback táctil sin encerrar el botón en un cuadrado gris. -->
+    <ImageButton
+        android:id="@+id/btnBack"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Atrás"
+        android:src="@drawable/outline_arrow_back_ios_24"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="#4D43B5" />
+
+    <!-- TextView: Etiqueta estática para el título.
+         Los constraints Top_toTopOf y Bottom_toBottomOf anclados a btnBack fuerzan al motor gráfico a centrar este texto matemáticamente en el eje Y (vertical) respecto al botón de retroceso. -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Seleccionar Idioma"
+        android:textColor="#4D43B5"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/btnBack"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btnBack" />
+
+    <!-- RadioGroup: Contenedor lógico vital. Agrupa varios RadioButton internamente y asegura que a nivel de sistema operativo SOLO UNO pueda estar seleccionado a la vez. Si sacas los RadioButton de aquí, el usuario podría marcar todos los idiomas simultáneamente. -->
+    <RadioGroup
+        android:id="@+id/rgLanguage"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        app:layout_constraintTop_toBottomOf="@id/btnBack">
+
+        <!-- MaterialCardView: Envuelve el RadioButton para darle un diseño de tarjeta moderna con bordes redondeados y contorno (stroke).
+             app:cardElevation="0dp": Quita la sombra por defecto de las tarjetas de Material Design para mantener un diseño plano (flat design). -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="#4D43B5"
+            app:strokeWidth="2dp">
+
+            <!-- RadioButton para el idioma Español.
+                 android:checked="true": Establece este botón como la selección predeterminada cuando la pantalla carga por primera vez y el sistema aún no ha leído las preferencias. -->
+            <RadioButton
+                android:id="@+id/rbSpanish"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:checked="true"
+                android:padding="16dp"
+                android:text="Español (América Latina)"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- MaterialCardView para la opción en Inglés.
+             app:strokeColor="#E2E8F0": Un color gris claro para el borde, indicando visualmente que no es la opción que está seleccionada actualmente. -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="#E2E8F0"
+            app:strokeWidth="1dp">
+
+            <!-- RadioButton para el idioma Inglés. -->
+            <RadioButton
+                android:id="@+id/rbEnglish"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="English (United States)"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- MaterialCardView para la opción en Portugués. -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="0dp"
+            app:strokeColor="#E2E8F0"
+            app:strokeWidth="1dp">
+
+            <!-- RadioButton para el idioma Portugués. -->
+            <RadioButton
+                android:id="@+id/rbPortuguese"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:padding="16dp"
+                android:text="Português (Brasil)"
+                android:textColor="#000000"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </com.google.android.material.card.MaterialCardView>
+
+    </RadioGroup>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

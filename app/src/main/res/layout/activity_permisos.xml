@@ -1,0 +1,182 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- ConstraintLayout: Contenedor principal para posicionar elementos mediante restricciones.
+     xmlns:android y xmlns:app: Importan los atributos estándar de Android.
+     xmlns:tools: Permite usar atributos de diseño que el compilador ignora en la app final.
+     tools:context: Vincula este diseño con la clase PermisosActivity en el editor visual. Si se omite, Android Studio no sabrá a qué pantalla pertenece este XML. -->
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="24dp"
+    tools:context=".PermisosActivity">
+
+    <!-- ImageButton: Actúa como botón de retroceso.
+         ?attr/selectableItemBackgroundBorderless: Genera el efecto visual de onda al tocar sin un límite cuadrado duro. -->
+    <ImageButton
+        android:id="@+id/btnBack"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="Atrás"
+        android:src="@drawable/outline_arrow_back_ios_24"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="#4D43B5" />
+
+    <!-- TextView: Muestra el título de la pantalla.
+         app:layout_constraintTop_toTopOf y app:layout_constraintBottom_toBottomOf anclados al btnBack obligan al texto a centrarse perfectamente en el eje Y respecto al botón de atrás. -->
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Permisos de la App"
+        android:textColor="#4D43B5"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/btnBack"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btnBack" />
+
+    <!-- TextView: Descripción secundaria explicativa.
+         android:layout_width="0dp" (match_constraint) le indica al texto que debe expandirse hasta chocar con los bordes definidos (parent a los lados), forzando el salto de línea si el texto es muy largo. -->
+    <TextView
+        android:id="@+id/tvDescription"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:text="Administra las funciones a las que la aplicación tiene acceso en tu dispositivo."
+        android:textColor="#64748B"
+        android:textSize="14sp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/btnBack" />
+
+    <!-- LinearLayout: Contenedor vertical que apilará todos los interruptores (Switches) uno debajo del otro de manera secuencial sin tener que declarar restricciones de arriba/abajo para cada uno de ellos. -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:orientation="vertical"
+        app:layout_constraintTop_toBottomOf="@id/tvDescription">
+
+        <!-- Fila 1: Opción de Ubicación. Contenedor horizontal para tener los textos a la izquierda y el switch a la derecha. -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Contenedor interno vertical para apilar el título y el subtítulo.
+                 android:layout_weight="1": Al darle peso 1 a este contenedor y ancho 0dp, este contenedor empuja al switch hacia el extremo derecho de la pantalla, ocupando todo el espacio sobrante. -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Ubicación"
+                    android:textColor="#000000"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Para ubicar reportes cercanos"
+                    android:textColor="#64748B"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- SwitchMaterial: Componente interactivo de Material Design.
+                 android:checked="true": Define el estado inicial del interruptor encendido. -->
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switchLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true" />
+        </LinearLayout>
+
+        <!-- Fila 2: Opción de Cámara. -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Cámara"
+                    android:textColor="#000000"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Para tomar fotos en las peticiones"
+                    android:textColor="#64748B"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Este ID coincide exactamente con binding.switchCamera del archivo Kotlin -->
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switchCamera"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="true" />
+        </LinearLayout>
+
+        <!-- Fila 3: Opción de Notificaciones. -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Notificaciones"
+                    android:textColor="#000000"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Alertas sobre actualizaciones de casos"
+                    android:textColor="#64748B"
+                    android:textSize="12sp" />
+            </LinearLayout>
+
+            <!-- Este ID coincide exactamente con binding.switchNotifications del archivo Kotlin.
+                 android:checked="false": Define el estado inicial apagado. -->
+            <com.google.android.material.switchmaterial.SwitchMaterial
+                android:id="@+id/switchNotifications"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checked="false" />
+        </LinearLayout>
+
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

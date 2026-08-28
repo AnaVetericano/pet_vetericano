@@ -6,10 +6,10 @@
         android:name="android.hardware.camera"
         android:required="false" />
 
-    <uses-permission android:name="android.permission.INTERNET"/>
-    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
-    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.INTERNET" />
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+    <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
+    <uses-permission android:name="android.permission.CAMERA" />
 
     <application
         android:allowBackup="true"
@@ -20,7 +20,6 @@
         android:roundIcon="@drawable/vectorlogovetericano"
         android:supportsRtl="true"
         android:theme="@style/Theme.PetVetericano">
-
         <meta-data
             android:name="com.google.android.geo.API_KEY"
             android:value="AIzaSyCtPVqczwiHVBIaN-50KZsPLpzF1gdsSlo" />
@@ -39,7 +38,6 @@
             android:name=".bienvenida"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
-
         <activity
             android:name=".Adopcion"
             android:exported="false"
@@ -82,6 +80,18 @@
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".voluntariado"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".OpcionesEditarPerfilActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".PermisosActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".LenguajeActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
     </application>

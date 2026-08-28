@@ -56,6 +56,18 @@
                 android:layout_marginTop="4dp"
                 android:textColor="#000000"
                 android:textSize="12sp" />
+
+            <Button
+                android:id="@+id/btnVerVideo"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginTop="8dp"
+                android:backgroundTint="#FF0000"
+                android:text="▶ Ver Video en YouTube"
+                android:textColor="#FFFFFF"
+                android:textSize="10sp"
+                android:visibility="gone" />
+
         </LinearLayout>
     </LinearLayout>
 </androidx.cardview.widget.CardView>

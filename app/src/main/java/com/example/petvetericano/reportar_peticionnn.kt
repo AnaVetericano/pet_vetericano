@@ -3,6 +3,7 @@ package com.example.petvetericano
 import android.content.Intent
 import android.media.MediaMetadataRetriever
 import android.net.Uri
+import android.provider.MediaStore
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -49,7 +50,8 @@ class reportar_peticionnn : AppCompatActivity() {
 
         // Botón subir archivo
         binding.btnSubirArchivo.setOnClickListener {
-            pickMedia.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageAndVideo))
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            startActivity(intent)
         }
 
         // Botón continuar

@@ -54,7 +54,7 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
 
 
         binding.btnBack.setOnClickListener {
-            val intent= Intent(this, reportar_peticionn::class.java)
+            val intent= Intent(this, reportar_peticion::class.java)
             startActivity(intent)
         }
 

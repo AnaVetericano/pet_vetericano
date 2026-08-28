@@ -6,7 +6,7 @@ plugins {
 android {
     namespace = "com.example.petvetericano"
     compileSdk {
-        version = release(36) {
+        version = release(37) {
             minorApiLevel = 1
         }
     }
@@ -56,4 +56,8 @@ dependencies {
     //dependencias de google maps
     implementation("com.google.android.gms:play-services-maps:18.2.0")
     implementation("com.google.android.gms:play-services-location:21.1.0")
+
+    // Glide para carga de imágenes y miniaturas
+    implementation("com.github.bumptech.glide:glide:4.16.0")
+    annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
 }

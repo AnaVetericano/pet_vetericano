@@ -1,38 +1,47 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
-    android:background="#FFFFFF">
+    android:padding="16dp"
+    tools:context=".Adopcion">
 
-    <!-- Encabezado -->
-    <LinearLayout
+    <!-- BARRA SUPERIOR (HEADER) -->
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="20dp"
-        android:gravity="center_vertical">
+        android:layout_marginBottom="16dp">
 
-        <ImageView
+        <!-- Botón Atras -->
+        <ImageButton
             android:id="@+id/btnAtras"
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@android:drawable/ic_menu_revert" /> <!-- Cambiar por tu icono -->
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Regresar"
+            android:src="@android:drawable/ic_menu_revert" /> <!-- Reemplaza por tu icono de flecha si tiene otro nombre -->
 
+        <!-- Título Centrado y Más Grande -->
         <TextView
+            android:id="@+id/tvTituloAdopciones"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_centerInParent="true"
             android:text="ADOPCIONES"
             android:textColor="#3F51B5"
-            android:textSize="20sp"
+            android:textSize="22sp"
             android:textStyle="bold" />
-    </LinearLayout>
 
-    <!-- Lista de adopciones -->
+    </RelativeLayout>
+
+    <!-- LISTA DE ANIMALES -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewAnimales"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:padding="16dp" />
+        android:layout_height="match_parent" />
+
 </LinearLayout>

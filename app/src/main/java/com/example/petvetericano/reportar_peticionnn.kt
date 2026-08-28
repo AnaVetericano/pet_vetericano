@@ -5,6 +5,8 @@ import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.provider.MediaStore
 import android.os.Bundle
+import android.Manifest
+import android.content.pm.PackageManager
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.PickVisualMediaRequest
@@ -50,8 +52,7 @@ class reportar_peticionnn : AppCompatActivity() {
 
         // Botón subir archivo
         binding.btnSubirArchivo.setOnClickListener {
-            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            startActivity(intent)
+            abrirCamara()
         }
 
         // Botón continuar
@@ -59,6 +60,21 @@ class reportar_peticionnn : AppCompatActivity() {
             validarYContinuar()
         }
     }
+    private fun abrirCamara() {
+        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+
+            val intent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+            startActivityForResult(intent, 100)
+
+        } else {
+            requestPermissions(
+                arrayOf(Manifest.permission.CAMERA),
+                101
+            )
+        }
+    }
+
+
 
     private fun processSelectedMedia(uris: List<Uri>) {
         val resolver = contentResolver

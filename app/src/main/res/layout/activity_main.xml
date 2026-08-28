@@ -28,7 +28,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="4dp"
         android:text="@string/vetericano_login_register"
-        android:textSize="36sp"
+        android:textSize="24sp"
         android:textStyle="bold"
         android:textColor="@color/blue"
         app:layout_constraintEnd_toEndOf="parent"
@@ -48,24 +48,9 @@
         app:layout_constraintTop_toBottomOf="@+id/txtVvetericano" />
 
     <ImageView
-        android:id="@+id/imgVetericanoLogotip"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="4dp"
-        android:scaleType="fitCenter"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnSignUpWelcome"
-        app:layout_constraintWidth_percent="0.4"
-        app:srcCompat="@drawable/vectorlogovetericano" />
-
-    <ImageView
         android:id="@+id/imgPawCat1"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="248dp"
         android:rotation="-30"
         android:scaleType="fitCenter"
         app:layout_constraintDimensionRatio="1:1"
@@ -73,6 +58,8 @@
         app:layout_constraintHorizontal_bias="0.124"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.31"
         app:layout_constraintWidth_percent="0.15"
         app:srcCompat="@drawable/paw_cat" />
 
@@ -80,7 +67,6 @@
         android:id="@+id/imgPawCat2"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="384dp"
         android:rotation="-30"
         android:scaleType="fitCenter"
         app:layout_constraintDimensionRatio="1:1"
@@ -88,6 +74,8 @@
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.48"
         app:layout_constraintWidth_percent="0.2"
         app:srcCompat="@drawable/paw_cat" />
 
@@ -95,7 +83,6 @@
         android:id="@+id/imgPawCat3"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="188dp"
         android:rotation="30"
         android:scaleType="fitCenter"
         app:layout_constraintDimensionRatio="1:1"
@@ -103,6 +90,8 @@
         app:layout_constraintHorizontal_bias="0.756"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.23"
         app:layout_constraintWidth_percent="0.2"
         app:srcCompat="@drawable/paw_cat" />
 
@@ -110,7 +99,6 @@
         android:id="@+id/imgPawCat4"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:layout_marginTop="428dp"
         android:rotation="30"
         android:scaleType="fitCenter"
         app:layout_constraintDimensionRatio="1:1"
@@ -118,6 +106,8 @@
         app:layout_constraintHorizontal_bias="0.155"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintVertical_bias="0.53"
         app:layout_constraintWidth_percent="0.2"
         app:srcCompat="@drawable/paw_cat" />
 
@@ -126,14 +116,14 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:scaleType="fitCenter"
-        app:layout_constraintDimensionRatio="0.75:1"
-        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintDimensionRatio="0.65:0.8"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="1.0"
-        app:layout_constraintWidth_percent="0.6"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView3"
+        app:layout_constraintBottom_toTopOf="@+id/btnLoginWelcome"
         app:layout_constraintVertical_bias="0.345"
+        app:layout_constraintWidth_percent="0.6"
         app:srcCompat="@drawable/chanchita" />
 
     <Button
@@ -146,7 +136,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imgDogChanchita" />
+        app:layout_constraintTop_toBottomOf="@+id/imgDogChanchita"
+        app:layout_constraintBottom_toTopOf="@+id/btnSignUpWelcome" />
 
     <Button
         android:id="@+id/btnSignUpWelcome"
@@ -158,6 +149,24 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnLoginWelcome" />
+        app:layout_constraintTop_toBottomOf="@+id/btnLoginWelcome"
+        app:layout_constraintBottom_toTopOf="@+id/imgVetericanoLogotip" />
+
+
+    <ImageView
+        android:id="@+id/imgVetericanoLogotip"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginTop="12dp"
+        android:layout_marginBottom="32dp"
+        android:scaleType="fitCenter"
+        app:layout_constraintDimensionRatio="1:1"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/btnSignUpWelcome"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintWidth_percent="0.4"
+        app:srcCompat="@drawable/vectorlogovetericano" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

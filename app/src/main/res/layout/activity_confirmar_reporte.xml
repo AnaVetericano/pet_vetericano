@@ -154,9 +154,10 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/tvTipoReporte"
                     android:layout_width="186dp"
                     android:layout_height="wrap_content"
-                    android:text="Animal herido o enfermo"
+
                     android:textColor="#6B7280"
                     android:textSize="12sp" />
 

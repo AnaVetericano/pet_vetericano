@@ -45,6 +45,7 @@ class inicio_sesion : AppCompatActivity() {
             return
         }
 
+
         // Iniciar sesión con Firebase Authentication
         auth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener {

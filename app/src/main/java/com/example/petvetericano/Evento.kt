@@ -1,6 +1,5 @@
 
 package com.example.petvetericano
-
 data class Evento(
     val titulo: String,
     val tipo: String,

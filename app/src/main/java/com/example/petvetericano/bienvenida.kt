@@ -19,6 +19,7 @@ override fun onCreate(savedInstanceState: Bundle?) {
     configurarEventos()
 }
 
+
 private fun configurarEventos() {
 
 
@@ -56,7 +57,6 @@ private fun configurarEventos() {
 
         val intent = Intent(this, Eventos::class.java)
         startActivity(intent) }
-
 
     binding.ivNavPerfil.setOnClickListener {
         val intent = Intent(this, editar_perfil::class.java)

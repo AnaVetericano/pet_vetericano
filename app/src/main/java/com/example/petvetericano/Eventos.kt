@@ -20,6 +20,7 @@ class Eventos : AppCompatActivity() {
         setContentView(binding.root)
 
         // Lista de eventos
+
         val listaEventos = listOf(
 
             Evento(

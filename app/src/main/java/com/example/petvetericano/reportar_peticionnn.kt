@@ -42,6 +42,7 @@ class reportar_peticionnn : AppCompatActivity() {
             insets
         }
 
+
         setupUI()
     }
     private fun setupUI() {
@@ -138,12 +139,21 @@ class reportar_peticionnn : AppCompatActivity() {
             binding.tilDescripcion.error = "Ingresa una descripción de la incidencia"
             return
         }
-
         binding.tilDescripcion.error = null
 
+        // ATRAPAMOS LAS COORDENADAS QUE VENÍAN DEL MAPA
+        val latitud = intent.getDoubleExtra("LATITUD", 0.0)
+        val longitud = intent.getDoubleExtra("LONGITUD", 0.0)
+        val tipoReporte = intent.getStringExtra("TIPO_REPORTE")
+
         val intent = Intent(this, confirmar_reporte::class.java).apply {
+            putExtra("TIPO_REPORTE", tipoReporte)
             putExtra("DESCRIPCION", descripcion)
             putParcelableArrayListExtra("ARCHIVOS", ArrayList(selectedUris))
+
+            // RE-EMPACAMOS LAS COORDENADAS HACIA LA CONFIRMACIÓN
+            putExtra("LATITUD", latitud)
+            putExtra("LONGITUD", longitud)
         }
         startActivity(intent)
     }

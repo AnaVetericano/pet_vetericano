@@ -4,17 +4,21 @@ import android.content.Intent
 import android.os.Bundle
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import com.example.petvetericano.databinding.ActivityReportarPeticionBinding
 
-
 class reportar_peticion : AppCompatActivity() {
+
     private lateinit var binding: ActivityReportarPeticionBinding
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+
+
         enableEdgeToEdge()
-        binding= ActivityReportarPeticionBinding.inflate(layoutInflater)
+
+
+        binding = ActivityReportarPeticionBinding.inflate(layoutInflater)
+
         setContentView(binding.root)
 
 
@@ -23,20 +27,25 @@ class reportar_peticion : AppCompatActivity() {
             startActivity(intent)
         }
         binding.cardHerido.setOnClickListener {
-            val intent = Intent(this, reportar_peticionn::class.java)
-            startActivity(intent)
+            abrirSiguientePantalla("Animal herido o enfermo")
         }
 
         binding.cardMaltrato.setOnClickListener {
-
-            val intent= Intent(this, reportar_peticionn::class.java)
-            startActivity(intent)
+            abrirSiguientePantalla("Maltrato animal")
         }
+
         binding.cardCalle.setOnClickListener {
+            abrirSiguientePantalla("Animal en condicion de calle")
+        }
+    }
 
-            val intent= Intent(this, reportar_peticionn::class.java)
-            startActivity(intent)
+    private fun abrirSiguientePantalla(tipoReporte: String) {
+
+        val intent = Intent(this, reportar_peticionn::class.java).apply {
+
+            putExtra("TIPO_REPORTE", tipoReporte)
         }
 
+        startActivity(intent)
     }
 }

@@ -51,21 +51,29 @@ class editar_perfil : AppCompatActivity() {
             pickImageLauncher.launch("image/*")
         }
 
+        // Abre el formulario para modificar datos personales
         binding.btnEditarPerfil.setOnClickListener {
-            Toast.makeText(this, "Editar Perfil", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, OpcionesEditarPerfilActivity::class.java)
+            startActivity(intent)
         }
 
+        // Abre la pantalla de switches de permisos
         binding.btnPermisos.setOnClickListener {
-            Toast.makeText(this, "Permisos", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, PermisosActivity::class.java)
+            startActivity(intent)
         }
 
+        // Abre la pantalla de selección de lenguaje
         binding.btnLenguaje.setOnClickListener {
-            Toast.makeText(this, "Lenguaje", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, LenguajeActivity::class.java)
+            startActivity(intent)
         }
 
+        // Cierra sesión
         binding.btnLogout.setOnClickListener {
             val intent = Intent(this, inicio_sesion::class.java)
             startActivity(intent)
+            finish()
         }
     }
 

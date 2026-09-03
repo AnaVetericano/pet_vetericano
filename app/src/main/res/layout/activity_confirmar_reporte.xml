@@ -8,16 +8,17 @@
     android:padding="24dp"
     android:background="#FFFFFF">
 
-    <ImageView
-    android:id="@+id/btndev"
-    android:layout_width="24dp"
-    android:layout_height="24dp"
-    android:contentDescription="Regresar"
-    android:src="@drawable/outline_arrow_back_ios_24"
-    app:tint="#4038A6"
-    app:layout_constraintStart_toStartOf="parent"
-    app:layout_constraintTop_toTopOf="parent" />
 
+    <ImageView
+        android:id="@+id/btndev"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_marginTop="28dp"
+        android:contentDescription="Regresar"
+        android:src="@drawable/outline_arrow_back_ios_24"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:tint="#4038A6" />
 
     <TextView
         android:id="@+id/tvTitle"
@@ -29,10 +30,10 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.435"
+        app:layout_constraintHorizontal_bias="0.479"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.084" />
+        app:layout_constraintVertical_bias="0.043" />
 
     <TextView
         android:id="@+id/tvStep"
@@ -44,10 +45,10 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.448"
+        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.168" />
+        app:layout_constraintVertical_bias="0.119" />
 
     <ProgressBar
         android:id="@+id/avanzapat"
@@ -79,50 +80,18 @@
         app:layout_constraintVertical_bias="0.607"
         app:tint="#FFFFFF" />
 
-    <TextView
-        android:id="@+id/tvSubtitle"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:text="Revisa la información antes de\nenviar tu reporte"
-        android:textColor="#2E3A59"
-        android:textSize="16sp"
-        android:textStyle="bold"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.298" />
-
-    <com.google.android.material.button.MaterialButton
-        android:id="@+id/btnenvR"
-        android:layout_width="200dp"
-        android:layout_height="48dp"
-        android:layout_marginTop="32dp"
-        android:backgroundTint="#4038A6"
-        android:text="Enviar reporte"
-        android:textAllCaps="false"
-        android:textColor="#FFFFFF"
-        android:textSize="14sp"
-        app:cornerRadius="24dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.551"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.841" />
-
     <LinearLayout
-        android:layout_width="425dp"
-        android:layout_height="297dp"
+        android:layout_width="388dp"
+        android:layout_height="269dp"
         android:orientation="vertical"
-        android:padding="16dp"
+        android:paddingHorizontal="16dp"
+        android:paddingBottom="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="0.509"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent">
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.659">
 
 
         <LinearLayout
@@ -135,7 +104,7 @@
             <ImageView
                 android:id="@+id/imageView3"
                 android:layout_width="43dp"
-                android:layout_height="38dp"
+                android:layout_height="43dp"
                 app:srcCompat="@drawable/camera" />
 
             <LinearLayout
@@ -179,10 +148,9 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:src="@drawable/location_icon"
-                />
+                android:layout_width="43dp"
+                android:layout_height="43dp"
+                android:src="@drawable/location_icon" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -224,8 +192,8 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+                android:layout_width="43dp"
+                android:layout_height="43dp"
                 android:src="@drawable/id_card" />
 
             <LinearLayout
@@ -269,10 +237,9 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="28dp"
-                android:layout_height="28dp"
-                android:src="@drawable/paper_on_paper"
-                />
+                android:layout_width="43dp"
+                android:layout_height="43dp"
+                android:src="@drawable/paper_on_paper" />
 
             <LinearLayout
                 android:layout_width="0dp"
@@ -300,5 +267,39 @@
         </LinearLayout>
 
     </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnenvR"
+        android:layout_width="200dp"
+        android:layout_height="48dp"
+        android:layout_marginTop="32dp"
+        android:backgroundTint="#4038A6"
+        android:text="Enviar reporte"
+        android:textAllCaps="false"
+        android:textColor="#FFFFFF"
+        android:textSize="14sp"
+        app:cornerRadius="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.509"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.882" />
+
+    <TextView
+        android:id="@+id/tvSubtitle"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:text="Revisa la información antes de\nenviar tu reporte"
+        android:textColor="#2E3A59"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintVertical_bias="0.29" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

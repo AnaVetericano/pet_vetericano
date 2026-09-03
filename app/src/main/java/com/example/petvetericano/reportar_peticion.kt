@@ -21,6 +21,11 @@ class reportar_peticion : AppCompatActivity() {
 
         setContentView(binding.root)
 
+
+        binding.btndev.setOnClickListener {
+            val intent= Intent(this, bienvenida::class.java)
+            startActivity(intent)
+        }
         binding.cardHerido.setOnClickListener {
             abrirSiguientePantalla("Animal herido o enfermo")
         }

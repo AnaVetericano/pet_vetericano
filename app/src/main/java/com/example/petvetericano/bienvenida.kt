@@ -44,9 +44,7 @@ private fun configurarEventos() {
     }
 
 
-    binding.ivNavDocumentos.setOnClickListener {
-        Toast.makeText(this, "Documentos", Toast.LENGTH_SHORT).show()
-    }
+
 
     binding.cardNavPrincipal.setOnClickListener {
         val intent = Intent(this, reportar_peticion::class.java)
@@ -55,8 +53,9 @@ private fun configurarEventos() {
 
 
     binding.ivNavFavoritos.setOnClickListener {
-        Toast.makeText(this, "Favoritos", Toast.LENGTH_SHORT).show()
-    }
+
+        val intent = Intent(this, Eventos::class.java)
+        startActivity(intent) }
 
 
     binding.ivNavPerfil.setOnClickListener {

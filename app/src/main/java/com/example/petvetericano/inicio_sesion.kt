@@ -49,11 +49,7 @@ class inicio_sesion : AppCompatActivity() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnSuccessListener {
 
-                Toast.makeText(
-                    this,
-                    "Inicio de sesión exitoso",
-                    Toast.LENGTH_SHORT
-                ).show()
+                Toast.makeText(this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show()
 
                 val intent = Intent(this, bienvenida::class.java)
                 intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or
@@ -62,12 +58,9 @@ class inicio_sesion : AppCompatActivity() {
                 startActivity(intent)
             }
             .addOnFailureListener { error ->
-
-                Toast.makeText(
-                    this,
-                    "No se pudo iniciar sesión: ${error.message}",
-                    Toast.LENGTH_LONG
+                Toast.makeText(this, "No se pudo iniciar sesión: ${error.message}", Toast.LENGTH_LONG
                 ).show()
             }
     }
+
 }

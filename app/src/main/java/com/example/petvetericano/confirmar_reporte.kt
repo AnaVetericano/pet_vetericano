@@ -16,6 +16,12 @@ class confirmar_reporte : AppCompatActivity() {
 
         binding = ActivityConfirmarReporteBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        val descripcionRecibida = intent.getStringExtra("DESCRIPCION")
+
+        // 2. Mostrarla en el TextView con id 'descri'
+
+        // OPCIÓN A: Si estás usando ViewBinding (como en tu clase anterior)
+        binding.descri.text = descripcionRecibida ?: "Sin descripción"
 
         val tipoReporte = intent.getStringExtra("TIPO_REPORTE")
         val latitud = intent.getDoubleExtra("LATITUD", 0.0)

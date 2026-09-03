@@ -84,7 +84,7 @@
         android:layout_width="388dp"
         android:layout_height="269dp"
         android:orientation="vertical"
-        android:paddingHorizontal="16dp"
+        android:paddingHorizontal="25dp"
         android:paddingBottom="0dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
@@ -103,8 +103,8 @@
 
             <ImageView
                 android:id="@+id/imageView3"
-                android:layout_width="43dp"
-                android:layout_height="43dp"
+                android:layout_width="36dp"
+                android:layout_height="match_parent"
                 app:srcCompat="@drawable/camera" />
 
             <LinearLayout
@@ -297,9 +297,9 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.29" />
+        app:layout_constraintVertical_bias="0.303" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

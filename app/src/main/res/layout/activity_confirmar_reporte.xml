@@ -200,9 +200,9 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/ubicacionedit"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="Cra. 6 #10-25, Popayán, Cauca, Colombia"
                     android:textColor="#6B7280"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -215,6 +215,7 @@
             android:background="#E5E7EB" />
 
         <!-- Item: Descripción -->
+
         <LinearLayout
             android:id="@+id/descripedit"
             android:layout_width="match_parent"
@@ -243,11 +244,11 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/descri"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:text="Perro encontrado en..."
                     android:textColor="#6B7280"
                     android:textSize="12sp" />
             </LinearLayout>

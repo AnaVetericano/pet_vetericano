@@ -91,8 +91,8 @@
 
     <Button
         android:id="@+id/btnIniciar_sesion"
-        android:layout_width="146dp"
-        android:layout_height="52dp"
+        android:layout_width="198dp"
+        android:layout_height="49dp"
         android:text="Iniciar Sesión "
         app:circularflow_radiusInDP="0.5dp"
         app:cornerRadius="15dp"

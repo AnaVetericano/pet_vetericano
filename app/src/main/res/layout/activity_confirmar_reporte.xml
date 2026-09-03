@@ -103,8 +103,8 @@
 
             <ImageView
                 android:id="@+id/imageView3"
-                android:layout_width="43dp"
-                android:layout_height="43dp"
+                android:layout_width="27dp"
+                android:layout_height="23dp"
                 app:srcCompat="@drawable/camera" />
 
             <LinearLayout
@@ -148,8 +148,8 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="43dp"
-                android:layout_height="43dp"
+                android:layout_width="22dp"
+                android:layout_height="26dp"
                 android:src="@drawable/location_icon" />
 
             <LinearLayout
@@ -192,8 +192,8 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="43dp"
-                android:layout_height="43dp"
+                android:layout_width="31dp"
+                android:layout_height="25dp"
                 android:src="@drawable/id_card" />
 
             <LinearLayout
@@ -237,8 +237,8 @@
             android:orientation="horizontal">
 
             <ImageView
-                android:layout_width="43dp"
-                android:layout_height="43dp"
+                android:layout_width="31dp"
+                android:layout_height="23dp"
                 android:src="@drawable/paper_on_paper" />
 
             <LinearLayout
@@ -297,9 +297,9 @@
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintHorizontal_bias="1.0"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:layout_constraintVertical_bias="0.29" />
+        app:layout_constraintVertical_bias="0.303" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -18,12 +18,15 @@ class Registro : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
+        // Inicializa la vista usando ViewBinding
         binding = ActivityRegistroBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // Inicializa Firebase Auth y la referencia al nodo "Usuarios" en Realtime Database
         auth = FirebaseAuth.getInstance()
         database = FirebaseDatabase.getInstance().getReference("Usuarios")
 
+        // Asigna eventos a los botones
         binding.btnSignUp.setOnClickListener {
             registrarUsuario()
         }
@@ -36,12 +39,13 @@ class Registro : AppCompatActivity() {
     }
 
     private fun registrarUsuario() {
-
+        // Captura los datos de los EditText y elimina los espacios en blanco
         val email = binding.editTextTextEmailAddress.text.toString().trim()
         val identificacion = binding.edtxtemailorphone.text.toString().trim()
         val nombre = binding.edtxtID.text.toString().trim()
         val password = binding.edtxtPassword.text.toString().trim()
 
+        // Bloque de validaciones para asegurar que ningún campo quede vacío
         if (email.isEmpty()) {
             binding.editTextTextEmailAddress.error = "Ingrese su correo electrónico"
             binding.editTextTextEmailAddress.requestFocus()
@@ -72,23 +76,27 @@ class Registro : AppCompatActivity() {
             return
         }
 
+        // Crea el usuario en la sección de Authentication de Firebase
         auth.createUserWithEmailAndPassword(email, password)
             .addOnSuccessListener { authResult ->
 
                 val userId = authResult.user?.uid
 
+                // Crea el mapa de datos para la base de datos agregando el rol por defecto
                 val usuarioMap = mapOf(
                     "nombre" to nombre,
                     "identificacion" to identificacion,
-                    "email" to email
+                    "email" to email,
+                    "rol" to "peticionario"
                 )
 
+                // Guarda el mapa de datos en el nodo del usuario correspondiente
                 if (userId != null) {
                     database.child(userId).setValue(usuarioMap)
                         .addOnSuccessListener {
-
                             Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show()
 
+                            // Redirige a la pantalla de bienvenida y limpia el historial de actividades
                             val intent = Intent(this, bienvenida::class.java)
                             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                             startActivity(intent)

@@ -45,6 +45,7 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
         setContentView(binding.root)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
+
         // ATRAPAMOS EL DATO DEL RELEVO
         // Usamos intent.getStringExtra para obtener el texto que nos mandó la tarjeta.
         // Si no usamos esto, el dato "Herido", "Maltrato" o "En calle" se pierde para siempre en esta pantalla.

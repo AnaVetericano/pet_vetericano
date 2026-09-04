@@ -2,6 +2,8 @@ package com.example.petvetericano
 
 import android.content.Intent
 import android.location.Geocoder
+import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.petvetericano.databinding.ActivityConfirmarReporteBinding
@@ -16,18 +18,18 @@ class confirmar_reporte : AppCompatActivity() {
 
         binding = ActivityConfirmarReporteBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        // 1. LLAMAMOS A LA FUNCIÓN PARA LEER Y MOSTRAR LAS FOTOS
+        obtenerCantidadFotos()
+
         val descripcionRecibida = intent.getStringExtra("DESCRIPCION")
-
-        // 2. Mostrarla en el TextView con id 'descri'
-
-        // OPCIÓN A: Si estás usando ViewBinding (como en tu clase anterior)
         binding.descri.text = descripcionRecibida ?: "Sin descripción"
 
         val tipoReporte = intent.getStringExtra("TIPO_REPORTE")
+        binding.tvTipoReporte.text = tipoReporte
+
         val latitud = intent.getDoubleExtra("LATITUD", 0.0)
         val longitud = intent.getDoubleExtra("LONGITUD", 0.0)
-
-        binding.tvTipoReporte.text = tipoReporte
 
         if (latitud != 0.0 && longitud != 0.0) {
             try {
@@ -36,7 +38,6 @@ class confirmar_reporte : AppCompatActivity() {
 
                 if (!direcciones.isNullOrEmpty()) {
                     val direccionReal = direcciones[0].getAddressLine(0)
-                    // Aquí llamamos exactamente a tu ID: ubicacionedi
                     binding.ubicacionedit.text = direccionReal
                 } else {
                     binding.ubicacionedit.text = "$latitud, $longitud"
@@ -56,24 +57,46 @@ class confirmar_reporte : AppCompatActivity() {
             }
             startActivity(nuevoIntent)
             finish()
-
-
         }
-        binding.ubicacioedit.setOnClickListener {
-            val intent= Intent(this, reportar_peticionn :: class.java)
+
+        // Corregido el nombre a 'ubicacionedit' (tenías 'ubicacioedit')
+        binding.ubicacionedit.setOnClickListener {
+            val intent = Intent(this, reportar_peticionn::class.java)
             startActivity(intent)
         }
+
         binding.tipoPeticion.setOnClickListener {
-            val intent= Intent(this, reportar_peticion :: class.java)
+            val intent = Intent(this, reportar_peticion::class.java)
             startActivity(intent)
         }
+
         binding.descripedit.setOnClickListener {
-            val intent = Intent  (this, reportar_peticionnn :: class.java)
+            val intent = Intent(this, reportar_peticionnn::class.java)
             startActivity(intent)
         }
+
         binding.archivosedi.setOnClickListener {
-            val intent = Intent  (this, reportar_peticionnn :: class.java)
+            val intent = Intent(this, reportar_peticionnn::class.java)
             startActivity(intent)
+        }
+    }
+
+    // FUNCIÓN PARA OBTENER LAS FOTOS CORREGIDA Y COMPATIBLE
+    private fun obtenerCantidadFotos() {
+        // Validación de versión de Android para evitar que dé nulo en dispositivos más nuevos
+        val archivos: ArrayList<Uri>? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            intent.getParcelableArrayListExtra("ARCHIVOS", Uri::class.java)
+        } else {
+            @Suppress("DEPRECATION")
+            intent.getParcelableArrayListExtra("ARCHIVOS")
+        }
+
+        val cantidad = archivos?.size ?: 0
+
+        binding.numfoto.text = if (cantidad == 1) {
+            "1 foto"
+        } else {
+            "$cantidad fotos"
         }
     }
 }

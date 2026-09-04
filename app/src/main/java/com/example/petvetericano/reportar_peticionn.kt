@@ -4,6 +4,8 @@ import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Geocoder
+import android.view.inputmethod.EditorInfo
+import android.view.KeyEvent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
@@ -46,6 +48,7 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
 
+
         // ATRAPAMOS EL DATO DEL RELEVO
         // Usamos intent.getStringExtra para obtener el texto que nos mandó la tarjeta.
         // Si no usamos esto, el dato "Herido", "Maltrato" o "En calle" se pierde para siempre en esta pantalla.
@@ -66,6 +69,18 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
 
         binding.btnLocation.setOnClickListener {
             verificarPermisosUbicacion()
+        }
+
+        binding.etSearch.setOnEditorActionListener { _, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH ||
+                actionId == EditorInfo.IME_ACTION_DONE ||
+                (event != null && event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == android.view.KeyEvent.ACTION_DOWN)) {
+
+                buscarDireccion()
+                true // ¡Listo! Esto intercepta el enter/lupa y ejecuta la búsqueda sin bajar de línea
+            } else {
+                false
+            }
         }
 
         binding.etSearch.setOnEditorActionListener { _, _, _ ->
@@ -156,32 +171,38 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun buscarDireccion() {
-        // .trim() elimina espacios en blanco al inicio y al final.
-        // Si el usuario escribe "  Calle 123  ", .trim() lo convierte en "Calle 123".
-        // Si no se usa, el Geocoder podría fallar al procesar espacios invisibles.
         val query = binding.etSearch.text.toString().trim()
 
         if (query.isNotEmpty()) {
-            val geocoder = Geocoder(
-                this,
-                Locale.getDefault()
-            )
-            try {
-                // Busca la dirección y devuelve máximo 1 resultado (por el parámetro '1').
-                val addresses = geocoder.getFromLocationName(query, 1)
+            val geocoder = Geocoder(this, Locale.getDefault())
 
-                if (!addresses.isNullOrEmpty()) {
-                    val address = addresses[0]
-                    val latLng = LatLng(
-                        address.latitude,
-                        address.longitude
-                    )
-                    actualizarMarcador(latLng)
-                } else {
-                    Toast.makeText(this, "Dirección no encontrada", Toast.LENGTH_SHORT).show()
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                geocoder.getFromLocationName(query, 1) { addresses ->
+                    runOnUiThread {
+                        if (!addresses.isNullOrEmpty()) {
+                            val address = addresses[0]
+                            val latLng = LatLng(address.latitude, address.longitude)
+                            actualizarMarcador(latLng)
+                        } else {
+                            Toast.makeText(this, "Dirección no encontrada", Toast.LENGTH_SHORT).show()
+                        }
+                    }
                 }
-            } catch (e: Exception) {
-                Toast.makeText(this, "Error al buscar dirección", Toast.LENGTH_SHORT).show()
+            } else {
+                try {
+                    @Suppress("DEPRECATION")
+                    val addresses = geocoder.getFromLocationName(query, 1)
+
+                    if (!addresses.isNullOrEmpty()) {
+                        val address = addresses[0]
+                        val latLng = LatLng(address.latitude, address.longitude)
+                        actualizarMarcador(latLng)
+                    } else {
+                        Toast.makeText(this, "Dirección no encontrada", Toast.LENGTH_SHORT).show()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(this, "Error al buscar dirección", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }

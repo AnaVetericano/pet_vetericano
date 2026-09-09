@@ -60,4 +60,13 @@ dependencies {
     // Glide para carga de imágenes y miniaturas
     implementation("com.github.bumptech.glide:glide:4.16.0")
     annotationProcessor("com.github.bumptech.glide:compiler:4.16.0")
+// retrofit y Gson
+    implementation("com.squareup.retrofit2:retrofit:2.11.0")
+    implementation("com.squareup.retrofit2:converter-gson:2.11.0")
+
+// para ver las peticiones en Logcat
+    implementation("com.squareup.okhttp3:logging-interceptor:4.12.0")
+// para llamadas asíncronas
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
 }

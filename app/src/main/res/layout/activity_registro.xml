@@ -26,7 +26,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="28dp"
         android:text="@string/title_welcome"
-        android:textSize="36dp"
+        android:textSize="36sp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
@@ -42,7 +42,6 @@
         app:layout_constraintHorizontal_bias="0.32"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txtVetericano" />
-
 
     <EditText
         android:id="@+id/editTextTextEmailAddress"
@@ -100,40 +99,41 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/edtxtID" />
 
+    <!-- Enlace a iniciar sesión -->
+    <LinearLayout
+        android:id="@+id/layoutLoginRedirect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/edtxtPassword">
+
+        <TextView
+            android:id="@+id/txtaccountexist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/existingAccount" />
+
+        <TextView
+            android:id="@+id/txtlogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:text="@string/existingAccountRedirection"
+            android:textColor="@color/blue" />
+    </LinearLayout>
+
     <Button
         android:id="@+id/btnSignUp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="20dp"
         android:paddingHorizontal="44dp"
         android:text="@string/btn_sign_login_register"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtlogin" />
-
-    <TextView
-        android:id="@+id/txtaccountexist"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="96dp"
-        android:text="@string/existingAccount"
-        app:layout_constraintEnd_toStartOf="@+id/txtlogin"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/txtlogin" />
-
-    <TextView
-        android:id="@+id/txtlogin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="88dp"
-        android:text="@string/existingAccountRedirection"
-        android:textColor="@color/blue"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/textView6"
-        app:layout_constraintTop_toBottomOf="@+id/edtxtPassword" />
-
+        app:layout_constraintTop_toBottomOf="@+id/layoutLoginRedirect" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

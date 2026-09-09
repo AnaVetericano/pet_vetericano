@@ -257,9 +257,10 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/numfoto"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:text="2 fotos"
+                    android:text=""
                     android:textColor="#6B7280"
                     android:textSize="12sp" />
             </LinearLayout>

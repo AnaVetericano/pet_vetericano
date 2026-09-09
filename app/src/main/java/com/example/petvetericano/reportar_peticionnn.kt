@@ -405,9 +405,6 @@ class reportar_peticionnn : AppCompatActivity() {
                 "TIPO_REPORTE"
             )
 
-        // -----------------------------------------------------
-        // ENVIAMOS TODO A CONFIRMAR REPORTE
-        // -----------------------------------------------------
 
         val intent =
             Intent(

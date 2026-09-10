@@ -14,6 +14,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.addTextChangedListener
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
@@ -24,9 +25,15 @@ class reportar_peticionnn : AppCompatActivity() {
 
     private lateinit var binding: ActivityReportarPeticionnnBinding
 
-    // Aqui van los datos de cloud
+    // Nombres para la libreta offline (SharedPreferences)
+    private val PREFS_NAME = "ReporteOfflineMultimedia"
+    private val KEY_BORRADOR = "borrador_descripcion"
+    private val KEY_PATHS = "borrador_paths"
+    private val KEY_IS_VIDEO = "borrador_is_video"
+
+    // Datos de Cloudinary
     private val CLOUD_NAME = "aefeig5y"
-    private val UPLOAD_PRESET = "ml_default"
+    private val UPLOAD_PRESET = "preset_android"
 
     // Guardamos las fotos/videos seleccionados
     private val selectedUris = mutableListOf<Uri>()
@@ -35,21 +42,7 @@ class reportar_peticionnn : AppCompatActivity() {
     // URI de la foto que tomaremos con la cámara
     private var photoUri: Uri? = null
 
-    // ---------------------------------------------------------
-    // GALERÍA
-    // ---------------------------------------------------------
-    private val pickMedia =
-        registerForActivityResult(
-            ActivityResultContracts.PickMultipleVisualMedia(2)
-        ) { uris ->
-            if (uris.isNotEmpty()) {
-                processSelectedMedia(uris)
-            }
-        }
-
-    // ---------------------------------------------------------
     // CÁMARA
-    // ---------------------------------------------------------
     private lateinit var cameraLauncher: ActivityResultLauncher<Uri>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -81,6 +74,7 @@ class reportar_peticionnn : AppCompatActivity() {
                 if (success && photoUri != null) {
                     selectedUris.add(photoUri!!)
                     actualizarTextoFotos()
+                    guardarMultimediaEnPrefs() // Guardar las fotos en caché al instante
                     Toast.makeText(
                         this,
                         "Foto tomada correctamente 📷",
@@ -96,6 +90,66 @@ class reportar_peticionnn : AppCompatActivity() {
             }
 
         setupUI()
+
+        // =========================================================
+        // RECUPERAR DESCRIPCIÓN (Prioriza el Intent si viene de editar, si no, usa el borrador)
+        // =========================================================
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        val descripcionDelIntent = intent.getStringExtra("DESCRIPCION")
+        val textoGuardado = prefs.getString(KEY_BORRADOR, "")
+
+        if (!descripcionDelIntent.isNullOrEmpty()) {
+            binding.etDescripcion.setText(descripcionDelIntent)
+            prefs.edit().putString(KEY_BORRADOR, descripcionDelIntent).apply()
+        } else if (!textoGuardado.isNullOrEmpty()) {
+            binding.etDescripcion.setText(textoGuardado)
+        }
+
+        // 2. Guardar texto al instante mientras el usuario escribe
+        binding.etDescripcion.addTextChangedListener { text ->
+            getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+                .edit()
+                .putString(KEY_BORRADOR, text.toString())
+                .apply()
+        }
+
+        // 3. Recuperar fotos o videos guardados
+        isVideoSelected = prefs.getBoolean(KEY_IS_VIDEO, false)
+        val pathsSet = prefs.getStringSet(KEY_PATHS, emptySet())
+        if (!pathsSet.isNullOrEmpty()) {
+            selectedUris.clear()
+            for (path in pathsSet) {
+                val file = File(path)
+                if (file.exists()) {
+                    val uri = FileProvider.getUriForFile(
+                        this,
+                        "${applicationContext.packageName}.fileprovider",
+                        file
+                    )
+                    selectedUris.add(uri)
+                }
+            }
+            actualizarTextoFotosRecuperadas()
+        }
+    }
+
+    // GUARDAR RUTAS DE MULTIMEDIA EN PREFERENCES
+    private fun guardarMultimediaEnPrefs() {
+        val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
+        val editor = prefs.edit()
+        editor.putBoolean(KEY_IS_VIDEO, isVideoSelected)
+
+        val pathsSet = mutableSetOf<String>()
+        for (uri in selectedUris) {
+            uri.path?.let {
+                val file = File(filesDir, File(it).name)
+                if (file.exists()) {
+                    pathsSet.add(file.absolutePath)
+                }
+            }
+        }
+        editor.putStringSet(KEY_PATHS, pathsSet)
+        editor.apply()
     }
 
     // ---------------------------------------------------------
@@ -151,15 +205,12 @@ class reportar_peticionnn : AppCompatActivity() {
     }
 
     // ---------------------------------------------------------
-    // CREAR ARCHIVO Y TOMAR FOTO
+    // CREAR ARCHIVO PERMANENTE Y TOMAR FOTO
     // ---------------------------------------------------------
     private fun tomarFoto() {
         try {
-            val archivoFoto = File.createTempFile(
-                "foto_reporte_",
-                ".jpg",
-                cacheDir
-            )
+            // Guardamos en filesDir (permanente) para que no se borre al cerrar la app
+            val archivoFoto = File(filesDir, "foto_reporte_${System.currentTimeMillis()}.jpg")
 
             photoUri = FileProvider.getUriForFile(
                 this,
@@ -197,6 +248,15 @@ class reportar_peticionnn : AppCompatActivity() {
         }
     }
 
+    private fun actualizarTextoFotosRecuperadas() {
+        if (isVideoSelected) {
+            binding.numimagenes.text = "🎥 1 video seleccionado"
+            binding.btnSubirArchivo.text = "Video seleccionado"
+        } else {
+            actualizarTextoFotos()
+        }
+    }
+
     // ---------------------------------------------------------
     // PROCESAR FOTOS / VIDEOS DE GALERÍA
     // ---------------------------------------------------------
@@ -229,6 +289,7 @@ class reportar_peticionnn : AppCompatActivity() {
                 isVideoSelected = true
                 selectedUris.clear()
                 selectedUris.add(uri)
+                guardarMultimediaEnPrefs()
 
                 binding.btnSubirArchivo.text = "Video seleccionado (${duration / 1000}s)"
                 binding.numimagenes.text = "🎥 1 video seleccionado"
@@ -245,6 +306,7 @@ class reportar_peticionnn : AppCompatActivity() {
 
                 if (selectedUris.size < 2) {
                     selectedUris.add(uri)
+                    guardarMultimediaEnPrefs()
                 }
             }
         }
@@ -365,13 +427,17 @@ class reportar_peticionnn : AppCompatActivity() {
         tipoReporte: String?,
         urlsArchivos: ArrayList<String>
     ) {
+        val referencia = intent.getStringExtra("PUNTO_REFERENCIA")
+
         val intent = Intent(this, confirmar_reporte::class.java).apply {
             putExtra("TIPO_REPORTE", tipoReporte)
             putExtra("DESCRIPCION", descripcion)
             putStringArrayListExtra("URLS_ARCHIVOS", urlsArchivos)
             putExtra("LATITUD", latitud)
             putExtra("LONGITUD", longitud)
+            putExtra("PUNTO_REFERENCIA", referencia)
         }
         startActivity(intent)
     }
 }
+//esto es lo de la camara

@@ -30,6 +30,8 @@ class inicio_sesion : AppCompatActivity() {
     }
 
 
+
+
     private fun iniciarSesion() {
 
         val email = binding.editTextText.text.toString().trim()
@@ -49,12 +51,16 @@ class inicio_sesion : AppCompatActivity() {
             return
         }
 
+
         // Crear objeto que se enviará al backend
         val loginRequest = LoginRequest(
             email = email,
             password = password
         )
-
+        binding.txtRegistrarse.setOnClickListener {
+            val intent = Intent(this, Registro::class.java)
+            startActivity(intent)
+        }
         // Consumir API
         lifecycleScope.launch {
 

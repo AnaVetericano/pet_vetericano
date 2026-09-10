@@ -63,11 +63,7 @@ class editar_perfil : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Abre la pantalla de selección de lenguaje
-        binding.btnL.setOnClickListener {
-            val intent = Intent(this, LenguajeActivity::class.java)
-            startActivity(intent)
-        }
+
 
         // Cierra sesión
         binding.btnLogout.setOnClickListener {

@@ -37,7 +37,7 @@
             android:value="AIzaSyCtPVqczwiHVBIaN-50KZsPLpzF1gdsSlo" />
 
         <activity
-            android:name=".confirmar_reporte"
+            android:name=".MainActivity"
             android:exported="true"
             android:windowSoftInputMode="adjustResize">
             <intent-filter>
@@ -55,7 +55,10 @@
             android:name=".Adopcion"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
-
+        <activity
+            android:name=".confirmar_reporte"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".editar_perfil"
             android:exported="false"

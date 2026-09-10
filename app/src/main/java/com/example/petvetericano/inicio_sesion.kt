@@ -4,22 +4,21 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityInicioSesionBinding
-import com.google.firebase.auth.FirebaseAuth
+import com.example.petvetericano.models.LoginRequest
+import com.example.petvetericano.network.RetrofitClient
+import kotlinx.coroutines.launch
 
 class inicio_sesion : AppCompatActivity() {
 
     private lateinit var binding: ActivityInicioSesionBinding
-    private lateinit var auth: FirebaseAuth
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityInicioSesionBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        // Conectar con Firebase Authentication
-        auth = FirebaseAuth.getInstance()
 
         binding.btnIniciarSesion.setOnClickListener {
             iniciarSesion()
@@ -45,23 +44,68 @@ class inicio_sesion : AppCompatActivity() {
             return
         }
 
+        // Crear objeto que se enviará al backend
+        val loginRequest = LoginRequest(
+            email = email,
+            password = password
+        )
 
-        // Iniciar sesión con Firebase Authentication
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnSuccessListener {
+        // Consumir API
+        lifecycleScope.launch {
 
-                Toast.makeText(this, "Inicio de sesión exitoso", Toast.LENGTH_SHORT).show()
+            try {
 
-                val intent = Intent(this, bienvenida::class.java)
-                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or
-                        Intent.FLAG_ACTIVITY_CLEAR_TASK
+                val respuesta = RetrofitClient.apiService.login(loginRequest)
 
-                startActivity(intent)
-            }
-            .addOnFailureListener { error ->
-                Toast.makeText(this, "No se pudo iniciar sesión: ${error.message}", Toast.LENGTH_LONG
+                if (respuesta.isSuccessful) {
+
+                    val datos = respuesta.body()
+
+                    if (datos != null) {
+
+                        Toast.makeText(
+                            this@inicio_sesion,
+                            datos.mensaje,
+                            Toast.LENGTH_SHORT
+                        ).show()
+
+                        // Obtener token
+                        val accessToken = datos.tokens.access
+
+                        // Ir a la pantalla de bienvenida
+                        val intent = Intent(
+                            this@inicio_sesion,
+                            bienvenida::class.java
+                        )
+
+                        intent.putExtra("TOKEN", accessToken)
+                        intent.putExtra("EMAIL", datos.email)
+                        intent.putExtra("ID_ROL", datos.idRol)
+
+                        intent.flags =
+                            Intent.FLAG_ACTIVITY_NEW_TASK or
+                                    Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+                        startActivity(intent)
+                    }
+
+                } else {
+
+                    Toast.makeText(
+                        this@inicio_sesion,
+                        "Correo o contraseña incorrectos",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+            } catch (e: Exception) {
+
+                Toast.makeText(
+                    this@inicio_sesion,
+                    "Error de conexión: ${e.message}",
+                    Toast.LENGTH_LONG
                 ).show()
             }
+        }
     }
-
 }

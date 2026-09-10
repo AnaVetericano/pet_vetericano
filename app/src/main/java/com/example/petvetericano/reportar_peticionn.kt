@@ -233,3 +233,5 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 }
+
+//este es el mapa

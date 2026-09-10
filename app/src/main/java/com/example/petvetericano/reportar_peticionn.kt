@@ -30,6 +30,13 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private var selectedLatLng: LatLng? = null
 
+    // Nombres para la libreta offline del mapa y las coordenadas
+    private val PREFS_MAPA = "MapaOffline"
+    private val KEY_BUSQUEDA = "borrador_busqueda"
+    private val KEY_LAT = "borrador_lat"
+    private val KEY_LNG = "borrador_lng"
+    private val KEY_HAS_LOC = "borrador_has_loc"
+
     private val locationPermissionRequest = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted ->
@@ -47,11 +54,7 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
         setContentView(binding.root)
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-
-
         // ATRAPAMOS EL DATO DEL RELEVO
-        // Usamos intent.getStringExtra para obtener el texto que nos mandó la tarjeta.
-
         val tipoReporte = intent.getStringExtra("TIPO_REPORTE")
 
         val mapFragment = supportFragmentManager
@@ -59,9 +62,14 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
 
         mapFragment.getMapAsync(this)
 
+        // RECUPERAR TEXTO DE LA BÚSQUEDA SI EXISTE
+        val prefs = getSharedPreferences(PREFS_MAPA, MODE_PRIVATE)
+        val textoGuardado = prefs.getString(KEY_BUSQUEDA, "")
+        if (!textoGuardado.isNullOrEmpty()) {
+            binding.etSearch.setText(textoGuardado)
+        }
+
         binding.btnBack.setOnClickListener {
-            //  Si uso Intent para volver atrás, creas una nueva instancia de la pantalla anterior
-            // apilando pantallas infinitamente en la memoria
             val intent = Intent(this, reportar_peticion::class.java)
             startActivity(intent)
         }
@@ -76,32 +84,24 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
                 (event != null && event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == android.view.KeyEvent.ACTION_DOWN)) {
 
                 buscarDireccion()
-                true // ¡Listo! Esto intercepta el enter/lupa y ejecuta la búsqueda sin bajar de línea
+                true
             } else {
                 false
             }
         }
 
-        binding.etSearch.setOnEditorActionListener { _, _, _ ->
-            buscarDireccion()
-            true // El true indica que el evento del teclado fue consumido y no debe propagarse. Si no está, el teclado podría comportarse erráticamente.
-        }
-
         binding.btnContinue.setOnClickListener {
             if (selectedLatLng != null) {
-                // MODIFICACIÓN CLAVE: Configuramos el Intent hacia tu TERCERA pantalla.
-                // Usamos .apply para poder inyectar múltiples extras sin repetir el nombre de la variable.
+                val referenciaText = binding.etSearch.text.toString().trim()
+
+                // Limpiamos el borrador del mapa al avanzar con éxito
+                getSharedPreferences(PREFS_MAPA, MODE_PRIVATE).edit().clear().apply()
+
                 val intent = Intent(this, reportar_peticionnn::class.java).apply {
-
-                    // 1. RE-EMPACAMOS EL TIPO DE REPORTE
-                    // Si omites esto, tu pantalla final de confirmación nunca sabrá qué animal se está reportando.
                     putExtra("TIPO_REPORTE", tipoReporte)
-
-                    // 2. EMPACAMOS LAS COORDENADAS
-                    // selectedLatLng tiene latitude y longitude (ambos son Double).
-                    // Si el usuario marcó el mapa, enviamos esos números exactos para guardarlos en la base de datos o mostrarlos luego.
                     putExtra("LATITUD", selectedLatLng?.latitude)
                     putExtra("LONGITUD", selectedLatLng?.longitude)
+                    putExtra("PUNTO_REFERENCIA", referenciaText)
                 }
                 startActivity(intent)
             } else {
@@ -110,10 +110,40 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    // GUARDAR TEXTO Y COORDENADAS AUTOMÁTICAMENTE AL PAUSAR LA APP
+    override fun onPause() {
+        super.onPause()
+        val textoActual = binding.etSearch.text.toString()
+        val prefs = getSharedPreferences(PREFS_MAPA, MODE_PRIVATE)
+        val editor = prefs.edit()
+
+        editor.putString(KEY_BUSQUEDA, textoActual)
+
+        // Guardamos las coordenadas si el usuario ya marcó un punto
+        selectedLatLng?.let {
+            editor.putBoolean(KEY_HAS_LOC, true)
+            editor.putFloat(KEY_LAT, it.latitude.toFloat())
+            editor.putFloat(KEY_LNG, it.longitude.toFloat())
+        }
+        editor.apply()
+    }
+
     override fun onMapReady(googleMap: GoogleMap) {
         mMap = googleMap
-        val defaultLocation = LatLng(4.570868, -74.297333)
-        actualizarMarcador(defaultLocation)
+
+        // REVISAR SI TENEMOS UNA UBICACIÓN GUARDADA EN LA CACHÉ
+        val prefs = getSharedPreferences(PREFS_MAPA, MODE_PRIVATE)
+        val hasLoc = prefs.getBoolean(KEY_HAS_LOC, false)
+
+        if (hasLoc) {
+            val lat = prefs.getFloat(KEY_LAT, 0f).toDouble()
+            val lng = prefs.getFloat(KEY_LNG, 0f).toDouble()
+            val savedLatLng = LatLng(lat, lng)
+            actualizarMarcador(savedLatLng)
+        } else {
+            val defaultLocation = LatLng(4.570868, -74.297333)
+            actualizarMarcador(defaultLocation)
+        }
 
         mMap?.setOnMapClickListener { latLng ->
             actualizarMarcador(latLng)
@@ -122,15 +152,12 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
 
     private fun actualizarMarcador(latLng: LatLng) {
         selectedLatLng = latLng
-        mMap?.clear() // Limpia marcadores anteriores. Si no se usa, el mapa se llenaría de pines infinitos con cada clic.
+        mMap?.clear()
         mMap?.addMarker(
             MarkerOptions().position(latLng).title("Ubicación seleccionada")
         )
         mMap?.animateCamera(
-            CameraUpdateFactory.newLatLngZoom(
-                latLng,
-                16f // 16f es el nivel de zoom. Sin esto, la cámara podría quedar a nivel global y no se vería la calle.
-            )
+            CameraUpdateFactory.newLatLngZoom(latLng, 16f)
         )
     }
 

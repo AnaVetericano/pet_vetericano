@@ -39,3 +39,11 @@ data class GenericResponse(
     val error: String?,
     val detail: String?
 )
+
+data class DashboardResponse(
+    val id_usuario: Int,
+    val nombre: String,
+    val apellido: String,
+    val email: String,
+    val nombre_rol: String
+)

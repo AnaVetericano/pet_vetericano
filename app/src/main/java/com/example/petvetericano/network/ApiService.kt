@@ -32,4 +32,9 @@ interface ApiService {
     suspend fun obtenerMedicamentos(
         @Header("Authorization") token: String
     ): Response<Any>
+
+    @GET("dashboard/")
+    suspend fun obtenerDashboard(
+        @Header("Authorization") token: String
+    ): Response<DashboardResponse>
 }

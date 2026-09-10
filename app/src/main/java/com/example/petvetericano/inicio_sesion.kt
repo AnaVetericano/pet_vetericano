@@ -23,7 +23,12 @@ class inicio_sesion : AppCompatActivity() {
         binding.btnIniciarSesion.setOnClickListener {
             iniciarSesion()
         }
+        binding.txtRegistrarse.setOnClickListener {
+            val intent = Intent(this, Registro::class.java)
+            startActivity(intent)
+        }
     }
+
 
     private fun iniciarSesion() {
 

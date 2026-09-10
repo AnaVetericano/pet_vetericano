@@ -23,17 +23,14 @@ class inicio_sesion : AppCompatActivity() {
         binding.btnIniciarSesion.setOnClickListener {
             iniciarSesion()
         }
+        
         binding.txtRegistrarse.setOnClickListener {
             val intent = Intent(this, Registro::class.java)
             startActivity(intent)
         }
     }
 
-
-
-
     private fun iniciarSesion() {
-
         val email = binding.editTextText.text.toString().trim()
         val password = binding.edtPassword.text.toString().trim()
 
@@ -51,29 +48,21 @@ class inicio_sesion : AppCompatActivity() {
             return
         }
 
-
         // Crear objeto que se enviará al backend
         val loginRequest = LoginRequest(
             email = email,
             password = password
         )
-        binding.txtRegistrarse.setOnClickListener {
-            val intent = Intent(this, Registro::class.java)
-            startActivity(intent)
-        }
-        // Consumir API
+
+        // Consumir API con Retrofit
         lifecycleScope.launch {
-
             try {
-
                 val respuesta = RetrofitClient.apiService.login(loginRequest)
 
                 if (respuesta.isSuccessful) {
-
                     val datos = respuesta.body()
 
                     if (datos != null) {
-
                         Toast.makeText(
                             this@inicio_sesion,
                             datos.mensaje,
@@ -93,15 +82,12 @@ class inicio_sesion : AppCompatActivity() {
                         intent.putExtra("EMAIL", datos.email)
                         intent.putExtra("ID_ROL", datos.idRol)
 
-                        intent.flags =
-                            Intent.FLAG_ACTIVITY_NEW_TASK or
-                                    Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or
+                                       Intent.FLAG_ACTIVITY_CLEAR_TASK
 
                         startActivity(intent)
                     }
-
                 } else {
-
                     Toast.makeText(
                         this@inicio_sesion,
                         "Correo o contraseña incorrectos",
@@ -110,7 +96,6 @@ class inicio_sesion : AppCompatActivity() {
                 }
 
             } catch (e: Exception) {
-
                 Toast.makeText(
                     this@inicio_sesion,
                     "Error de conexión: ${e.message}",

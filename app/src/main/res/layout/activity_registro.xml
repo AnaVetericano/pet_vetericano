@@ -86,6 +86,20 @@
         app:layout_constraintTop_toBottomOf="@+id/edtxtemailorphone" />
 
     <EditText
+        android:id="@+id/edtxtApellido"
+        android:layout_width="248dp"
+        android:layout_height="41dp"
+        android:layout_marginTop="8dp"
+        android:ems="10"
+        android:hint="Apellido"
+        android:textSize="14sp"
+        android:inputType="text"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintHorizontal_bias="0.497"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/edtxtID" />
+
+    <EditText
         android:id="@+id/edtxtPassword"
         android:layout_width="248dp"
         android:layout_height="41dp"
@@ -97,9 +111,8 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edtxtID" />
+        app:layout_constraintTop_toBottomOf="@+id/edtxtApellido" />
 
-    <!-- Enlace a iniciar sesión -->
     <LinearLayout
         android:id="@+id/layoutLoginRedirect"
         android:layout_width="wrap_content"

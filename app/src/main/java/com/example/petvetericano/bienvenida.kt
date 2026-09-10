@@ -36,51 +36,52 @@ class bienvenida : AppCompatActivity() {
     }
 
     private fun cargarDashboard(token: String) {
-
         lifecycleScope.launch {
-
             try {
-
                 // Enviamos el token al backend
-                val respuesta = RetrofitClient.apiService.obtenerDashboard(
-                    "Bearer $token"
-                )
+                val respuesta = RetrofitClient.apiService.obtenerDashboard("Bearer $token")
 
                 if (respuesta.isSuccessful) {
-
                     val datos = respuesta.body()
 
                     if (datos != null) {
-
-                        // Mostrar nombre del usuario
                         binding.tvSaludo.text = "Hola, ${datos.nombre}"
-
-                        // Mensaje de bienvenida
-                        binding.tvMensajeBienvenida.text =
-                            "¡Gracias por ayudar!"
-
+                        binding.tvMensajeBienvenida.text = "¡Gracias por ayudar!"
                     }
-
                 } else {
+                    // 1. Guardamos el error silenciosamente en el Logcat para desarrollo
+                    val codigoError = respuesta.code()
+                    val mensajeError = respuesta.errorBody()?.string() ?: "Sin detalles"
+                    android.util.Log.e("API_ERROR", "Error $codigoError: $mensajeError")
+
+                    // 2. Traducimos el error a un mensaje amigable para el usuario final
+                    val mensajeUsuario = when (codigoError) {
+                        401 -> "Tu sesión ha expirado. Por favor, inicia sesión de nuevo."
+                        403 -> "No tienes permisos para ver esta información."
+                        404 -> "No se encontró el perfil de usuario."
+                        in 500..599 -> "Problemas en el servidor. Intenta más tarde."
+                        else -> "No se pudo cargar tu información (Error $codigoError)."
+                    }
 
                     Toast.makeText(
                         this@bienvenida,
-                        "No se pudo cargar el Dashboard",
-                        Toast.LENGTH_SHORT
+                        mensajeUsuario,
+                        Toast.LENGTH_LONG
                     ).show()
+
+                    // (Opcional) Si el código es 401, podrías redirigir al usuario al Login aquí.
                 }
 
             } catch (e: Exception) {
-
+                android.util.Log.e("API_ERROR", "Excepción técnica: ${e.message}")
                 Toast.makeText(
                     this@bienvenida,
-                    "Error de conexión: ${e.message}",
+                    "Error de conexión. Revisa tu internet.",
                     Toast.LENGTH_LONG
                 ).show()
             }
         }
     }
-
     private fun configurarEventos() {
 
         binding.cardReportarPeticion.setOnClickListener {

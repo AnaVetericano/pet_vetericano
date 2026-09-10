@@ -2,8 +2,6 @@ package com.example.petvetericano
 
 import android.content.Intent
 import android.location.Geocoder
-import android.net.Uri
-import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import com.example.petvetericano.databinding.ActivityConfirmarReporteBinding
@@ -13,13 +11,16 @@ class confirmar_reporte : AppCompatActivity() {
 
     private lateinit var binding: ActivityConfirmarReporteBinding
 
+    // Lista para almacenar los enlaces de Cloudinary recibidos
+    private var urlsArchivos: ArrayList<String>? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityConfirmarReporteBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 1. LLAMAMOS A LA FUNCIÓN PARA LEER Y MOSTRAR LAS FOTOS
+        // 1. LEEMOS LAS URLS Y ACTUALIZAMOS LA CANTIDAD EN PANTALLA
         obtenerCantidadFotos()
 
         val descripcionRecibida = intent.getStringExtra("DESCRIPCION")
@@ -49,17 +50,21 @@ class confirmar_reporte : AppCompatActivity() {
             binding.ubicacionedit.text = "Ubicación no seleccionada"
         }
 
+        // ENVIAR REPORTE FINAL
         binding.btnenvR.setOnClickListener {
             val nuevoIntent = Intent(this, reporte_enviado::class.java).apply {
                 putExtra("TIPO_REPORTE", tipoReporte)
                 putExtra("LATITUD", latitud)
                 putExtra("LONGITUD", longitud)
+                putExtra("DESCRIPCION", descripcionRecibida)
+
+                // PASAMOS LAS URLS DE CLOUDINARY A LA PANTALLA FINAL O BASE DE DATOS
+                putStringArrayListExtra("URLS_ARCHIVOS", urlsArchivos)
             }
             startActivity(nuevoIntent)
             finish()
         }
 
-        // Corregido el nombre a 'ubicacionedit' (tenías 'ubicacioedit')
         binding.ubicacionedit.setOnClickListener {
             val intent = Intent(this, reportar_peticionn::class.java)
             startActivity(intent)
@@ -81,22 +86,17 @@ class confirmar_reporte : AppCompatActivity() {
         }
     }
 
-    // FUNCIÓN PARA OBTENER LAS FOTOS CORREGIDA Y COMPATIBLE
+    // Aqui recibimos a cloud dinary
     private fun obtenerCantidadFotos() {
-        // Validación de versión de Android para evitar que dé nulo en dispositivos más nuevos
-        val archivos: ArrayList<Uri>? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableArrayListExtra("ARCHIVOS", Uri::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            intent.getParcelableArrayListExtra("ARCHIVOS")
-        }
+        // Obtenemos los enlaces web que envió reportar_peticionnn juajuajua
+        urlsArchivos = intent.getStringArrayListExtra("URLS_ARCHIVOS")
 
-        val cantidad = archivos?.size ?: 0
+        val cantidad = urlsArchivos?.size ?: 0
 
-        binding.numfoto.text = if (cantidad == 1) {
-            "1 foto"
-        } else {
-            "$cantidad fotos"
+        binding.numfoto.text = when (cantidad) {
+            0 -> "Sin archivos adjuntos"
+            1 -> "1 archivo subido a la nube"
+            else -> "$cantidad archivos subidos a la nube"
         }
     }
 }

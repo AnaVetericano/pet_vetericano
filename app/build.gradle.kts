@@ -69,4 +69,7 @@ dependencies {
 // para llamadas asíncronas
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
+
+    //cloudinary
+    implementation("com.cloudinary:cloudinary-android:2.5.0")
 }

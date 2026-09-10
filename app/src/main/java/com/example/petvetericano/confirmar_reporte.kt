@@ -26,12 +26,16 @@ class confirmar_reporte : AppCompatActivity() {
 
     private lateinit var binding: ActivityConfirmarReporteBinding
 
+    // Lista para almacenar los enlaces de Cloudinary recibidos
+    private var urlsArchivos: ArrayList<String>? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityConfirmarReporteBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        // 1. LLAMAMOS A LA FUNCIÓN PARA LEER Y MOSTRAR LAS FOTOS
         obtenerCantidadFotos()
 
         val descripcionRecibida = intent.getStringExtra("DESCRIPCION")
@@ -61,14 +65,27 @@ class confirmar_reporte : AppCompatActivity() {
             binding.ubicacionedit.text = "Ubicación no seleccionada"
         }
 
+        // ENVIAR REPORTE FINAL
         binding.btnenvR.setOnClickListener {
             val tipo = binding.tvTipoReporte.text.toString()
             val lugar = binding.ubicacionedit.text.toString()
             val descripcion = binding.descri.text.toString()
 
             enviarCorreoSilenciosoYContinuar(tipo, lugar, descripcion, latitud, longitud)
+            val nuevoIntent = Intent(this, reporte_enviado::class.java).apply {
+                putExtra("TIPO_REPORTE", tipoReporte)
+                putExtra("LATITUD", latitud)
+                putExtra("LONGITUD", longitud)
+                putExtra("DESCRIPCION", descripcionRecibida)
+
+                // PASAMOS LAS URLS DE CLOUDINARY A LA PANTALLA FINAL O BASE DE DATOS
+                putStringArrayListExtra("URLS_ARCHIVOS", urlsArchivos)
+            }
+            startActivity(nuevoIntent)
+            finish()
         }
 
+        // Corregido el nombre a 'ubicacionedit' (tenías 'ubicacioedit')
         binding.ubicacionedit.setOnClickListener {
             val intent = Intent(this, reportar_peticionn::class.java)
             startActivity(intent)
@@ -148,6 +165,8 @@ class confirmar_reporte : AppCompatActivity() {
     }
 
     private fun obtenerCantidadFotos() {
+        // Obtenemos los enlaces web que envió reportar_peticionnn juajuajua
+        urlsArchivos = intent.getStringArrayListExtra("URLS_ARCHIVOS")
         val archivos: ArrayList<Uri>? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             intent.getParcelableArrayListExtra("ARCHIVOS", Uri::class.java)
         } else {
@@ -155,7 +174,7 @@ class confirmar_reporte : AppCompatActivity() {
             intent.getParcelableArrayListExtra("ARCHIVOS")
         }
 
-        val cantidad = archivos?.size ?: 0
+        val cantidad = urlsArchivos?.size ?: 0
 
         binding.numfoto.text = if (cantidad == 1) {
             "1 foto"

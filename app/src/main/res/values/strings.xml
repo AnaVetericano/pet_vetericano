@@ -1,3 +1,28 @@
 <resources>
     <string name="app_name">PetVetericano</string>
+    <string name="welcome_login_register">Bienvenido a</string>
+    <string name="vetericano_login_register">VETERICANO</string>
+    <string name="care_login_register">Cuidamos a quienes no tienen voz</string>
+    <string name="btn_login_login_register">Iniciar Sesión</string>
+    <string name="btn_sign_login_register">Registrar</string>
+    <string name="title_welcome">Bienvenido</string>
+    <string name="registercontinues">Registrate para continuar</string>
+    <string name="edt_email_phone">Correo o teléfono</string>
+    <string name="edt_ID">Número de identificación</string>
+    <string name="edt_Name">Nombre</string>
+    <string name="edt_Password">Contraseña</string>
+    <string name="btn_signupregister">Registrarse</string>
+    <string name="existingAccount">¿Ya tienes una cuenta?</string>
+    <string name="existingAccountRedirection">Iniciar sesión</string>
+    <string name="string">text</string>
+    <string name="title">title</string>
+    <string name="cancel">cancel</string>
+
+
+
+
+
+
+
+
 </resources>

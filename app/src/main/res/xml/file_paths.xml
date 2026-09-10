@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<paths xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Ruta para la caché (la que ya tenías) -->
+    <cache-path name="shared_images" path="." />
+
+    <!-- NUEVA LÍNEA: Permite archivos en filesDir que acabamos de agregar -->
+    <files-path name="internal_images" path="." />
+</paths>

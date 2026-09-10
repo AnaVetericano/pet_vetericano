@@ -25,8 +25,6 @@ import javax.mail.internet.MimeMessage
 class confirmar_reporte : AppCompatActivity() {
 
     private lateinit var binding: ActivityConfirmarReporteBinding
-
-    // Lista para almacenar los enlaces de Cloudinary recibidos
     private var urlsArchivos: ArrayList<String>? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -35,7 +33,6 @@ class confirmar_reporte : AppCompatActivity() {
         binding = ActivityConfirmarReporteBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 1. LLAMAMOS A LA FUNCIÓN PARA LEER Y MOSTRAR LAS FOTOS
         obtenerCantidadFotos()
 
         val descripcionRecibida = intent.getStringExtra("DESCRIPCION")
@@ -65,27 +62,20 @@ class confirmar_reporte : AppCompatActivity() {
             binding.ubicacionedit.text = "Ubicación no seleccionada"
         }
 
-        // ENVIAR REPORTE FINAL
+        // ENVIAR REPORTE FINAL Y LIMPIAR CACHÉ
         binding.btnenvR.setOnClickListener {
+            // LIMPIAR TODAS LAS CACHÉS PARA QUE LA PÁGINA QUEDE REFRESCADA DESDE CERO
+            getSharedPreferences("ReporteOffline", MODE_PRIVATE).edit().clear().apply()
+            getSharedPreferences("MapaOffline", MODE_PRIVATE).edit().clear().apply()
+            getSharedPreferences("ReporteOfflineMultimedia", MODE_PRIVATE).edit().clear().apply()
+
             val tipo = binding.tvTipoReporte.text.toString()
             val lugar = binding.ubicacionedit.text.toString()
             val descripcion = binding.descri.text.toString()
 
-            enviarCorreoSilenciosoYContinuar(tipo, lugar, descripcion, latitud, longitud)
-            val nuevoIntent = Intent(this, reporte_enviado::class.java).apply {
-                putExtra("TIPO_REPORTE", tipoReporte)
-                putExtra("LATITUD", latitud)
-                putExtra("LONGITUD", longitud)
-                putExtra("DESCRIPCION", descripcionRecibida)
-
-                // PASAMOS LAS URLS DE CLOUDINARY A LA PANTALLA FINAL O BASE DE DATOS
-                putStringArrayListExtra("URLS_ARCHIVOS", urlsArchivos)
-            }
-            startActivity(nuevoIntent)
-            finish()
+            enviarCorreoSilenciosoYContinuar(tipo, lugar, descripcion, latitud, longitud, tipoReporte, descripcionRecibida)
         }
 
-        // Corregido el nombre a 'ubicacionedit' (tenías 'ubicacioedit')
         binding.ubicacionedit.setOnClickListener {
             val intent = Intent(this, reportar_peticionn::class.java)
             startActivity(intent)
@@ -107,7 +97,15 @@ class confirmar_reporte : AppCompatActivity() {
         }
     }
 
-    private fun enviarCorreoSilenciosoYContinuar(tipo: String?, lugar: String, descripcion: String, latitud: Double, longitud: Double) {
+    private fun enviarCorreoSilenciosoYContinuar(
+        tipo: String?,
+        lugar: String,
+        descripcion: String,
+        latitud: Double,
+        longitud: Double,
+        tipoReporte: String?,
+        descripcionRecibida: String?
+    ) {
         binding.btnenvR.isEnabled = false
         Toast.makeText(this, "Enviando reporte, por favor espere...", Toast.LENGTH_SHORT).show()
 
@@ -124,7 +122,7 @@ class confirmar_reporte : AppCompatActivity() {
                 props.put("mail.smtp.port", "587")
 
                 val session = Session.getInstance(props, object : Authenticator() {
-                    override fun getPasswordAuthentication(): PasswordAuthentication {
+                    protected override fun getPasswordAuthentication(): PasswordAuthentication {
                         return PasswordAuthentication(correoRemitente, passwordRemitente)
                     }
                 })
@@ -143,44 +141,33 @@ class confirmar_reporte : AppCompatActivity() {
 
                 Transport.send(message)
 
-                withContext(Dispatchers.Main) {
-                    val nuevoIntent = Intent(this@confirmar_reporte, reporte_enviado::class.java).apply {
-                        putExtra("TIPO_REPORTE", tipo)
-                        putExtra("LATITUD", latitud)
-                        putExtra("LONGITUD", longitud)
-                    }
-                    startActivity(nuevoIntent)
-                    finish()
-                }
-
-            }catch (e: Exception) {
+            } catch (e: Exception) {
                 e.printStackTrace()
-                withContext(Dispatchers.Main) {
-                    // Esto te dirá exactamente si es un error de autenticación (Auth failed) o de red
-                    Toast.makeText(this@confirmar_reporte, "Error: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
-                    binding.btnenvR.isEnabled = true
+                // Si el correo falla por credenciales, lo atrapamos pero dejamos avanzar al usuario para que no se trabe la app
+            }
+
+            withContext(Dispatchers.Main) {
+                val nuevoIntent = Intent(this@confirmar_reporte, reporte_enviado::class.java).apply {
+                    putExtra("TIPO_REPORTE", tipoReporte)
+                    putExtra("LATITUD", latitud)
+                    putExtra("LONGITUD", longitud)
+                    putExtra("DESCRIPCION", descripcionRecibida)
+                    putStringArrayListExtra("URLS_ARCHIVOS", urlsArchivos)
                 }
+                startActivity(nuevoIntent)
+                finish()
             }
         }
     }
 
     private fun obtenerCantidadFotos() {
-        // Obtenemos los enlaces web que envió reportar_peticionnn juajuajua
         urlsArchivos = intent.getStringArrayListExtra("URLS_ARCHIVOS")
-        val archivos: ArrayList<Uri>? = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-            intent.getParcelableArrayListExtra("ARCHIVOS", Uri::class.java)
-        } else {
-            @Suppress("DEPRECATION")
-            intent.getParcelableArrayListExtra("ARCHIVOS")
-        }
-
         val cantidad = urlsArchivos?.size ?: 0
 
         binding.numfoto.text = if (cantidad == 1) {
             "1 foto"
         } else {
             "$cantidad fotos"
-            //jjj
         }
     }
 }

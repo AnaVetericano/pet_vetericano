@@ -14,4 +14,15 @@
     <string name="btn_signupregister">Registrarse</string>
     <string name="existingAccount">¿Ya tienes una cuenta?</string>
     <string name="existingAccountRedirection">Iniciar sesión</string>
+    <string name="string">text</string>
+    <string name="title">title</string>
+    <string name="cancel">cancel</string>
+
+
+
+
+
+
+
+
 </resources>

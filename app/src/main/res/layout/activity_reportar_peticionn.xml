@@ -95,7 +95,10 @@
             android:layout_height="wrap_content"
             android:hint="Buscar dirección o referencia"
             android:textColorHint="#94A3B8"
-            android:textSize="14sp" />
+            android:textSize="14sp"
+            android:inputType="text"
+            android:maxLines="1"
+            android:imeOptions="actionSearch"/>
     </com.google.android.material.textfield.TextInputLayout>
 
     <TextView

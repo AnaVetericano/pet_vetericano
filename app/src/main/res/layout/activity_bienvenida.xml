@@ -243,19 +243,6 @@
                 app:tint="#4145A8" />
 
 
-
-            <ImageView
-                android:id="@+id/ivNavDocumentos"
-                android:layout_width="0dp"
-                android:layout_height="25dp"
-                android:layout_weight="1"
-                android:clickable="true"
-                android:contentDescription="Documentos"
-                android:focusable="true"
-                android:src="@drawable/file_text"
-                app:tint="#555555" />
-
-
             <!-- BOTON CENTRAL -->
 
             <com.google.android.material.card.MaterialCardView

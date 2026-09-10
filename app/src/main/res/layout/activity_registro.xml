@@ -6,15 +6,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     tools:context=".Registro"
-    android:background="@color/white">
+    android:background="@color/white"
+    android:padding="24dp">
 
     <ImageView
         android:id="@+id/logoVetericanoTop"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
+        android:layout_width="90dp"
+        android:layout_height="90dp"
+        android:layout_marginTop="8dp"
         android:scaleType="fitCenter"
-        app:layout_constraintDimensionRatio="1:1"
-        app:layout_constraintWidth_percent="0.5"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -24,11 +24,11 @@
         android:id="@+id/txtVetericano"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="28dp"
+        android:layout_marginTop="6dp"
         android:text="@string/title_welcome"
-        android:textSize="36dp"
+        android:textSize="26sp"
+        android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.501"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/logoVetericanoTop" />
 
@@ -36,104 +36,247 @@
         android:id="@+id/txtregistercontinue"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
+        android:layout_marginTop="2dp"
         android:text="@string/registercontinues"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.32"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/txtVetericano" />
 
-
-    <EditText
-        android:id="@+id/editTextTextEmailAddress"
-        android:layout_width="248dp"
-        android:layout_height="41dp"
-        android:layout_marginTop="4dp"
-        android:ems="10"
-        android:hint="@string/edt_email_phone"
-        android:inputType="textEmailAddress"
-        android:textSize="14sp"
+    <!-- 1. Input Correo -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardEmail"
+        android:layout_width="320dp"
+        android:layout_height="52dp"
+        android:layout_marginTop="10dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="26dp"
+        app:cardElevation="0dp"
+        app:strokeColor="#CCCCCC"
+        app:strokeWidth="1.5dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtregistercontinue" />
+        app:layout_constraintTop_toBottomOf="@+id/txtregistercontinue">
 
-    <EditText
-        android:id="@+id/edtxtemailorphone"
-        android:layout_width="248dp"
-        android:layout_height="41dp"
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/ic_email"
+                app:tint="#808080" />
+
+            <EditText
+                android:id="@+id/editTextTextEmailAddress"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:hint="@string/edt_email_phone"
+                android:inputType="textEmailAddress"
+                android:paddingStart="12dp"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- 2. Input ID -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardId"
+        android:layout_width="320dp"
+        android:layout_height="52dp"
         android:layout_marginTop="8dp"
-        android:ems="10"
-        android:hint="@string/edt_ID"
-        android:textSize="14sp"
-        android:inputType="number"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="26dp"
+        app:cardElevation="0dp"
+        app:strokeColor="#CCCCCC"
+        app:strokeWidth="1.5dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/editTextTextEmailAddress" />
+        app:layout_constraintTop_toBottomOf="@+id/cardEmail">
 
-    <EditText
-        android:id="@+id/edtxtID"
-        android:layout_width="248dp"
-        android:layout_height="41dp"
-        android:layout_marginTop="8dp"
-        android:ems="10"
-        android:hint="@string/edt_Name"
-        android:textSize="14sp"
-        android:inputType="text"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edtxtemailorphone" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp">
 
-    <EditText
-        android:id="@+id/edtxtPassword"
-        android:layout_width="248dp"
-        android:layout_height="41dp"
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/id"
+                app:tint="#808080" />
+
+            <EditText
+                android:id="@+id/edtxtemailorphone"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:hint="@string/edt_ID"
+                android:inputType="number"
+                android:paddingStart="12dp"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- 3. Input Nombre -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardName"
+        android:layout_width="320dp"
+        android:layout_height="52dp"
         android:layout_marginTop="8dp"
-        android:ems="10"
-        android:hint="@string/edt_Password"
-        android:textSize="14sp"
-        android:inputType="textPassword"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="26dp"
+        app:cardElevation="0dp"
+        app:strokeColor="#CCCCCC"
+        app:strokeWidth="1.5dp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/edtxtID" />
+        app:layout_constraintTop_toBottomOf="@+id/cardId">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/nombre"
+                app:tint="#808080" />
+
+            <EditText
+                android:id="@+id/edtxtID"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:hint="@string/edt_Name"
+                android:inputType="text"
+                android:paddingStart="12dp"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- 4. Input Apellido -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardApellido"
+        android:layout_width="320dp"
+        android:layout_height="52dp"
+        android:layout_marginTop="8dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="26dp"
+        app:cardElevation="0dp"
+        app:strokeColor="#CCCCCC"
+        app:strokeWidth="1.5dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cardName">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/nombre"
+                app:tint="#808080" />
+
+            <EditText
+                android:id="@+id/edtxtApellido"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:hint="Apellido"
+                android:inputType="text"
+                android:paddingStart="12dp"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- 5. Input Contraseña -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardPass"
+        android:layout_width="320dp"
+        android:layout_height="52dp"
+        android:layout_marginTop="8dp"
+        app:cardBackgroundColor="@android:color/white"
+        app:cardCornerRadius="26dp"
+        app:cardElevation="0dp"
+        app:strokeColor="#CCCCCC"
+        app:strokeWidth="1.5dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cardApellido">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="16dp">
+
+            <ImageView
+                android:layout_width="20dp"
+                android:layout_height="20dp"
+                android:src="@drawable/lock"
+                app:tint="#808080" />
+
+            <EditText
+                android:id="@+id/edtxtPassword"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@null"
+                android:hint="@string/edt_Password"
+                android:inputType="textPassword"
+                android:paddingStart="12dp"
+                android:textSize="14sp" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Enlace a iniciar sesión -->
+    <LinearLayout
+        android:id="@+id/layoutLoginRedirect"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:orientation="horizontal"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/cardPass">
+
+        <TextView
+            android:id="@+id/txtaccountexist"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/existingAccount" />
+
+        <TextView
+            android:id="@+id/txtlogin"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="4dp"
+            android:text="@string/existingAccountRedirection"
+            android:textColor="@color/blue" />
+    </LinearLayout>
 
     <Button
         android:id="@+id/btnSignUp"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="24dp"
+        android:layout_marginTop="10dp"
         android:paddingHorizontal="44dp"
         android:text="@string/btn_sign_login_register"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtlogin" />
-
-    <TextView
-        android:id="@+id/txtaccountexist"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="96dp"
-        android:text="@string/existingAccount"
-        app:layout_constraintEnd_toStartOf="@+id/txtlogin"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/txtlogin" />
-
-    <TextView
-        android:id="@+id/txtlogin"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginEnd="88dp"
-        android:text="@string/existingAccountRedirection"
-        android:textColor="@color/blue"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
-        app:layout_constraintStart_toEndOf="@+id/textView6"
-        app:layout_constraintTop_toBottomOf="@+id/edtxtPassword" />
-
+        app:layout_constraintTop_toBottomOf="@+id/layoutLoginRedirect" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

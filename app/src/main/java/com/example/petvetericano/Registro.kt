@@ -4,25 +4,22 @@ import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityRegistroBinding
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.database.DatabaseReference
-import com.google.firebase.database.FirebaseDatabase
+import com.example.petvetericano.models.RegisterRequest
+import com.example.petvetericano.network.RetrofitClient
+import kotlinx.coroutines.launch
+import org.json.JSONObject
 
 class Registro : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegistroBinding
-    private lateinit var auth: FirebaseAuth
-    private lateinit var database: DatabaseReference
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityRegistroBinding.inflate(layoutInflater)
         setContentView(binding.root)
-
-        auth = FirebaseAuth.getInstance()
-        database = FirebaseDatabase.getInstance().getReference("Usuarios")
 
         binding.btnSignUp.setOnClickListener {
             registrarUsuario()
@@ -36,10 +33,13 @@ class Registro : AppCompatActivity() {
     }
 
     private fun registrarUsuario() {
-
         val email = binding.editTextTextEmailAddress.text.toString().trim()
         val identificacion = binding.edtxtemailorphone.text.toString().trim()
+
         val nombre = binding.edtxtID.text.toString().trim()
+
+        val apellido = binding.edtxtApellido.text.toString().trim()
+
         val password = binding.edtxtPassword.text.toString().trim()
 
         if (email.isEmpty()) {
@@ -60,46 +60,69 @@ class Registro : AppCompatActivity() {
             return
         }
 
+        if (apellido.isEmpty()) {
+            binding.edtxtApellido.error = "Ingrese su apellido"
+            binding.edtxtApellido.requestFocus()
+            return
+        }
+
         if (password.isEmpty()) {
             binding.edtxtPassword.error = "Ingrese una contraseña"
             binding.edtxtPassword.requestFocus()
             return
         }
 
-        if (password.length < 6) {
-            binding.edtxtPassword.error = "La contraseña debe tener al menos 6 caracteres"
+        val contieneMayuscula = Regex("[A-Z]").containsMatchIn(password)
+        if (password.length < 8 || !contieneMayuscula) {
+            binding.edtxtPassword.error = "Mínimo 8 caracteres y al menos una letra mayúscula"
             binding.edtxtPassword.requestFocus()
             return
         }
 
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnSuccessListener { authResult ->
+        binding.btnSignUp.isEnabled = false
 
-                val userId = authResult.user?.uid
-
-                val usuarioMap = mapOf(
-                    "nombre" to nombre,
-                    "identificacion" to identificacion,
-                    "email" to email
+        lifecycleScope.launch {
+            try {
+                val request = RegisterRequest(
+                    email = email,
+                    identificacion = identificacion,
+                    password = password,
+                    nombre = nombre,
+                    apellido = apellido
                 )
 
-                if (userId != null) {
-                    database.child(userId).setValue(usuarioMap)
-                        .addOnSuccessListener {
+                val response = RetrofitClient.apiService.registro(request)
 
-                            Toast.makeText(this, "Registro exitoso", Toast.LENGTH_SHORT).show()
+                // isSuccessful: Devuelve true si el servidor responde con códigos 200 a 299 (éxito).
+                if (response.isSuccessful) {
+                    Toast.makeText(this@Registro, "¡Registro exitoso!", Toast.LENGTH_SHORT).show()
 
-                            val intent = Intent(this, bienvenida::class.java)
-                            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                            startActivity(intent)
-                        }
-                        .addOnFailureListener { e ->
-                            Toast.makeText(this, "Error al guardar perfil: ${e.message}", Toast.LENGTH_LONG).show()
-                        }
+                    val intent = Intent(this@Registro, inicio_sesion::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
+                } else {
+                    val errorBody = response.errorBody()?.string()
+                    val mensajeError = parsearErrorDjango(errorBody)
+                    Toast.makeText(this@Registro, mensajeError, Toast.LENGTH_LONG).show()
                 }
+
+            } catch (e: Exception) {
+                Toast.makeText(this@Registro, "Error de conexión: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+            } finally {
+                binding.btnSignUp.isEnabled = true
             }
-            .addOnFailureListener { error ->
-                Toast.makeText(this, "No se pudo registrar: ${error.message}", Toast.LENGTH_LONG).show()
-            }
+        }
+    }
+
+    private fun parsearErrorDjango(json: String?): String {
+        if (json.isNullOrEmpty()) return "Error al registrar usuario"
+        return try {
+            val jsonObject = JSONObject(json)
+            val primeraClave = jsonObject.keys().next()
+            val primerError = jsonObject.getJSONArray(primeraClave).getString(0)
+            "$primeraClave: $primerError"
+        } catch (_: Exception) {
+            "Datos inválidos o usuario ya registrado"
+        }
     }
 }

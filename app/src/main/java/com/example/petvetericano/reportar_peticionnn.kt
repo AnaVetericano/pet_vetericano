@@ -26,7 +26,7 @@ class reportar_peticionnn : AppCompatActivity() {
 
     // Aqui van los datos de cloud
     private val CLOUD_NAME = "aefeig5y"
-    private val UPLOAD_PRESET = "ml_default"
+    private val UPLOAD_PRESET = "preset_android"
 
     // Guardamos las fotos/videos seleccionados
     private val selectedUris = mutableListOf<Uri>()

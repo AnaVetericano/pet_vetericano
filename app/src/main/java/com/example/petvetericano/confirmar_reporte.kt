@@ -161,6 +161,7 @@ class confirmar_reporte : AppCompatActivity() {
             "1 foto"
         } else {
             "$cantidad fotos"
+            //jjj
         }
     }
 }

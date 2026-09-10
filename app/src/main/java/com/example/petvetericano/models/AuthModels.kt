@@ -47,3 +47,4 @@ data class DashboardResponse(
     val email: String,
     val nombre_rol: String
 )
+

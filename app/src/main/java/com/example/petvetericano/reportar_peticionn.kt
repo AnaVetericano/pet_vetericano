@@ -51,7 +51,7 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
 
         // ATRAPAMOS EL DATO DEL RELEVO
         // Usamos intent.getStringExtra para obtener el texto que nos mandó la tarjeta.
-        // Si no usamos esto, el dato "Herido", "Maltrato" o "En calle" se pierde para siempre en esta pantalla.
+
         val tipoReporte = intent.getStringExtra("TIPO_REPORTE")
 
         val mapFragment = supportFragmentManager
@@ -60,9 +60,8 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
         mapFragment.getMapAsync(this)
 
         binding.btnBack.setOnClickListener {
-            // OJO: Si usas Intent para volver atrás, creas una nueva instancia de la pantalla anterior
-            // apilando pantallas infinitamente en la memoria.
-            // Lo ideal aquí sería usar finish() en lugar de un Intent, pero respeto tu lógica original.
+            //  Si uso Intent para volver atrás, creas una nueva instancia de la pantalla anterior
+            // apilando pantallas infinitamente en la memoria
             val intent = Intent(this, reportar_peticion::class.java)
             startActivity(intent)
         }

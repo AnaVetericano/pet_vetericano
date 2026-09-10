@@ -31,8 +31,10 @@ class bienvenida : AppCompatActivity() {
     }
 
     private fun cargarDashboard(token: String) {
+
         lifecycleScope.launch {
             try {
+                // Enviamos el token al backend
                 val respuesta = RetrofitClient.apiService.obtenerDashboard("Bearer $token")
 
                 if (respuesta.isSuccessful) {
@@ -43,8 +45,9 @@ class bienvenida : AppCompatActivity() {
                         // Mostrar saludo en pantalla
                         binding.tvSaludo.text = "Hola, ${datos.nombre}"
                         binding.tvMensajeBienvenida.text = "¡Gracias por ayudar!"
+                        binding.tvMensajeBienvenida.text = "¡Gracias por ayudar!"
 
-                        // ✅ NUEVO: guardar nombre completo en SharedPreferences
+                        // NUEVO: guardar nombre completo en SharedPreferences
                         val prefs = SharedPreferencesManager(this@bienvenida)
                         prefs.saveUserData(
                             name  = "${datos.nombre} ${datos.apellido}",
@@ -52,25 +55,38 @@ class bienvenida : AppCompatActivity() {
                             phone = prefs.getUserPhone()  // conserva el teléfono si ya existe
                         )
                     }
-
                 } else {
+                    // 1. el Logcat para desarrollo
+                    val codigoError = respuesta.code()
+                    val mensajeError = respuesta.errorBody()?.string() ?: "Sin detalles"
+                    android.util.Log.e("API_ERROR", "Error $codigoError: $mensajeError")
+
+                    // 2. Traducimos el error a un mensaje amigable para el usuario final
+                    val mensajeUsuario = when (codigoError) {
+                        401 -> "Tu sesión ha expirado. Por favor, inicia sesión de nuevo."
+                        403 -> "No tienes permisos para ver esta información."
+                        404 -> "No se encontró el perfil de usuario."
+                        in 500..599 -> "Problemas en el servidor. Intenta más tarde."
+                        else -> "No se pudo cargar tu información (Error $codigoError)."
+                    }
+
                     Toast.makeText(
                         this@bienvenida,
-                        "No se pudo cargar el Dashboard",
-                        Toast.LENGTH_SHORT
+                        mensajeUsuario,
+                        Toast.LENGTH_LONG
                     ).show()
                 }
 
             } catch (e: Exception) {
+                android.util.Log.e("API_ERROR", "Excepción técnica: ${e.message}")
                 Toast.makeText(
                     this@bienvenida,
-                    "Error de conexión: ${e.message}",
+                    "Error de conexión. Revisa tu internet.",
                     Toast.LENGTH_LONG
                 ).show()
             }
         }
     }
-
     private fun configurarEventos() {
         binding.cardReportarPeticion.setOnClickListener {
             val intent = Intent(this, reportar_peticion::class.java)
@@ -84,17 +100,21 @@ class bienvenida : AppCompatActivity() {
             val intent = Intent(this, voluntariado::class.java)
             startActivity(intent)
         }
+
         binding.ivNavInicio.setOnClickListener {
             Toast.makeText(this, "Ya estás en Inicio", Toast.LENGTH_SHORT).show()
         }
+
         binding.cardNavPrincipal.setOnClickListener {
             val intent = Intent(this, reportar_peticion::class.java)
             startActivity(intent)
         }
+
         binding.ivNavFavoritos.setOnClickListener {
             val intent = Intent(this, Eventos::class.java)
             startActivity(intent)
         }
+
         binding.ivNavPerfil.setOnClickListener {
             val intent = Intent(this, editar_perfil::class.java)
             startActivity(intent)

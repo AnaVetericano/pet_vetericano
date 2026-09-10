@@ -440,3 +440,4 @@ class reportar_peticionnn : AppCompatActivity() {
         startActivity(intent)
     }
 }
+//esto es lo de la camara

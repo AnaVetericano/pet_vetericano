@@ -24,8 +24,26 @@ class editar_perfil : AppCompatActivity() {
         setContentView(binding.root)
 
         setupDarkMode()
+        cargarDatosPerfil()
         setupMenuListeners()
         setupBottomNavigation()
+    }
+
+    // Se ejecuta también al volver desde OpcionesEditarPerfilActivity
+    override fun onResume() {
+        super.onResume()
+        cargarDatosPerfil()
+    }
+
+    // Muestra el nombre y correo real del usuario autenticado
+    private fun cargarDatosPerfil() {
+        val prefs = SharedPreferencesManager(this)
+
+        val nombre = prefs.getUserName()
+        val email  = prefs.getUserEmail()
+
+        if (nombre.isNotEmpty()) binding.tvName.text  = nombre
+        if (email.isNotEmpty())  binding.tvEmail.text = email
     }
 
     private fun setupDarkMode() {
@@ -63,10 +81,9 @@ class editar_perfil : AppCompatActivity() {
             startActivity(intent)
         }
 
-
-
-        // Cierra sesión
+        // Cierra sesión y limpia el token guardado
         binding.btnLogout.setOnClickListener {
+            SharedPreferencesManager(this).saveAccessToken("")
             val intent = Intent(this, inicio_sesion::class.java)
             startActivity(intent)
             finish()

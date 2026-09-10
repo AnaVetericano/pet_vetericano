@@ -189,39 +189,7 @@
                 </LinearLayout>
 
                 <!-- 4. Lenguaje -->
-                <LinearLayout
-                    android:id="@+id/btnLenguaje"
-                    android:layout_width="match_parent"
-                    android:layout_height="56dp"
-                    android:background="?attr/selectableItemBackground"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:src="@drawable/location"
-                        app:tint="#000000" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="16dp"
-                        android:layout_weight="1"
-                        android:text="Lenguaje"
-                        android:textColor="#000000"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Español"
-                        android:textColor="#000000"
-                        android:textSize="15sp" />
-                </LinearLayout>
 
             </LinearLayout>
 

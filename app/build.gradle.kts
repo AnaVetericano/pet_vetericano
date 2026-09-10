@@ -9,6 +9,12 @@ android {
         version = release(37) {
             minorApiLevel = 1
         }
+        packaging {
+            resources {
+                excludes += "META-INF/NOTICE.md"
+                excludes += "META-INF/LICENSE.md"
+            }
+        }
     }
 
     defaultConfig {
@@ -52,6 +58,8 @@ dependencies {
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)
+    implementation("com.sun.mail:android-mail:1.6.7")
+    implementation("com.sun.mail:android-activation:1.6.7")
 
     //dependencias de google maps
     implementation("com.google.android.gms:play-services-maps:18.2.0")

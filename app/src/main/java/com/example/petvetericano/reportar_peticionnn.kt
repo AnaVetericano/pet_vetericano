@@ -6,6 +6,7 @@ import android.content.pm.PackageManager
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.ActivityResultLauncher
@@ -73,8 +74,8 @@ class reportar_peticionnn : AppCompatActivity() {
             ) { success ->
                 if (success && photoUri != null) {
                     selectedUris.add(photoUri!!)
-                    actualizarTextoFotos()
-                    guardarMultimediaEnPrefs() // Guardar las fotos en caché al instante
+                    actualizarVisualizacionMultimedia()
+                    guardarMultimediaEnPrefs() // Guardar en caché al instante
                     Toast.makeText(
                         this,
                         "Foto tomada correctamente 📷",
@@ -92,7 +93,7 @@ class reportar_peticionnn : AppCompatActivity() {
         setupUI()
 
         // =========================================================
-        // RECUPERAR DESCRIPCIÓN (Prioriza el Intent si viene de editar, si no, usa el borrador)
+        // RECUPERAR DESCRIPCIÓN
         // =========================================================
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         val descripcionDelIntent = intent.getStringExtra("DESCRIPCION")
@@ -105,7 +106,7 @@ class reportar_peticionnn : AppCompatActivity() {
             binding.etDescripcion.setText(textoGuardado)
         }
 
-        // 2. Guardar texto al instante mientras el usuario escribe
+        // Guardar texto al instante mientras el usuario escribe
         binding.etDescripcion.addTextChangedListener { text ->
             getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
                 .edit()
@@ -113,7 +114,7 @@ class reportar_peticionnn : AppCompatActivity() {
                 .apply()
         }
 
-        // 3. Recuperar fotos o videos guardados
+        // Recuperar fotos o videos guardados previamente
         isVideoSelected = prefs.getBoolean(KEY_IS_VIDEO, false)
         val pathsSet = prefs.getStringSet(KEY_PATHS, emptySet())
         if (!pathsSet.isNullOrEmpty()) {
@@ -129,7 +130,7 @@ class reportar_peticionnn : AppCompatActivity() {
                     selectedUris.add(uri)
                 }
             }
-            actualizarTextoFotosRecuperadas()
+            actualizarVisualizacionMultimedia()
         }
     }
 
@@ -152,9 +153,7 @@ class reportar_peticionnn : AppCompatActivity() {
         editor.apply()
     }
 
-    // ---------------------------------------------------------
     // INICIALIZAR CLOUDINARY
-    // ---------------------------------------------------------
     private fun initCloudinary() {
         val config = HashMap<String, String>()
         config["cloud_name"] = CLOUD_NAME
@@ -165,9 +164,7 @@ class reportar_peticionnn : AppCompatActivity() {
         }
     }
 
-    // ---------------------------------------------------------
     // CONFIGURACIÓN DE BOTONES
-    // ---------------------------------------------------------
     private fun setupUI() {
         binding.btndev.setOnClickListener {
             finish()
@@ -185,14 +182,32 @@ class reportar_peticionnn : AppCompatActivity() {
             }
         }
 
+        // Botón para eliminar la primera foto
+        binding.btnEliminar1.setOnClickListener {
+            if (selectedUris.isNotEmpty()) {
+                selectedUris.removeAt(0)
+                guardarMultimediaEnPrefs()
+                actualizarVisualizacionMultimedia()
+                Toast.makeText(this, "Foto eliminada", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Botón para eliminar la segunda foto
+        binding.btnEliminar2.setOnClickListener {
+            if (selectedUris.size > 1) {
+                selectedUris.removeAt(1)
+                guardarMultimediaEnPrefs()
+                actualizarVisualizacionMultimedia()
+                Toast.makeText(this, "Foto eliminada", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         binding.btnContinue.setOnClickListener {
             validarYContinuar()
         }
     }
 
-    // ---------------------------------------------------------
     // ABRIR CÁMARA
-    // ---------------------------------------------------------
     private fun abrirCamara() {
         if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
             tomarFoto()
@@ -204,12 +219,9 @@ class reportar_peticionnn : AppCompatActivity() {
         }
     }
 
-    // ---------------------------------------------------------
     // CREAR ARCHIVO PERMANENTE Y TOMAR FOTO
-    // ---------------------------------------------------------
     private fun tomarFoto() {
         try {
-            // Guardamos en filesDir (permanente) para que no se borre al cerrar la app
             val archivoFoto = File(filesDir, "foto_reporte_${System.currentTimeMillis()}.jpg")
 
             photoUri = FileProvider.getUriForFile(
@@ -229,114 +241,37 @@ class reportar_peticionnn : AppCompatActivity() {
         }
     }
 
-    // ---------------------------------------------------------
-    // MOSTRAR CANTIDAD DE FOTOS
-    // ---------------------------------------------------------
-    private fun actualizarTextoFotos() {
+    // ACTUALIZAR LA VISTA DE LAS MINIATURAS Y TEXTOS
+    private fun actualizarVisualizacionMultimedia() {
         val cantidad = selectedUris.size
 
-        when (cantidad) {
-            0 -> binding.numimagenes.text = ""
-            1 -> binding.numimagenes.text = "📷 1 foto tomada correctamente"
-            2 -> binding.numimagenes.text = "📷 2 fotos tomadas correctamente"
-        }
+        if (cantidad == 0) {
+            binding.layoutFotoCargada.visibility = View.GONE
+            binding.cardFoto1.visibility = View.GONE
+            binding.cardFoto2.visibility = View.GONE
+            binding.btnSubirArchivo.text = "Subir archivo"
+            binding.btnSubirArchivo.isEnabled = true
+        } else if (cantidad == 1) {
+            binding.layoutFotoCargada.visibility = View.VISIBLE
+            binding.cardFoto1.visibility = View.VISIBLE
+            binding.cardFoto2.visibility = View.GONE
 
-        binding.btnSubirArchivo.text = if (cantidad < 2) {
-            "Tomar otra foto"
-        } else {
-            "2 fotos seleccionadas"
-        }
-    }
+            binding.ivFoto1.setImageURI(selectedUris[0])
+            binding.btnSubirArchivo.text = "Tomar otra foto (1/2)"
+            binding.btnSubirArchivo.isEnabled = true
+        } else if (cantidad >= 2) {
+            binding.layoutFotoCargada.visibility = View.VISIBLE
+            binding.cardFoto1.visibility = View.VISIBLE
+            binding.cardFoto2.visibility = View.VISIBLE
 
-    private fun actualizarTextoFotosRecuperadas() {
-        if (isVideoSelected) {
-            binding.numimagenes.text = "🎥 1 video seleccionado"
-            binding.btnSubirArchivo.text = "Video seleccionado"
-        } else {
-            actualizarTextoFotos()
-        }
-    }
-
-    // ---------------------------------------------------------
-    // PROCESAR FOTOS / VIDEOS DE GALERÍA
-    // ---------------------------------------------------------
-    private fun processSelectedMedia(uris: List<Uri>) {
-        val resolver = contentResolver
-
-        for (uri in uris) {
-            val type = resolver.getType(uri) ?: continue
-
-            if (type.startsWith("video/")) {
-                if (selectedUris.isNotEmpty()) {
-                    Toast.makeText(
-                        this,
-                        "Solo puedes subir 2 fotos O 1 video.",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return
-                }
-
-                val duration = getVideoDuration(uri)
-                if (duration > 15000) {
-                    Toast.makeText(
-                        this,
-                        "El video no puede durar más de 15 segundos.",
-                        Toast.LENGTH_LONG
-                    ).show()
-                    return
-                }
-
-                isVideoSelected = true
-                selectedUris.clear()
-                selectedUris.add(uri)
-                guardarMultimediaEnPrefs()
-
-                binding.btnSubirArchivo.text = "Video seleccionado (${duration / 1000}s)"
-                binding.numimagenes.text = "🎥 1 video seleccionado"
-                return
-            } else if (type.startsWith("image/")) {
-                if (isVideoSelected) {
-                    Toast.makeText(
-                        this,
-                        "No puedes combinar fotos con un video.",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                    return
-                }
-
-                if (selectedUris.size < 2) {
-                    selectedUris.add(uri)
-                    guardarMultimediaEnPrefs()
-                }
-            }
-        }
-
-        if (!isVideoSelected) {
-            actualizarTextoFotos()
+            binding.ivFoto1.setImageURI(selectedUris[0])
+            binding.ivFoto2.setImageURI(selectedUris[1])
+            binding.btnSubirArchivo.text = "2 fotos seleccionadas"
+            binding.btnSubirArchivo.isEnabled = false
         }
     }
 
-    // ---------------------------------------------------------
-    // DURACIÓN DEL VIDEO
-    // ---------------------------------------------------------
-    private fun getVideoDuration(uri: Uri): Long {
-        var duration = 0L
-        val retriever = MediaMetadataRetriever()
-        try {
-            retriever.setDataSource(this, uri)
-            val time = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
-            duration = time?.toLong() ?: 0L
-        } catch (e: Exception) {
-            e.printStackTrace()
-        } finally {
-            retriever.release()
-        }
-        return duration
-    }
-
-    // ---------------------------------------------------------
     // VALIDAR Y CONTINUAR (CON SUBIDA A CLOUDINARY)
-    // ---------------------------------------------------------
     private fun validarYContinuar() {
         val descripcion = binding.etDescripcion.text.toString().trim()
 
@@ -358,9 +293,7 @@ class reportar_peticionnn : AppCompatActivity() {
         }
     }
 
-    // ---------------------------------------------------------
     // SUBIR ARCHIVOS A CLOUDINARY Y CAMBIAR DE ACTIVIDAD
-    // ---------------------------------------------------------
     private fun subirArchivosYContinuar(
         descripcion: String,
         latitud: Double,
@@ -371,9 +304,8 @@ class reportar_peticionnn : AppCompatActivity() {
         var subidasCompletadas = 0
         val totalArchivos = selectedUris.size
 
-        // Desactivar el botón para evitar doble toque mientras sube
         binding.btnContinue.isEnabled = false
-        Toast.makeText(this, "Subiendo multimedia a Cloudinary...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Subiendo...", Toast.LENGTH_SHORT).show()
 
         for (uri in selectedUris) {
             MediaManager.get()
@@ -392,7 +324,6 @@ class reportar_peticionnn : AppCompatActivity() {
 
                         subidasCompletadas++
 
-                        // Cuando se completen todas las subidas de la lista
                         if (subidasCompletadas == totalArchivos) {
                             binding.btnContinue.isEnabled = true
                             navegarAConfirmar(
@@ -440,4 +371,3 @@ class reportar_peticionnn : AppCompatActivity() {
         startActivity(intent)
     }
 }
-//esto es lo de la camara

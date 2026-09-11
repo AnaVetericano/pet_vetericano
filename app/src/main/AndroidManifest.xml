@@ -10,6 +10,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
     <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
 
     <application
         android:allowBackup="true"
@@ -57,7 +58,7 @@
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".confirmar_reporte"
-            android:exported="false"
+            android:exported="true"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".editar_perfil"
@@ -99,6 +100,17 @@
             android:name=".Eventos"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+
+        <activity
+            android:name=".OpcionesEditarPerfilActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".PermisosActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
+
+
     </application>
 
 </manifest>

@@ -1,20 +1,24 @@
 package com.example.petvetericano
 
 import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import com.example.petvetericano.databinding.ActivityEditarPerfilBinding
+import java.io.File
+import java.io.FileOutputStream
 
 class editar_perfil : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditarPerfilBinding
+    private lateinit var prefs: SharedPreferencesManager
 
     // Launcher para seleccionar nueva foto de perfil desde la galería
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let { binding.ivProfile.setImageURI(it) }
+        uri?.let { guardarYMostrarImagen(it) }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -23,9 +27,60 @@ class editar_perfil : AppCompatActivity() {
         binding = ActivityEditarPerfilBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        prefs = SharedPreferencesManager(this)
+
         setupDarkMode()
+        cargarDatosPerfil()
         setupMenuListeners()
         setupBottomNavigation()
+    }
+
+    // Se ejecuta también al volver desde OpcionesEditarPerfilActivity
+    override fun onResume() {
+        super.onResume()
+        cargarDatosPerfil()
+    }
+
+    // Muestra el nombre, correo y foto real del usuario autenticado
+    private fun cargarDatosPerfil() {
+        val nombre   = prefs.getUserName()
+        val email    = prefs.getUserEmail()
+        val rutaFoto = prefs.getProfileImagePath()
+
+        if (nombre.isNotEmpty()) binding.tvName.text  = nombre
+        if (email.isNotEmpty())  binding.tvEmail.text = email
+
+        // Cargar foto guardada o dejar la imagen por defecto del XML
+        if (rutaFoto.isNotEmpty()) {
+            val archivo = File(rutaFoto)
+            if (archivo.exists()) {
+                binding.ivProfile.setImageURI(Uri.fromFile(archivo))
+            }
+        }
+    }
+
+    // Copia la imagen al almacenamiento interno y guarda la ruta
+    private fun guardarYMostrarImagen(uri: Uri) {
+        try {
+            val archivoDestino = File(filesDir, "profile_picture.jpg")
+
+            contentResolver.openInputStream(uri)?.use { input ->
+                FileOutputStream(archivoDestino).use { output ->
+                    input.copyTo(output)
+                }
+            }
+
+            // Guardar la ruta en SharedPreferences para que persista
+            prefs.saveProfileImagePath(archivoDestino.absolutePath)
+
+            // Mostrar la imagen recién guardada en pantalla
+            binding.ivProfile.setImageURI(Uri.fromFile(archivoDestino))
+
+            Toast.makeText(this, "Foto actualizada", Toast.LENGTH_SHORT).show()
+
+        } catch (e: Exception) {
+            Toast.makeText(this, "Error al guardar la foto: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun setupDarkMode() {
@@ -35,8 +90,10 @@ class editar_perfil : AppCompatActivity() {
         binding.switchDarkMode.isChecked = isDarkMode
 
         binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
+            // Guardar la preferencia
             sharedPreferences.edit().putBoolean("isDarkMode", isChecked).apply()
 
+            // Aplicar el tema inmediatamente en toda la app
             if (isChecked) {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
             } else {
@@ -63,14 +120,9 @@ class editar_perfil : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // Abre la pantalla de selección de lenguaje
-        binding.btnLenguaje.setOnClickListener {
-            val intent = Intent(this, LenguajeActivity::class.java)
-            startActivity(intent)
-        }
-
-        // Cierra sesión
+        // Cierra sesión y limpia el token guardado
         binding.btnLogout.setOnClickListener {
+            prefs.saveAccessToken("")
             val intent = Intent(this, inicio_sesion::class.java)
             startActivity(intent)
             finish()

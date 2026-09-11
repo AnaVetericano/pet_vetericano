@@ -373,7 +373,7 @@ class reportar_peticionnn : AppCompatActivity() {
 
         // Desactivar el botón para evitar doble toque mientras sube
         binding.btnContinue.isEnabled = false
-        Toast.makeText(this, "Subiendo multimedia a Cloudinary...", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, "Subiendo...", Toast.LENGTH_SHORT).show()
 
         for (uri in selectedUris) {
             MediaManager.get()

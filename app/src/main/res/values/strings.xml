@@ -7,7 +7,7 @@
     <string name="btn_sign_login_register">Registrar</string>
     <string name="title_welcome">Bienvenido</string>
     <string name="registercontinues">Registrate para continuar</string>
-    <string name="edt_email_phone">Correo o teléfono</string>
+    <string name="edt_email_phone">Correo</string>
     <string name="edt_ID">Número de identificación</string>
     <string name="edt_Name">Nombre</string>
     <string name="edt_Password">Contraseña</string>

@@ -22,9 +22,7 @@ class confirmar_reporte : AppCompatActivity() {
     private lateinit var binding: ActivityConfirmarReporteBinding
     private var urlsArchivos: ArrayList<String>? = null
 
-    // ==========================================
-    // DATOS DE EMAILJS
-    // ==========================================
+
 
     private val EMAILJS_SERVICE_ID = "service_9vahcuy"
 
@@ -42,12 +40,9 @@ class confirmar_reporte : AppCompatActivity() {
         binding = ActivityConfirmarReporteBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Obtener cantidad de fotos
         obtenerCantidadFotos()
 
-        // ==========================================
-        // RECIBIR DATOS DEL REPORTE
-        // ==========================================
+
 
         val descripcionRecibida = intent.getStringExtra("DESCRIPCION")
 
@@ -58,9 +53,7 @@ class confirmar_reporte : AppCompatActivity() {
         binding.tvTipoReporte.text = tipoReporte ?: "Sin tipo"
 
 
-        // ==========================================
-        // OBTENER UBICACIÓN
-        // ==========================================
+
 
         val latitud = intent.getDoubleExtra("LATITUD", 0.0)
 
@@ -108,9 +101,7 @@ class confirmar_reporte : AppCompatActivity() {
         }
 
 
-        // ==========================================
-        // BOTÓN CONFIRMAR REPORTE
-        // ==========================================
+
 
         binding.btnenvR.setOnClickListener {
 
@@ -143,7 +134,7 @@ class confirmar_reporte : AppCompatActivity() {
                 .apply()
 
 
-            // Obtener información actual
+
 
             val tipo =
                 binding.tvTipoReporte.text.toString()
@@ -155,9 +146,7 @@ class confirmar_reporte : AppCompatActivity() {
                 binding.descri.text.toString()
 
 
-            // ==========================================
-            // ENVIAR CORREO CON EMAILJS
-            // ==========================================
+
 
             enviarCorreoSilenciosoYContinuar(
                 tipo = tipo,
@@ -171,10 +160,6 @@ class confirmar_reporte : AppCompatActivity() {
         }
 
 
-        // ==========================================
-        // CAMBIAR UBICACIÓN
-        // ==========================================
-
         binding.ubicacionedit.setOnClickListener {
 
             val intent = Intent(
@@ -185,10 +170,6 @@ class confirmar_reporte : AppCompatActivity() {
             startActivity(intent)
         }
 
-
-        // ==========================================
-        // CAMBIAR TIPO DE REPORTE
-        // ==========================================
 
         binding.tipoPeticion.setOnClickListener {
 
@@ -201,9 +182,6 @@ class confirmar_reporte : AppCompatActivity() {
         }
 
 
-        // ==========================================
-        // CAMBIAR DESCRIPCIÓN
-        // ==========================================
 
         binding.descripedit.setOnClickListener {
 
@@ -216,9 +194,6 @@ class confirmar_reporte : AppCompatActivity() {
         }
 
 
-        // ==========================================
-        // CAMBIAR ARCHIVOS
-        // ==========================================
 
         binding.archivosedi.setOnClickListener {
 
@@ -232,9 +207,6 @@ class confirmar_reporte : AppCompatActivity() {
     }
 
 
-    // ==================================================
-    // FUNCIÓN PARA ENVIAR CORREO MEDIANTE EMAILJS
-    // ==================================================
 
     private fun enviarCorreoSilenciosoYContinuar(
 
@@ -248,8 +220,6 @@ class confirmar_reporte : AppCompatActivity() {
 
     ) {
 
-        // Desactivar botón para evitar
-        // múltiples envíos
 
         binding.btnenvR.isEnabled = false
 
@@ -267,18 +237,13 @@ class confirmar_reporte : AppCompatActivity() {
 
             try {
 
-                // ==========================================
-                // CREAR DATOS DEL REPORTE
-                // ==========================================
 
                 val archivos = urlsArchivos
                     ?.joinToString("\n")
                     ?: "No hay archivos"
 
 
-                // ==========================================
-                // PARÁMETROS DE LA PLANTILLA
-                // ==========================================
+
 
                 val templateParams = JSONObject()
 
@@ -313,10 +278,6 @@ class confirmar_reporte : AppCompatActivity() {
                 )
 
 
-                // ==========================================
-                // DATOS QUE EMAILJS NECESITA
-                // ==========================================
-
                 val json = JSONObject()
 
                 json.put(
@@ -340,9 +301,6 @@ class confirmar_reporte : AppCompatActivity() {
                 )
 
 
-                // ==========================================
-                // CONEXIÓN CON EMAILJS
-                // ==========================================
 
                 val url =
                     URL(EMAILJS_URL)
@@ -366,11 +324,6 @@ class confirmar_reporte : AppCompatActivity() {
 
                 connection.doOutput = true
 
-
-                // ==========================================
-                // ENVIAR JSON
-                // ==========================================
-
                 connection.outputStream.use { outputStream ->
 
                     outputStream.write(
@@ -380,9 +333,6 @@ class confirmar_reporte : AppCompatActivity() {
                 }
 
 
-                // ==========================================
-                // LEER RESPUESTA
-                // ==========================================
 
                 val responseCode =
                     connection.responseCode
@@ -466,10 +416,6 @@ class confirmar_reporte : AppCompatActivity() {
                     return@withContext
                 }
 
-
-                // ==========================================
-                // IR A REPORTE ENVIADO
-                // ==========================================
 
                 val nuevoIntent = Intent(
                     this@confirmar_reporte,

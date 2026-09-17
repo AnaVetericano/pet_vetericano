@@ -23,9 +23,15 @@ class inicio_sesion : AppCompatActivity() {
         binding.btnIniciarSesion.setOnClickListener {
             iniciarSesion()
         }
+
         binding.txtRegistrarse.setOnClickListener {
             val intent = Intent(this, Registro::class.java)
             startActivity(intent)
+        }
+        binding.txtRecoverPassword.setOnClickListener {
+            val dialogRecuperar = RecuperarContrasenia(this@inicio_sesion)
+
+            dialogRecuperar.show()
         }
     }
 

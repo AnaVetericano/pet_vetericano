@@ -108,9 +108,7 @@ class confirmar_reporte : AppCompatActivity() {
         }
 
 
-        // ==========================================
-        // BOTÓN CONFIRMAR REPORTE
-        // ==========================================
+
 
         binding.btnenvR.setOnClickListener {
 
@@ -155,9 +153,6 @@ class confirmar_reporte : AppCompatActivity() {
                 binding.descri.text.toString()
 
 
-            // ==========================================
-            // ENVIAR CORREO CON EMAILJS
-            // ==========================================
 
             enviarCorreoSilenciosoYContinuar(
                 tipo = tipo,

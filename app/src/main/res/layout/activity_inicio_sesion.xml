@@ -148,14 +148,39 @@
         app:layout_constraintTop_toBottomOf="@+id/txtRecuperar" />
 
     <TextView
-        android:id="@+id/txtRegistrarse"
+        android:id="@+id/txtForgetPassword"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:text="¿No tienes cuenta?REGISTRATE"
+        android:text="@string/forgetPassword"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/btnIniciar_sesion"
         />
+
+    <TextView
+        android:id="@+id/txtRecoverPassword"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:textColor="@color/blue"
+        android:text="@string/recoverPassword"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtForgetPassword"
+        />
+
+    <TextView
+        android:id="@+id/txtRegistrarse"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:text="¿No tienes cuenta? REGISTRATE"
+        android:textColor="@color/blue"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/txtRecoverPassword"
+        />
+
 
 </androidx.constraintlayout.widget.ConstraintLayout>

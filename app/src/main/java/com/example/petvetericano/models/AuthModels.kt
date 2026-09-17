@@ -61,8 +61,12 @@ data class confirmarpeticion(
     val id_estado :Int,
     val responsable : String,
     val descripcion : String,
-    val prioridad: String,
-    val fecha_asignacion:Int,
-    val fecha:Int,
+    val prioridad: String
 )
 
+data class TipoPeticionModel(
+    val id_tipo: Int,
+    val nombre: String,
+    val descripcion: String,
+    val activo: Boolean
+)

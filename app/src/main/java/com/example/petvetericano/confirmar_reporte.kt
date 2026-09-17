@@ -113,16 +113,17 @@ class confirmar_reporte : AppCompatActivity() {
             // 3. Ejecutar la petición a la API y luego el correo
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    // Construir el objeto para la API
-                    // IMPORTANTE: Asegúrate de que los nombres coincidan exactamente con tu data class
+
+                    val prefs = getSharedPreferences("MisReportesPrefs", MODE_PRIVATE)
+                    val idTipoFinal = prefs.getInt("ID_TIPO_SELECCIONADO", 1)
+
                     val nuevaPeticion = confirmarpeticion(
-                        id_tipo = 1,
+                        id_tipo = idTipoFinal, // <--- ¡Aquí llegará el 3 o el que hayas seleccionado desde la API!
                         id_ubicacion = 1,
                         id_estado = 1,
                         responsable = 5,
                         descripcion = descripcionRecibida ?: "Sin descripción",
-                        prioridad = "alta",
-                        fecha_asignacion = "2026-09-16T23:23:48Z"
+                        prioridad = "alta"
                     )
 
                     // Hacer la petición a la API (Retrofit)
@@ -239,9 +240,7 @@ class confirmar_reporte : AppCompatActivity() {
         }
     }
 
-    // ==================================================
-    // OBTENER CANTIDAD DE FOTOS
-    // ==================================================
+
     private fun obtenerCantidadFotos() {
         urlsArchivos = intent.getStringArrayListExtra("URLS_ARCHIVOS")
         val cantidad = urlsArchivos?.size ?: 0

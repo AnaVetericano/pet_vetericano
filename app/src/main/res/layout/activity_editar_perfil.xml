@@ -12,7 +12,7 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
-        app:layout_constraintBottom_toTopOf="@id/bottomNavigationCard"
+        app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
@@ -35,10 +35,10 @@
                 android:textSize="22sp"
                 android:textStyle="bold" />
 
-            <!-- Contenedor Foto de Perfil + Ícono Cámara -->
+            <!-- Contenedor Foto de Perfil Ampliado (180dp) -->
             <FrameLayout
-                android:layout_width="140dp"
-                android:layout_height="140dp"
+                android:layout_width="180dp"
+                android:layout_height="180dp"
                 android:layout_marginTop="20dp">
 
                 <com.google.android.material.imageview.ShapeableImageView
@@ -51,11 +51,11 @@
 
                 <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/btnCamera"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
                     android:layout_gravity="bottom|end"
                     android:background="#000000"
-                    android:padding="8dp"
+                    android:padding="10dp"
                     android:src="@drawable/camera"
                     app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
                     app:tint="#FFFFFF" />
@@ -107,6 +107,7 @@
                         android:textSize="16sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Botón Guardar Cambios y Volver -->
                 <Button
                     android:id="@+id/btnGuardarPerfil"
                     android:layout_width="match_parent"
@@ -163,7 +164,7 @@
                 android:id="@+id/btnLogout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="89dp"
                 android:layout_marginBottom="20dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"
@@ -190,69 +191,5 @@
 
         </LinearLayout>
     </ScrollView>
-
-    <!-- Navigation Bar Inferior -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/bottomNavigationCard"
-        android:layout_width="match_parent"
-        android:layout_height="72dp"
-        android:layout_margin="16dp"
-        app:cardCornerRadius="36dp"
-        app:cardElevation="8dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:strokeWidth="0dp">
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="horizontal">
-
-            <ImageView
-                android:id="@+id/ivNavInicio"
-                android:layout_width="0dp"
-                android:layout_height="28dp"
-                android:layout_weight="1"
-                android:src="@drawable/house"
-                app:tint="#1E293B" />
-
-            <ImageView
-                android:id="@+id/ivNavDocumentos"
-                android:layout_width="0dp"
-                android:layout_height="28dp"
-                android:layout_weight="1"
-                android:src="@drawable/file_text"
-                app:tint="#1E293B" />
-
-            <!-- Botón Central Huella -->
-            <ImageView
-                android:id="@+id/cardNavPrincipal"
-                android:layout_width="54dp"
-                android:layout_height="54dp"
-                android:background="@drawable/bg_circle"
-                android:padding="12dp"
-                android:src="@drawable/baseline_pets_24"
-                app:tint="#FFFFFF" />
-
-            <ImageView
-                android:id="@+id/ivNavFavoritos"
-                android:layout_width="0dp"
-                android:layout_height="28dp"
-                android:layout_weight="1"
-                android:src="@drawable/heart"
-                app:tint="#1E293B" />
-
-            <ImageView
-                android:id="@+id/ivNavPerfil"
-                android:layout_width="0dp"
-                android:layout_height="28dp"
-                android:layout_weight="1"
-                android:src="@drawable/user"
-                app:tint="#4D43B5" />
-
-        </LinearLayout>
-    </com.google.android.material.card.MaterialCardView>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

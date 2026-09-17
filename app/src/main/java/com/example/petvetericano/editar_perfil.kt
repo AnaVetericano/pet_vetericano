@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityEditarPerfilBinding
+import com.example.petvetericano.models.ActualizarPerfilRequest
 import com.example.petvetericano.network.RetrofitClient
 import kotlinx.coroutines.launch
 import java.io.File
@@ -32,13 +33,9 @@ class editar_perfil : AppCompatActivity() {
 
         prefs = SharedPreferencesManager(this)
 
-        // Sincronizar el token guardado con RetrofitClient
-        RetrofitClient.authToken = prefs.getAccessToken()
-
         setupDarkMode()
         cargarDatosPerfil()
         setupMenuListeners()
-        setupBottomNavigation()
     }
 
     override fun onResume() {
@@ -66,7 +63,7 @@ class editar_perfil : AppCompatActivity() {
         }
     }
 
-    private fun guardarCambiosPerfil() {
+    private fun guardarCambiosYVolver() {
         val nuevoNombre = binding.etName.text.toString().trim()
         val nuevoEmail  = binding.etEmail.text.toString().trim()
 
@@ -75,22 +72,20 @@ class editar_perfil : AppCompatActivity() {
             return
         }
 
-        // Asegurar que Retrofit tenga el token más reciente antes de hacer la petición
-        RetrofitClient.authToken = prefs.getAccessToken()
-
-        val datosActualizados = mapOf(
-            "nombre" to nuevoNombre,
-            "email" to nuevoEmail
+        val request = ActualizarPerfilRequest(
+            nombre = nuevoNombre,
+            email = nuevoEmail
         )
 
         lifecycleScope.launch {
             try {
-                // Petición PATCH gestionada por AuthInterceptor automáticamente
-                val respuesta = RetrofitClient.apiService.actualizarPerfil(datosActualizados)
+                // Consumo de la API en Backend (Base de Datos)
+                val respuesta = RetrofitClient.apiService.actualizarPerfil(request)
 
                 if (respuesta.isSuccessful) {
                     val usuarioActualizado = respuesta.body()
 
+                    // Actualización local (Frontend / Cache)
                     prefs.saveUserData(
                         name  = usuarioActualizado?.nombre ?: nuevoNombre,
                         email = usuarioActualizado?.email ?: nuevoEmail,
@@ -99,17 +94,28 @@ class editar_perfil : AppCompatActivity() {
 
                     Toast.makeText(this@editar_perfil, "Perfil actualizado con éxito", Toast.LENGTH_SHORT).show()
                 } else {
-                    Log.e("API_ERROR", "Error al actualizar perfil: ${respuesta.code()}")
+                    Log.e("API_ERROR", "Error HTTP: ${respuesta.code()}")
                     prefs.saveUserData(name = nuevoNombre, email = nuevoEmail, phone = prefs.getUserPhone())
                     Toast.makeText(this@editar_perfil, "Guardado localmente", Toast.LENGTH_SHORT).show()
                 }
 
             } catch (e: Exception) {
-                Log.e("API_ERROR", "Excepción de red: ${e.message}")
+                Log.e("API_ERROR", "Error de red: ${e.message}")
                 prefs.saveUserData(name = nuevoNombre, email = nuevoEmail, phone = prefs.getUserPhone())
                 Toast.makeText(this@editar_perfil, "Guardado localmente (Sin conexión)", Toast.LENGTH_SHORT).show()
+            } finally {
+                // Redirección al Menú Principal (Bienvenida)
+                irAMenuInicial()
             }
         }
+    }
+
+    private fun irAMenuInicial() {
+        val intent = Intent(this, bienvenida::class.java)
+        // Banderas para limpiar la pila de actividades y evitar regresar a Editar Perfil con el botón atrás
+        intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
+        startActivity(intent)
+        finish()
     }
 
     private fun guardarYMostrarImagen(uri: Uri) {
@@ -155,40 +161,14 @@ class editar_perfil : AppCompatActivity() {
         }
 
         binding.btnGuardarPerfil.setOnClickListener {
-            guardarCambiosPerfil()
+            guardarCambiosYVolver()
         }
 
         binding.btnLogout.setOnClickListener {
             prefs.saveAccessToken("")
-            RetrofitClient.authToken = null
             val intent = Intent(this, inicio_sesion::class.java)
             startActivity(intent)
             finish()
-        }
-    }
-
-    private fun setupBottomNavigation() {
-        binding.ivNavInicio.setOnClickListener {
-            val intent = Intent(this, bienvenida::class.java)
-            startActivity(intent)
-            finish()
-        }
-
-        binding.ivNavDocumentos.setOnClickListener {
-            Toast.makeText(this, "Documentos", Toast.LENGTH_SHORT).show()
-        }
-
-        binding.cardNavPrincipal.setOnClickListener {
-            val intent = Intent(this, reportar_peticion::class.java)
-            startActivity(intent)
-        }
-
-        binding.ivNavFavoritos.setOnClickListener {
-            Toast.makeText(this, "Favoritos", Toast.LENGTH_SHORT).show()
-        }
-
-        binding.ivNavPerfil.setOnClickListener {
-            Toast.makeText(this, "Ya estás en Perfil", Toast.LENGTH_SHORT).show()
         }
     }
 }

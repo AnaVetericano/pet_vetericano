@@ -12,12 +12,18 @@ import kotlinx.coroutines.launch
 class bienvenida : AppCompatActivity() {
 
     private lateinit var binding: ActivityBienvenidaBinding
+    private lateinit var prefs: SharedPreferencesManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityBienvenidaBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        prefs = SharedPreferencesManager(this)
+
+        // Muestra el saludo actualizado desde SharedPreferences
+        actualizarSaludoLocal()
 
         val token = intent.getStringExtra("TOKEN")
 
@@ -30,38 +36,48 @@ class bienvenida : AppCompatActivity() {
         configurarEventos()
     }
 
-    private fun cargarDashboard(token: String) {
+    // Se activa de nuevo al regresar desde la pantalla de editar perfil
+    override fun onResume() {
+        super.onResume()
+        actualizarSaludoLocal()
+    }
 
+    // Actualiza el saludo "Hola, [Nombre]" en la vista
+    private fun actualizarSaludoLocal() {
+        val nombreGuardado = prefs.getUserName()
+        if (nombreGuardado.isNotEmpty()) {
+            val primerNombre = nombreGuardado.split(" ").firstOrNull() ?: nombreGuardado
+            binding.tvSaludo.text = "Hola, $primerNombre"
+        }
+    }
+
+    private fun cargarDashboard(token: String) {
         lifecycleScope.launch {
             try {
-                // Enviamos el token al backend
                 val respuesta = RetrofitClient.apiService.obtenerDashboard("Bearer $token")
 
                 if (respuesta.isSuccessful) {
                     val datos = respuesta.body()
 
                     if (datos != null) {
-
-                        // Mostrar saludo en pantalla
-                        binding.tvSaludo.text = "Hola, ${datos.nombre}"
-                        binding.tvMensajeBienvenida.text = "¡Gracias por ayudar!"
                         binding.tvMensajeBienvenida.text = "¡Gracias por ayudar!"
 
-                        // NUEVO: guardar nombre completo en SharedPreferences
-                        val prefs = SharedPreferencesManager(this@bienvenida)
+                        val nombreCompleto = "${datos.nombre} ${datos.apellido}".trim()
+                        val nombreFinal = if (nombreCompleto.isNotEmpty()) nombreCompleto else datos.nombre
+
                         prefs.saveUserData(
-                            name  = "${datos.nombre} ${datos.apellido}",
+                            name  = nombreFinal,
                             email = datos.email,
-                            phone = prefs.getUserPhone()  // conserva el teléfono si ya existe
+                            phone = prefs.getUserPhone()
                         )
+
+                        actualizarSaludoLocal()
                     }
                 } else {
-                    // 1. el Logcat para desarrollo
                     val codigoError = respuesta.code()
                     val mensajeError = respuesta.errorBody()?.string() ?: "Sin detalles"
                     android.util.Log.e("API_ERROR", "Error $codigoError: $mensajeError")
 
-                    // 2. Traducimos el error a un mensaje amigable para el usuario final
                     val mensajeUsuario = when (codigoError) {
                         401 -> "Tu sesión ha expirado. Por favor, inicia sesión de nuevo."
                         403 -> "No tienes permisos para ver esta información."
@@ -70,23 +86,16 @@ class bienvenida : AppCompatActivity() {
                         else -> "No se pudo cargar tu información (Error $codigoError)."
                     }
 
-                    Toast.makeText(
-                        this@bienvenida,
-                        mensajeUsuario,
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(this@bienvenida, mensajeUsuario, Toast.LENGTH_LONG).show()
                 }
 
             } catch (e: Exception) {
                 android.util.Log.e("API_ERROR", "Excepción técnica: ${e.message}")
-                Toast.makeText(
-                    this@bienvenida,
-                    "Error de conexión. Revisa tu internet.",
-                    Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(this@bienvenida, "Error de conexión. Revisa tu internet.", Toast.LENGTH_LONG).show()
             }
         }
     }
+
     private fun configurarEventos() {
         binding.cardReportarPeticion.setOnClickListener {
             val intent = Intent(this, reportar_peticion::class.java)
@@ -111,14 +120,12 @@ class bienvenida : AppCompatActivity() {
         }
 
         binding.ivNavFavoritos.setOnClickListener {
-            val intent = Intent(this, Eventos::class.java)
-            startActivity(intent)
+            Toast.makeText(this, "Favoritos", Toast.LENGTH_SHORT).show()
         }
 
         binding.ivNavPerfil.setOnClickListener {
             val intent = Intent(this, editar_perfil::class.java)
             startActivity(intent)
-            Toast.makeText(this, "Perfil", Toast.LENGTH_SHORT).show()
         }
     }
 }

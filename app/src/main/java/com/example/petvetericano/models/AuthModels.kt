@@ -48,3 +48,10 @@ data class DashboardResponse(
     val nombre_rol: String
 )
 
+data class VoluntariadoEventos(
+    val id: Int,
+    val titulo: String,
+    val descripcion: String,
+    val imagen: String? = null,
+    val fecha: String
+)

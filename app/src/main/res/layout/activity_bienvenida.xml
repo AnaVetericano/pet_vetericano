@@ -116,93 +116,11 @@
 
 
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardAdopcion"
-            android:layout_width="106dp"
-            android:layout_height="106dp"
-            android:layout_marginEnd="4dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:cardBackgroundColor="#E9E9E5"
-            app:cardCornerRadius="15dp"
-            app:cardElevation="0dp"
-            app:strokeColor="#777777"
-            app:strokeWidth="1dp">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="6dp">
-
-                <ImageView
-                    android:id="@+id/ivIconoAdopcion"
-                    android:layout_width="43dp"
-                    android:layout_height="43dp"
-                    android:contentDescription="Adopción"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/heart"
-                    app:tint="#444444" />
-
-                <TextView
-                    android:id="@+id/tvAdopcion"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="7dp"
-                    android:text="Adopción"
-                    android:textColor="#000000"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
 
 
 
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardVoluntariado"
-            android:layout_width="106dp"
-            android:layout_height="106dp"
-            android:layout_marginStart="4dp"
-            android:clickable="true"
-            android:focusable="true"
-            app:cardBackgroundColor="#E9E9E5"
-            app:cardCornerRadius="15dp"
-            app:cardElevation="0dp"
-            app:strokeColor="#777777"
-            app:strokeWidth="1dp">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center"
-                android:orientation="vertical"
-                android:padding="6dp">
 
-                <ImageView
-                    android:id="@+id/ivIconoVoluntariado"
-                    android:layout_width="43dp"
-                    android:layout_height="43dp"
-                    android:contentDescription="Voluntariado"
-                    android:scaleType="fitCenter"
-                    android:src="@drawable/location"
-                    app:tint="#777777" />
-
-                <TextView
-                    android:id="@+id/tvVoluntariado"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="7dp"
-                    android:text="Voluntariado"
-                    android:textColor="#000000"
-                    android:textSize="11sp"
-                    android:textStyle="bold" />
-
-            </LinearLayout>
-
-        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 
@@ -241,6 +159,18 @@
                 android:focusable="true"
                 android:src="@drawable/house"
                 app:tint="#4145A8" />
+
+
+            <ImageView
+                android:id="@+id/ivIconoAdopcion"
+                android:layout_width="0dp"
+                android:layout_height="25dp"
+                android:layout_weight="1"
+                android:clickable="true"
+                android:contentDescription=""
+                android:focusable="true"
+                android:src="@drawable/adopcionicon"
+                app:tint="#555555" />
 
 
             <!-- BOTON CENTRAL -->
@@ -292,6 +222,9 @@
                 android:focusable="true"
                 android:src="@drawable/user"
                 app:tint="#555555" />
+
+
+
 
         </LinearLayout>
 

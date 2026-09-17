@@ -1,20 +1,40 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical"
+    android:fitsSystemWindows="true"
     android:background="#F8F9FA">
 
-    <!-- Encabezado -->
-    <TextView
+    <!-- Encabezado con botón regresar -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Eventos y Jornadas 🐾"
-        android:textSize="26sp"
-        android:textStyle="bold"
-        android:textColor="#333333"
-        android:padding="20dp" />
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:paddingStart="12dp"
+        android:paddingTop="12dp"
+        android:paddingEnd="20dp"
+        android:paddingBottom="4dp">
+
+        <ImageButton
+            android:id="@+id/btnAtras"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Regresar"
+            android:src="@android:drawable/ic_menu_revert" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Eventos y Jornadas 🐾"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="#333333"
+            android:paddingStart="8dp" />
+    </LinearLayout>
 
     <!-- Descripción -->
     <TextView
@@ -26,6 +46,27 @@
         android:paddingStart="20dp"
         android:paddingEnd="20dp"
         android:paddingBottom="15dp" />
+
+    <!-- Indicador de carga -->
+    <ProgressBar
+        android:id="@+id/progressBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="24dp"
+        android:visibility="gone" />
+
+    <!-- Mensaje cuando no hay eventos -->
+    <TextView
+        android:id="@+id/tvSinEventos"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="No hay eventos disponibles por el momento."
+        android:textAlignment="center"
+        android:textSize="16sp"
+        android:textColor="#888888"
+        android:layout_marginTop="32dp"
+        android:visibility="gone" />
 
     <!-- Lista de tarjetas -->
     <androidx.recyclerview.widget.RecyclerView

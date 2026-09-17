@@ -1,5 +1,6 @@
 package com.example.petvetericano.models
 
+import android.R
 import com.google.gson.annotations.SerializedName
 // --- Login ---
 data class LoginRequest(
@@ -46,5 +47,22 @@ data class DashboardResponse(
     val apellido: String,
     val email: String,
     val nombre_rol: String
+)
+
+
+
+
+
+
+data class confirmarpeticion(
+    val id_tipo : Int,
+    val id_peticion : Int,
+    val id_ubicacion : Int,
+    val id_estado :Int,
+    val responsable : String,
+    val descripcion : String,
+    val prioridad: String,
+    val fecha_asignacion:Int,
+    val fecha:Int,
 )
 

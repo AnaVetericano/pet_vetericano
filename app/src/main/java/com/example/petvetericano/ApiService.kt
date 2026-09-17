@@ -25,21 +25,38 @@ data class IniciarPeticionRequest(
 data class IniciarPeticionResponse(
     val mensaje: String,
     val id_peticion: Int,
-    val id_tipo: Int
+    val id_tipo: Int,
+    val datos: Any? = null
+)
+
+data class confirmarpeticion(
+    val id_tipo : Int,
+    val id_ubicacion: Int,
+    val id_estado: Int,
+    val responsable: Int,
+    val descripcion: String,
+    val prioridad: String,
+    val fecha_asignacion: String,
 )
 
 // Interfaz para la comunicación con Django
 interface ApiService {
 
-    @GET("api/peticiones/perfil/")
+    @GET("peticiones/perfil/")
     suspend fun obtenerPerfil(): Response<UsuarioPerfilResponse>
 
-    @PATCH("api/peticiones/perfil/")
+    @PATCH("peticiones/perfil/")
     suspend fun actualizarPerfil(@Body usuario: Map<String, String>): Response<UsuarioPerfilResponse>
 
-    @GET("api/peticiones/tipos/")
+    @GET("peticiones/tipos/")
     suspend fun obtenerTiposPeticion(): Response<List<TipoPeticionResponse>>
 
-    @POST("api/peticiones/iniciar/")
+    // CORREGIDO: Debe apuntar a "peticiones/iniciar/" como lo tienes en tu Django urls.py
+    @POST("peticiones/iniciar/")
     suspend fun iniciarPeticion(@Body request: IniciarPeticionRequest): Response<IniciarPeticionResponse>
+
+    // Este se queda en la raíz para enviar el formulario completo
+    @POST("peticiones/")
+    suspend fun enviarPeticion(@Body peticion: confirmarpeticion): Response<Any>
+
 }

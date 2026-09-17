@@ -26,6 +26,8 @@ class confirmar_reporte : AppCompatActivity() {
     // ==========================================
     // DATOS DE EMAILJS
     // ==========================================
+
+
     private val EMAILJS_SERVICE_ID = "service_9vahcuy"
     private val EMAILJS_TEMPLATE_ID = "template_0y9diuz"
     private val EMAILJS_PUBLIC_KEY = "JV0ON_2pnb7q0zXvH"
@@ -37,12 +39,10 @@ class confirmar_reporte : AppCompatActivity() {
         binding = ActivityConfirmarReporteBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Obtener cantidad de fotos
         obtenerCantidadFotos()
 
-        // ==========================================
-        // RECIBIR DATOS DEL REPORTE
-        // ==========================================
+
+
         val descripcionRecibida = intent.getStringExtra("DESCRIPCION")
         binding.descri.text = descripcionRecibida ?: "Sin descripción"
 
@@ -52,6 +52,9 @@ class confirmar_reporte : AppCompatActivity() {
         // ==========================================
         // OBTENER UBICACIÓN
         // ==========================================
+
+
+
         val latitud = intent.getDoubleExtra("LATITUD", 0.0)
         val longitud = intent.getDoubleExtra("LONGITUD", 0.0)
 
@@ -80,6 +83,29 @@ class confirmar_reporte : AppCompatActivity() {
             startActivity(Intent(this, reportar_peticionn::class.java))
         }
 
+
+        binding.btnenvR.setOnClickListener {
+
+            // Limpiar cachés
+
+            getSharedPreferences(
+                "ReporteOffline",
+                MODE_PRIVATE
+            )
+                .edit()
+                .clear()
+                .apply()
+
+
+            getSharedPreferences(
+                "MapaOffline",
+                MODE_PRIVATE
+            )
+                .edit()
+                .clear()
+                .apply()
+
+
         binding.tipoPeticion.setOnClickListener {
             startActivity(Intent(this, reportar_peticion::class.java))
         }
@@ -91,6 +117,18 @@ class confirmar_reporte : AppCompatActivity() {
         binding.archivosedi.setOnClickListener {
             startActivity(Intent(this, reportar_peticionnn::class.java))
         }
+
+
+            val tipo =
+                binding.tvTipoReporte.text.toString()
+
+            val lugar =
+                binding.ubicacionedit.text.toString()
+
+            val descripcion =
+                binding.descri.text.toString()
+
+
 
         // ==========================================
         // BOTÓN CONFIRMAR REPORTE
@@ -114,6 +152,24 @@ class confirmar_reporte : AppCompatActivity() {
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
 
+            enviarCorreoSilenciosoYContinuar(
+                tipo = tipo,
+                lugar = lugar,
+                descripcion = descripcion,
+                latitud = latitud,
+                longitud = longitud,
+                tipoReporte = tipoReporte,
+                descripcionRecibida = descripcionRecibida
+            )
+        }
+
+
+        binding.ubicacionedit.setOnClickListener {
+
+            val intent = Intent(
+                this,
+                reportar_peticionn::class.java
+            )
                     val prefs = getSharedPreferences("MisReportesPrefs", MODE_PRIVATE)
                     val idTipoFinal = prefs.getInt("ID_TIPO_SELECCIONADO", 1)
 
@@ -148,6 +204,45 @@ class confirmar_reporte : AppCompatActivity() {
                         val errorBody = response.errorBody()?.string()
                         android.util.Log.e("API_ERROR", "Error: $errorBody")
 
+            startActivity(intent)
+        }
+
+
+        binding.tipoPeticion.setOnClickListener {
+
+            val intent = Intent(
+                this,
+                reportar_peticion::class.java
+            )
+
+            startActivity(intent)
+        }
+
+
+
+        binding.descripedit.setOnClickListener {
+
+            val intent = Intent(
+                this,
+                reportar_peticionnn::class.java
+            )
+
+            startActivity(intent)
+        }
+
+
+
+        binding.archivosedi.setOnClickListener {
+
+            val intent = Intent(
+                this,
+                reportar_peticionnn::class.java
+            )
+
+            startActivity(intent)
+        }
+    }
+
                         withContext(Dispatchers.Main) {
                             Toast.makeText(this@confirmar_reporte, "Error al guardar en base de datos", Toast.LENGTH_LONG).show()
                             binding.btnenvR.isEnabled = true
@@ -167,6 +262,7 @@ class confirmar_reporte : AppCompatActivity() {
     // ==================================================
     // FUNCIÓN PARA ENVIAR CORREO MEDIANTE EMAILJS
     // ==================================================
+
     private fun enviarCorreoSilenciosoYContinuar(
         tipo: String?,
         lugar: String,
@@ -176,10 +272,30 @@ class confirmar_reporte : AppCompatActivity() {
         tipoReporte: String?,
         descripcionRecibida: String?
     ) {
+
+
+        binding.btnenvR.isEnabled = false
+
+
+        Toast.makeText(
+            this,
+            "Enviando reporte, por favor espere...",
+            Toast.LENGTH_SHORT
+        ).show()
+
+
         lifecycleScope.launch(Dispatchers.IO) {
             var correoEnviado = false
             try {
                 val archivos = urlsArchivos?.joinToString("\n") ?: "No hay archivos"
+
+
+                val archivos = urlsArchivos
+                    ?.joinToString("\n")
+                    ?: "No hay archivos"
+
+
+
 
                 val templateParams = JSONObject()
                 templateParams.put("tipo", tipo ?: "Sin tipo")
@@ -188,6 +304,38 @@ class confirmar_reporte : AppCompatActivity() {
                 templateParams.put("latitud", latitud.toString())
                 templateParams.put("longitud", longitud.toString())
                 templateParams.put("archivos", archivos)
+
+
+                templateParams.put(
+                    "tipo",
+                    tipo ?: "Sin tipo"
+                )
+
+                templateParams.put(
+                    "lugar",
+                    lugar
+                )
+
+                templateParams.put(
+                    "descripcion",
+                    descripcion
+                )
+
+                templateParams.put(
+                    "latitud",
+                    latitud.toString()
+                )
+
+                templateParams.put(
+                    "longitud",
+                    longitud.toString()
+                )
+
+                templateParams.put(
+                    "archivos",
+                    archivos
+                )
+
 
                 val json = JSONObject()
                 json.put("service_id", EMAILJS_SERVICE_ID)
@@ -207,6 +355,12 @@ class confirmar_reporte : AppCompatActivity() {
                 }
 
                 val responseCode = connection.responseCode
+
+
+                val responseCode =
+                    connection.responseCode
+
+
                 if (responseCode in 200..299) {
                     correoEnviado = true
                 } else {
@@ -235,6 +389,40 @@ class confirmar_reporte : AppCompatActivity() {
                 } else {
                     Toast.makeText(this@confirmar_reporte, "No se pudo enviar el correo", Toast.LENGTH_LONG).show()
                     binding.btnenvR.isEnabled = true
+
+                    return@withContext
+                }
+
+
+                val nuevoIntent = Intent(
+                    this@confirmar_reporte,
+                    reporte_enviado::class.java
+                ).apply {
+
+                    putExtra(
+                        "TIPO_REPORTE",
+                        tipoReporte
+                    )
+
+                    putExtra(
+                        "LATITUD",
+                        latitud
+                    )
+
+                    putExtra(
+                        "LONGITUD",
+                        longitud
+                    )
+
+                    putExtra(
+                        "DESCRIPCION",
+                        descripcionRecibida
+                    )
+
+                    putStringArrayListExtra(
+                        "URLS_ARCHIVOS",
+                        urlsArchivos
+                    )
                 }
             }
         }

@@ -55,14 +55,14 @@ interface ApiService {
     suspend fun obtenerDashboard(
         @Header("Authorization") token: String
     ): Response<DashboardResponse>
-}
+
 
 
         @GET("usuarios/juridico/")
         suspend fun obtenerCorreoJuridico(
             @Header("Authorization") token: String
-        ): Response<JuridicoResponse> // O un Map si prefieres
-    }
+        ): Response<JuridicoResponse>
+}
 
     // Modelo para recibir la respuesta (ajustalo según lo que te devuelva Django)
     data class JuridicoResponse(

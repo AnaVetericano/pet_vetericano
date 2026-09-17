@@ -37,7 +37,6 @@ data class confirmarpeticion(
     val descripcion: String,
     val prioridad: String,
     val fecha_asignacion: String,
-    val fecha: String
 )
 
 // Interfaz para la comunicación con Django

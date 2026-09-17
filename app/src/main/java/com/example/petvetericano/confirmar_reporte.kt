@@ -122,8 +122,7 @@ class confirmar_reporte : AppCompatActivity() {
                         responsable = 5,
                         descripcion = descripcionRecibida ?: "Sin descripción",
                         prioridad = "alta",
-                        fecha_asignacion = "2026-09-16T23:23:48Z",
-                        fecha = "2026-09-16T23:23:48Z"
+                        fecha_asignacion = "2026-09-16T23:23:48Z"
                     )
 
                     // Hacer la petición a la API (Retrofit)

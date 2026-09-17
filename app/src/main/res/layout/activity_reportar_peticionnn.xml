@@ -164,29 +164,106 @@
         app:strokeColor="#E2E8F0"
         app:strokeWidth="1dp" />
 
+    <!-- Contenedor Horizontal para mostrar las dos fotos una al lado de la otra -->
+    <LinearLayout
+        android:id="@+id/layoutFotoCargada"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/btnSubirArchivo"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- FOTO 1 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardFoto1"
+            android:layout_width="140dp"
+            android:layout_height="80dp"
+            android:layout_marginEnd="8dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            android:visibility="gone">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/ivFoto1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="Foto 1" />
+
+                <ImageButton
+                    android:id="@+id/btnEliminar1"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_circle"
+                    android:backgroundTint="#FFFFFF"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    android:contentDescription="Eliminar foto 1"
+                    app:tint="#333333"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- FOTO 2 -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cardFoto2"
+            android:layout_width="140dp"
+            android:layout_height="80dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            android:visibility="gone">
+
+            <androidx.constraintlayout.widget.ConstraintLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/ivFoto2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="Foto 2" />
+
+                <ImageButton
+                    android:id="@+id/btnEliminar2"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_circle"
+                    android:backgroundTint="#FFFFFF"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    android:contentDescription="Eliminar foto 2"
+                    app:tint="#333333"
+                    app:layout_constraintTop_toTopOf="parent"
+                    app:layout_constraintEnd_toEndOf="parent" />
+
+            </androidx.constraintlayout.widget.ConstraintLayout>
+        </androidx.cardview.widget.CardView>
+
+    </LinearLayout>
+
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnContinue"
         android:layout_width="0dp"
         android:layout_height="56dp"
+        android:layout_marginTop="16dp"
         android:backgroundTint="#4D43B5"
         android:text="Continuar"
         android:textAllCaps="false"
         android:textSize="18sp"
         android:textStyle="bold"
         app:cornerRadius="12dp"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent" />
-
-    <TextView
-        android:id="@+id/numimagenes"
-        android:layout_width="365dp"
-        android:layout_height="67dp"
-        android:layout_marginTop="4dp"
-        android:text=""
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.0"
+        app:layout_constraintTop_toBottomOf="@+id/layoutFotoCargada"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnSubirArchivo" />
+        app:layout_constraintEnd_toEndOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

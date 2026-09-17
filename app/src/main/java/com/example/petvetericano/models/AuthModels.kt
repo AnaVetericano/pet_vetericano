@@ -1,21 +1,25 @@
 package com.example.petvetericano.models
 
 import com.google.gson.annotations.SerializedName
+
 // --- Login ---
 data class LoginRequest(
     val email: String,
     val password: String
 )
+
 data class LoginResponse(
     val mensaje: String,
     val email: String,
     @SerializedName("id_rol") val idRol: Int,
     val tokens: TokenData
 )
+
 data class TokenData(
     val refresh: String,
     val access: String
 )
+
 // --- Registro ---
 data class RegisterRequest(
     val email: String,
@@ -24,15 +28,18 @@ data class RegisterRequest(
     val nombre: String,
     val apellido: String
 )
+
 // --- Recuperar Contraseña ---
 data class RecuperarPasswordRequest(
     val email: String
 )
+
 data class ConfirmarPasswordRequest(
     val email: String,
     val codigo: String,
     @SerializedName("nueva_password") val nuevaPassword: String
 )
+
 // --- Respuestas genéricas ---
 data class GenericResponse(
     val mensaje: String?,
@@ -54,4 +61,17 @@ data class VoluntariadoEventos(
     val descripcion: String,
     val imagen: String? = null,
     val fecha: String
+)
+// --- Perfil de Usuario ---
+data class UsuarioPerfilResponse(
+    @SerializedName("id_usuario") val idUsuario: Int?,
+    val email: String,
+    val nombre: String,
+    val apellido: String?,
+    val identificacion: String?
+)
+
+data class ActualizarPerfilRequest(
+    val nombre: String,
+    val email: String
 )

@@ -2,7 +2,7 @@ package com.example.petvetericano
 
 import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager
+import android.content.pm.PackageManager  //p.concedido
 import android.media.MediaMetadataRetriever
 import android.net.Uri
 import android.os.Bundle
@@ -43,7 +43,7 @@ class reportar_peticionnn : AppCompatActivity() {
     // URI de la foto que tomaremos con la cámara
     private var photoUri: Uri? = null
 
-    // CÁMARA
+    // camara
     private lateinit var cameraLauncher: ActivityResultLauncher<Uri>
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -92,9 +92,9 @@ class reportar_peticionnn : AppCompatActivity() {
 
         setupUI()
 
-        // =========================================================
-        // RECUPERAR DESCRIPCIÓN
-        // =========================================================
+
+        // recuperammos descripcion
+
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         val descripcionDelIntent = intent.getStringExtra("DESCRIPCION")
         val textoGuardado = prefs.getString(KEY_BORRADOR, "")

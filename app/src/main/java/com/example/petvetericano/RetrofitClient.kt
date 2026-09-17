@@ -1,21 +1,37 @@
 package com.example.petvetericano
 
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
+import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    // Si estás usando el emulador de Android Studio, la IP para apuntar al localhost de tu PC es 10.0.2.2.
-    // Si estás probando con un teléfono físico vía USB/WiFi, pon la IP local de tu PC (ej. http://192.168.1.50:8000/).
-    private const val BASE_URL = "http://10.0.2.2:8000/"
+    // =================================================================
+    // 🚦 CAMBIO DE ENTORNO: Descomenta la URL que vayas a usar
+    // =================================================================
 
-    // Variable para almacenar el token de sesión (SimpleJWT access token)
+    // ☁️ ENTORNO DE PRODUCCIÓN (Railway - Celular físico)
+    private const val BASE_URL = "https://backendvetericano-production.up.railway.app/api/"
+
+    // 💻 ENTORNO DE DESARROLLO LOCAL (Compa / Emulador)
+    // private const val BASE_URL = "http://10.0.2.2:8000/"
+
+    // =================================================================
+
     var authToken: String? = null
+
+    private val loggingInterceptor = HttpLoggingInterceptor().apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
 
     private val okHttpClient by lazy {
         OkHttpClient.Builder()
             .addInterceptor(AuthInterceptor { authToken })
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
             .build()
     }
 

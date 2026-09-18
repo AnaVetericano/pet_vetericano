@@ -151,6 +151,7 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun actualizarMarcador(latLng: LatLng) {
+        Toast.makeText(this, latLng.toString(), Toast.LENGTH_SHORT).show()
         selectedLatLng = latLng
         mMap?.clear()
         mMap?.addMarker(
@@ -231,7 +232,11 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         }
+        val idTipo = intent.getIntExtra("ID_TIPO_SELECCIONADO", 1)
+
+        intent.putExtra("ID_TIPO_SELECCIONADO", idTipo)
     }
+
 }
 
 //este es el mapa

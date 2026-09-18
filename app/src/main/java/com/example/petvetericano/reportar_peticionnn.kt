@@ -360,6 +360,9 @@ class reportar_peticionnn : AppCompatActivity() {
     ) {
         val referencia = intent.getStringExtra("PUNTO_REFERENCIA")
 
+        // 1. RECUPERAMOS el ID que venía viajando desde la primera pantalla
+        val idTipoRecibido = intent.getIntExtra("ID_TIPO_SELECCIONADO", 1)
+
         val intent = Intent(this, confirmar_reporte::class.java).apply {
             putExtra("TIPO_REPORTE", tipoReporte)
             putExtra("DESCRIPCION", descripcion)
@@ -367,6 +370,9 @@ class reportar_peticionnn : AppCompatActivity() {
             putExtra("LATITUD", latitud)
             putExtra("LONGITUD", longitud)
             putExtra("PUNTO_REFERENCIA", referencia)
+
+            // 2. LO VOLVEMOS A ADJUNTAR para que no se pierda hacia confirmar_reporte
+            putExtra("ID_TIPO_SELECCIONADO", idTipoRecibido)
         }
         startActivity(intent)
     }

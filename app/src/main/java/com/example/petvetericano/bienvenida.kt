@@ -70,6 +70,8 @@ class bienvenida : AppCompatActivity() {
                             email = datos.email,
                             phone = prefs.getUserPhone()
                         )
+                        val sharedPreferences = getSharedPreferences("SesionUsuario", MODE_PRIVATE)
+                        sharedPreferences.edit().putInt("ID_USUARIO", datos.id_usuario).apply()
 
                         actualizarSaludoLocal()
                     }

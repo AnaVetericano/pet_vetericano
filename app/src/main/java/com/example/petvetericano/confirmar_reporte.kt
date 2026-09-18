@@ -11,8 +11,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.json.JSONObject
-import java.io.BufferedReader
-import java.io.InputStreamReader
 import java.net.HttpURLConnection
 import java.net.URL
 import java.util.Locale
@@ -113,18 +111,22 @@ class confirmar_reporte : AppCompatActivity() {
             // 3. Ejecutar la petición a la API y luego el correo
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
-                    // Construir el objeto para la API
-                    // IMPORTANTE: Asegúrate de que los nombres coincidan exactamente con tu data class
+                    val prefs = getSharedPreferences("MisReportesPrefs", MODE_PRIVATE)
+                    val idTipoFinal = prefs.getInt("ID_TIPO_SELECCIONADO", 1)
+// 1. Leer el ID del usuario que inició sesión
+                    // 1. Leemos el ID del usuario logueado
+                    val prefsSesion = getSharedPreferences("SesionUsuario", MODE_PRIVATE)
+                    val idUsuarioLogueado = prefsSesion.getInt("ID_USUARIO", 1)
+
+// 2. Lo enviamos en la petición
                     val nuevaPeticion = confirmarpeticion(
-                        id_tipo = 1,
+                        id_tipo = idTipoFinal,
                         id_ubicacion = 1,
                         id_estado = 1,
-                        responsable = 5,
+                        responsable = idUsuarioLogueado, // <--- ¡Ahora es un Int y se envía automático!
                         descripcion = descripcionRecibida ?: "Sin descripción",
-                        prioridad = "alta",
-                        fecha_asignacion = "2026-09-16T23:23:48Z"
+                        prioridad = "alta"
                     )
-
                     // Hacer la petición a la API (Retrofit)
                     val response = RetrofitClient.apiService.enviarPeticion(nuevaPeticion)
 
@@ -180,19 +182,21 @@ class confirmar_reporte : AppCompatActivity() {
             try {
                 val archivos = urlsArchivos?.joinToString("\n") ?: "No hay archivos"
 
-                val templateParams = JSONObject()
-                templateParams.put("tipo", tipo ?: "Sin tipo")
-                templateParams.put("lugar", lugar)
-                templateParams.put("descripcion", descripcion)
-                templateParams.put("latitud", latitud.toString())
-                templateParams.put("longitud", longitud.toString())
-                templateParams.put("archivos", archivos)
+                val templateParams = JSONObject().apply {
+                    put("tipo", tipo ?: "Sin tipo")
+                    put("lugar", lugar)
+                    put("descripcion", descripcion)
+                    put("latitud", latitud.toString())
+                    put("longitud", longitud.toString())
+                    put("archivos", archivos)
+                }
 
-                val json = JSONObject()
-                json.put("service_id", EMAILJS_SERVICE_ID)
-                json.put("template_id", EMAILJS_TEMPLATE_ID)
-                json.put("user_id", EMAILJS_PUBLIC_KEY)
-                json.put("template_params", templateParams)
+                val json = JSONObject().apply {
+                    put("service_id", EMAILJS_SERVICE_ID)
+                    put("template_id", EMAILJS_TEMPLATE_ID)
+                    put("user_id", EMAILJS_PUBLIC_KEY)
+                    put("template_params", templateParams)
+                }
 
                 val url = URL(EMAILJS_URL)
                 val connection = url.openConnection() as HttpURLConnection
@@ -239,9 +243,6 @@ class confirmar_reporte : AppCompatActivity() {
         }
     }
 
-    // ==================================================
-    // OBTENER CANTIDAD DE FOTOS
-    // ==================================================
     private fun obtenerCantidadFotos() {
         urlsArchivos = intent.getStringArrayListExtra("URLS_ARCHIVOS")
         val cantidad = urlsArchivos?.size ?: 0

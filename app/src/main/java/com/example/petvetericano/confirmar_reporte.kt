@@ -113,16 +113,20 @@ class confirmar_reporte : AppCompatActivity() {
                 try {
                     val prefs = getSharedPreferences("MisReportesPrefs", MODE_PRIVATE)
                     val idTipoFinal = prefs.getInt("ID_TIPO_SELECCIONADO", 1)
+// 1. Leer el ID del usuario que inició sesión
+                    // 1. Leemos el ID del usuario logueado
+                    val prefsSesion = getSharedPreferences("SesionUsuario", MODE_PRIVATE)
+                    val idUsuarioLogueado = prefsSesion.getInt("ID_USUARIO", 1)
 
+// 2. Lo enviamos en la petición
                     val nuevaPeticion = confirmarpeticion(
                         id_tipo = idTipoFinal,
                         id_ubicacion = 1,
                         id_estado = 1,
-                        responsable = 5,
+                        responsable = idUsuarioLogueado, // <--- ¡Ahora es un Int y se envía automático!
                         descripcion = descripcionRecibida ?: "Sin descripción",
                         prioridad = "alta"
                     )
-
                     // Hacer la petición a la API (Retrofit)
                     val response = RetrofitClient.apiService.enviarPeticion(nuevaPeticion)
 

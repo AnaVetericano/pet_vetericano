@@ -70,7 +70,7 @@ data class confirmarpeticion(
     val id_peticion : Int,
     val id_ubicacion : Int,
     val id_estado :Int,
-    val responsable : String,
+    val responsable : Int,
     val descripcion : String,
     val prioridad: String)
 data class ActualizarPerfilRequest(

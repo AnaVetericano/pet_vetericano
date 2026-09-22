@@ -18,13 +18,14 @@ class bienvenida : AppCompatActivity() {
         binding = ActivityBienvenidaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Recuperamos el token guardado para asegurar el flujo
-        val prefsSesion = getSharedPreferences("SesionUsuario", MODE_PRIVATE)
-        val token = prefsSesion.getString("TOKEN", null)
+        // Leemos el token usando tu clase SharedPreferencesManager
+        val prefs = SharedPreferencesManager(this)
+        val token = prefs.getAccessToken()
 
-        if (!token.isNullOrEmpty()) {
+        if (token.isNotEmpty()) {
             RetrofitClient.authToken = token
             cargarDashboard()
+            configurarEventos()
         } else {
             // Si no hay token, redirigimos al login
             val intent = Intent(this, inicio_sesion::class.java).apply {
@@ -42,8 +43,12 @@ class bienvenida : AppCompatActivity() {
     private fun cargarDashboard() {
         lifecycleScope.launch {
             try {
-                // Llamada limpia sin parámetros, el AuthInterceptor inyecta el token automáticamente
-                val response = RetrofitClient.apiService.obtenerDashboard()
+                // Obtenemos el token también aquí con tu clase
+                val prefs = SharedPreferencesManager(this@bienvenida)
+                val token = prefs.getAccessToken()
+                val authHeader = "Bearer $token"
+
+                val response = RetrofitClient.apiService.obtenerDashboard(authHeader)
 
                 if (response.isSuccessful) {
                     val datos = response.body()

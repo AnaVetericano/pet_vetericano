@@ -18,11 +18,11 @@ class bienvenida : AppCompatActivity() {
         binding = ActivityBienvenidaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Leemos el token usando tu clase SharedPreferencesManager
-        val prefs = SharedPreferencesManager(this)
-        val token = prefs.getAccessToken()
+        // Recuperamos el token guardado para asegurar el flujo
+        val prefsSesion = getSharedPreferences("SesionUsuario", MODE_PRIVATE)
+        val token = prefsSesion.getString("TOKEN", null)
 
-        if (token.isNotEmpty()) {
+        if (!token.isNullOrEmpty()) {
             RetrofitClient.authToken = token
             cargarDashboard()
             configurarEventos()
@@ -36,58 +36,7 @@ class bienvenida : AppCompatActivity() {
         }
     }
 
-    private fun actualizarSaludoLocal() {
-        // Lógica local opcional
-    }
-
-    private fun cargarDashboard() {
-        lifecycleScope.launch {
-            try {
-                // Obtenemos el token también aquí con tu clase
-                val prefs = SharedPreferencesManager(this@bienvenida)
-                val token = prefs.getAccessToken()
-                val authHeader = "Bearer $token"
-
-                val response = RetrofitClient.apiService.obtenerDashboard(authHeader)
-
-                if (response.isSuccessful) {
-                    val datos = response.body()
-
-                    if (datos != null) {
-                        binding.tvMensajeBienvenida.text = "¡Gracias por ayudar!"
-
-                        val nombreCompleto = "${datos.nombre} ${datos.apellido}".trim()
-                        val nombreFinal = if (nombreCompleto.isNotEmpty()) nombreCompleto else datos.nombre
-
-                        // Aquí puedes actualizar tus vistas con el nombre del usuario
-                    }
-                } else {
-                    Toast.makeText(this@bienvenida, "Error al cargar el dashboard", Toast.LENGTH_SHORT).show()
-                }
-            } catch (e: Exception) {
-                Toast.makeText(this@bienvenida, "Error de conexión: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
     private fun configurarEventos() {
-        binding.cardReportarPeticion.setOnClickListener {
-            val intent = Intent(this, reportar_peticion::class.java)
-            startActivity(intent)
-        }
-        binding.cardAdopcion.setOnClickListener {
-            val intent = Intent(this, Adopcion::class.java)
-            startActivity(intent)
-        }
-        binding.cardVoluntariado.setOnClickListener {
-            val intent = Intent(this, voluntariado::class.java)
-            startActivity(intent)
-        }
-
-        binding.ivNavInicio.setOnClickListener {
-            Toast.makeText(this, "Ya estás en Inicio", Toast.LENGTH_SHORT).show()
-        }
-
         binding.cardNavPrincipal.setOnClickListener {
             val intent = Intent(this, reportar_peticion::class.java)
             startActivity(intent)
@@ -102,6 +51,30 @@ class bienvenida : AppCompatActivity() {
         binding.ivNavPerfil.setOnClickListener {
             val intent = Intent(this, editar_perfil::class.java)
             startActivity(intent)
+        }
+    }
+
+    private fun cargarDashboard() {
+        lifecycleScope.launch {
+            try {
+                // Llamada limpia sin parámetros, el AuthInterceptor inyecta el token automáticamente
+                val response = RetrofitClient.apiService.obtenerDashboard()
+
+                if (response.isSuccessful) {
+                    val datos = response.body()
+
+                    if (datos != null) {
+                        binding.tvMensajeBienvenida.text = "¡Gracias por ayudar!"
+
+                        val nombreCompleto = "${datos.nombre} ${datos.apellido}".trim()
+                        val nombreFinal = if (nombreCompleto.isNotEmpty()) nombreCompleto else datos.nombre
+                    }
+                } else {
+                    Toast.makeText(this@bienvenida, "Error al cargar el dashboard", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Toast.makeText(this@bienvenida, "Error de conexión: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 }

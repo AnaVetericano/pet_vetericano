@@ -10,6 +10,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.databinding.ActivityEventosBinding
+import com.example.petvetericano.models.VoluntariadoEventos // 👈 Esta importación soluciona el problema de la línea 71
 import com.example.petvetericano.network.RetrofitClient
 import kotlinx.coroutines.launch
 
@@ -37,8 +38,8 @@ class Eventos : AppCompatActivity() {
             finish()
         }
 
-        // Configurar RecyclerView y Adaptador
-        adapter = EventoAdapter(emptyList()) { evento ->
+        // 👈 Se especifica <VoluntariadoEventos> para que Kotlin no tenga dudas
+        adapter = EventoAdapter(emptyList<VoluntariadoEventos>()) { evento: VoluntariadoEventos ->
             // Al tocar un evento, mostrar detalles completos
             val titulo = evento.titulo.replace("\"", "").trim()
             val descripcion = evento.descripcion.replace("\"", "").trim()
@@ -71,13 +72,14 @@ class Eventos : AppCompatActivity() {
                 val respuesta = RetrofitClient.apiService.obtenerEventos(authHeader)
 
                 if (respuesta.isSuccessful) {
-                    val listaEventos = respuesta.body()
+                    val listaEventos: List<VoluntariadoEventos>? = respuesta.body()
 
                     if (!listaEventos.isNullOrEmpty()) {
                         adapter.actualizarLista(listaEventos)
                         binding.tvSinEventos.visibility = View.GONE
                     } else {
-                        adapter.actualizarLista(emptyList())
+                        // 👈 Se especifica también aquí el tipo en la lista vacía
+                        adapter.actualizarLista(emptyList<VoluntariadoEventos>())
                         binding.tvSinEventos.visibility = View.VISIBLE
                     }
                 } else {
@@ -107,6 +109,5 @@ class Eventos : AppCompatActivity() {
                 binding.progressBar.visibility = View.GONE
             }
         }
-
     }
 }

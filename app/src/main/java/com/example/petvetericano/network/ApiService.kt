@@ -7,9 +7,11 @@ import com.example.petvetericano.models.LoginResponse
 import com.example.petvetericano.models.TipoPeticionResponse
 import com.example.petvetericano.models.UsuarioPerfilResponse
 import com.example.petvetericano.models.confirmarpeticion
+import com.example.petvetericano.models.VoluntariadoEventos // ✅ Importación agregada
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
+import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 
@@ -59,14 +61,11 @@ interface ApiService {
         @Header("Authorization") token: String? = null
     ): Response<List<VoluntariadoEventos>>
 
-}
-
-    @GET("voluntariado/eventos/")
-    suspend fun obtenerEventos(): Response<Any>
-
     // --- MODULO JURIDICO ---
     @GET("usuarios/juridica/")
     suspend fun obtenerCorreoJuridico(): Response<JuridicoResponse>
+
+} // ✅ Aquí cierra correctamente la interfaz ApiService, encerrando todas las rutas
 
 
 // Modelos de soporte integrados

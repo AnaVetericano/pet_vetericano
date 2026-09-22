@@ -8,18 +8,27 @@ import java.util.concurrent.TimeUnit
 
 object RetrofitClient {
 
-    // ⚠️ REEMPLAZA ESTO POR TU URL REAL DE RAILWAY (Debe terminar siempre en /api/)
+    // =================================================================
+    // 🚦 ENTORNO DE PRODUCCIÓN (Railway - Celular físico)
+    // =================================================================
     private const val BASE_URL = "https://backendvetericano-production.up.railway.app/api/"
+
+    // Variable estática global para almacenar el token de acceso
+    var authToken: String? = null
 
     private val loggingInterceptor = HttpLoggingInterceptor().apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
 
-    private val okHttpClient = OkHttpClient.Builder()
-        .addInterceptor(loggingInterceptor)
-        .connectTimeout(30, TimeUnit.SECONDS)
-        .readTimeout(30, TimeUnit.SECONDS)
-        .build()
+    private val okHttpClient by lazy {
+        OkHttpClient.Builder()
+            // Inyecta el token automáticamente usando la variable estática
+            .addInterceptor(AuthInterceptor { authToken })
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(30, TimeUnit.SECONDS)
+            .readTimeout(30, TimeUnit.SECONDS)
+            .build()
+    }
 
     val apiService: ApiService by lazy {
         Retrofit.Builder()

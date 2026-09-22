@@ -107,5 +107,6 @@ class Eventos : AppCompatActivity() {
                 binding.progressBar.visibility = View.GONE
             }
         }
+
     }
 }

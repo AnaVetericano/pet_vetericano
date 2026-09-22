@@ -19,12 +19,8 @@
     <string name="string">text</string>
     <string name="title">title</string>
     <string name="cancel">cancel</string>
-
-
-
-
-
-
+    <string name="img_perro">img perro</string>
+    <string name="logovetericano">logoVetericano</string>
 
 
 </resources>

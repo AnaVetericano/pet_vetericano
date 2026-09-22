@@ -71,7 +71,23 @@ data class UsuarioPerfilResponse(
     val identificacion: String?
 )
 
+
+data class confirmarpeticion(
+    val id_tipo : Int,
+    val id_peticion : Int,
+    val id_ubicacion : Int,
+    val id_estado :Int,
+    val responsable : Int,
+    val descripcion : String,
+    val prioridad: String)
 data class ActualizarPerfilRequest(
     val nombre: String,
-    val email: String
+    val email: String)
+
+
+data class TipoPeticionModel(
+    val id_tipo: Int,
+    val nombre: String,
+    val descripcion: String,
+    val activo: Boolean
 )

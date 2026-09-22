@@ -18,11 +18,11 @@ class bienvenida : AppCompatActivity() {
         binding = ActivityBienvenidaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Recuperamos el token guardado para asegurar el flujo
-        val prefsSesion = getSharedPreferences("SesionUsuario", MODE_PRIVATE)
-        val token = prefsSesion.getString("TOKEN", null)
+        // ✅ CORRECCIÓN: Usamos la misma clase que en el login para leer el token
+        val prefs = SharedPreferencesManager(this)
+        val token = prefs.getAccessToken()
 
-        if (!token.isNullOrEmpty()) {
+        if (token.isNotEmpty()) {
             RetrofitClient.authToken = token
             cargarDashboard()
             configurarEventos()

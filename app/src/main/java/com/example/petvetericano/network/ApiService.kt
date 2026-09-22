@@ -50,7 +50,16 @@ interface ApiService {
     suspend fun obtenerMedicamentos(): Response<Any>
 
     @GET("dashboard/")
-    suspend fun obtenerDashboard(): Response<DashboardResponse>
+    suspend fun obtenerDashboard(
+        @Header("Authorization") token: String
+    ): Response<DashboardResponse>
+
+    @GET("voluntariado/eventos/")
+    suspend fun obtenerEventos(
+        @Header("Authorization") token: String? = null
+    ): Response<List<VoluntariadoEventos>>
+
+}
 
     @GET("voluntariado/eventos/")
     suspend fun obtenerEventos(): Response<Any>

@@ -58,6 +58,16 @@
                 android:textColor="#333333"
                 android:layout_marginTop="10dp" />
 
+            <!-- Descripción -->
+            <TextView
+                android:id="@+id/txtDescripcion"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Descripción del evento"
+                android:textSize="14sp"
+                android:textColor="#666666"
+                android:layout_marginTop="6dp" />
+
             <!-- Fecha -->
             <TextView
                 android:id="@+id/txtFecha"
@@ -88,14 +98,7 @@
                 android:textColor="#555555"
                 android:layout_marginTop="5dp" />
 
-            <!-- Botón -->
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnDetalles"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Ver detalles"
-                app:textAllCaps="false"
-                android:layout_marginTop="12dp" />
+
 
         </LinearLayout>
 

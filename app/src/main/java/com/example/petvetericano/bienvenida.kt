@@ -18,7 +18,7 @@ class bienvenida : AppCompatActivity() {
         binding = ActivityBienvenidaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // ✅ CORRECCIÓN: Usamos la misma clase que en el login para leer el token
+        // Usamos la misma clase que en el login para leer el token
         val prefs = SharedPreferencesManager(this)
         val token = prefs.getAccessToken()
 
@@ -37,6 +37,21 @@ class bienvenida : AppCompatActivity() {
     }
 
     private fun configurarEventos() {
+        // --- BOTONES PRINCIPALES DEL CENTRO ---
+        binding.cardReportarPeticion.setOnClickListener {
+            val intent = Intent(this, reportar_peticion::class.java)
+            startActivity(intent)
+        }
+        binding.cardAdopcion.setOnClickListener {
+            val intent = Intent(this, Adopcion::class.java)
+            startActivity(intent)
+        }
+        binding.cardVoluntariado.setOnClickListener {
+            val intent = Intent(this, voluntariado::class.java)
+            startActivity(intent)
+        }
+
+        // --- BARRA DE NAVEGACIÓN INFERIOR ---
         binding.cardNavPrincipal.setOnClickListener {
             val intent = Intent(this, reportar_peticion::class.java)
             startActivity(intent)

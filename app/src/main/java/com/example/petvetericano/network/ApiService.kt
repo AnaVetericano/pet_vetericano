@@ -7,7 +7,7 @@ import com.example.petvetericano.models.LoginResponse
 import com.example.petvetericano.models.TipoPeticionResponse
 import com.example.petvetericano.models.UsuarioPerfilResponse
 import com.example.petvetericano.models.confirmarpeticion
-import com.example.petvetericano.models.VoluntariadoEventos // ✅ Importación agregada
+import com.example.petvetericano.models.VoluntariadoEventos
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -51,10 +51,9 @@ interface ApiService {
     @GET("medicamentos/")
     suspend fun obtenerMedicamentos(): Response<Any>
 
+    // ✅ CORREGIDO: Sin parámetro token, ya que el interceptor lo inyecta
     @GET("dashboard/")
-    suspend fun obtenerDashboard(
-        @Header("Authorization") token: String
-    ): Response<DashboardResponse>
+    suspend fun obtenerDashboard(): Response<DashboardResponse>
 
     @GET("voluntariado/eventos/")
     suspend fun obtenerEventos(
@@ -65,8 +64,7 @@ interface ApiService {
     @GET("usuarios/juridica/")
     suspend fun obtenerCorreoJuridico(): Response<JuridicoResponse>
 
-} // ✅ Aquí cierra correctamente la interfaz ApiService, encerrando todas las rutas
-
+}
 
 // Modelos de soporte integrados
 data class GenericResponse(

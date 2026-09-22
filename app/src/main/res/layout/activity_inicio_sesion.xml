@@ -7,8 +7,7 @@
     android:layout_height="match_parent"
     android:background="@color/white"
     android:padding="24dp"
-    tools:context=".inicio_sesion"
-    tools:ignore="ExtraText">
+    tools:context=".inicio_sesion">
 
     <ImageView
         android:id="@+id/imageView"
@@ -135,23 +134,19 @@
                 android:textSize="14sp"
                 tools:ignore="RtlSymmetry" />
         </LinearLayout>
-    </com.google.android.material.card.MaterialCardView><![CDATA[
-
-    -->
-
-    ]]>
+    </com.google.android.material.card.MaterialCardView>
 
     <Button
         android:id="@+id/btnIniciar_sesion"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
         android:paddingHorizontal="44dp"
         android:text="@string/iniciar_sesi_n"
         app:cornerRadius="15dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        tools:layout_editor_absoluteY="356dp"
-        tools:ignore="MissingConstraints" />
+        app:layout_constraintTop_toBottomOf="@+id/cardPassword" />
 
     <TextView
         android:id="@+id/txtForgetPassword"
@@ -161,20 +156,18 @@
         android:text="@string/forgetPassword"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnIniciar_sesion"
-        />
+        app:layout_constraintTop_toBottomOf="@+id/btnIniciar_sesion" />
 
     <TextView
         android:id="@+id/txtRecoverPassword"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_marginTop="12dp"
-        android:textColor="@color/blue"
         android:text="@string/recoverPassword"
+        android:textColor="@color/blue"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtForgetPassword"
-        />
+        app:layout_constraintTop_toBottomOf="@+id/txtForgetPassword" />
 
     <TextView
         android:id="@+id/txtRegistrarse"
@@ -185,8 +178,6 @@
         android:textColor="@color/blue"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtRecoverPassword"
-        />
-
+        app:layout_constraintTop_toBottomOf="@+id/txtRecoverPassword" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

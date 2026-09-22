@@ -1,55 +1,53 @@
 package com.example.petvetericano.network
 
-import com.example.petvetericano.models.*
+import com.example.petvetericano.models.ActualizarPerfilRequest
+import com.example.petvetericano.models.DashboardResponse
+import com.example.petvetericano.models.LoginRequest
+import com.example.petvetericano.models.LoginResponse
+import com.example.petvetericano.models.TipoPeticionResponse
+import com.example.petvetericano.models.UsuarioPerfilResponse
+import com.example.petvetericano.models.confirmarpeticion
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
-import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 
 interface ApiService {
 
-    // --- AUTENTICACIÓN Y USUARIOS ---
+    // --- AUTENTICACION Y USUARIOS ---
     @POST("usuarios/login/")
-    suspend fun login(
-        @Body request: LoginRequest
-    ): Response<LoginResponse>
+    suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
 
     @POST("usuarios/registro/")
-    suspend fun registro(
-        @Body request: RegisterRequest
-    ): Response<GenericResponse>
+    suspend fun registrarUsuario(@Body request: RegistroRequest): Response<RegistroResponse>
 
     @POST("usuarios/recuperar-password/")
-    suspend fun solicitarRecuperacion(
-        @Body request: RecuperarPasswordRequest
-    ): Response<GenericResponse>
+    suspend fun solicitarRecuperacion(@Body request: Any): Response<GenericResponse>
 
     @POST("usuarios/confirmar-password/")
-    suspend fun confirmarRecuperacion(
-        @Body request: ConfirmarPasswordRequest
-    ): Response<GenericResponse>
+    suspend fun confirmarRecuperacion(@Body request: Any): Response<GenericResponse>
 
     // --- PERFIL DE USUARIO ---
     @GET("peticiones/perfil/")
     suspend fun obtenerPerfil(): Response<UsuarioPerfilResponse>
 
     @PATCH("peticiones/perfil/")
-    suspend fun actualizarPerfil(
-        @Body request: ActualizarPerfilRequest
-    ): Response<UsuarioPerfilResponse>
+    suspend fun actualizarPerfil(@Body request: ActualizarPerfilRequest): Response<UsuarioPerfilResponse>
 
-    // --- OTROS MÓDULOS ---
+    // --- PETICIONES / REPORTES ---
+    @GET("peticiones/tipos/")
+    suspend fun obtenerTiposPeticion(): Response<List<TipoPeticionResponse>>
+
+    @POST("peticiones/iniciar/")
+    suspend fun enviarPeticion(@Body peticion: confirmarpeticion): Response<Any>
+
+    // --- OTROS MODULOS ---
     @GET("especies/especies/")
-    suspend fun obtenerEspecies(
-        @Header("Authorization") token: String
-    ): Response<Any>
+    suspend fun obtenerEspecies(): Response<Any>
 
     @GET("medicamentos/")
-    suspend fun obtenerMedicamentos(
-        @Header("Authorization") token: String
-    ): Response<Any>
+    suspend fun obtenerMedicamentos(): Response<Any>
 
     @GET("dashboard/")
     suspend fun obtenerDashboard(
@@ -63,17 +61,31 @@ interface ApiService {
 
 }
 
+    @GET("voluntariado/eventos/")
+    suspend fun obtenerEventos(): Response<Any>
 
-        @GET("usuarios/juridico/")
-        suspend fun obtenerCorreoJuridico(
-            @Header("Authorization") token: String
-        ): Response<JuridicoResponse>
+    // --- MODULO JURIDICO ---
+    @GET("usuarios/juridica/")
+    suspend fun obtenerCorreoJuridico(): Response<JuridicoResponse>
 }
 
-    // Modelo para recibir la respuesta (ajustalo según lo que te devuelva Django)
-    data class JuridicoResponse(
-        val email: String,
-        val nombre: String?
-    )
+// Modelos de soporte integrados
+data class GenericResponse(
+    val mensaje: String?
+)
 
+data class RegistroRequest(
+    val email: String?,
+    val password: String?,
+    val nombre: String?
+)
 
+data class RegistroResponse(
+    val mensaje: String?,
+    val email: String?
+)
+
+data class JuridicoResponse(
+    val email: String?,
+    val nombre: String?
+)

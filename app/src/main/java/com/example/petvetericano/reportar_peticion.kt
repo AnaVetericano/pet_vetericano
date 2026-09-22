@@ -11,6 +11,10 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+// AGREGAMOS ESTAS DOS LÍNEAS PARA CONECTAR CON LOS ARCHIVOS UNIFICADOS
+import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.models.TipoPeticionResponse
+
 class reportar_peticion : AppCompatActivity() {
 
     private lateinit var binding: ActivityReportarPeticionBinding

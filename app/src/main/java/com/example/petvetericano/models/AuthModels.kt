@@ -71,23 +71,49 @@ data class UsuarioPerfilResponse(
     val identificacion: String?
 )
 
-
+// --- Peticiones / Reportes ---
 data class confirmarpeticion(
-    val id_tipo : Int,
-    val id_peticion : Int,
-    val id_ubicacion : Int,
-    val id_estado :Int,
-    val responsable : Int,
-    val descripcion : String,
-    val prioridad: String)
+    val id_tipo: Int,
+    val id_estado: Int,
+    val responsable: Int,
+    val descripcion: String,
+    val prioridad: String,
+    val direccion: String,
+    val latitud: Double,
+    val longitud: Double
+)
+
 data class ActualizarPerfilRequest(
     val nombre: String,
-    val email: String)
-
+    val email: String
+)
 
 data class TipoPeticionModel(
     val id_tipo: Int,
     val nombre: String,
     val descripcion: String,
     val activo: Boolean
+)
+
+data class TipoPeticionResponse(
+    val id_tipo: Int,
+    val nombre: String,
+    val descripcion: String?
+)
+
+data class IniciarPeticionRequest(
+    val id_tipo: Int
+)
+
+data class IniciarPeticionResponse(
+    val mensaje: String,
+    val id_peticion: Int,
+    val id_tipo: Int,
+    val datos: Any? = null
+)
+
+// --- Otros Módulos ---
+data class JuridicoResponse(
+    val email: String,
+    val nombre: String?
 )

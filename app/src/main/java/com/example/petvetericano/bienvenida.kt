@@ -12,52 +12,41 @@ import kotlinx.coroutines.launch
 class bienvenida : AppCompatActivity() {
 
     private lateinit var binding: ActivityBienvenidaBinding
-    private lateinit var prefs: SharedPreferencesManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityBienvenidaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        prefs = SharedPreferencesManager(this)
+        // Recuperamos el token guardado para asegurar el flujo
+        val prefsSesion = getSharedPreferences("SesionUsuario", MODE_PRIVATE)
+        val token = prefsSesion.getString("TOKEN", null)
 
-        // Muestra el saludo actualizado desde SharedPreferences
-        actualizarSaludoLocal()
-
-        val token = intent.getStringExtra("TOKEN")
-
-        if (token != null) {
-            cargarDashboard(token)
+        if (!token.isNullOrEmpty()) {
+            RetrofitClient.authToken = token
+            cargarDashboard()
         } else {
-            Toast.makeText(this, "No se encontró el token", Toast.LENGTH_SHORT).show()
+            // Si no hay token, redirigimos al login
+            val intent = Intent(this, inicio_sesion::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(intent)
+            finish()
         }
-
-        configurarEventos()
     }
 
-    // Se activa de nuevo al regresar desde la pantalla de editar perfil
-    override fun onResume() {
-        super.onResume()
-        actualizarSaludoLocal()
-    }
-
-    // Actualiza el saludo "Hola, [Nombre]" en la vista
     private fun actualizarSaludoLocal() {
-        val nombreGuardado = prefs.getUserName()
-        if (nombreGuardado.isNotEmpty()) {
-            val primerNombre = nombreGuardado.split(" ").firstOrNull() ?: nombreGuardado
-            binding.tvSaludo.text = "Hola, $primerNombre"
-        }
+        // Lógica local opcional
     }
 
-    private fun cargarDashboard(token: String) {
+    private fun cargarDashboard() {
         lifecycleScope.launch {
             try {
-                val respuesta = RetrofitClient.apiService.obtenerDashboard("Bearer $token")
+                // Llamada limpia sin parámetros, el AuthInterceptor inyecta el token automáticamente
+                val response = RetrofitClient.apiService.obtenerDashboard()
 
-                if (respuesta.isSuccessful) {
-                    val datos = respuesta.body()
+                if (response.isSuccessful) {
+                    val datos = response.body()
 
                     if (datos != null) {
                         binding.tvMensajeBienvenida.text = "¡Gracias por ayudar!"
@@ -65,35 +54,13 @@ class bienvenida : AppCompatActivity() {
                         val nombreCompleto = "${datos.nombre} ${datos.apellido}".trim()
                         val nombreFinal = if (nombreCompleto.isNotEmpty()) nombreCompleto else datos.nombre
 
-                        prefs.saveUserData(
-                            name  = nombreFinal,
-                            email = datos.email,
-                            phone = prefs.getUserPhone()
-                        )
-                        val sharedPreferences = getSharedPreferences("SesionUsuario", MODE_PRIVATE)
-                        sharedPreferences.edit().putInt("ID_USUARIO", datos.id_usuario).apply()
-
-                        actualizarSaludoLocal()
+                        // Aquí puedes actualizar tus vistas con el nombre del usuario
                     }
                 } else {
-                    val codigoError = respuesta.code()
-                    val mensajeError = respuesta.errorBody()?.string() ?: "Sin detalles"
-                    android.util.Log.e("API_ERROR", "Error $codigoError: $mensajeError")
-
-                    val mensajeUsuario = when (codigoError) {
-                        401 -> "Tu sesión ha expirado. Por favor, inicia sesión de nuevo."
-                        403 -> "No tienes permisos para ver esta información."
-                        404 -> "No se encontró el perfil de usuario."
-                        in 500..599 -> "Problemas en el servidor. Intenta más tarde."
-                        else -> "No se pudo cargar tu información (Error $codigoError)."
-                    }
-
-                    Toast.makeText(this@bienvenida, mensajeUsuario, Toast.LENGTH_LONG).show()
+                    Toast.makeText(this@bienvenida, "Error al cargar el dashboard", Toast.LENGTH_SHORT).show()
                 }
-
             } catch (e: Exception) {
-                android.util.Log.e("API_ERROR", "Excepción técnica: ${e.message}")
-                Toast.makeText(this@bienvenida, "Error de conexión. Revisa tu internet.", Toast.LENGTH_LONG).show()
+                Toast.makeText(this@bienvenida, "Error de conexión: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
             }
         }
     }

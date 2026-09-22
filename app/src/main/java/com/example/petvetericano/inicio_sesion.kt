@@ -30,7 +30,6 @@ class inicio_sesion : AppCompatActivity() {
         }
         binding.txtRecoverPassword.setOnClickListener {
             val dialogRecuperar = RecuperarContrasenia(this@inicio_sesion)
-
             dialogRecuperar.show()
         }
     }
@@ -72,7 +71,10 @@ class inicio_sesion : AppCompatActivity() {
                             Toast.LENGTH_SHORT
                         ).show()
 
-                        // ✅ NUEVO: guardar email y token en SharedPreferences
+                        // ✅ PASO 4: Asignar el token en memoria para que el Interceptor lo use
+                        RetrofitClient.authToken = datos.tokens.access
+
+                        // Guardar email y token en SharedPreferences
                         val prefs = SharedPreferencesManager(this@inicio_sesion)
                         prefs.saveUserData(
                             name  = "",          // el nombre lo completamos desde el dashboard

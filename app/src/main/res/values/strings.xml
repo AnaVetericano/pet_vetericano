@@ -1,6 +1,6 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">PetVetericano</string>
-    <string name="welcome_login_register">Bienvenido a</string>
+    <string name="welcome_login_register">Bienvenido a</string>|
     <string name="vetericano_login_register">VETERICANO</string>
     <string name="care_login_register">Cuidamos a quienes no tienen voz</string>
     <string name="btn_login_login_register">Iniciar Sesión</string>
@@ -18,9 +18,17 @@
     <string name="recoverPassword">Recupera tu contraseña</string>
     <string name="string">text</string>
     <string name="title">title</string>
-    <string name="cancel">cancel</string>
+    <string name="cancel" tools:ignore="ButtonCase">cancel</string>
     <string name="img_perro">img perro</string>
     <string name="logovetericano">logoVetericano</string>
+    <string name="imgvet">imgVet</string>
+    <string name="inicia_sesi_n_para_continuar">Inicia sesión para continuar</string>
+    <string name="imgemail">imgEmail</string>
+    <string name="email">Email</string>
+    <string name="candadoimg">candadoImg</string>
+    <string name="ingresar_contrase_a">Ingresar contraseña</string>
+    <string name="iniciar_sesi_n">Iniciar Sesión</string>
+    <string name="no_tienes_cuenta_registrate">¿No tienes cuenta? REGISTRATE</string>
 
 
 </resources>

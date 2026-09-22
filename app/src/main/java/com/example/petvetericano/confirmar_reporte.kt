@@ -7,6 +7,8 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityConfirmarReporteBinding
+import com.example.petvetericano.models.confirmarpeticion
+import com.example.petvetericano.network.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -48,10 +50,14 @@ class confirmar_reporte : AppCompatActivity() {
         binding.tvTipoReporte.text = tipoReporte ?: "Sin tipo"
 
         // ==========================================
-        // OBTENER UBICACIÓN
+        // OBTENER UBICACIÓN CON FORMATO DE 7 DECIMALES
         // ==========================================
-        val latitud = intent.getDoubleExtra("LATITUD", 0.0)
-        val longitud = intent.getDoubleExtra("LONGITUD", 0.0)
+        val latitudCruda = intent.getDoubleExtra("LATITUD", 0.0)
+        val longitudCruda = intent.getDoubleExtra("LONGITUD", 0.0)
+
+        // Limitar a 7 decimales exactos para evitar errores en el backend
+        val latitud = String.format(Locale.US, "%.7f", latitudCruda).toDouble()
+        val longitud = String.format(Locale.US, "%.7f", longitudCruda).toDouble()
 
         if (latitud != 0.0 && longitud != 0.0) {
             try {
@@ -111,22 +117,33 @@ class confirmar_reporte : AppCompatActivity() {
             // 3. Ejecutar la petición a la API y luego el correo
             lifecycleScope.launch(Dispatchers.IO) {
                 try {
+                    // ✅ Cargar el token desde SharedPreferences antes de enviar para evitar errores 401
+                    val prefsSesionToken = getSharedPreferences("SesionUsuario", MODE_PRIVATE)
+                    val tokenGuardado = prefsSesionToken.getString("TOKEN", null)
+                    if (!tokenGuardado.isNullOrEmpty()) {
+                        RetrofitClient.authToken = tokenGuardado
+                    }
+
                     val prefs = getSharedPreferences("MisReportesPrefs", MODE_PRIVATE)
                     val idTipoFinal = prefs.getInt("ID_TIPO_SELECCIONADO", 1)
-// 1. Leer el ID del usuario que inició sesión
-                    // 1. Leemos el ID del usuario logueado
-                    val prefsSesion = getSharedPreferences("SesionUsuario", MODE_PRIVATE)
-                    val idUsuarioLogueado = prefsSesion.getInt("ID_USUARIO", 1)
 
-// 2. Lo enviamos en la petición
+                    // 1. Leemos el ID del usuario logueado
+                    val idUsuarioLogueado = prefsSesionToken.getInt("ID_USUARIO", 1)
+
+                    // 2. Construir la petición con los datos unificados
                     val nuevaPeticion = confirmarpeticion(
                         id_tipo = idTipoFinal,
-                        id_ubicacion = 1,
-                        id_estado = 1,
-                        responsable = idUsuarioLogueado, // <--- ¡Ahora es un Int y se envía automático!
+                        id_estado = 1, // Se envía 1 ("Pendiente") para cumplir con la regla del backend
+                        responsable = idUsuarioLogueado,
                         descripcion = descripcionRecibida ?: "Sin descripción",
-                        prioridad = "alta"
+                        prioridad = "alta",
+
+                        // Nuevos campos unificados enviados al mismo endpoint
+                        direccion = lugar,
+                        latitud = latitud,
+                        longitud = longitud
                     )
+
                     // Hacer la petición a la API (Retrofit)
                     val response = RetrofitClient.apiService.enviarPeticion(nuevaPeticion)
 

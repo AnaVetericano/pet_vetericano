@@ -56,6 +56,12 @@ interface ApiService {
         @Header("Authorization") token: String
     ): Response<DashboardResponse>
 
+    @GET("voluntariado/eventos/")
+    suspend fun obtenerEventos(
+        @Header("Authorization") token: String? = null
+    ): Response<List<VoluntariadoEventos>>
+
+}
 
 
         @GET("usuarios/juridico/")

@@ -268,12 +268,10 @@
             </com.google.android.material.card.MaterialCardView>
 
 
-
-
             <ImageView
                 android:id="@+id/ivNavFavoritos"
                 android:layout_width="0dp"
-                android:layout_height="25dp"
+                android:layout_height="21dp"
                 android:layout_weight="1"
                 android:clickable="true"
                 android:contentDescription="Favoritos"

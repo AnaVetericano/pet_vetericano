@@ -122,7 +122,9 @@ class bienvenida : AppCompatActivity() {
         }
 
         binding.ivNavFavoritos.setOnClickListener {
-            Toast.makeText(this, "Favoritos", Toast.LENGTH_SHORT).show()
+            val intent = Intent(this, Eventos::class.java)
+            startActivity(intent)
+            Toast.makeText(this, "Jornadas y eventos", Toast.LENGTH_SHORT).show()
         }
 
         binding.ivNavPerfil.setOnClickListener {

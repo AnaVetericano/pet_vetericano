@@ -1,37 +1,49 @@
 package com.example.petvetericano
 
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
+import com.bumptech.glide.Glide
 import com.example.petvetericano.databinding.ItemEventoBinding
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.example.petvetericano.models.VoluntariadoEventos
 
 class EventoAdapter(
-    private val listaEventos: List<Evento>
+    private var listaEventos: List<VoluntariadoEventos>,
+    private val onItemClick: ((VoluntariadoEventos) -> Unit)? = null
 ) : RecyclerView.Adapter<EventoAdapter.EventoViewHolder>() {
 
     // Binding de cada tarjeta
-    class EventoViewHolder(
+    inner class EventoViewHolder(
         val binding: ItemEventoBinding
     ) : RecyclerView.ViewHolder(binding.root) {
 
-        fun vincular(evento: Evento) {
-            binding.imgEvento.setImageResource(evento.imagen)
-            binding.txtTipo.text = evento.tipo
-            binding.txtTitulo.text = evento.titulo
-            binding.txtFecha.text = "📅 ${evento.fecha}"
-            binding.txtHora.text = "🕐 ${evento.hora}"
-            binding.txtLugar.text = "📍 ${evento.lugar}"
+        fun vincular(evento: VoluntariadoEventos) {
+            // Limpieza de comillas escapadas que pueda devolver la API
+            val tituloLimpio = evento.titulo.replace("\"", "").trim()
+            val descripcionLimpia = evento.descripcion.replace("\"", "").trim()
+            val fechaLimpia = evento.fecha.replace("\"", "").trim()
 
-            // Evento de clic corregido para la ventana emergente
-            binding.btnDetalles.setOnClickListener {
-                MaterialAlertDialogBuilder(binding.root.context)
-                    .setTitle(evento.titulo)
-                    .setMessage("Tipo: ${evento.tipo}\nFecha: ${evento.fecha}\nHora: ${evento.hora}\nLugar: ${evento.lugar}")
-                    .setPositiveButton("Cerrar") { dialog, _ ->
-                        dialog.dismiss()
-                    }
-                    .show()
+            binding.txtTipo.text = "VOLUNTARIADO"
+            binding.txtTitulo.text = tituloLimpio
+            binding.txtDescripcion.text = descripcionLimpia
+            binding.txtFecha.text = "📅 $fechaLimpia"
+
+            // Ocultar campos que no vienen de la API para mantener el diseño limpio
+            binding.txtHora.visibility = View.GONE
+            binding.txtLugar.visibility = View.GONE
+
+            // Cargar imagen remota con Glide
+            Glide.with(itemView.context)
+                .load(evento.imagen)
+                .placeholder(R.drawable.pastor_gato)
+                .error(R.drawable.pastor_gato)
+                .centerCrop()
+                .into(binding.imgEvento)
+
+            // Clic en la tarjeta
+            binding.root.setOnClickListener {
+                onItemClick?.invoke(evento)
             }
         }
     }
@@ -52,7 +64,11 @@ class EventoAdapter(
     }
 
     // Cantidad de eventos
-    override fun getItemCount(): Int {
-        return listaEventos.size
+    override fun getItemCount(): Int = listaEventos.size
+
+    // Método para actualizar la lista de eventos dinámicamente
+    fun actualizarLista(nuevaLista: List<VoluntariadoEventos>) {
+        this.listaEventos = nuevaLista
+        notifyDataSetChanged()
     }
 }

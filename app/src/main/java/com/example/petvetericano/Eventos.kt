@@ -38,7 +38,7 @@ class Eventos : AppCompatActivity() {
                 fecha = "5 de septiembre",
                 hora = "10:00 AM",
                 lugar = "Centro veterinario",
-                imagen =R.drawable.chanchita
+                imagen =R.drawable.chan
             ),
 
             Evento(
@@ -47,7 +47,7 @@ class Eventos : AppCompatActivity() {
                 fecha = "12 de septiembre",
                 hora = "8:00 AM",
                 lugar = "Plaza central",
-                imagen=R.drawable.chanchita
+                imagen=R.drawable.chan
             )
         )
 

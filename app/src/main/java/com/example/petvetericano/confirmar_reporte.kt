@@ -130,18 +130,20 @@ class confirmar_reporte : AppCompatActivity() {
                     // 1. Leemos el ID del usuario logueado
                     val idUsuarioLogueado = prefsSesionToken.getInt("ID_USUARIO", 1)
 
+                    val urlFotoCloudinary = if (!urlsArchivos.isNullOrEmpty()) urlsArchivos!![0] else null
+
                     // 2. Construir la petición con los datos unificados
                     val nuevaPeticion = confirmarpeticion(
                         id_tipo = idTipoFinal,
                         id_estado = 1, // Se envía 1 ("Pendiente") para cumplir con la regla del backend
                         responsable = idUsuarioLogueado,
                         descripcion = descripcionRecibida ?: "Sin descripción",
-                        prioridad = "alta",
-
+                        prioridad = null,
                         // Nuevos campos unificados enviados al mismo endpoint
                         direccion = lugar,
                         latitud = latitud,
-                        longitud = longitud
+                        longitud = longitud,
+                        foto = urlFotoCloudinary
                     )
 
                     // Hacer la petición a la API (Retrofit)

@@ -77,10 +77,11 @@ data class confirmarpeticion(
     val id_estado: Int,
     val responsable: Int,
     val descripcion: String,
-    val prioridad: String,
+    val prioridad: String?,
     val direccion: String,
     val latitud: Double,
-    val longitud: Double
+    val longitud: Double,
+    val foto : String?
 )
 
 data class ActualizarPerfilRequest(

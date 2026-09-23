@@ -8,21 +8,22 @@ import com.example.petvetericano.models.TipoPeticionResponse
 import com.example.petvetericano.models.UsuarioPerfilResponse
 import com.example.petvetericano.models.confirmarpeticion
 import com.example.petvetericano.models.VoluntariadoEventos
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.Part
 
 interface ApiService {
 
     // --- AUTENTICACION Y USUARIOS ---
     @POST("usuarios/login/")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
-
-    @POST("usuarios/registro/")
-    suspend fun registrarUsuario(@Body request: RegistroRequest): Response<RegistroResponse>
 
     @POST("usuarios/recuperar-password/")
     suspend fun solicitarRecuperacion(@Body request: Any): Response<GenericResponse>
@@ -41,8 +42,21 @@ interface ApiService {
     @GET("peticiones/tipos/")
     suspend fun obtenerTiposPeticion(): Response<List<TipoPeticionResponse>>
 
+    // Método tradicional si la petición va sin foto (JSON plano)
     @POST("peticiones/iniciar/")
     suspend fun enviarPeticion(@Body peticion: confirmarpeticion): Response<Any>
+
+    // 📌 MÉTODO CLAVE: Envío de petición con foto y datos obligatorios (Multipart)
+    @Multipart
+    @POST("peticiones/iniciar/")
+    suspend fun enviarPeticionConFoto(
+        @Part("tipo_peticion") tipoPeticion: RequestBody,
+        @Part("descripcion") descripcion: RequestBody,
+        @Part("latitud") latitud: RequestBody,
+        @Part("longitud") longitud: RequestBody,
+        @Part("direccion") direccion: RequestBody,
+        @Part imagen: MultipartBody.Part?
+    ): Response<GenericResponse>
 
     // --- OTROS MODULOS ---
     @GET("especies/especies/")
@@ -51,7 +65,6 @@ interface ApiService {
     @GET("medicamentos/")
     suspend fun obtenerMedicamentos(): Response<Any>
 
-    // ✅ CORREGIDO: Sin parámetro token, ya que el interceptor lo inyecta
     @GET("dashboard/")
     suspend fun obtenerDashboard(): Response<DashboardResponse>
 
@@ -63,23 +76,12 @@ interface ApiService {
     // --- MODULO JURIDICO ---
     @GET("usuarios/juridica/")
     suspend fun obtenerCorreoJuridico(): Response<JuridicoResponse>
-
 }
 
 // Modelos de soporte integrados
 data class GenericResponse(
-    val mensaje: String?
-)
-
-data class RegistroRequest(
-    val email: String?,
-    val password: String?,
-    val nombre: String?
-)
-
-data class RegistroResponse(
     val mensaje: String?,
-    val email: String?
+    val error: String?
 )
 
 data class JuridicoResponse(

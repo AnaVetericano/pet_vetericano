@@ -24,7 +24,7 @@ interface ApiService {
 
 
     // MÉTODO RESTAURADO PARA EL REGISTRO
-    @POST("usuarios/registro/")
+    @POST("usuarios/register/")
     suspend fun registro(@Body request: Any): Response<RegistroResponse>
 
     @POST("usuarios/recuperar-password/")

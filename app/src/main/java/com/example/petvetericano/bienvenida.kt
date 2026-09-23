@@ -37,7 +37,7 @@ class bienvenida : AppCompatActivity() {
     }
 
     private fun configurarEventos() {
-        // --- BOTONES PRINCIPALES DEL CENTRO ---
+
         binding.cardReportarPeticion.setOnClickListener {
             val intent = Intent(this, reportar_peticion::class.java)
             startActivity(intent)
@@ -51,7 +51,6 @@ class bienvenida : AppCompatActivity() {
             startActivity(intent)
         }
 
-        // --- BARRA DE NAVEGACIÓN INFERIOR ---
         binding.cardNavPrincipal.setOnClickListener {
             val intent = Intent(this, reportar_peticion::class.java)
             startActivity(intent)
@@ -72,7 +71,7 @@ class bienvenida : AppCompatActivity() {
     private fun cargarDashboard() {
         lifecycleScope.launch {
             try {
-                // Llamada limpia sin parámetros, el AuthInterceptor inyecta el token automáticamente
+                // Llamada limpia sin parámetros, el AuthInterceptor inyecta el token automá ticamente
                 val response = RetrofitClient.apiService.obtenerDashboard()
 
                 if (response.isSuccessful) {
@@ -93,3 +92,4 @@ class bienvenida : AppCompatActivity() {
         }
     }
 }
+//Estos cambios los hizo junior

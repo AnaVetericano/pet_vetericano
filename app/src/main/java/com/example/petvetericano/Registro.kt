@@ -60,3 +60,5 @@ class Registro : AppCompatActivity() {
         }
     }
 }
+
+// aqui hice cambios otra vez

@@ -62,9 +62,7 @@ interface ApiService {
         @Header("Authorization") token: String? = null
     ): Response<List<VoluntariadoEventos>>
 
-    // --- MODULO JURIDICO ---
-    @GET("usuarios/juridica/")
-    suspend fun obtenerCorreoJuridico(): Response<JuridicoResponse>
+
 }
 
 // 📌 MODELO RESTAURADO PARA EL REGISTRO

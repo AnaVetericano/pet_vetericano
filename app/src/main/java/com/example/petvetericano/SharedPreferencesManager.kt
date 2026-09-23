@@ -20,6 +20,13 @@ class SharedPreferencesManager(context: Context) {
     fun getUserEmail(): String = prefs.getString("USER_EMAIL", "") ?: ""
     fun getUserPhone(): String = prefs.getString("USER_PHONE", "") ?: ""
 
+    // ID de Usuario (¡Añadido para solucionar el error en confirmar_reporte!)
+    fun saveUserId(userId: Int) {
+        prefs.edit().putInt("ID_USUARIO", userId).apply()
+    }
+
+    fun getUserId(): Int = prefs.getInt("ID_USUARIO", -1)
+
     // Foto de perfil
     fun saveProfileImagePath(path: String) {
         prefs.edit().putString("PROFILE_IMAGE_PATH", path).apply()
@@ -40,4 +47,8 @@ class SharedPreferencesManager(context: Context) {
 
     fun getLanguage(): String = prefs.getString("APP_LANGUAGE", "es") ?: "es"
 
+    // Limpiar sesión completa (Útil para cerrar sesión)
+    fun clearSession() {
+        prefs.edit().clear().apply()
+    }
 }

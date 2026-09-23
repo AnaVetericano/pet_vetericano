@@ -11,6 +11,7 @@ data class LoginRequest(
 data class LoginResponse(
     val mensaje: String,
     val email: String,
+    @SerializedName("id_usuario") val idUsuario: Int, // 👈 Campo añadido para capturar el ID del usuario
     @SerializedName("id_rol") val idRol: Int,
     val tokens: TokenData
 )

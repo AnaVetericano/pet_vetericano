@@ -71,17 +71,20 @@ class inicio_sesion : AppCompatActivity() {
                             Toast.LENGTH_SHORT
                         ).show()
 
-                        // ✅ PASO 4: Asignar el token en memoria para que el Interceptor lo use
+                        // Asignar el token en memoria para que el Interceptor lo use
                         RetrofitClient.authToken = datos.tokens.access
 
-                        // Guardar email y token en SharedPreferences
+                        // Guardar datos, token e ID unificados en SharedPreferencesManager
                         val prefs = SharedPreferencesManager(this@inicio_sesion)
                         prefs.saveUserData(
-                            name  = "",          // el nombre lo completamos desde el dashboard
+                            name  = "",          // el nombre se completa desde el dashboard
                             email = datos.email,
                             phone = ""
                         )
                         prefs.saveAccessToken(datos.tokens.access)
+
+                        // 💡 Usamos 'idUsuario' que es la variable mapeada en AuthModels.kt
+                        prefs.saveUserId(datos.idUsuario)
 
                         val intent = Intent(
                             this@inicio_sesion,

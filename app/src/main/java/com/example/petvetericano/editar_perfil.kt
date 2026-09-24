@@ -68,7 +68,7 @@ class editar_perfil : AppCompatActivity() {
         val nuevoEmail  = binding.etEmail.text.toString().trim()
 
         if (nuevoNombre.isEmpty() || nuevoEmail.isEmpty()) {
-            Toast.makeText(this, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Por favor completa todos los campos obligatorios", Toast.LENGTH_SHORT).show()
             return
         }
 
@@ -79,32 +79,34 @@ class editar_perfil : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                // Consumo de la API en Backend (Base de Datos)
+                val token = prefs.getAccessToken()
+                if (token.isNotEmpty()) {
+                    RetrofitClient.authToken = token
+                }
+
                 val respuesta = RetrofitClient.apiService.actualizarPerfil(request)
 
                 if (respuesta.isSuccessful) {
                     val usuarioActualizado = respuesta.body()
 
-                    // Actualización local (Frontend / Cache)
-                    prefs.saveUserData(
-                        name  = usuarioActualizado?.nombre ?: nuevoNombre,
-                        email = usuarioActualizado?.email ?: nuevoEmail,
-                        phone = prefs.getUserPhone()
-                    )
+                    val nombreGuardado = usuarioActualizado?.nombre ?: nuevoNombre
+                    val emailGuardado = usuarioActualizado?.email ?: nuevoEmail
+
+                    // 💡 Guardado usando los métodos limpios del manager
+                    prefs.saveUserData(nombreGuardado, emailGuardado, prefs.getUserPhone())
 
                     Toast.makeText(this@editar_perfil, "Perfil actualizado con éxito", Toast.LENGTH_SHORT).show()
                 } else {
                     Log.e("API_ERROR", "Error HTTP: ${respuesta.code()}")
-                    prefs.saveUserData(name = nuevoNombre, email = nuevoEmail, phone = prefs.getUserPhone())
+                    prefs.saveUserData(nuevoNombre, nuevoEmail, prefs.getUserPhone())
                     Toast.makeText(this@editar_perfil, "Guardado localmente", Toast.LENGTH_SHORT).show()
                 }
 
             } catch (e: Exception) {
                 Log.e("API_ERROR", "Error de red: ${e.message}")
-                prefs.saveUserData(name = nuevoNombre, email = nuevoEmail, phone = prefs.getUserPhone())
+                prefs.saveUserData(nuevoNombre, nuevoEmail, prefs.getUserPhone())
                 Toast.makeText(this@editar_perfil, "Guardado localmente (Sin conexión)", Toast.LENGTH_SHORT).show()
             } finally {
-                // Redirección al Menú Principal (Bienvenida)
                 irAMenuInicial()
             }
         }
@@ -112,7 +114,6 @@ class editar_perfil : AppCompatActivity() {
 
     private fun irAMenuInicial() {
         val intent = Intent(this, bienvenida::class.java)
-        // Banderas para limpiar la pila de actividades y evitar regresar a Editar Perfil con el botón atrás
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
         finish()

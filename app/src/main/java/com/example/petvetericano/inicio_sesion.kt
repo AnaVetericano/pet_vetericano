@@ -77,7 +77,7 @@ class inicio_sesion : AppCompatActivity() {
                         // Guardar datos, token e ID unificados en SharedPreferencesManager
                         val prefs = SharedPreferencesManager(this@inicio_sesion)
                         prefs.saveUserData(
-                            name  = "",          // el nombre se completa desde el dashboard
+                            name  = datos.nombre ?: "",        // el nombre se completa desde el dashboard
                             email = datos.email,
                             phone = ""
                         )

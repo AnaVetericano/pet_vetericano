@@ -7,6 +7,7 @@ class SharedPreferencesManager(context: Context) {
     private val prefs: SharedPreferences =
         context.getSharedPreferences("PetVetericanoPrefs", Context.MODE_PRIVATE)
 
+    // 💡 Mantenemos la firma original intacta para que no falle en ninguna otra activity
     fun saveUserData(name: String, email: String, phone: String) {
         prefs.edit().apply {
             if (name.isNotEmpty())  putString("USER_NAME",  name)
@@ -16,11 +17,19 @@ class SharedPreferencesManager(context: Context) {
         }
     }
 
-    fun getUserName():  String = prefs.getString("USER_NAME",  "") ?: ""
+    // 💡 Función independiente para guardar el apellido de forma opcional
+    fun saveUserLastName(lastName: String) {
+        if (lastName.isNotEmpty()) {
+            prefs.edit().putString("USER_LASTNAME", lastName).apply()
+        }
+    }
+
+    fun getUserName(): String = prefs.getString("USER_NAME", "") ?: ""
+    fun getUserLastName(): String = prefs.getString("USER_LASTNAME", "") ?: ""
     fun getUserEmail(): String = prefs.getString("USER_EMAIL", "") ?: ""
     fun getUserPhone(): String = prefs.getString("USER_PHONE", "") ?: ""
 
-    // ID de Usuario (¡Añadido para solucionar el error en confirmar_reporte!)
+    // ID de Usuario
     fun saveUserId(userId: Int) {
         prefs.edit().putInt("ID_USUARIO", userId).apply()
     }
@@ -47,7 +56,7 @@ class SharedPreferencesManager(context: Context) {
 
     fun getLanguage(): String = prefs.getString("APP_LANGUAGE", "es") ?: "es"
 
-    // Limpiar sesión completa (Útil para cerrar sesión)
+    // Limpiar sesión completa
     fun clearSession() {
         prefs.edit().clear().apply()
     }

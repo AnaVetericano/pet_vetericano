@@ -35,7 +35,7 @@
                 android:textSize="22sp"
                 android:textStyle="bold" />
 
-            <!-- Contenedor Foto de Perfil Ampliado (180dp) -->
+            <!-- Contenedor Foto de Perfil -->
             <FrameLayout
                 android:layout_width="180dp"
                 android:layout_height="180dp"
@@ -61,17 +61,18 @@
                     app:tint="#FFFFFF" />
             </FrameLayout>
 
-            <!-- Formulario de Edición Directa -->
+            <!-- Formulario de Edición -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="20dp"
                 android:orientation="vertical">
 
+                <!-- Campo Nombre -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Nombre completo"
+                    android:hint="Nombre"
                     app:boxBackgroundMode="outline"
                     app:boxCornerRadiusBottomEnd="12dp"
                     app:boxCornerRadiusBottomStart="12dp"
@@ -87,6 +88,28 @@
                         android:textSize="16sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
+                <!-- Campo Apellido -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:hint="Apellido"
+                    app:boxBackgroundMode="outline"
+                    app:boxCornerRadiusBottomEnd="12dp"
+                    app:boxCornerRadiusBottomStart="12dp"
+                    app:boxCornerRadiusTopEnd="12dp"
+                    app:boxCornerRadiusTopStart="12dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etLastName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPersonName"
+                        android:textColor="#000000"
+                        android:textSize="16sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Campo Correo Electrónico -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -107,7 +130,7 @@
                         android:textSize="16sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Botón Guardar Cambios y Volver -->
+                <!-- Botón Guardar Cambios -->
                 <Button
                     android:id="@+id/btnGuardarPerfil"
                     android:layout_width="match_parent"
@@ -121,14 +144,13 @@
                     app:cornerRadius="12dp" />
             </LinearLayout>
 
-            <!-- Opciones Adicionales -->
+            <!-- Opciones Adicionales (Modo Oscuro) -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:orientation="vertical">
 
-                <!-- Modo Oscuro -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
@@ -156,7 +178,6 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content" />
                 </LinearLayout>
-
             </LinearLayout>
 
             <!-- Botón Cerrar sesión -->
@@ -164,7 +185,7 @@
                 android:id="@+id/btnLogout"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="89dp"
+                android:layout_marginTop="60dp"
                 android:layout_marginBottom="20dp"
                 android:background="?attr/selectableItemBackground"
                 android:clickable="true"

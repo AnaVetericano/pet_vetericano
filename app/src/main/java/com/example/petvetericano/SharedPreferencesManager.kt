@@ -16,13 +16,13 @@ class SharedPreferencesManager(context: Context) {
         }
     }
 
-    // 💡 Funciones específicas para el Apellido
     fun saveUserLastName(lastName: String) {
-        prefs.edit().putString("USER_LASTNAME", lastName).apply()
+        if (lastName.isNotEmpty()) {
+            prefs.edit().putString("USER_LASTNAME", lastName).apply()
+        }
     }
 
     fun getUserLastName(): String = prefs.getString("USER_LASTNAME", "") ?: ""
-
     fun getUserName(): String = prefs.getString("USER_NAME", "") ?: ""
     fun getUserEmail(): String = prefs.getString("USER_EMAIL", "") ?: ""
     fun getUserPhone(): String = prefs.getString("USER_PHONE", "") ?: ""

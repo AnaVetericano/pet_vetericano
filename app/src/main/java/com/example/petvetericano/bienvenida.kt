@@ -36,6 +36,17 @@ class bienvenida : AppCompatActivity() {
         }
     }
 
+    override fun onResume() {
+        super.onResume()
+        // Al regresar de editar perfil, refrescamos los datos para mostrar el nombre actualizado
+        val prefs = SharedPreferencesManager(this)
+        val token = prefs.getAccessToken()
+        if (token.isNotEmpty()) {
+            RetrofitClient.authToken = token
+            cargarDashboard()
+        }
+    }
+
     private fun configurarEventos() {
 
         binding.cardReportarPeticion.setOnClickListener {
@@ -69,9 +80,16 @@ class bienvenida : AppCompatActivity() {
     }
 
     private fun cargarDashboard() {
+        val prefs = SharedPreferencesManager(this)
+        // Carga inmediata del nombre guardado en caché local para que no parpadee
+        val nombreLocal = prefs.getUserName()
+        if (nombreLocal.isNotEmpty()) {
+            binding.tvSaludo.text = "Hola, $nombreLocal"
+        }
+
         lifecycleScope.launch {
             try {
-                // Llamada limpia sin parámetros, el AuthInterceptor inyecta el token automá ticamente
+                // Llamada limpia sin parámetros, el AuthInterceptor inyecta el token automáticamente
                 val response = RetrofitClient.apiService.obtenerDashboard()
 
                 if (response.isSuccessful) {
@@ -82,6 +100,16 @@ class bienvenida : AppCompatActivity() {
 
                         val nombreCompleto = "${datos.nombre} ${datos.apellido}".trim()
                         val nombreFinal = if (nombreCompleto.isNotEmpty()) nombreCompleto else datos.nombre
+
+                        // Mostramos exactamente el nombre del usuario en el saludo
+                        if (nombreFinal.isNotEmpty()) {
+                            binding.tvSaludo.text = "Hola, $nombreFinal"
+                            prefs.saveUserData(
+                                name = nombreFinal,
+                                email = datos.email,
+                                phone = prefs.getUserPhone()
+                            )
+                        }
                     }
                 } else {
                     Toast.makeText(this@bienvenida, "Error al cargar el dashboard", Toast.LENGTH_SHORT).show()
@@ -92,4 +120,3 @@ class bienvenida : AppCompatActivity() {
         }
     }
 }
-//Estos cambios los hizo junior

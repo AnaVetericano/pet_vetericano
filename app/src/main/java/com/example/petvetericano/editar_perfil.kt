@@ -45,11 +45,22 @@ class editar_perfil : AppCompatActivity() {
 
     private fun cargarDatosPerfil() {
         val nombre   = prefs.getUserName()
+        val apellido = prefs.getUserLastName()
         val email    = prefs.getUserEmail()
         val rutaFoto = prefs.getProfileImagePath()
 
-        if (nombre.isNotEmpty() && binding.etName.text.isNullOrEmpty()) {
-            binding.etName.setText(nombre)
+        // 💡 Limpiamos por si el nombre guardado localmente traía el apellido pegado por error previo
+        val nombreLimPIO = if (apellido.isNotEmpty() && nombre.endsWith(apellido)) {
+            nombre.replace(apellido, "").trim()
+        } else {
+            nombre
+        }
+
+        if (nombreLimPIO.isNotEmpty() && binding.etName.text.isNullOrEmpty()) {
+            binding.etName.setText(nombreLimPIO)
+        }
+        if (apellido.isNotEmpty() && binding.etLastName.text.isNullOrEmpty()) {
+            binding.etLastName.setText(apellido)
         }
         if (email.isNotEmpty() && binding.etEmail.text.isNullOrEmpty()) {
             binding.etEmail.setText(email)
@@ -64,16 +75,18 @@ class editar_perfil : AppCompatActivity() {
     }
 
     private fun guardarCambiosYVolver() {
-        val nuevoNombre = binding.etName.text.toString().trim()
-        val nuevoEmail  = binding.etEmail.text.toString().trim()
+        val nuevoNombre   = binding.etName.text.toString().trim()
+        val nuevoApellido = binding.etLastName.text.toString().trim()
+        val nuevoEmail    = binding.etEmail.text.toString().trim()
 
-        if (nuevoNombre.isEmpty() || nuevoEmail.isEmpty()) {
-            Toast.makeText(this, "Por favor completa todos los campos obligatorios", Toast.LENGTH_SHORT).show()
+        if (nuevoNombre.isEmpty() || nuevoApellido.isEmpty() || nuevoEmail.isEmpty()) {
+            Toast.makeText(this, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
             return
         }
 
         val request = ActualizarPerfilRequest(
             nombre = nuevoNombre,
+            apellido = nuevoApellido,
             email = nuevoEmail
         )
 
@@ -87,24 +100,22 @@ class editar_perfil : AppCompatActivity() {
                 val respuesta = RetrofitClient.apiService.actualizarPerfil(request)
 
                 if (respuesta.isSuccessful) {
-                    val usuarioActualizado = respuesta.body()
-
-                    val nombreGuardado = usuarioActualizado?.nombre ?: nuevoNombre
-                    val emailGuardado = usuarioActualizado?.email ?: nuevoEmail
-
-                    // 💡 Guardado usando los métodos limpios del manager
-                    prefs.saveUserData(nombreGuardado, emailGuardado, prefs.getUserPhone())
+                    // 💡 Guardamos cada dato de forma independiente y limpia
+                    prefs.saveUserData(nuevoNombre, nuevoEmail, prefs.getUserPhone())
+                    prefs.saveUserLastName(nuevoApellido)
 
                     Toast.makeText(this@editar_perfil, "Perfil actualizado con éxito", Toast.LENGTH_SHORT).show()
                 } else {
                     Log.e("API_ERROR", "Error HTTP: ${respuesta.code()}")
                     prefs.saveUserData(nuevoNombre, nuevoEmail, prefs.getUserPhone())
+                    prefs.saveUserLastName(nuevoApellido)
                     Toast.makeText(this@editar_perfil, "Guardado localmente", Toast.LENGTH_SHORT).show()
                 }
 
             } catch (e: Exception) {
                 Log.e("API_ERROR", "Error de red: ${e.message}")
                 prefs.saveUserData(nuevoNombre, nuevoEmail, prefs.getUserPhone())
+                prefs.saveUserLastName(nuevoApellido)
                 Toast.makeText(this@editar_perfil, "Guardado localmente (Sin conexión)", Toast.LENGTH_SHORT).show()
             } finally {
                 irAMenuInicial()

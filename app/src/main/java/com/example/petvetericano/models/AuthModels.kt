@@ -11,9 +11,9 @@ data class LoginRequest(
 data class LoginResponse(
     val mensaje: String,
     val email: String,
-    @SerializedName("id_usuario") val idUsuario: Int, // 👈 Campo añadido para capturar el ID del usuario
+    @SerializedName("id_usuario") val idUsuario: Int,
     @SerializedName("id_rol") val idRol: Int,
-    val nombre: String?, // 👈 Capturamos el nombre
+    val nombre: String?,
     val tokens: TokenData
 )
 
@@ -64,6 +64,7 @@ data class VoluntariadoEventos(
     val imagen: String? = null,
     val fecha: String
 )
+
 // --- Perfil de Usuario ---
 data class UsuarioPerfilResponse(
     @SerializedName("id_usuario") val idUsuario: Int?,
@@ -86,8 +87,10 @@ data class confirmarpeticion(
     val foto : String?
 )
 
+// --- Actualización de Perfil (Opción B: Nombre y Apellido independientes) ---
 data class ActualizarPerfilRequest(
     val nombre: String,
+    val apellido: String,
     val email: String
 )
 

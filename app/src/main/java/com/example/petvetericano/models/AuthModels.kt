@@ -22,13 +22,14 @@ data class TokenData(
     val access: String
 )
 
-// --- Registro ---
+// --- Registro (Actualizado con teléfono) ---
 data class RegisterRequest(
     val email: String,
     val identificacion: String,
     val password: String,
     val nombre: String,
-    val apellido: String
+    val apellido: String,
+    val telefono: String
 )
 
 // --- Recuperar Contraseña ---
@@ -87,7 +88,6 @@ data class confirmarpeticion(
     val foto : String?
 )
 
-// --- Actualización de Perfil (Opción B: Nombre y Apellido independientes) ---
 data class ActualizarPerfilRequest(
     val nombre: String,
     val apellido: String,

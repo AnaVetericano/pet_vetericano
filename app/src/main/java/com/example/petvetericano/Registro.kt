@@ -14,12 +14,15 @@ import org.json.JSONObject
 class Registro : AppCompatActivity() {
 
     private lateinit var binding: ActivityRegistroBinding
+    private lateinit var prefs: SharedPreferencesManager
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityRegistroBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        prefs = SharedPreferencesManager(this)
 
         binding.btnSignUp.setOnClickListener {
             registrarUsuario()
@@ -35,11 +38,9 @@ class Registro : AppCompatActivity() {
     private fun registrarUsuario() {
         val email = binding.editTextTextEmailAddress.text.toString().trim()
         val identificacion = binding.edtxtemailorphone.text.toString().trim()
-
         val nombre = binding.edtxtID.text.toString().trim()
-
         val apellido = binding.edtxtApellido.text.toString().trim()
-
+        val telefono = binding.edtxtTelefono.text.toString().trim() // 👈 Capturamos el teléfono
         val password = binding.edtxtPassword.text.toString().trim()
 
         if (email.isEmpty()) {
@@ -66,6 +67,13 @@ class Registro : AppCompatActivity() {
             return
         }
 
+        // 💡 Validar que el teléfono tenga al menos 10 cifras (estándar Colombia)
+        if (telefono.isEmpty() || telefono.length < 10) {
+            binding.edtxtTelefono.error = "Ingrese un número de teléfono válido (mínimo 10 dígitos)"
+            binding.edtxtTelefono.requestFocus()
+            return
+        }
+
         if (password.isEmpty()) {
             binding.edtxtPassword.error = "Ingrese una contraseña"
             binding.edtxtPassword.requestFocus()
@@ -88,13 +96,17 @@ class Registro : AppCompatActivity() {
                     identificacion = identificacion,
                     password = password,
                     nombre = nombre,
-                    apellido = apellido
+                    apellido = apellido,
+                    telefono = telefono // 👈 Enviamos el teléfono en la petición
                 )
 
                 val response = RetrofitClient.apiService.registro(request)
 
-                // isSuccessful: Devuelve true si el servidor responde con códigos 200 a 299 (éxito).
                 if (response.isSuccessful) {
+                    // Guardamos el teléfono localmente también por si se necesita en eventos
+                    prefs.saveUserData(name = nombre, email = email, phone = telefono)
+                    prefs.saveUserLastName(apellido)
+
                     Toast.makeText(this@Registro, "¡Registro exitoso!", Toast.LENGTH_SHORT).show()
 
                     val intent = Intent(this@Registro, inicio_sesion::class.java)

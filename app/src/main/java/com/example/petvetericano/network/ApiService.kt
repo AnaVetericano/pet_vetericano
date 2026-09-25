@@ -7,6 +7,7 @@ import com.example.petvetericano.models.LoginResponse
 import com.example.petvetericano.models.TipoPeticionResponse
 import com.example.petvetericano.models.UsuarioPerfilResponse
 import com.example.petvetericano.models.confirmarpeticion
+import com.example.petvetericano.models.PostularseResponse
 import com.example.petvetericano.models.VoluntariadoEventos
 import com.example.petvetericano.models.AdopcionAnimalResponse
 import retrofit2.Response
@@ -15,6 +16,7 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.Path
 
 interface ApiService {
 
@@ -67,6 +69,11 @@ interface ApiService {
     @GET("adopciones/")
     suspend fun obtenerAnimalesAdopcion(): Response<List<AdopcionAnimalResponse>>
 
+    @POST("voluntariado/eventos/{id}/postularse/")
+    suspend fun postularse(
+        @Header("Authorization") token: String,
+        @Path("id") idEvento: Int
+    ): Response<PostularseResponse>
 
 }
 

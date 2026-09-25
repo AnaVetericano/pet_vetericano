@@ -48,9 +48,11 @@ class Eventos : AppCompatActivity() {
             AlertDialog.Builder(this)
                 .setTitle(titulo)
                 .setMessage("$descripcion\n\n📅 Fecha: $fecha")
-                .setPositiveButton("Aceptar") { dialog, _ ->
+                .setPositiveButton("Postularse") { dialog, _ ->
                     dialog.dismiss()
+                    postularse(evento)
                 }
+                .setNegativeButton("Cerrar") { dialog, _ -> dialog.dismiss() }
                 .show()
         }
 
@@ -107,6 +109,48 @@ class Eventos : AppCompatActivity() {
                 binding.tvSinEventos.visibility = View.VISIBLE
             } finally {
                 binding.progressBar.visibility = View.GONE
+            }
+        }
+    }
+
+    private fun postularse(evento: VoluntariadoEventos) {
+        val prefs = SharedPreferencesManager(this)
+        val token = prefs.getAccessToken()
+
+        if (token.isEmpty()) {
+            Toast.makeText(this, "Debes iniciar sesion para postularte.", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        lifecycleScope.launch {
+            try {
+                val respuesta = RetrofitClient.apiService.postularse("Bearer $token", evento.id)
+
+                when (respuesta.code()) {
+                    201 -> {
+                        val msg = respuesta.body()?.mensaje ?: "¡Te has postulado exitosamente!"
+                        Toast.makeText(this@Eventos, msg, Toast.LENGTH_LONG).show()
+                    }
+                    400 -> {
+                        val errorBody = respuesta.errorBody()?.string() ?: ""
+                        val msg = if (errorBody.contains("postulado")) {
+                            "Ya te encuentras postulado a esta jornada."
+                        } else {
+                            "No fue posible completar la postulacion."
+                        }
+                        Toast.makeText(this@Eventos, msg, Toast.LENGTH_LONG).show()
+                    }
+                    401 -> {
+                        Toast.makeText(this@Eventos, "Sesion expirada. Inicia sesion nuevamente.", Toast.LENGTH_LONG).show()
+                    }
+                    else -> {
+                        val code = respuesta.code()
+                        Toast.makeText(this@Eventos, "Error al postularse ($code).", Toast.LENGTH_LONG).show()
+                    }
+                }
+            } catch (e: Exception) {
+                Log.e("POSTULARSE", "Excepcion: ${e.message}", e)
+                Toast.makeText(this@Eventos, "Error de conexion. Revisa tu internet.", Toast.LENGTH_LONG).show()
             }
         }
     }

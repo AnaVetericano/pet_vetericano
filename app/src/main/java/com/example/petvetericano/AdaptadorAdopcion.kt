@@ -10,7 +10,7 @@ import com.bumptech.glide.Glide
 import com.example.petvetericano.databinding.ItemAnimalCompaniaBinding
 
 class AdaptadorAdopcion(
-    private val listaAnimales: List<AnimalCompania>,
+    private var listaAnimales: List<AnimalCompania>,
     private val onItemClick: (AnimalCompania) -> Unit
 ) : RecyclerView.Adapter<AdaptadorAdopcion.AnimalViewHolder>() {
 
@@ -32,6 +32,8 @@ class AdaptadorAdopcion(
 
             Glide.with(holder.itemView.context)
                 .load(animal.urlImagen)
+                .placeholder(R.drawable.pastor_gato)
+                .error(R.drawable.pastor_gato)
                 .centerCrop()
                 .into(imgAnimal)
 
@@ -52,4 +54,9 @@ class AdaptadorAdopcion(
     }
 
     override fun getItemCount(): Int = listaAnimales.size
+
+    fun actualizarLista(nuevaLista: List<AnimalCompania>) {
+        this.listaAnimales = nuevaLista
+        notifyDataSetChanged()
+    }
 }

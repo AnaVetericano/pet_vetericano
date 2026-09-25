@@ -66,6 +66,13 @@ data class VoluntariadoEventos(
     val fecha: String
 )
 
+data class PostularseResponse(
+    val mensaje: String?,
+    val id_postulacion: Int?,
+    val evento: Int?,
+    val estado: String?
+)
+
 // --- Perfil de Usuario ---
 data class UsuarioPerfilResponse(
     @SerializedName("id_usuario") val idUsuario: Int?,

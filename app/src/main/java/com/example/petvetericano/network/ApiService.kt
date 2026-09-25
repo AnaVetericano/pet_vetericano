@@ -9,6 +9,7 @@ import com.example.petvetericano.models.UsuarioPerfilResponse
 import com.example.petvetericano.models.confirmarpeticion
 import com.example.petvetericano.models.PostularseResponse
 import com.example.petvetericano.models.VoluntariadoEventos
+import com.example.petvetericano.models.AdopcionAnimalResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -63,6 +64,10 @@ interface ApiService {
     suspend fun obtenerEventos(
         @Header("Authorization") token: String? = null
     ): Response<List<VoluntariadoEventos>>
+
+    // --- ADOPCIONES ---
+    @GET("adopciones/")
+    suspend fun obtenerAnimalesAdopcion(): Response<List<AdopcionAnimalResponse>>
 
     @POST("voluntariado/eventos/{id}/postularse/")
     suspend fun postularse(

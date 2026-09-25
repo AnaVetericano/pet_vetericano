@@ -3,14 +3,20 @@ package com.example.petvetericano
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.databinding.ActivityAdopcionBinding
+import com.example.petvetericano.network.RetrofitClient
+import kotlinx.coroutines.launch
 
 class Adopcion : AppCompatActivity() {
 
     private lateinit var binding: ActivityAdopcionBinding
+    private lateinit var adapter: AdaptadorAdopcion
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -18,49 +24,54 @@ class Adopcion : AppCompatActivity() {
         binding = ActivityAdopcionBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Sustituye tus URLs reales aquí:
-        val listaAnimales = listOf(
-            AnimalCompania(
-                idFicha = "#INC-2026-000123",
-                nombre = "Nena",
-                raza = "Mestiza / Ancianita",
-                descripcion = "Es ciega y sordita. Perrita adulta ancianita, rescatada de un refugio al lado del río Cauca. Aún guarda la esperanza de encontrar un hogar.",
-                urlImagen = "https://res.cloudinary.com/le5sk8qf/image/upload/v1787888763/Nena.jpg",
-                urlYoutube = "https://www.youtube.com/shorts/1kObwSpAXSw"
-            ),
-            AnimalCompania(
-                idFicha = "#INC-2026-000124",
-                nombre = "Crispeta",
-                raza = "Mestiza (Silla de ruedas)",
-                descripcion = "Edad: 7 años aprox. Sufrió un accidente de tránsito en la variante sur, lo que la dejó en silla de ruedas y perdió un ojo. Sigue esperando un hogar.",
-                urlImagen = "https://res.cloudinary.com/le5sk8qf/image/upload/v1787888476/Crispeta.jpg",
-                urlYoutube = "https://www.youtube.com/shorts/c0KFiiSaDg4"
-            ),
-            AnimalCompania(
-                idFicha = "#INC-2026-000125",
-                nombre = "Coco",
-                raza = "Mestizo",
-                descripcion = "Perrito que poco a poco ha ido perdiendo la visión. Ha superado sus temores y se encuentra listo para recibir mucho amor en un hogar.",
-                urlImagen = "https://res.cloudinary.com/le5sk8qf/image/upload/f_auto,q_auto/Coco",
-                urlYoutube = "https://www.youtube.com/shorts/ffV1BlJq_Rw"
-            ),
-            AnimalCompania(
-                idFicha = "#INC-2026-000126",
-                nombre = "Vampira",
-                raza = "Mestiza / Ancianita",
-                descripcion = "Perrita muy adulta, rescatada del refugio cerca al río Cauca. Ya no cuenta con dientes, pero aún espera un hogar que le brinde amor.",
-                urlImagen = "https://res.cloudinary.com/le5sk8qf/image/upload/v1787888749/Vampira.jpg",
-                urlYoutube = "..."
-            )
-        )
-
-        binding.recyclerViewAnimales.layoutManager = LinearLayoutManager(this)
-        binding.recyclerViewAnimales.adapter = AdaptadorAdopcion(listaAnimales) { animalSeleccionado ->
+        adapter = AdaptadorAdopcion(emptyList()) { animalSeleccionado ->
             mostrarDialogoAdopcion(animalSeleccionado)
         }
 
+        binding.recyclerViewAnimales.layoutManager = LinearLayoutManager(this)
+        binding.recyclerViewAnimales.adapter = adapter
+
         binding.btnAtras.setOnClickListener {
             finish()
+        }
+
+        cargarAnimalesAdopcion()
+    }
+
+    private fun cargarAnimalesAdopcion() {
+        lifecycleScope.launch {
+            try {
+                val response = RetrofitClient.apiService.obtenerAnimalesAdopcion()
+
+                if (response.isSuccessful) {
+                    val animalesRemotos = response.body()
+
+                    if (!animalesRemotos.isNullOrEmpty()) {
+                        val listaMapeada = animalesRemotos
+                            .filter { it.disponible }
+                            .map { animal ->
+                                AnimalCompania(
+                                    idFicha = "#ADOP-${animal.id.toString().padStart(4, '0')}",
+                                    nombre = animal.nombre,
+                                    raza = if (!animal.raza.isNullOrBlank()) animal.raza else "Mestizo",
+                                    descripcion = animal.descripcion ?: "Sin descripción",
+                                    urlImagen = animal.imagen,
+                                    urlYoutube = null
+                                )
+                            }
+                        adapter.actualizarLista(listaMapeada)
+                    } else {
+                        adapter.actualizarLista(emptyList())
+                        Toast.makeText(this@Adopcion, "No hay animales disponibles para adopción", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Log.e("API_ADOPCION", "Error HTTP: ${response.code()}")
+                    Toast.makeText(this@Adopcion, "Error al cargar adopciones (${response.code()})", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("API_ADOPCION", "Fallo al conectar con el servidor", e)
+                Toast.makeText(this@Adopcion, "Error de conexión al cargar adopciones", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 

@@ -56,10 +56,12 @@ class confirmar_reporte : AppCompatActivity() {
                     val direccionReal = direcciones[0].getAddressLine(0)
                     binding.ubicacionedit.text = direccionReal
                 } else {
-                    binding.ubicacionedit.text = "$latitud, $longitud"
+                    // Texto de respaldo si el mapa no sabe qué calle es
+                    binding.ubicacionedit.text = "Dirección no encontrada (Usar coordenadas)"
                 }
             } catch (e: Exception) {
-                binding.ubicacionedit.text = "$latitud, $longitud"
+                // Texto de respaldo si falla el internet o el Geocoder crashea
+                binding.ubicacionedit.text = "Dirección no encontrada (Usar coordenadas)"
             }
         } else {
             binding.ubicacionedit.text = "Ubicación no seleccionada"

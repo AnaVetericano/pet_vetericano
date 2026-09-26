@@ -3,14 +3,22 @@ package com.example.petvetericano
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
+import android.view.View
+import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.databinding.ActivityAdopcionBinding
+import com.example.petvetericano.models.AdopcionAnimalResponse
+import com.example.petvetericano.network.RetrofitClient
+import kotlinx.coroutines.launch
 
 class Adopcion : AppCompatActivity() {
 
     private lateinit var binding: ActivityAdopcionBinding
+    private lateinit var adaptador: AdaptadorAdopcion
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -18,49 +26,70 @@ class Adopcion : AppCompatActivity() {
         binding = ActivityAdopcionBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Sustituye tus URLs reales aquí:
-        val listaAnimales = listOf(
-            AnimalCompania(
-                idFicha = "#INC-2026-000123",
-                nombre = "Nena",
-                raza = "Mestiza / Ancianita",
-                descripcion = "Es ciega y sordita. Perrita adulta ancianita, rescatada de un refugio al lado del río Cauca. Aún guarda la esperanza de encontrar un hogar.",
-                urlImagen = "https://res.cloudinary.com/le5sk8qf/image/upload/v1787888763/Nena.jpg",
-                urlYoutube = "https://www.youtube.com/shorts/1kObwSpAXSw"
-            ),
-            AnimalCompania(
-                idFicha = "#INC-2026-000124",
-                nombre = "Crispeta",
-                raza = "Mestiza (Silla de ruedas)",
-                descripcion = "Edad: 7 años aprox. Sufrió un accidente de tránsito en la variante sur, lo que la dejó en silla de ruedas y perdió un ojo. Sigue esperando un hogar.",
-                urlImagen = "https://res.cloudinary.com/le5sk8qf/image/upload/v1787888476/Crispeta.jpg",
-                urlYoutube = "https://www.youtube.com/shorts/c0KFiiSaDg4"
-            ),
-            AnimalCompania(
-                idFicha = "#INC-2026-000125",
-                nombre = "Coco",
-                raza = "Mestizo",
-                descripcion = "Perrito que poco a poco ha ido perdiendo la visión. Ha superado sus temores y se encuentra listo para recibir mucho amor en un hogar.",
-                urlImagen = "https://res.cloudinary.com/le5sk8qf/image/upload/f_auto,q_auto/Coco",
-                urlYoutube = "https://www.youtube.com/shorts/ffV1BlJq_Rw"
-            ),
-            AnimalCompania(
-                idFicha = "#INC-2026-000126",
-                nombre = "Vampira",
-                raza = "Mestiza / Ancianita",
-                descripcion = "Perrita muy adulta, rescatada del refugio cerca al río Cauca. Ya no cuenta con dientes, pero aún espera un hogar que le brinde amor.",
-                urlImagen = "https://res.cloudinary.com/le5sk8qf/image/upload/v1787888749/Vampira.jpg",
-                urlYoutube = "..."
-            )
-        )
+        configurarVistas()
+        cargarAdopciones()
+    }
 
-        binding.recyclerViewAnimales.layoutManager = LinearLayoutManager(this)
-        binding.recyclerViewAnimales.adapter = AdaptadorAdopcion(listaAnimales) { animalSeleccionado ->
+    private fun configurarVistas() {
+        adaptador = AdaptadorAdopcion(emptyList<AnimalCompania>()) { animalSeleccionado ->
             mostrarDialogoAdopcion(animalSeleccionado)
         }
 
+        binding.recyclerViewAnimales.layoutManager = LinearLayoutManager(this)
+        binding.recyclerViewAnimales.adapter = adaptador
+
         binding.btnAtras.setOnClickListener {
             finish()
+        }
+    }
+
+    private fun cargarAdopciones() {
+        binding.progressBarAdopciones.visibility = View.VISIBLE
+        binding.tvSinAdopciones.visibility = View.GONE
+
+        lifecycleScope.launch {
+            try {
+                val respuesta = RetrofitClient.apiService.obtenerAdopciones()
+
+                if (respuesta.isSuccessful) {
+                    val adopciones: List<AdopcionAnimalResponse> = respuesta.body().orEmpty()
+
+                    val disponibles = adopciones
+                        .filter { it.disponible }
+                        .map { adopcion ->
+                            AnimalCompania(
+                                idFicha = "#INC-2026-" + adopcion.id.toString().padStart(6, '0'),
+                                nombre = adopcion.nombre,
+                                raza = adopcion.raza,
+                                descripcion = adopcion.descripcion,
+                                urlImagen = adopcion.imagen?.takeIf { it.isNotBlank() },
+                                urlYoutube = null
+                            )
+                        }
+
+                    adaptador.actualizarLista(disponibles)
+                    binding.tvSinAdopciones.visibility =
+                        if (disponibles.isEmpty()) View.VISIBLE else View.GONE
+                } else {
+                    Log.e("API_ADOPCIONES", "Error ${respuesta.code()}: ${respuesta.errorBody()?.string()}")
+                    Toast.makeText(
+                        this@Adopcion,
+                        "No se pudieron cargar las adopciones (Error ${respuesta.code()}).",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    binding.tvSinAdopciones.visibility = View.VISIBLE
+                }
+            } catch (e: Exception) {
+                Log.e("API_ADOPCIONES", "Excepción al consultar adopciones: ${e.message}", e)
+                Toast.makeText(
+                    this@Adopcion,
+                    "Error de conexión. Revisa tu internet.",
+                    Toast.LENGTH_LONG
+                ).show()
+                binding.tvSinAdopciones.visibility = View.VISIBLE
+            } finally {
+                binding.progressBarAdopciones.visibility = View.GONE
+            }
         }
     }
 

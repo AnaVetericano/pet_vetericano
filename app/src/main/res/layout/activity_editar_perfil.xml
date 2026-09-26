@@ -189,12 +189,13 @@
                             android:textSize="14sp" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Botón Guardar Cambios -->
+                    <!-- Botón Guardar Cambios (M3 Filled): solo activo si hay cambios -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnGuardarPerfil"
                         android:layout_width="match_parent"
                         android:layout_height="52dp"
                         android:layout_marginTop="20dp"
+                        android:enabled="false"
                         android:fontFamily="@font/nunito"
                         android:text="Guardar Cambios"
                         android:textAllCaps="false"
@@ -204,6 +205,23 @@
                         app:backgroundTint="@color/blue"
                         app:cornerRadius="14dp"
                         app:elevation="2dp" />
+
+                    <!-- Botón Descartar (M3 Outlined): solo visible si hay cambios sin guardar -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnDescartarPerfil"
+                        style="@style/Widget.Material3.Button.OutlinedButton"
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:layout_marginTop="12dp"
+                        android:fontFamily="@font/nunito"
+                        android:text="Descartar"
+                        android:textAllCaps="false"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        app:cornerRadius="14dp"
+                        app:strokeColor="@color/blue"
+                        app:strokeWidth="1dp" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 

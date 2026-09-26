@@ -4,8 +4,10 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +17,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityEditarPerfilBinding
 import com.example.petvetericano.models.ActualizarPerfilRequest
 import com.example.petvetericano.network.RetrofitClient
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import java.io.File
@@ -25,8 +28,15 @@ class editar_perfil : AppCompatActivity() {
     private lateinit var binding: ActivityEditarPerfilBinding
     private lateinit var prefs: SharedPreferencesManager
 
+    // M3 Opción A: estado original para dirty-check + foto pendiente de confirmar.
+    private var nombreOriginal = ""
+    private var apellidoOriginal = ""
+    private var cargandoInicial = true
+    private var fotoPendienteUri: Uri? = null
+    private var guardando = false
+
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let { guardarYMostrarImagen(it) }
+        uri?.let { mostrarConfirmacionFoto(it) }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -40,11 +50,34 @@ class editar_perfil : AppCompatActivity() {
         setupDarkMode()
         cargarDatosPerfil()
         setupMenuListeners()
+
+        // M3: interceptar atrás del sistema si hay cambios sin guardar.
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (hayCambiosSinGuardar()) {
+                    mostrarConfirmacionDescartar(
+                        onDescartar = {
+                            descartarCambios()
+                            // Tras descartar ya no hay cambios: salir.
+                            isEnabled = false
+                            onBackPressedDispatcher.onBackPressed()
+                        }
+                    )
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
     }
 
     override fun onResume() {
         super.onResume()
-        cargarDatosPerfil()
+        // M3: no pisar lo que el usuario está editando al volver de otra pantalla.
+        // Solo recargar si no hay edición en curso.
+        if (!hayCambiosSinGuardar() && !guardando) {
+            cargarDatosPerfil()
+        }
     }
 
     private fun cargarDatosPerfil() {
@@ -76,11 +109,20 @@ class editar_perfil : AppCompatActivity() {
 
         // Pintamos SIEMPRE desde prefs ya saneados (no desde lo visible,
         // que en primera carga aún está vacío y partía mal los datos).
+        cargandoInicial = true
         binding.etName.setText(nombre)
         binding.etLastName.setText(apellido)
         if (email.isNotEmpty()) {
             binding.etEmail.setText(email)
         }
+
+        // M3 Opción A: fijar baseline del dirty-check DESPUÉS de pintar.
+        nombreOriginal = nombre
+        apellidoOriginal = apellido
+        binding.tilName.error = null
+        binding.tilLastName.error = null
+        cargandoInicial = false
+        actualizarEstadoBotones()
 
         if (rutaFoto.isNotEmpty()) {
             val archivo = File(rutaFoto)
@@ -90,11 +132,75 @@ class editar_perfil : AppCompatActivity() {
         }
     }
 
-    private fun guardarCambiosYVolver() {
-        // El correo es identidad de login: se muestra bloqueado y NO se envía al backend.
+    // ---------- M3 Opción A: dirty-check + confirmar/descartar ----------
+
+    private fun hayCambiosSinGuardar(): Boolean {
+        if (cargandoInicial) return false
+        val actualNombre = binding.etName.text.toString().trim()
+        val actualApellido = binding.etLastName.text.toString().trim()
+        return actualNombre != nombreOriginal || actualApellido != apellidoOriginal
+    }
+
+    private fun actualizarEstadoBotones() {
+        if (guardando) {
+            // M3: estado loading, ambos bloqueados.
+            binding.btnGuardarPerfil.isEnabled = false
+            binding.btnGuardarPerfil.text = "Guardando…"
+            binding.btnDescartarPerfil.visibility = View.GONE
+            return
+        }
+        val hayCambios = hayCambiosSinGuardar()
+        // M3 Buttons: Filled solo habilitado si hay cambios (si no, se ve atenuado).
+        binding.btnGuardarPerfil.isEnabled = hayCambios
+        binding.btnGuardarPerfil.text = "Guardar Cambios"
+        // M3: Descartar (Outlined) solo visible cuando hay algo que deshacer.
+        binding.btnDescartarPerfil.visibility = if (hayCambios) View.VISIBLE else View.GONE
+    }
+
+    private fun descartarCambios() {
+        cargandoInicial = true
+        binding.etName.setText(nombreOriginal)
+        binding.etLastName.setText(apellidoOriginal)
+        binding.tilName.error = null
+        binding.tilLastName.error = null
+        fotoPendienteUri = null
+        cargandoInicial = false
+        actualizarEstadoBotones()
+        Snackbar.make(binding.root, "Cambios descartados", Snackbar.LENGTH_SHORT).show()
+    }
+
+    private fun mostrarConfirmacionDescartar(onDescartar: (() -> Unit)? = null) {
+        // M3 Basic dialog: acción destructiva leve -> Text button.
+        MaterialAlertDialogBuilder(this)
+            .setTitle("¿Descartar cambios?")
+            .setMessage("Tienes cambios sin guardar. Se perderán si sales.")
+            .setNegativeButton("Seguir editando") { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton("Descartar") { dialog, _ ->
+                dialog.dismiss()
+                if (onDescartar != null) onDescartar() else descartarCambios()
+            }
+            .show()
+    }
+
+    private fun mostrarConfirmacionGuardar() {
         val nuevoNombre = binding.etName.text.toString().trim()
         val nuevoApellido = binding.etLastName.text.toString().trim()
+        if (!validarCampos(nuevoNombre, nuevoApellido)) return
+        if (!hayCambiosSinGuardar()) return
+        // M3: confirmar antes del PATCH mostrando qué va a cambiar.
+        val resumen = "Nombre: $nombreOriginal → $nuevoNombre\nApellido: $apellidoOriginal → $nuevoApellido"
+        MaterialAlertDialogBuilder(this)
+            .setTitle("¿Guardar cambios?")
+            .setMessage("Se actualizará tu perfil:\n$resumen")
+            .setNegativeButton("Cancelar") { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton("Guardar") { dialog, _ ->
+                dialog.dismiss()
+                ejecutarGuardado(nuevoNombre, nuevoApellido)
+            }
+            .show()
+    }
 
+    private fun validarCampos(nuevoNombre: String, nuevoApellido: String): Boolean {
         // M3 Forms: error pegado al campo, no Toast genérico.
         var valido = true
         if (nuevoNombre.isEmpty()) {
@@ -106,10 +212,19 @@ class editar_perfil : AppCompatActivity() {
             binding.tilLastName.error = "Ingresa tu apellido"
             valido = false
         } else binding.tilLastName.error = null
-        if (!valido) return
+        return valido
+    }
 
+    private fun guardarCambiosYVolver() {
+        // Punto único de entrada: valida + confirma. El PATCH real está en ejecutarGuardado().
+        mostrarConfirmacionGuardar()
+    }
+
+    private fun ejecutarGuardado(nuevoNombre: String, nuevoApellido: String) {
+        // El correo es identidad de login: se muestra bloqueado y NO se envía al backend.
         // Evita doble tap / doble PATCH mientras guarda (M3: botón deshabilitado + loading).
-        binding.btnGuardarPerfil.isEnabled = false
+        guardando = true
+        actualizarEstadoBotones()
 
         val request = ActualizarPerfilRequest(
             nombre = nuevoNombre,
@@ -131,22 +246,29 @@ class editar_perfil : AppCompatActivity() {
                         prefs.saveUserData(perfil.nombre, perfil.email, prefs.getUserPhone())
                         prefs.saveUserLastName(perfil.apellido ?: nuevoApellido)
                     }
+                    // M3: baseline nuevo = lo guardado, ya no hay dirty.
+                    nombreOriginal = nuevoNombre
+                    apellidoOriginal = nuevoApellido
+                    guardando = false
+                    actualizarEstadoBotones()
                     Snackbar.make(binding.root, "Perfil actualizado", Snackbar.LENGTH_SHORT).show()
                     binding.root.postDelayed({ irAMenuInicial() }, 900)
                 } else {
                     Log.e("API_ERROR", "Error HTTP: ${respuesta.code()}")
+                    guardando = false
+                    actualizarEstadoBotones()
                     Snackbar.make(binding.root, "No se pudo guardar. Reintenta", Snackbar.LENGTH_LONG)
-                        .setAction("Reintentar") { guardarCambiosYVolver() }
+                        .setAction("Reintentar") { mostrarConfirmacionGuardar() }
                         .show()
                 }
 
             } catch (e: Exception) {
                 Log.e("API_ERROR", "Error de red: ${e.message}")
+                guardando = false
+                actualizarEstadoBotones()
                 Snackbar.make(binding.root, "Sin conexión. No se guardó", Snackbar.LENGTH_LONG)
-                    .setAction("Reintentar") { guardarCambiosYVolver() }
+                    .setAction("Reintentar") { mostrarConfirmacionGuardar() }
                     .show()
-            } finally {
-                binding.btnGuardarPerfil.isEnabled = true
             }
         }
     }
@@ -156,6 +278,41 @@ class editar_perfil : AppCompatActivity() {
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
         finish()
+    }
+
+    private fun mostrarConfirmacionFoto(uri: Uri) {
+        // M3 Opción A: preview sin persistir + confirmación antes de guardar la foto.
+        fotoPendienteUri = uri
+        try {
+            binding.ivProfile.setImageURI(uri)
+        } catch (_: Exception) { }
+        MaterialAlertDialogBuilder(this)
+            .setTitle("¿Usar esta foto como perfil?")
+            .setMessage("Se actualizará tu foto de perfil en este dispositivo.")
+            .setNegativeButton("Cancelar") { dialog, _ ->
+                dialog.dismiss()
+                fotoPendienteUri = null
+                // Revertir preview a la foto estable guardada.
+                val rutaFoto = prefs.getProfileImagePath().trim()
+                if (rutaFoto.isNotEmpty()) {
+                    val archivo = File(rutaFoto)
+                    if (archivo.exists()) binding.ivProfile.setImageURI(Uri.fromFile(archivo))
+                }
+            }
+            .setPositiveButton("Confirmar") { dialog, _ ->
+                dialog.dismiss()
+                guardarYMostrarImagen(uri)
+                fotoPendienteUri = null
+            }
+            .setOnCancelListener {
+                fotoPendienteUri = null
+                val rutaFoto = prefs.getProfileImagePath().trim()
+                if (rutaFoto.isNotEmpty()) {
+                    val archivo = File(rutaFoto)
+                    if (archivo.exists()) binding.ivProfile.setImageURI(Uri.fromFile(archivo))
+                }
+            }
+            .show()
     }
 
     private fun guardarYMostrarImagen(uri: Uri) {
@@ -200,9 +357,15 @@ class editar_perfil : AppCompatActivity() {
             pickImageLauncher.launch("image/*")
         }
 
-        // M3: limpiar el error en cuanto el usuario corrige.
-        binding.etName.doOnTextChanged { _, _, _, _ -> binding.tilName.error = null }
-        binding.etLastName.doOnTextChanged { _, _, _, _ -> binding.tilLastName.error = null }
+        // M3: limpiar el error en cuanto el usuario corrige + re-evaluar dirty-check.
+        binding.etName.doOnTextChanged { _, _, _, _ ->
+            binding.tilName.error = null
+            if (!cargandoInicial) actualizarEstadoBotones()
+        }
+        binding.etLastName.doOnTextChanged { _, _, _, _ ->
+            binding.tilLastName.error = null
+            if (!cargandoInicial) actualizarEstadoBotones()
+        }
         binding.etLastName.setOnEditorActionListener { _, actionId, _ ->
             if (actionId == EditorInfo.IME_ACTION_DONE) {
                 guardarCambiosYVolver()
@@ -214,8 +377,20 @@ class editar_perfil : AppCompatActivity() {
             guardarCambiosYVolver()
         }
 
+        // M3 Outlined: revierte al baseline sin llamar al backend.
+        binding.btnDescartarPerfil.setOnClickListener {
+            mostrarConfirmacionDescartar()
+        }
+
         binding.btnLogout.setOnClickListener {
-            mostrarConfirmacionCerrarSesion()
+            // Si hay edición sin guardar, avisar antes de cerrar sesión.
+            if (hayCambiosSinGuardar()) {
+                mostrarConfirmacionDescartar(
+                    onDescartar = { mostrarConfirmacionCerrarSesion() }
+                )
+            } else {
+                mostrarConfirmacionCerrarSesion()
+            }
         }
     }
 

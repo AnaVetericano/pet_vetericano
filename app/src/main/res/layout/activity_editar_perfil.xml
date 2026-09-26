@@ -95,9 +95,11 @@
 
                     <!-- Campo Nombre -->
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilName"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Nombre"
+                        app:errorEnabled="true"
                         app:boxBackgroundColor="@color/input_background"
                         app:boxBackgroundMode="outline"
                         app:boxCornerRadiusBottomEnd="14dp"
@@ -107,23 +109,29 @@
                         app:boxStrokeColor="@color/blue"
                         app:hintTextColor="@color/blue"
                         app:startIconDrawable="@drawable/user"
-                        app:startIconTint="@color/blue">
+                        app:startIconTint="?attr/colorPrimary">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etName"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="textPersonName"
+                            android:autofillHints="givenName"
+                            android:imeOptions="actionNext"
+                            android:inputType="textPersonName|textCapWords"
+                            android:maxLines="1"
+                            android:singleLine="true"
                             android:textColor="@color/text_primary"
                             android:textSize="14sp" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Campo Apellido -->
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilLastName"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
                         android:hint="Apellido"
+                        app:errorEnabled="true"
                         app:boxBackgroundColor="@color/input_background"
                         app:boxBackgroundMode="outline"
                         app:boxCornerRadiusBottomEnd="14dp"
@@ -133,23 +141,31 @@
                         app:boxStrokeColor="@color/blue"
                         app:hintTextColor="@color/blue"
                         app:startIconDrawable="@drawable/user"
-                        app:startIconTint="@color/blue">
+                        app:startIconTint="?attr/colorPrimary">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etLastName"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:inputType="textPersonName"
+                            android:autofillHints="familyName"
+                            android:imeOptions="actionDone"
+                            android:inputType="textPersonName|textCapWords"
+                            android:maxLines="1"
+                            android:singleLine="true"
                             android:textColor="@color/text_primary"
                             android:textSize="14sp" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Campo Correo electrónico -->
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilEmail"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
+                        android:enabled="false"
                         android:hint="Correo electrónico"
+                        app:helperText="No se puede cambiar"
+                        app:helperTextEnabled="true"
                         app:boxBackgroundColor="@color/input_background"
                         app:boxBackgroundMode="outline"
                         app:boxCornerRadiusBottomEnd="14dp"
@@ -159,13 +175,16 @@
                         app:boxStrokeColor="@color/blue"
                         app:hintTextColor="@color/blue"
                         app:startIconDrawable="@drawable/mail"
-                        app:startIconTint="@color/blue">
+                        app:startIconTint="?attr/colorPrimary">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etEmail"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:autofillHints="emailAddress"
                             android:inputType="textEmailAddress"
+                            android:maxLines="1"
+                            android:singleLine="true"
                             android:textColor="@color/text_primary"
                             android:textSize="14sp" />
                     </com.google.android.material.textfield.TextInputLayout>

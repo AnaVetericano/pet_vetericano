@@ -4,15 +4,18 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import android.view.inputmethod.EditorInfo
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityEditarPerfilBinding
 import com.example.petvetericano.models.ActualizarPerfilRequest
 import com.example.petvetericano.network.RetrofitClient
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 import java.io.File
 import java.io.FileOutputStream
@@ -76,19 +79,30 @@ class editar_perfil : AppCompatActivity() {
     }
 
     private fun guardarCambiosYVolver() {
-        val nuevoNombre   = binding.etName.text.toString().trim()
+        // El correo es identidad de login: se muestra bloqueado y NO se envía al backend.
+        val nuevoNombre = binding.etName.text.toString().trim()
         val nuevoApellido = binding.etLastName.text.toString().trim()
-        val nuevoEmail    = binding.etEmail.text.toString().trim()
 
-        if (nuevoNombre.isEmpty() || nuevoApellido.isEmpty() || nuevoEmail.isEmpty()) {
-            Toast.makeText(this, "Por favor completa todos los campos", Toast.LENGTH_SHORT).show()
-            return
-        }
+        // M3 Forms: error pegado al campo, no Toast genérico.
+        var valido = true
+        if (nuevoNombre.isEmpty()) {
+            binding.tilName.error = "Ingresa tu nombre"
+            valido = false
+        } else binding.tilName.error = null
+
+        if (nuevoApellido.isEmpty()) {
+            binding.tilLastName.error = "Ingresa tu apellido"
+            valido = false
+        } else binding.tilLastName.error = null
+        if (!valido) return
+
+        // Evita doble tap / doble PATCH mientras guarda (M3: botón deshabilitado + loading).
+        binding.btnGuardarPerfil.isEnabled = false
 
         val request = ActualizarPerfilRequest(
             nombre = nuevoNombre,
             apellido = nuevoApellido,
-            email = nuevoEmail
+            email = prefs.getUserEmail()
         )
 
         lifecycleScope.launch {
@@ -101,25 +115,26 @@ class editar_perfil : AppCompatActivity() {
                 val respuesta = RetrofitClient.apiService.actualizarPerfil(request)
 
                 if (respuesta.isSuccessful) {
-                    // 💡 Guardamos cada dato de forma independiente y limpia
-                    prefs.saveUserData(nuevoNombre, nuevoEmail, prefs.getUserPhone())
-                    prefs.saveUserLastName(nuevoApellido)
-
-                    Toast.makeText(this@editar_perfil, "Perfil actualizado con éxito", Toast.LENGTH_SHORT).show()
+                    respuesta.body()?.let { perfil ->
+                        prefs.saveUserData(perfil.nombre, perfil.email, prefs.getUserPhone())
+                        prefs.saveUserLastName(perfil.apellido ?: nuevoApellido)
+                    }
+                    Snackbar.make(binding.root, "Perfil actualizado", Snackbar.LENGTH_SHORT).show()
+                    binding.root.postDelayed({ irAMenuInicial() }, 900)
                 } else {
                     Log.e("API_ERROR", "Error HTTP: ${respuesta.code()}")
-                    prefs.saveUserData(nuevoNombre, nuevoEmail, prefs.getUserPhone())
-                    prefs.saveUserLastName(nuevoApellido)
-                    Toast.makeText(this@editar_perfil, "Guardado localmente", Toast.LENGTH_SHORT).show()
+                    Snackbar.make(binding.root, "No se pudo guardar. Reintenta", Snackbar.LENGTH_LONG)
+                        .setAction("Reintentar") { guardarCambiosYVolver() }
+                        .show()
                 }
 
             } catch (e: Exception) {
                 Log.e("API_ERROR", "Error de red: ${e.message}")
-                prefs.saveUserData(nuevoNombre, nuevoEmail, prefs.getUserPhone())
-                prefs.saveUserLastName(nuevoApellido)
-                Toast.makeText(this@editar_perfil, "Guardado localmente (Sin conexión)", Toast.LENGTH_SHORT).show()
+                Snackbar.make(binding.root, "Sin conexión. No se guardó", Snackbar.LENGTH_LONG)
+                    .setAction("Reintentar") { guardarCambiosYVolver() }
+                    .show()
             } finally {
-                irAMenuInicial()
+                binding.btnGuardarPerfil.isEnabled = true
             }
         }
     }
@@ -171,6 +186,16 @@ class editar_perfil : AppCompatActivity() {
     private fun setupMenuListeners() {
         binding.btnCamera.setOnClickListener {
             pickImageLauncher.launch("image/*")
+        }
+
+        // M3: limpiar el error en cuanto el usuario corrige.
+        binding.etName.doOnTextChanged { _, _, _, _ -> binding.tilName.error = null }
+        binding.etLastName.doOnTextChanged { _, _, _, _ -> binding.tilLastName.error = null }
+        binding.etLastName.setOnEditorActionListener { _, actionId, _ ->
+            if (actionId == EditorInfo.IME_ACTION_DONE) {
+                guardarCambiosYVolver()
+                true
+            } else false
         }
 
         binding.btnGuardarPerfil.setOnClickListener {

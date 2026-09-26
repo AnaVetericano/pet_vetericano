@@ -5,38 +5,37 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/white"
     tools:context=".MainActivity">
 
     <TextView
         android:id="@+id/txtVwelcome"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="52dp"
+        android:layout_marginTop="36dp"
         android:fontFamily="@font/black"
         android:text="@string/welcome_login_register"
         android:textColor="@color/blue"
-        android:textSize="25sp"
+        android:textSize="22sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        tools:ignore="VisualLintOverlap" />
+        app:layout_constraintTop_toTopOf="parent" />
 
     <TextView
         android:id="@+id/txtVvetericano"
         android:layout_width="wrap_content"
-        android:fontFamily="@font/black"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="2dp"
+        android:fontFamily="@font/black"
+        android:letterSpacing="0.04"
         android:text="@string/vetericano_login_register"
         android:textColor="@color/blue"
-        android:textSize="38dp"
+        android:textSize="36sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtVwelcome"
-        tools:ignore="VisualLintOverlap" />
+        app:layout_constraintTop_toBottomOf="@+id/txtVwelcome" />
 
     <TextView
         android:id="@+id/textView3"
@@ -45,78 +44,89 @@
         android:layout_marginTop="4dp"
         android:fontFamily="@font/sans"
         android:text="@string/care_login_register"
-        android:textSize="20sp"
+        android:textColor="@color/text_secondary"
+        android:textSize="15sp"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.488"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtVvetericano"
-        tools:ignore="VisualLintOverlap" />
+        app:layout_constraintTop_toBottomOf="@+id/txtVvetericano" />
 
-    <ImageView
-        android:id="@+id/imgDogChanchita"
-        android:layout_width="327dp"
-        android:layout_height="263dp"
-        android:layout_marginTop="60dp"
-        android:contentDescription="@string/img_perro"
-        android:scaleType="centerCrop"
-        app:layout_constraintBottom_toTopOf="@+id/btnLoginWelcome"
-        app:layout_constraintDimensionRatio="0.65:0.8"
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardDogChanchita"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:layout_marginHorizontal="36dp"
+        android:layout_marginTop="20dp"
+        android:layout_marginBottom="24dp"
+        app:cardCornerRadius="28dp"
+        app:cardElevation="6dp"
+        app:strokeColor="@color/primary_light"
+        app:strokeWidth="2dp"
+        app:layout_constraintBottom_toTopOf="@+id/layoutButtons"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.421"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView3"
-        app:layout_constraintVertical_bias="0.345"
-        app:layout_constraintWidth_percent="0.6"
-        app:srcCompat="@drawable/chan" />
+        app:layout_constraintTop_toBottomOf="@+id/textView3">
 
-    <Button
-        android:id="@+id/btnLoginWelcome"
-        android:layout_width="wrap_content"
-        android:fontFamily="@font/sans"
+        <ImageView
+            android:id="@+id/imgDogChanchita"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/img_perro"
+            android:scaleType="centerCrop"
+            app:srcCompat="@drawable/chan" />
+    </com.google.android.material.card.MaterialCardView>
+
+    <LinearLayout
+        android:id="@+id/layoutButtons"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:paddingHorizontal="40dp"
-        android:paddingVertical="15dp"
-        android:text="@string/btn_login_login_register"
-        app:layout_constraintBottom_toTopOf="@+id/btnSignUpWelcome"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.501"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/imgDogChanchita" />
-
-    <Button
-        android:id="@+id/btnSignUpWelcome"
-        android:layout_width="wrap_content"
-        android:fontFamily="@font/sans"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="12dp"
-        android:backgroundTint="@color/yellow"
-        android:paddingHorizontal="54dp"
-        android:paddingVertical="15dp"
-        android:text="@string/btn_sign_login_register"
+        android:layout_marginHorizontal="36dp"
+        android:layout_marginBottom="16dp"
+        android:gravity="center"
+        android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/imgVetericanoLogotip"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.498"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnLoginWelcome" />
+        app:layout_constraintStart_toStartOf="parent">
 
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLoginWelcome"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:fontFamily="@font/sans"
+            android:text="@string/btn_login_login_register"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/blue"
+            app:cornerRadius="16dp"
+            app:elevation="3dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnSignUpWelcome"
+            android:layout_width="match_parent"
+            android:layout_height="54dp"
+            android:layout_marginTop="12dp"
+            android:fontFamily="@font/sans"
+            android:text="@string/btn_sign_login_register"
+            android:textAllCaps="false"
+            android:textColor="@color/darkblue"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/yellow"
+            app:cornerRadius="16dp"
+            app:elevation="3dp" />
+    </LinearLayout>
 
     <ImageView
         android:id="@+id/imgVetericanoLogotip"
-        android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginTop="12dp"
-        android:layout_marginBottom="32dp"
+        android:layout_width="80dp"
+        android:layout_height="80dp"
+        android:layout_marginBottom="20dp"
         android:contentDescription="@string/logovetericano"
         android:scaleType="fitCenter"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintDimensionRatio="1:1"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.497"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/btnSignUpWelcome"
-        app:layout_constraintWidth_percent="0.4"
-        app:srcCompat="@drawable/vectorlogovetericano"
-        tools:ignore="VisualLintBounds" />
+        app:srcCompat="@drawable/vectorlogovetericano" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

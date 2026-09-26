@@ -7,17 +7,17 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:padding="24dp"
-    android:background="#FFFFFF"
+    android:background="@color/bg_screen"
     tools:context=".reportar_peticionnn">
 
     <ImageButton
         android:id="@+id/btndev"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
         android:background="?attr/selectableItemBackgroundBorderless"
         android:contentDescription="Atrás"
         android:src="@drawable/outline_arrow_back_ios_24"
-        app:tint="#4D43B5"
+        app:tint="@color/blue"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
@@ -25,22 +25,25 @@
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:fontFamily="@font/black"
         android:text="Reportar Petición"
-        android:textColor="#4D43B5"
+        android:textColor="@color/blue"
         android:textSize="22sp"
         android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/btndev"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="@id/btndev" />
 
     <TextView
         android:id="@+id/tvStep"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/sans"
         android:text="Paso 3 de 4"
-        android:textColor="#1E293B"
-        android:textSize="16sp"
+        android:textColor="@color/text_primary"
+        android:textSize="15sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -51,9 +54,8 @@
         style="?android:attr/progressBarStyleHorizontal"
         android:layout_width="0dp"
         android:layout_height="8dp"
-        android:layout_marginTop="24dp"
-        android:layout_marginStart="32dp"
-        android:layout_marginEnd="32dp"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginTop="12dp"
         android:max="100"
         android:progress="75"
         android:progressDrawable="@drawable/progres"
@@ -63,12 +65,12 @@
 
     <ImageView
         android:id="@+id/ivStepIcon"
-        android:layout_width="36dp"
-        android:layout_height="36dp"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
         android:background="@drawable/bg_circle"
-        android:padding="8dp"
+        android:padding="7dp"
         android:src="@drawable/baseline_pets_24"
-        app:tint="#FFFFFF"
+        app:tint="@color/white"
         app:layout_constraintBottom_toBottomOf="@id/progressBar"
         app:layout_constraintTop_toTopOf="@id/progressBar"
         app:layout_constraintStart_toStartOf="@id/progressBar"
@@ -79,11 +81,12 @@
         android:id="@+id/tvQuestion"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginTop="32dp"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/black"
         android:gravity="center"
         android:text="Cuéntanos más sobre lo que está sucediendo"
-        android:textColor="#000000"
-        android:textSize="16sp"
+        android:textColor="@color/text_primary"
+        android:textSize="17sp"
         android:textStyle="bold"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -92,98 +95,74 @@
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilDescripcion"
         style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="140dp"
         android:layout_marginTop="16dp"
-        android:hint="Descripción de la incidencia"
+        app:boxBackgroundColor="@color/input_background"
         app:boxCornerRadiusBottomEnd="16dp"
         app:boxCornerRadiusBottomStart="16dp"
         app:boxCornerRadiusTopEnd="16dp"
         app:boxCornerRadiusTopStart="16dp"
-        app:boxStrokeColor="#E2E8F0"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
+        app:boxStrokeColor="@color/blue"
+        app:hintTextColor="@color/blue"
         app:layout_constraintTop_toBottomOf="@id/tvQuestion">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etDescripcion"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:gravity="top|start"
+            android:gravity="top"
+            android:hint="Describe la situación del animal, raza aproximada, signos de lesión..."
             android:inputType="textMultiLine"
-            android:textColorHint="#94A3B8"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_muted"
             android:textSize="14sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <LinearLayout
-        android:id="@+id/labelPhotos"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:orientation="horizontal"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/tilDescripcion">
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Agregar fotos o videos"
-            android:textColor="#000000"
-            android:textSize="14sp"
-            android:textStyle="bold" />
-
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="6dp"
-            android:text="(máximo 15 seg.)"
-            android:textColor="#64748B"
-            android:textSize="12sp" />
-    </LinearLayout>
-
+    <!-- Botón Subir Archivo -->
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnSubirArchivo"
         style="@style/Widget.MaterialComponents.Button.OutlinedButton"
-        android:layout_width="0dp"
-        android:layout_height="100dp"
-        android:layout_marginTop="8dp"
-        android:text="Subir archivo"
-        android:textColor="#4D43B5"
+        android:layout_width="match_parent"
+        android:layout_height="52dp"
+        android:layout_marginTop="16dp"
+        android:fontFamily="@font/sans"
+        android:text="Subir foto o evidencia"
+        android:textAllCaps="false"
+        android:textColor="@color/blue"
         android:textSize="14sp"
         android:textStyle="bold"
-        app:cornerRadius="16dp"
+        app:cornerRadius="14dp"
         app:icon="@drawable/camera"
-        app:iconGravity="textTop"
-        app:iconPadding="8dp"
-        app:iconSize="28dp"
-        app:iconTint="#4D43B5"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/labelPhotos"
-        app:strokeColor="#E2E8F0"
-        app:strokeWidth="1dp" />
+        app:iconGravity="textStart"
+        app:iconPadding="10dp"
+        app:iconSize="22dp"
+        app:iconTint="@color/blue"
+        app:strokeColor="@color/blue"
+        app:strokeWidth="1.5dp"
+        app:layout_constraintTop_toBottomOf="@+id/tilDescripcion" />
 
-    <!-- Contenedor Horizontal para mostrar las dos fotos una al lado de la otra -->
+    <!-- CONTENEDOR DE FOTOS -->
     <LinearLayout
         android:id="@+id/layoutFotoCargada"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
+        android:layout_marginTop="16dp"
+        android:gravity="center"
         android:orientation="horizontal"
         android:visibility="gone"
-        app:layout_constraintTop_toBottomOf="@+id/btnSubirArchivo"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent">
+        app:layout_constraintTop_toBottomOf="@id/btnSubirArchivo">
 
         <!-- FOTO 1 -->
-        <androidx.cardview.widget.CardView
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardFoto1"
             android:layout_width="140dp"
-            android:layout_height="80dp"
-            android:layout_marginEnd="8dp"
+            android:layout_height="90dp"
+            android:layout_marginEnd="12dp"
             app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
+            app:cardElevation="3dp"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp"
             android:visibility="gone">
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -199,27 +178,28 @@
 
                 <ImageButton
                     android:id="@+id/btnEliminar1"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
                     android:layout_margin="6dp"
                     android:background="@drawable/bg_circle"
-                    android:backgroundTint="#FFFFFF"
                     android:src="@android:drawable/ic_menu_close_clear_cancel"
                     android:contentDescription="Eliminar foto 1"
-                    app:tint="#333333"
+                    app:tint="@color/white"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
         <!-- FOTO 2 -->
-        <androidx.cardview.widget.CardView
+        <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardFoto2"
             android:layout_width="140dp"
-            android:layout_height="80dp"
+            android:layout_height="90dp"
             app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
+            app:cardElevation="3dp"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp"
             android:visibility="gone">
 
             <androidx.constraintlayout.widget.ConstraintLayout
@@ -235,35 +215,34 @@
 
                 <ImageButton
                     android:id="@+id/btnEliminar2"
-                    android:layout_width="24dp"
-                    android:layout_height="24dp"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
                     android:layout_margin="6dp"
                     android:background="@drawable/bg_circle"
-                    android:backgroundTint="#FFFFFF"
                     android:src="@android:drawable/ic_menu_close_clear_cancel"
                     android:contentDescription="Eliminar foto 2"
-                    app:tint="#333333"
+                    app:tint="@color/white"
                     app:layout_constraintTop_toTopOf="parent"
                     app:layout_constraintEnd_toEndOf="parent" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
-        </androidx.cardview.widget.CardView>
+        </com.google.android.material.card.MaterialCardView>
 
     </LinearLayout>
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnContinue"
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="56dp"
-        android:layout_marginTop="16dp"
-        android:backgroundTint="#4D43B5"
+        android:fontFamily="@font/sans"
         android:text="Continuar"
         android:textAllCaps="false"
-        android:textSize="18sp"
+        android:textColor="@color/white"
+        android:textSize="16sp"
         android:textStyle="bold"
-        app:cornerRadius="12dp"
-        app:layout_constraintTop_toBottomOf="@+id/layoutFotoCargada"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintEnd_toEndOf="parent" />
+        app:backgroundTint="@color/blue"
+        app:cornerRadius="16dp"
+        app:elevation="3dp"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,51 +1,54 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
+    android:background="@color/bg_screen"
     android:fitsSystemWindows="true"
-    android:background="#F8F9FA">
+    android:orientation="vertical">
 
     <!-- Encabezado con botón regresar -->
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical"
-        android:paddingStart="12dp"
-        android:paddingTop="12dp"
-        android:paddingEnd="20dp"
-        android:paddingBottom="4dp">
+        android:background="@color/white"
+        android:elevation="2dp"
+        android:paddingHorizontal="16dp"
+        android:paddingVertical="12dp">
 
         <ImageButton
             android:id="@+id/btnAtras"
-            android:layout_width="48dp"
-            android:layout_height="48dp"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:contentDescription="Regresar"
-            android:src="@android:drawable/ic_menu_revert" />
+            android:src="@drawable/outline_arrow_back_ios_24"
+            app:tint="@color/blue" />
 
         <TextView
-            android:layout_width="0dp"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
+            android:layout_centerInParent="true"
+            android:fontFamily="@font/black"
             android:text="Eventos y Jornadas 🐾"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="#333333"
-            android:paddingStart="8dp" />
-    </LinearLayout>
+            android:textColor="@color/blue"
+            android:textSize="20sp"
+            android:textStyle="bold" />
+    </RelativeLayout>
 
     <!-- Descripción -->
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Conoce nuestras próximas actividades"
-        android:textSize="16sp"
-        android:textColor="#666666"
-        android:paddingStart="20dp"
-        android:paddingEnd="20dp"
-        android:paddingBottom="15dp" />
+        android:fontFamily="@font/sans"
+        android:paddingHorizontal="20dp"
+        android:paddingTop="14dp"
+        android:paddingBottom="10dp"
+        android:text="Conoce nuestras próximas actividades y jornadas de apoyo"
+        android:textColor="@color/text_secondary"
+        android:textSize="14sp" />
 
     <!-- Indicador de carga -->
     <ProgressBar
@@ -54,6 +57,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:layout_marginTop="24dp"
+        android:indeterminateTint="@color/blue"
         android:visibility="gone" />
 
     <!-- Mensaje cuando no hay eventos -->
@@ -61,11 +65,12 @@
         android:id="@+id/tvSinEventos"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:fontFamily="@font/sans"
         android:text="No hay eventos disponibles por el momento."
         android:textAlignment="center"
-        android:textSize="16sp"
-        android:textColor="#888888"
-        android:layout_marginTop="32dp"
+        android:textColor="@color/text_muted"
+        android:textSize="15sp"
         android:visibility="gone" />
 
     <!-- Lista de tarjetas -->
@@ -74,7 +79,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:padding="12dp"
-        android:clipToPadding="false" />
+        android:clipToPadding="false"
+        android:padding="16dp" />
 
 </LinearLayout>

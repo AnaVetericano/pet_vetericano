@@ -5,11 +5,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginStart="8dp"
-    android:layout_marginEnd="8dp"
     android:layout_marginBottom="16dp"
-    app:cardCornerRadius="18dp"
-    app:cardElevation="4dp">
+    app:cardBackgroundColor="@color/white"
+    app:cardCornerRadius="20dp"
+    app:cardElevation="3dp"
+    app:strokeColor="@color/card_stroke"
+    app:strokeWidth="1dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,9 +22,9 @@
             android:id="@+id/imgEvento"
             android:layout_width="match_parent"
             android:layout_height="180dp"
+            android:contentDescription="Imagen del evento"
             android:scaleType="centerCrop"
-            android:src="@drawable/ic_launcher_background"
-            android:contentDescription="Imagen del evento" />
+            android:src="@drawable/pastor_gato" />
 
         <!-- Información del evento -->
         <LinearLayout
@@ -32,73 +33,76 @@
             android:orientation="vertical"
             android:padding="16dp">
 
-            <!-- Tipo de evento -->
+            <!-- Tipo de evento badge -->
             <TextView
                 android:id="@+id/txtTipo"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:background="@drawable/bg_boton_morado"
+                android:fontFamily="@font/sans"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="4dp"
                 android:text="ADOPCIÓN"
-                android:textSize="12sp"
-                android:textStyle="bold"
-                android:textColor="@android:color/white"
-                android:background="#6C63FF"
-                android:paddingStart="10dp"
-                android:paddingEnd="10dp"
-                android:paddingTop="5dp"
-                android:paddingBottom="5dp" />
+                android:textColor="@color/white"
+                android:textSize="11sp"
+                android:textStyle="bold" />
 
             <!-- Título -->
             <TextView
                 android:id="@+id/txtTitulo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@font/black"
                 android:text="Gran Jornada de Adopción"
-                android:textSize="20sp"
-                android:textStyle="bold"
-                android:textColor="#333333"
-                android:layout_marginTop="10dp" />
+                android:textColor="@color/text_primary"
+                android:textSize="18sp"
+                android:textStyle="bold" />
 
             <!-- Descripción -->
             <TextView
                 android:id="@+id/txtDescripcion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="@font/sans"
                 android:text="Descripción del evento"
-                android:textSize="14sp"
-                android:textColor="#666666"
-                android:layout_marginTop="6dp" />
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
 
             <!-- Fecha -->
             <TextView
                 android:id="@+id/txtFecha"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@font/sans"
                 android:text="📅 15 de septiembre de 2026"
-                android:textSize="15sp"
-                android:textColor="#555555"
-                android:layout_marginTop="8dp" />
+                android:textColor="@color/blue"
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
             <!-- Hora -->
             <TextView
                 android:id="@+id/txtHora"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/sans"
                 android:text="🕐 9:00 AM - 3:00 PM"
-                android:textSize="15sp"
-                android:textColor="#555555"
-                android:layout_marginTop="5dp" />
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp" />
 
             <!-- Lugar -->
             <TextView
                 android:id="@+id/txtLugar"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:fontFamily="@font/sans"
                 android:text="📍 Parque Central"
-                android:textSize="15sp"
-                android:textColor="#555555"
-                android:layout_marginTop="5dp" />
-
-
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp" />
 
         </LinearLayout>
 

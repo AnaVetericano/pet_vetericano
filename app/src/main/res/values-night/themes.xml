@@ -2,6 +2,10 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.PetVetericano" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your dark theme here. -->
-        <!-- <item name="colorPrimary">@color/my_dark_primary</item> -->
+        <item name="colorPrimary">@color/blue</item>
+        <item name="colorPrimaryDark">@color/darkblue</item>
+        <item name="colorSecondary">@color/yellow</item>
+        <item name="android:statusBarColor">@color/darkblue</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
     </style>
 </resources>

@@ -13,6 +13,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.databinding.ActivityAdopcionBinding
 import com.example.petvetericano.models.AdopcionAnimalResponse
 import com.example.petvetericano.network.RetrofitClient
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
 class Adopcion : AppCompatActivity() {
@@ -94,7 +95,57 @@ class Adopcion : AppCompatActivity() {
     }
 
     private fun mostrarDialogoAdopcion(animal: AnimalCompania) {
+        // Paso 1 M3 (igual que eventos): dialogo informativo, no ejecuta la accion.
+        // Solo visual: no hay API de adopcion para enviar, asi que no se guarda nada.
+        val detalle = "Nombre: ${animal.nombre}\n" +
+            "Raza: ${animal.raza}\n" +
+            "Ficha: ${animal.idFicha}\n\n" +
+            "${animal.descripcion}"
+
+        AlertDialog.Builder(this)
+            .setTitle("Quiero adoptar a ${animal.nombre}")
+            .setMessage(detalle)
+            .setCancelable(true)
+            .setNegativeButton("Cerrar") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton("Quiero adoptar") { dialog, _ ->
+                dialog.dismiss()
+                // Paso 2 M3: confirmacion antes de la accion con consecuencia
+                mostrarConfirmacionAdopcion(animal)
+            }
+            .show()
+    }
+
+    private fun mostrarConfirmacionAdopcion(animal: AnimalCompania) {
+        AlertDialog.Builder(this)
+            .setTitle("¿Confirmar adopción?")
+            .setMessage(
+                "Vas a iniciar el proceso de adopción de \"${animal.nombre}\" " +
+                    "(${animal.idFicha}) con los datos de tu cuenta. " +
+                    "El equipo del CBA te contactará."
+            )
+            .setCancelable(true)
+            .setNegativeButton("Cancelar") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton("Confirmar") { dialog, _ ->
+                dialog.dismiss()
+                confirmarAdopcion(animal)
+            }
+            .show()
+    }
+
+    private fun confirmarAdopcion(animal: AnimalCompania) {
+        // Solo visual / local: no existe endpoint de adopcion, asi que no se envia nada a la BD.
+        // Se muestra la confirmacion con el numero de ficha y la opcion de contactar al CBA.
         val mensaje = "Gracias por salvar con amor, su solicitud será atendida bajo el número ${animal.idFicha}."
+
+        Snackbar.make(
+            binding.root,
+            "¡Solicitud lista! ${animal.idFicha}: ${animal.nombre}",
+            Snackbar.LENGTH_LONG
+        ).show()
 
         AlertDialog.Builder(this)
             .setTitle("¡Adopción en proceso!")

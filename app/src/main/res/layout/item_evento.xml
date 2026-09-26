@@ -6,6 +6,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="16dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
     app:cardBackgroundColor="@color/white"
     app:cardCornerRadius="20dp"
     app:cardElevation="1dp"
@@ -103,6 +106,36 @@
                 android:text="📍 Parque Central"
                 android:textColor="@color/text_secondary"
                 android:textSize="13sp" />
+
+            <!-- Affordance M3: indica que la tarjeta es clickeable -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center_vertical|end"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/txtVerDetalle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="Ver detalles del evento"
+                    android:fontFamily="@font/nunito"
+                    android:padding="4dp"
+                    android:text="Ver detalles"
+                    android:textColor="@color/blue"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/outline_arrow_back_ios_24"
+                    android:rotation="180"
+                    app:tint="@color/blue" />
+
+            </LinearLayout>
 
         </LinearLayout>
 

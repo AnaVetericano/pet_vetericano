@@ -4,6 +4,9 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="16dp"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
     app:cardBackgroundColor="@color/white"
     app:cardCornerRadius="20dp"
     app:cardElevation="1dp"
@@ -85,6 +88,35 @@
                 android:visibility="gone"
                 app:backgroundTint="@color/error"
                 app:cornerRadius="10dp" />
+
+            <!-- Affordance M3: indica que la tarjeta es clickeable (igual que eventos) -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:gravity="center_vertical|end"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:contentDescription="Ver detalles del animal para adopción"
+                    android:fontFamily="@font/nunito"
+                    android:padding="4dp"
+                    android:text="Quiero adoptar"
+                    android:textColor="@color/blue"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:layout_width="18dp"
+                    android:layout_height="18dp"
+                    android:contentDescription="@null"
+                    android:rotation="180"
+                    android:src="@drawable/outline_arrow_back_ios_24"
+                    app:tint="@color/blue" />
+
+            </LinearLayout>
 
         </LinearLayout>
     </LinearLayout>

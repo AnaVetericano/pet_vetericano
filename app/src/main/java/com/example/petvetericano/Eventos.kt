@@ -12,6 +12,7 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.databinding.ActivityEventosBinding
 import com.example.petvetericano.models.VoluntariadoEventos // 👈 Esta importación soluciona el problema de la línea 71
 import com.example.petvetericano.network.RetrofitClient
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
 class Eventos : AppCompatActivity() {
@@ -40,20 +41,8 @@ class Eventos : AppCompatActivity() {
 
         // 👈 Se especifica <VoluntariadoEventos> para que Kotlin no tenga dudas
         adapter = EventoAdapter(emptyList<VoluntariadoEventos>()) { evento: VoluntariadoEventos ->
-            // Al tocar un evento, mostrar detalles completos
-            val titulo = evento.titulo.replace("\"", "").trim()
-            val descripcion = evento.descripcion.replace("\"", "").trim()
-            val fecha = evento.fecha.replace("\"", "").trim()
-
-            AlertDialog.Builder(this)
-                .setTitle(titulo)
-                .setMessage("$descripcion\n\n📅 Fecha: $fecha")
-                .setPositiveButton("Postularse") { dialog, _ ->
-                    dialog.dismiss()
-                    postularse(evento)
-                }
-                .setNegativeButton("Cerrar") { dialog, _ -> dialog.dismiss() }
-                .show()
+            // Paso 1 M3: dialogo informativo (no ejecuta la accion)
+            mostrarDetalleEvento(evento)
         }
 
         binding.recyclerEventos.layoutManager = LinearLayoutManager(this)
@@ -113,6 +102,38 @@ class Eventos : AppCompatActivity() {
         }
     }
 
+    private fun mostrarDetalleEvento(evento: VoluntariadoEventos) {
+        val titulo = evento.titulo.replace("\"", "").trim()
+        val descripcion = evento.descripcion.replace("\"", "").trim()
+        val fecha = evento.fecha.replace("\"", "").trim()
+
+        AlertDialog.Builder(this)
+            .setTitle(titulo)
+            .setMessage("$descripcion\n\n📅 Fecha: $fecha")
+            .setNegativeButton("Cerrar") { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton("Postularse") { dialog, _ ->
+                dialog.dismiss()
+                // Paso 2 M3: confirmacion antes de la accion con consecuencia
+                mostrarConfirmacionPostulacion(evento, titulo)
+            }
+            .show()
+    }
+
+    private fun mostrarConfirmacionPostulacion(evento: VoluntariadoEventos, titulo: String) {
+        AlertDialog.Builder(this)
+            .setTitle("¿Confirmar postulación?")
+            .setMessage(
+                "Te postularás a \"$titulo\" con los datos de tu cuenta. " +
+                    "El equipo te contactará."
+            )
+            .setNegativeButton("Cancelar") { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton("Confirmar") { dialog, _ ->
+                dialog.dismiss()
+                postularse(evento)
+            }
+            .show()
+    }
+
     private fun postularse(evento: VoluntariadoEventos) {
         val prefs = SharedPreferencesManager(this)
         val token = prefs.getAccessToken()
@@ -129,7 +150,11 @@ class Eventos : AppCompatActivity() {
                 when (respuesta.code()) {
                     201 -> {
                         val msg = respuesta.body()?.mensaje ?: "¡Te has postulado exitosamente!"
-                        Toast.makeText(this@Eventos, msg, Toast.LENGTH_LONG).show()
+                        Snackbar.make(
+                            binding.root,
+                            msg,
+                            Snackbar.LENGTH_LONG
+                        ).show()
                     }
                     400 -> {
                         val errorBody = respuesta.errorBody()?.string() ?: ""
@@ -138,7 +163,7 @@ class Eventos : AppCompatActivity() {
                         } else {
                             "No fue posible completar la postulacion."
                         }
-                        Toast.makeText(this@Eventos, msg, Toast.LENGTH_LONG).show()
+                        Snackbar.make(binding.root, msg, Snackbar.LENGTH_LONG).show()
                     }
                     401 -> {
                         Toast.makeText(this@Eventos, "Sesion expirada. Inicia sesion nuevamente.", Toast.LENGTH_LONG).show()

@@ -130,3 +130,13 @@ data class JuridicoResponse(
     val email: String,
     val nombre: String?
 )
+
+// --- Adopciones ---
+data class AdopcionAnimalResponse(
+    val id: Int,
+    val nombre: String,
+    val raza: String,
+    val descripcion: String,
+    val imagen: String? = null,
+    val disponible: Boolean = true
+)

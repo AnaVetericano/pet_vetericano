@@ -24,7 +24,7 @@
         android:id="@+id/tvTitle"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:fontFamily="@font/black"
+        android:fontFamily="@font/nunito_display"
         android:text="Permisos de la App"
         android:textColor="@color/blue"
         android:textSize="22sp"
@@ -39,7 +39,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
-        android:fontFamily="@font/sans"
+        android:fontFamily="@font/nunito"
         android:text="Administra las funciones a las que la aplicación tiene acceso en tu dispositivo para garantizar el mejor servicio."
         android:textColor="@color/text_secondary"
         android:textSize="14sp"
@@ -53,7 +53,7 @@
         android:layout_marginTop="24dp"
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="20dp"
-        app:cardElevation="3dp"
+        app:cardElevation="1dp"
         app:strokeColor="@color/card_stroke"
         app:strokeWidth="1dp"
         app:layout_constraintTop_toBottomOf="@id/tvDescription">
@@ -87,7 +87,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/sans"
+                        android:fontFamily="@font/nunito"
                         android:text="Ubicación"
                         android:textColor="@color/text_primary"
                         android:textSize="15sp"
@@ -96,7 +96,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/sans"
+                        android:fontFamily="@font/nunito"
                         android:text="Para geolocalizar incidencias en el mapa"
                         android:textColor="@color/text_muted"
                         android:textSize="12sp" />
@@ -138,7 +138,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/sans"
+                        android:fontFamily="@font/nunito"
                         android:text="Cámara"
                         android:textColor="@color/text_primary"
                         android:textSize="15sp"
@@ -147,7 +147,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/sans"
+                        android:fontFamily="@font/nunito"
                         android:text="Para tomar fotos en las peticiones"
                         android:textColor="@color/text_muted"
                         android:textSize="12sp" />
@@ -189,7 +189,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/sans"
+                        android:fontFamily="@font/nunito"
                         android:text="Notificaciones"
                         android:textColor="@color/text_primary"
                         android:textSize="15sp"
@@ -198,7 +198,7 @@
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:fontFamily="@font/sans"
+                        android:fontFamily="@font/nunito"
                         android:text="Alertas sobre actualizaciones de casos"
                         android:textColor="@color/text_muted"
                         android:textSize="12sp" />

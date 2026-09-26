@@ -33,7 +33,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
-            android:fontFamily="@font/black"
+            android:fontFamily="@font/nunito_display"
             android:letterSpacing="0.04"
             android:text="ADOPCIONES"
             android:textColor="@color/blue"
@@ -42,11 +42,35 @@
 
     </RelativeLayout>
 
+    <!-- Indicador de carga -->
+    <ProgressBar
+        android:id="@+id/progressBarAdopciones"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginTop="24dp"
+        android:indeterminateTint="@color/blue"
+        android:visibility="gone" />
+
+    <!-- Mensaje cuando no hay adopciones -->
+    <TextView
+        android:id="@+id/tvSinAdopciones"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="32dp"
+        android:fontFamily="@font/nunito"
+        android:text="No hay adopciones disponibles por el momento."
+        android:textAlignment="center"
+        android:textColor="@color/text_muted"
+        android:textSize="15sp"
+        android:visibility="gone" />
+
     <!-- LISTA DE ANIMALES -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/recyclerViewAnimales"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
         android:clipToPadding="false"
         android:padding="16dp" />
 

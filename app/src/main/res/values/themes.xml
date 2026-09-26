@@ -8,7 +8,32 @@
         <item name="android:statusBarColor">@color/white</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
         <item name="android:windowBackground">@color/white</item>
+
+        <!-- Tipografía de la app: Nunito (la misma del panel web) -->
+        <item name="android:fontFamily">@font/nunito</item>
+        <!-- Los componentes de Material también usan Nunito -->
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Vetericano.LabelLarge</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Vetericano.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Vetericano.BodyMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Vetericano.HeadlineSmall</item>
     </style>
 
     <style name="Theme.PetVetericano" parent="Base.Theme.PetVetericano" />
+
+    <!-- ===== Tipografía (Nunito) para componentes Material ===== -->
+    <style name="TextAppearance.Vetericano.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:fontFamily">@font/nunito</item>
+    </style>
+
+    <style name="TextAppearance.Vetericano.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:fontFamily">@font/nunito</item>
+    </style>
+
+    <style name="TextAppearance.Vetericano.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:fontFamily">@font/nunito_bold</item>
+    </style>
+
+    <style name="TextAppearance.Vetericano.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:fontFamily">@font/nunito_bold</item>
+    </style>
 </resources>

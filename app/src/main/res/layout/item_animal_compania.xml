@@ -6,7 +6,7 @@
     android:layout_marginBottom="16dp"
     app:cardBackgroundColor="@color/white"
     app:cardCornerRadius="20dp"
-    app:cardElevation="3dp"
+    app:cardElevation="1dp"
     app:strokeColor="@color/card_stroke"
     app:strokeWidth="1dp">
 
@@ -34,7 +34,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_campo"
-                android:fontFamily="@font/sans"
+                android:fontFamily="@font/nunito"
                 android:paddingHorizontal="8dp"
                 android:paddingVertical="2dp"
                 android:textColor="@color/blue"
@@ -46,7 +46,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:fontFamily="@font/black"
+                android:fontFamily="@font/nunito_display"
                 android:textColor="@color/text_primary"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -56,7 +56,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
-                android:fontFamily="@font/sans"
+                android:fontFamily="@font/nunito"
                 android:textColor="@color/text_secondary"
                 android:textSize="13sp" />
 
@@ -66,7 +66,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="3dp"
                 android:ellipsize="end"
-                android:fontFamily="@font/sans"
+                android:fontFamily="@font/nunito"
                 android:maxLines="2"
                 android:textColor="@color/text_muted"
                 android:textSize="12sp" />
@@ -76,7 +76,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="38dp"
                 android:layout_marginTop="8dp"
-                android:fontFamily="@font/sans"
+                android:fontFamily="@font/nunito"
                 android:text="▶ Ver Video"
                 android:textAllCaps="false"
                 android:textColor="@color/white"

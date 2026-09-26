@@ -24,7 +24,7 @@
             android:id="@+id/tvSaludo"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:fontFamily="@font/black"
+            android:fontFamily="@font/nunito_display"
             android:text="Hola,"
             android:textColor="@color/blue"
             android:textSize="26sp"
@@ -35,7 +35,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
-            android:fontFamily="@font/sans"
+            android:fontFamily="@font/nunito"
             android:text="¡Gracias por ayudar!"
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
@@ -62,7 +62,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
-                android:fontFamily="@font/sans"
+                android:fontFamily="@font/nunito"
                 android:text="¿Qué deseas hacer hoy?"
                 android:textColor="@color/text_primary"
                 android:textSize="18sp"
@@ -79,8 +79,8 @@
                 android:clickable="true"
                 android:focusable="true"
                 app:cardBackgroundColor="@color/yellow"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="4dp"
+                app:cardCornerRadius="20dp"
+                app:cardElevation="1dp"
                 app:strokeWidth="0dp">
 
                 <LinearLayout
@@ -100,7 +100,7 @@
                             android:id="@+id/tvReportarPeticion"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:fontFamily="@font/black"
+                            android:fontFamily="@font/nunito_display"
                             android:text="Reportar\nIncidencia"
                             android:textColor="@color/darkblue"
                             android:textSize="22sp"
@@ -110,7 +110,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
-                            android:fontFamily="@font/sans"
+                            android:fontFamily="@font/nunito"
                             android:text="Notifica animales heridos, en calle o maltrato"
                             android:textColor="@color/darkblue2"
                             android:textSize="13sp" />
@@ -122,7 +122,7 @@
                         android:layout_marginStart="12dp"
                         app:cardBackgroundColor="@color/white"
                         app:cardCornerRadius="36dp"
-                        app:cardElevation="2dp"
+                        app:cardElevation="0dp"
                         app:strokeWidth="0dp">
 
                         <ImageView
@@ -160,8 +160,8 @@
                     android:clickable="true"
                     android:focusable="true"
                     app:cardBackgroundColor="@color/white"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="3dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
 
@@ -196,7 +196,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
-                            android:fontFamily="@font/black"
+                            android:fontFamily="@font/nunito_display"
                             android:text="Adopción"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp"
@@ -206,7 +206,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:fontFamily="@font/sans"
+                            android:fontFamily="@font/nunito"
                             android:text="Dales un hogar"
                             android:textColor="@color/text_muted"
                             android:textSize="11sp" />
@@ -225,8 +225,8 @@
                     android:clickable="true"
                     android:focusable="true"
                     app:cardBackgroundColor="@color/white"
-                    app:cardCornerRadius="20dp"
-                    app:cardElevation="3dp"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
 
@@ -261,7 +261,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
-                            android:fontFamily="@font/black"
+                            android:fontFamily="@font/nunito_display"
                             android:text="Voluntariado"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp"
@@ -271,7 +271,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
-                            android:fontFamily="@font/sans"
+                            android:fontFamily="@font/nunito"
                             android:text="Únete a la causa"
                             android:textColor="@color/text_muted"
                             android:textSize="11sp" />
@@ -297,7 +297,7 @@
         android:layout_marginBottom="16dp"
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="24dp"
-        app:cardElevation="8dp"
+        app:cardElevation="3dp"
         app:strokeColor="@color/card_stroke"
         app:strokeWidth="1dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -309,67 +309,79 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:orientation="horizontal"
+            android:paddingHorizontal="8dp">
 
+            <!-- 1. INICIO -->
             <ImageView
                 android:id="@+id/ivNavInicio"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="48dp"
                 android:layout_weight="1"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:contentDescription="Inicio"
                 android:focusable="true"
-                android:padding="10dp"
+                android:padding="12dp"
                 android:src="@drawable/house"
                 app:tint="@color/blue" />
 
-            <!-- BOTON CENTRAL DESTACADO -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardNavPrincipal"
-                android:layout_width="48dp"
+            <!-- 2. REPORTAR (DESTACADO) -->
+            <FrameLayout
+                android:layout_width="0dp"
                 android:layout_height="48dp"
-                android:clickable="true"
-                android:focusable="true"
-                app:cardBackgroundColor="@color/yellow"
-                app:cardCornerRadius="24dp"
-                app:cardElevation="2dp"
-                app:strokeWidth="0dp">
+                android:layout_weight="1">
 
-                <ImageView
-                    android:id="@+id/ivNavPrincipal"
-                    android:layout_width="26dp"
-                    android:layout_height="26dp"
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardNavPrincipal"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:layout_gravity="center"
-                    android:contentDescription="Reportar petición"
-                    android:src="@drawable/paw_cat"
-                    app:tint="@color/darkblue" />
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/yellow"
+                    app:cardCornerRadius="24dp"
+                    app:cardElevation="2dp"
+                    app:strokeWidth="0dp">
 
-            </com.google.android.material.card.MaterialCardView>
+                    <ImageView
+                        android:id="@+id/ivNavPrincipal"
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="Reportar petición"
+                        android:src="@drawable/paw_cat"
+                        app:tint="@color/darkblue" />
 
+                </com.google.android.material.card.MaterialCardView>
+
+            </FrameLayout>
+
+            <!-- 3. EVENTOS -->
             <ImageView
                 android:id="@+id/ivNavFavoritos"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="48dp"
                 android:layout_weight="1"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:contentDescription="Eventos"
                 android:focusable="true"
-                android:padding="11dp"
+                android:padding="12dp"
                 android:src="@drawable/heart"
                 app:tint="@color/text_muted" />
 
+            <!-- 4. PERFIL -->
             <ImageView
                 android:id="@+id/ivNavPerfil"
                 android:layout_width="0dp"
-                android:layout_height="44dp"
+                android:layout_height="48dp"
                 android:layout_weight="1"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
                 android:contentDescription="Perfil"
                 android:focusable="true"
-                android:padding="10dp"
+                android:padding="12dp"
                 android:src="@drawable/user"
                 app:tint="@color/text_muted" />
 

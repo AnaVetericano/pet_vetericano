@@ -6,6 +6,7 @@ import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.lifecycleScope
@@ -177,11 +178,36 @@ class editar_perfil : AppCompatActivity() {
         }
 
         binding.btnLogout.setOnClickListener {
-            prefs.saveAccessToken("")
-            val intent = Intent(this, inicio_sesion::class.java)
-            startActivity(intent)
-            finish()
+            mostrarConfirmacionCerrarSesion()
         }
+    }
+
+    private fun mostrarConfirmacionCerrarSesion() {
+        // M3: las acciones con consecuencia (cerrar sesion) siempre piden confirmacion.
+        AlertDialog.Builder(this)
+            .setTitle("¿Cerrar sesión?")
+            .setMessage("Tendrás que volver a iniciar sesión para usar la app.")
+            .setNegativeButton("Cancelar") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton("Cerrar sesión") { dialog, _ ->
+                dialog.dismiss()
+                cerrarSesion()
+            }
+            .show()
+    }
+
+    private fun cerrarSesion() {
+        // Limpieza completa: token + datos cacheados + token en memoria del interceptor.
+        prefs.clearSession()
+        RetrofitClient.authToken = null
+
+        val intent = Intent(this, inicio_sesion::class.java).apply {
+            // Limpia la pila: al dar atras ya no vuelve al menu, sale de la app.
+            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        finish()
     }
 }
 

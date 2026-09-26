@@ -231,44 +231,52 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Botón Cerrar sesión -->
+            <!-- Separador zona de peligro M3 -->
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="24dp"
+                android:background="@color/divider" />
+
+            <!-- Botón Cerrar sesión: ancho completo, estilo peligro M3 -->
             <com.google.android.material.card.MaterialCardView
-                android:layout_width="wrap_content"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="16dp"
                 android:layout_marginBottom="16dp"
-                app:cardBackgroundColor="#FEF2F2"
+                app:cardBackgroundColor="@color/white"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="0dp"
-                app:strokeColor="#FCA5A5"
+                app:strokeColor="@color/error"
                 app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:id="@+id/btnLogout"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
                     android:background="?attr/selectableItemBackground"
                     android:clickable="true"
+                    android:contentDescription="Cerrar sesión"
                     android:focusable="true"
                     android:gravity="center"
                     android:orientation="horizontal"
-                    android:paddingHorizontal="24dp"
-                    android:paddingVertical="12dp">
+                    android:paddingHorizontal="24dp">
 
                     <ImageView
-                        android:layout_width="20dp"
-                        android:layout_height="20dp"
-                        android:src="@drawable/outline_arrow_back_ios_24"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/baseline_logout_24"
                         app:tint="@color/error_dark" />
 
                     <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
+                        android:layout_marginStart="10dp"
                         android:fontFamily="@font/nunito"
                         android:text="Cerrar sesión"
                         android:textColor="@color/error_dark"
-                        android:textSize="15sp"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>

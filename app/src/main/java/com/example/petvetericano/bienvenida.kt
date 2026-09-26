@@ -98,17 +98,25 @@ class bienvenida : AppCompatActivity() {
                     if (datos != null) {
                         binding.tvMensajeBienvenida.text = "¡Gracias por ayudar!"
 
-                        val nombreCompleto = "${datos.nombre} ${datos.apellido}".trim()
-                        val nombreFinal = if (nombreCompleto.isNotEmpty()) nombreCompleto else datos.nombre
+                        val soloNombre = datos.nombre.trim()
+                        val soloApellido = datos.apellido.trim()
 
                         // Mostramos exactamente el nombre del usuario en el saludo
-                        if (nombreFinal.isNotEmpty()) {
-                            binding.tvSaludo.text = "Hola, $nombreFinal"
+                        val saludo = if (soloApellido.isNotEmpty()) "$soloNombre $soloApellido" else soloNombre
+                        if (saludo.isNotEmpty()) {
+                            binding.tvSaludo.text = "Hola, $saludo"
+                        }
+                        // Guardamos nombre y apellido POR SEPARADO (fix: antes quedaba
+                        // "nombre apellido" todo junto en USER_NAME y el perfil salia descuadrado).
+                        if (soloNombre.isNotEmpty()) {
                             prefs.saveUserData(
-                                name = nombreFinal,
+                                name = soloNombre,
                                 email = datos.email,
                                 phone = prefs.getUserPhone()
                             )
+                        }
+                        if (soloApellido.isNotEmpty()) {
+                            prefs.saveUserLastName(soloApellido)
                         }
                     }
                 } else {

@@ -48,25 +48,37 @@ class editar_perfil : AppCompatActivity() {
     }
 
     private fun cargarDatosPerfil() {
-        val nombre   = prefs.getUserName()
-        val apellido = prefs.getUserLastName()
-        val email    = prefs.getUserEmail()
-        val rutaFoto = prefs.getProfileImagePath()
+        var nombre = prefs.getUserName().trim()
+        var apellido = prefs.getUserLastName().trim()
+        val email = prefs.getUserEmail().trim()
+        val rutaFoto = prefs.getProfileImagePath().trim()
 
-        // 💡 Limpiamos por si el nombre guardado localmente traía el apellido pegado por error previo
-        val nombreLimPIO = if (apellido.isNotEmpty() && nombre.endsWith(apellido)) {
-            nombre.replace(apellido, "").trim()
-        } else {
-            nombre
+        // Caso 1: dato local migrado mal (bienvenida antigua guardaba "Nombre Apellido"
+        // todo junto en USER_NAME y USER_LASTNAME quedaba vacio).
+        if (apellido.isEmpty() && nombre.contains(" ")) {
+            val partes = nombre.split("\\s+".toRegex(), limit = 2)
+            nombre = partes[0]
+            apellido = partes.getOrElse(1) { "" }
+            // Persistimos ya separado para no volver a caer en lo mismo.
+            if (nombre.isNotEmpty()) {
+                prefs.saveUserData(nombre, prefs.getUserEmail(), prefs.getUserPhone())
+            }
+            if (apellido.isNotEmpty()) {
+                prefs.saveUserLastName(apellido)
+            }
+        } else if (apellido.isNotEmpty() && nombre.endsWith(apellido)) {
+            // Caso 2: nombre traia el apellido pegado al final por error previo.
+            nombre = nombre.removeSuffix(apellido).trim()
+            if (nombre.isNotEmpty()) {
+                prefs.saveUserData(nombre, prefs.getUserEmail(), prefs.getUserPhone())
+            }
         }
 
-        if (nombreLimPIO.isNotEmpty() && binding.etName.text.isNullOrEmpty()) {
-            binding.etName.setText(nombreLimPIO)
-        }
-        if (apellido.isNotEmpty() && binding.etLastName.text.isNullOrEmpty()) {
-            binding.etLastName.setText(apellido)
-        }
-        if (email.isNotEmpty() && binding.etEmail.text.isNullOrEmpty()) {
+        // Pintamos SIEMPRE desde prefs ya saneados (no desde lo visible,
+        // que en primera carga aún está vacío y partía mal los datos).
+        binding.etName.setText(nombre)
+        binding.etLastName.setText(apellido)
+        if (email.isNotEmpty()) {
             binding.etEmail.setText(email)
         }
 

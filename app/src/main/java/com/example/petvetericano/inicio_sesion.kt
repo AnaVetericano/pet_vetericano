@@ -14,9 +14,13 @@ class inicio_sesion : AppCompatActivity() {
 
     private lateinit var binding: ActivityInicioSesionBinding
 
+    // 1. AQUÍ DECLARAS LOS ROLES (Adiós a los datos quemados)
+    companion object {
+        const val ROL_VETERINARIO = 3
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityInicioSesionBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -35,7 +39,6 @@ class inicio_sesion : AppCompatActivity() {
     }
 
     private fun iniciarSesion() {
-
         val email = binding.editTextText.text.toString().trim()
         val password = binding.edtPassword.text.toString().trim()
 
@@ -51,10 +54,7 @@ class inicio_sesion : AppCompatActivity() {
             return
         }
 
-        val loginRequest = LoginRequest(
-            email = email,
-            password = password
-        )
+        val loginRequest = LoginRequest(email = email, password = password)
 
         lifecycleScope.launch {
             try {
@@ -64,55 +64,40 @@ class inicio_sesion : AppCompatActivity() {
                     val datos = respuesta.body()
 
                     if (datos != null) {
+                        Toast.makeText(this@inicio_sesion, datos.mensaje, Toast.LENGTH_SHORT).show()
 
-                        Toast.makeText(
-                            this@inicio_sesion,
-                            datos.mensaje,
-                            Toast.LENGTH_SHORT
-                        ).show()
-
-                        // Asignar el token en memoria para que el Interceptor lo use
                         RetrofitClient.authToken = datos.tokens.access
 
-                        // Guardar datos, token e ID unificados en SharedPreferencesManager
                         val prefs = SharedPreferencesManager(this@inicio_sesion)
                         prefs.saveUserData(
-                            name  = datos.nombre ?: "",        // el nombre se completa desde el dashboard
+                            name  = datos.nombre ?: "",
                             email = datos.email,
                             phone = ""
                         )
                         prefs.saveAccessToken(datos.tokens.access)
-
-                        // 💡 Usamos 'idUsuario' que es la variable mapeada en AuthModels.kt
                         prefs.saveUserId(datos.idUsuario)
 
-                        val intent = Intent(
-                            this@inicio_sesion,
-                            bienvenida::class.java
-                        )
+                        // 2. AQUÍ SE SEPARA EL CAMINO SEGÚN EL ROL
+                        val intent = if (datos.idRol == ROL_VETERINARIO) {
+                            // Si es 2, va al dashboard del veterinario
+                            Intent(this@inicio_sesion, dahsboard_veterianrio::class.java)
+                        } else {
+                            // Si es cualquier otra cosa, va a la bienvenida normal
+                            Intent(this@inicio_sesion, bienvenida::class.java)
+                        }
+
                         intent.putExtra("TOKEN", datos.tokens.access)
                         intent.putExtra("EMAIL", datos.email)
                         intent.putExtra("ID_ROL", datos.idRol)
-                        intent.flags =
-                            Intent.FLAG_ACTIVITY_NEW_TASK or
-                                    Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+
                         startActivity(intent)
                     }
-
                 } else {
-                    Toast.makeText(
-                        this@inicio_sesion,
-                        "Correo o contraseña incorrectos",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Toast.makeText(this@inicio_sesion, "Correo o contraseña incorrectos", Toast.LENGTH_LONG).show()
                 }
-
             } catch (e: Exception) {
-                Toast.makeText(
-                    this@inicio_sesion,
-                    "Error de conexión: ${e.message}",
-                    Toast.LENGTH_LONG
-                ).show()
+                Toast.makeText(this@inicio_sesion, "Error de conexión: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
     }

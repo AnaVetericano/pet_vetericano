@@ -1,6 +1,7 @@
 package com.example.petvetericano.network
 
 import com.example.petvetericano.models.ActualizarPerfilRequest
+import com.example.petvetericano.models.AdopcionAnimalResponse
 import com.example.petvetericano.models.DashboardResponse
 import com.example.petvetericano.models.LoginRequest
 import com.example.petvetericano.models.LoginResponse
@@ -9,6 +10,7 @@ import com.example.petvetericano.models.UsuarioPerfilResponse
 import com.example.petvetericano.models.confirmarpeticion
 import com.example.petvetericano.models.PostularseResponse
 import com.example.petvetericano.models.VoluntariadoEventos
+import com.example.petvetericano.models.AdopcionAnimalResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -49,6 +51,10 @@ interface ApiService {
     @POST("peticiones/iniciar/")
     suspend fun enviarPeticion(@Body peticion: confirmarpeticion): Response<Any>
 
+    // --- ADOPCIONES ---
+    @GET("adopciones/")
+    suspend fun obtenerAdopciones(): Response<List<AdopcionAnimalResponse>>
+
     // --- OTROS MODULOS ---
     @GET("especies/especies/")
     suspend fun obtenerEspecies(): Response<Any>
@@ -63,6 +69,10 @@ interface ApiService {
     suspend fun obtenerEventos(
         @Header("Authorization") token: String? = null
     ): Response<List<VoluntariadoEventos>>
+
+    // --- ADOPCIONES ---
+    @GET("adopciones/")
+    suspend fun obtenerAnimalesAdopcion(): Response<List<AdopcionAnimalResponse>>
 
     @POST("voluntariado/eventos/{id}/postularse/")
     suspend fun postularse(

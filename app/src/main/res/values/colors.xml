@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Colores base de la marca Vetericano -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
     <color name="blue">#FF4141A5</color>
@@ -7,4 +8,33 @@
     <color name="darkblue">#FF170B3D</color>
     <color name="gray_paw_cat">#FFF1F1F1</color>
     <color name="yellow">#F1B800</color>
+
+    <!-- Derivados armónicos de la paleta oficial -->
+    <color name="primary">#4141A5</color>
+    <color name="primary_dark">#170B3D</color>
+    <color name="primary_variant">#353583</color>
+    <color name="secondary">#F1B800</color>
+    <color name="secondary_dark">#D49F00</color>
+    <color name="secondary_light">#FFF4D0</color>
+    <color name="primary_light">#EEF0FF</color>
+    <color name="primary_soft">#F4F5FF</color>
+
+    <!-- Superficies, fondos y textos para diseño limpio y moderno -->
+    <color name="bg_screen">#F8FAFC</color>
+    <color name="card_background">#FFFFFFFF</color>
+    <color name="card_stroke">#E2E8F0</color>
+    <color name="input_background">#F8FAFC</color>
+    <color name="input_stroke">#CBD5E1</color>
+    <color name="text_primary">#0F172A</color>
+    <color name="text_secondary">#475569</color>
+    <color name="text_muted">#94A3B8</color>
+    <color name="divider">#E2E8F0</color>
+
+    <!-- Estados funcionales -->
+    <color name="success">#10B981</color>
+    <color name="success_dark">#059669</color>
+    <color name="error">#EF4444</color>
+    <color name="error_dark">#DC2626</color>
+    <color name="info">#3B82F6</color>
 </resources>
+

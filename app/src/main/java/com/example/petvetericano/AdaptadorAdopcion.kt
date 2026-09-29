@@ -55,7 +55,6 @@ class AdaptadorAdopcion(
 
     override fun getItemCount(): Int = listaAnimales.size
 
-    // Reemplaza la lista cuando llegan los datos desde la API
     fun actualizarLista(nuevaLista: List<AnimalCompania>) {
         this.listaAnimales = nuevaLista
         notifyDataSetChanged()

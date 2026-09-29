@@ -135,8 +135,9 @@ data class JuridicoResponse(
 data class AdopcionAnimalResponse(
     val id: Int,
     val nombre: String,
-    val raza: String,
-    val descripcion: String,
-    val imagen: String? = null,
-    val disponible: Boolean = true
+    val raza: String?,
+    val descripcion: String?,
+    val imagen: String?,
+    val disponible: Boolean,
+    @SerializedName("fecha_creacion") val fechaCreacion: String? = null
 )

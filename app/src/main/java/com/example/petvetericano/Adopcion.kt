@@ -11,7 +11,6 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.databinding.ActivityAdopcionBinding
-import com.example.petvetericano.models.AdopcionAnimalResponse
 import com.example.petvetericano.network.RetrofitClient
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
@@ -19,7 +18,7 @@ import kotlinx.coroutines.launch
 class Adopcion : AppCompatActivity() {
 
     private lateinit var binding: ActivityAdopcionBinding
-    private lateinit var adaptador: AdaptadorAdopcion
+    private lateinit var adapter: AdaptadorAdopcion
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,12 +31,12 @@ class Adopcion : AppCompatActivity() {
     }
 
     private fun configurarVistas() {
-        adaptador = AdaptadorAdopcion(emptyList<AnimalCompania>()) { animalSeleccionado ->
+        adapter = AdaptadorAdopcion(emptyList()) { animalSeleccionado ->
             mostrarDialogoAdopcion(animalSeleccionado)
         }
 
         binding.recyclerViewAnimales.layoutManager = LinearLayoutManager(this)
-        binding.recyclerViewAnimales.adapter = adaptador
+        binding.recyclerViewAnimales.adapter = adapter
 
         binding.btnAtras.setOnClickListener {
             finish()
@@ -50,43 +49,36 @@ class Adopcion : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                val respuesta = RetrofitClient.apiService.obtenerAdopciones()
+                // Endpoint actualizado para evitar los errores en rojo
+                val response = RetrofitClient.apiService.obtenerAnimalesAdopcion()
 
-                if (respuesta.isSuccessful) {
-                    val adopciones: List<AdopcionAnimalResponse> = respuesta.body().orEmpty()
+                if (response.isSuccessful) {
+                    val animalesRemotos = response.body().orEmpty()
 
-                    val disponibles = adopciones
+                    val disponibles = animalesRemotos
                         .filter { it.disponible }
-                        .map { adopcion ->
+                        .map { animal ->
                             AnimalCompania(
-                                idFicha = "#INC-2026-" + adopcion.id.toString().padStart(6, '0'),
-                                nombre = adopcion.nombre,
-                                raza = adopcion.raza,
-                                descripcion = adopcion.descripcion,
-                                urlImagen = adopcion.imagen?.takeIf { it.isNotBlank() },
+                                idFicha = "#ADOP-${animal.id.toString().padStart(4, '0')}",
+                                nombre = animal.nombre,
+                                raza = if (!animal.raza.isNullOrBlank()) animal.raza else "Mestizo",
+                                descripcion = animal.descripcion ?: "Sin descripción",
+                                urlImagen = animal.imagen,
                                 urlYoutube = null
                             )
                         }
 
-                    adaptador.actualizarLista(disponibles)
+                    adapter.actualizarLista(disponibles)
                     binding.tvSinAdopciones.visibility =
                         if (disponibles.isEmpty()) View.VISIBLE else View.GONE
                 } else {
-                    Log.e("API_ADOPCIONES", "Error ${respuesta.code()}: ${respuesta.errorBody()?.string()}")
-                    Toast.makeText(
-                        this@Adopcion,
-                        "No se pudieron cargar las adopciones (Error ${respuesta.code()}).",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    Log.e("API_ADOPCIONES", "Error HTTP: ${response.code()}")
+                    Toast.makeText(this@Adopcion, "Error al cargar adopciones (${response.code()})", Toast.LENGTH_SHORT).show()
                     binding.tvSinAdopciones.visibility = View.VISIBLE
                 }
             } catch (e: Exception) {
-                Log.e("API_ADOPCIONES", "Excepción al consultar adopciones: ${e.message}", e)
-                Toast.makeText(
-                    this@Adopcion,
-                    "Error de conexión. Revisa tu internet.",
-                    Toast.LENGTH_LONG
-                ).show()
+                Log.e("API_ADOPCIONES", "Fallo al conectar", e)
+                Toast.makeText(this@Adopcion, "Error de conexión. Revisa tu internet.", Toast.LENGTH_LONG).show()
                 binding.tvSinAdopciones.visibility = View.VISIBLE
             } finally {
                 binding.progressBarAdopciones.visibility = View.GONE
@@ -95,12 +87,10 @@ class Adopcion : AppCompatActivity() {
     }
 
     private fun mostrarDialogoAdopcion(animal: AnimalCompania) {
-        // Paso 1 M3 (igual que eventos): dialogo informativo, no ejecuta la accion.
-        // Solo visual: no hay API de adopcion para enviar, asi que no se guarda nada.
         val detalle = "Nombre: ${animal.nombre}\n" +
-            "Raza: ${animal.raza}\n" +
-            "Ficha: ${animal.idFicha}\n\n" +
-            "${animal.descripcion}"
+                "Raza: ${animal.raza}\n" +
+                "Ficha: ${animal.idFicha}\n\n" +
+                "${animal.descripcion}"
 
         AlertDialog.Builder(this)
             .setTitle("Quiero adoptar a ${animal.nombre}")
@@ -111,7 +101,6 @@ class Adopcion : AppCompatActivity() {
             }
             .setPositiveButton("Quiero adoptar") { dialog, _ ->
                 dialog.dismiss()
-                // Paso 2 M3: confirmacion antes de la accion con consecuencia
                 mostrarConfirmacionAdopcion(animal)
             }
             .show()
@@ -122,8 +111,8 @@ class Adopcion : AppCompatActivity() {
             .setTitle("¿Confirmar adopción?")
             .setMessage(
                 "Vas a iniciar el proceso de adopción de \"${animal.nombre}\" " +
-                    "(${animal.idFicha}) con los datos de tu cuenta. " +
-                    "El equipo del CBA te contactará."
+                        "(${animal.idFicha}) con los datos de tu cuenta. " +
+                        "El equipo del CBA te contactará."
             )
             .setCancelable(true)
             .setNegativeButton("Cancelar") { dialog, _ ->
@@ -137,8 +126,6 @@ class Adopcion : AppCompatActivity() {
     }
 
     private fun confirmarAdopcion(animal: AnimalCompania) {
-        // Solo visual / local: no existe endpoint de adopcion, asi que no se envia nada a la BD.
-        // Se muestra la confirmacion con el numero de ficha y la opcion de contactar al CBA.
         val mensaje = "Gracias por salvar con amor, su solicitud será atendida bajo el número ${animal.idFicha}."
 
         Snackbar.make(

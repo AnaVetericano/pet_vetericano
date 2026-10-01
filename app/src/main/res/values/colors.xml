@@ -20,13 +20,13 @@
     <color name="primary_soft">#F4F5FF</color>
 
     <!-- Superficies, fondos y textos para diseño limpio y moderno -->
-    <color name="bg_screen">#F8FAFC</color>
+    <color name="bg_screen">#F8FAFC</color> <!-- Reemplaza bg_pantalla -->
     <color name="card_background">#FFFFFFFF</color>
     <color name="card_stroke">#E2E8F0</color>
     <color name="input_background">#F8FAFC</color>
     <color name="input_stroke">#CBD5E1</color>
-    <color name="text_primary">#0F172A</color>
-    <color name="text_secondary">#475569</color>
+    <color name="text_primary">#0F172A</color> <!-- Reemplaza texto_principal -->
+    <color name="text_secondary">#475569</color> <!-- Reemplaza texto_secundario -->
     <color name="text_muted">#94A3B8</color>
     <color name="divider">#E2E8F0</color>
 
@@ -36,5 +36,27 @@
     <color name="error">#EF4444</color>
     <color name="error_dark">#DC2626</color>
     <color name="info">#3B82F6</color>
-</resources>
 
+    <!-- ======================================================= -->
+    <!-- COLORES AGREGADOS PARA LA UI (Gráficos, Badges, Avatar) -->
+    <!-- ======================================================= -->
+
+    <!-- Colores del Gráfico Mensual (Usando tu paleta Vetericano) -->
+    <color name="grafico_asignadas">#4141A5</color>      <!-- Usa tu primary -->
+    <color name="grafico_atendidas">#F1B800</color>      <!-- Usa tu secondary -->
+    <color name="grafico_reasignadas">#170B3D</color>    <!-- Usa tu primary_dark -->
+
+    <!-- Colores para Badges de estado en el RecyclerView -->
+    <color name="badge_urgente_bg">#FEE2E2</color>       <!-- Fondo rojo claro -->
+    <color name="badge_urgente_text">#EF4444</color>     <!-- Texto color error -->
+
+    <color name="badge_proceso_bg">#FFF4D0</color>       <!-- Fondo amarillo claro (secondary_light) -->
+    <color name="badge_proceso_text">#D49F00</color>     <!-- Texto amarillo oscuro (secondary_dark) -->
+
+    <color name="badge_asignada_bg">#EEF0FF</color>      <!-- Fondo azul claro (primary_light) -->
+    <color name="badge_asignada_text">#4141A5</color>    <!-- Texto azul (primary) -->
+
+    <!-- Elementos adicionales de UI -->
+    <color name="color_avatar_bg">#EEF0FF</color>        <!-- primary_light -->
+
+</resources>

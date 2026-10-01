@@ -59,6 +59,7 @@
         android:layout_marginBottom="24dp"
         app:cardCornerRadius="28dp"
         app:cardElevation="2dp"
+        android:backgroundTint="@color/white"
         app:strokeColor="@color/primary_light"
         app:strokeWidth="2dp"
         app:layout_constraintBottom_toTopOf="@+id/layoutButtons"
@@ -72,7 +73,7 @@
             android:layout_height="match_parent"
             android:contentDescription="@string/img_perro"
             android:scaleType="centerCrop"
-            app:srcCompat="@drawable/chan" />
+            app:srcCompat="@drawable/gato2" />
     </com.google.android.material.card.MaterialCardView>
 
     <LinearLayout

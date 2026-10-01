@@ -77,8 +77,9 @@ dependencies {
 // para llamadas asíncronas
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.0")
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:2.8.4")
+    //depen de los graficos
 
-
+    implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
         // ... tus otras dependencias
     implementation ("com.squareup.retrofit2:retrofit:2.9.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
@@ -88,4 +89,4 @@ dependencies {
     implementation("com.cloudinary:cloudinary-android:2.5.0")
 
 
-}   //asdasdasdsjgunnior smith ordoñez lopez jiijij
+}

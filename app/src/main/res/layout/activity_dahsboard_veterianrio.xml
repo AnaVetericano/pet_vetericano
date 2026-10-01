@@ -1,18 +1,303 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    tools:context=".dahsboard_veterianrio">
+    android:background="@color/bg_screen"> <!-- Actualizado -->
 
-    <TextView
-        android:id="@+id/textView8"
-        android:layout_width="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="ESTA ES LA VISTA DEL VETE"
-        tools:ignore="MissingConstraints"
-        tools:layout_editor_absoluteX="111dp"
-        tools:layout_editor_absoluteY="208dp" />
-</androidx.constraintlayout.widget.ConstraintLayout>
+        android:orientation="vertical"
+        android:padding="20dp">
+
+        <!-- Cabecera Usuario -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Buenos días,"
+                    android:textColor="@color/text_secondary" /> <!-- Actualizado -->
+                <TextView
+                    android:id="@+id/tvNombreUsuario"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Juan Manuel O."
+                    android:textColor="@color/text_primary" /> <!-- Actualizado -->
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvInicialesAvatar"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:background="@drawable/bg_circle_avatar"
+                android:gravity="center"
+                android:text="JM"
+                android:textColor="@color/primary"
+                android:textStyle="bold" /> <!-- Actualizado -->
+        </LinearLayout>
+
+        <!-- Tarjeta del Gráfico -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/card_background"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp"> <!-- Agregado soporte para bordes suaves -->
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Datos mensuales · ago 2026"
+                    android:textAlignment="center"
+                    android:textColor="@color/primary"
+                    android:textStyle="bold"
+                    android:layout_marginBottom="16dp"/>
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="160dp"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical">
+
+                    <!-- EL GRÁFICO MPAndroidChart -->
+                    <com.github.mikephil.charting.charts.PieChart
+                        android:id="@+id/pieChart"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1.2" />
+
+                    <!-- Leyenda del Gráfico -->
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical"
+                        android:paddingStart="16dp">
+
+                        <!-- Asignadas -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="● Asignadas"
+                            android:textColor="@color/grafico_asignadas"
+                            android:textSize="12sp"/>
+                        <TextView
+                            android:id="@+id/tvGraficoAsignadas"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="15"
+                            android:textColor="@color/text_primary"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="8dp"/> <!-- Actualizado -->
+
+                        <!-- Atendidas -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="● Atendidas"
+                            android:textColor="@color/grafico_atendidas"
+                            android:textSize="12sp"/>
+                        <TextView
+                            android:id="@+id/tvGraficoAtendidas"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="10"
+                            android:textColor="@color/text_primary"
+                            android:textStyle="bold"
+                            android:layout_marginBottom="8dp"/> <!-- Actualizado -->
+
+                        <!-- Reasignadas -->
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="● Reasignadas"
+                            android:textColor="@color/grafico_reasignadas"
+                            android:textSize="12sp"/>
+                        <TextView
+                            android:id="@+id/tvGraficoReasignadas"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="5"
+                            android:textColor="@color/text_primary"
+                            android:textStyle="bold"/> <!-- Actualizado -->
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Tarjetas de Conteo Pequeñas -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="8dp"
+                android:layout_weight="1"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/card_background"
+                app:strokeColor="@color/card_stroke"
+                app:strokeWidth="1dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Peticiones asignadas"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"/> <!-- Actualizado -->
+                    <TextView
+                        android:id="@+id/tvPeticionesAsignadas"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="5"
+                        android:textColor="@color/primary"
+                        android:textSize="28sp"
+                        android:textStyle="bold"/> <!-- Actualizado -->
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_weight="1"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="2dp"
+                app:cardBackgroundColor="@color/card_background"
+                app:strokeColor="@color/card_stroke"
+                app:strokeWidth="1dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Conteo de atención"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp"/> <!-- Actualizado -->
+                    <TextView
+                        android:id="@+id/tvConteoAtencion"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="20"
+                        android:textColor="@color/primary"
+                        android:textSize="28sp"
+                        android:textStyle="bold"/> <!-- Actualizado -->
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+        </LinearLayout>
+
+        <!-- Botones de Acción Horizontal (Solo Peticiones) -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/btnPeticiones"
+                android:layout_width="90dp"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="@color/primary"
+                app:cardCornerRadius="12dp"> <!-- Actualizado -->
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Peticiones"
+                        android:textColor="@color/white"
+                        android:textStyle="bold"
+                        android:textSize="12sp"/> <!-- Actualizado -->
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+
+        <!-- Tarjeta de Pendientes de Atención (RecyclerView) -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="20dp"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="2dp"
+            app:cardBackgroundColor="@color/card_background"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:padding="16dp">
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Pendientes de atención"
+                        android:textColor="@color/primary"
+                        android:textStyle="bold"/> <!-- Actualizado -->
+                    <TextView
+                        android:id="@+id/tvCantidadUrgentes"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_alignParentEnd="true"
+                        android:background="@drawable/bg_rounded_badge"
+                        android:backgroundTint="@color/badge_urgente_bg"
+                        android:paddingHorizontal="8dp"
+                        android:paddingVertical="2dp"
+                        android:text="2 urgentes"
+                        android:textColor="@color/badge_urgente_text"
+                        android:textSize="12sp"/>
+                </RelativeLayout>
+
+                <!-- RecyclerView para la lista -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvPendientes"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

@@ -54,6 +54,18 @@ interface ApiService {
         @Path("id") id: Int
     ): Response<DetallePeticionResponse>
 
+    @GET("peticiones/listar/")
+    suspend fun listarPeticiones(
+        @Header("Authorization") token: String
+    ): Response<List<com.example.petvetericano.models.PeticionListResponse>>
+
+    @POST("peticiones/seguimiento/crear/")
+    suspend fun crearSeguimientoPeticionVisita(
+        @Header("Authorization") token: String,
+        @Body request: com.example.petvetericano.models.SeguimientoPeticionVisitaRequest
+    ): Response<Any>
+
+
     // --- ADOPCIONES ---
     @GET("adopciones/")
     suspend fun obtenerAnimalesAdopcion(): Response<List<AdopcionAnimalResponse>>

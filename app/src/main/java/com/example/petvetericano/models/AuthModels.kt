@@ -19,6 +19,7 @@ data class DetallePeticionResponse(
     val solicitanteTelefono: String,
     val solicitanteDireccion: String,
     val solicitanteComuna: String,
+    val especie: String,
     val motivo: String,
     val fechaAsignada: String,
     val observaciones: String
@@ -179,4 +180,70 @@ data class Petition(
     val time: String,
     val status: String,
     val priorityType: Int
+)
+
+data class PeticionListResponse(
+    val id_peticion: Int,
+    val numero_radicado: String?,
+    val tipo: String?,
+    val estado: String?,
+    val descripcion: String?,
+    val prioridad: String?,
+    val fecha: String?,
+    val fecha_asignacion: String?,
+    val asignado_a_nombre: String?,
+    val asignado_a_apellido: String?,
+    val ubicacion_direccion: String?,
+    val ubicacion_latitud: String?,
+    val ubicacion_longitud: String?,
+    val foto: String?
+)
+
+data class AnimalActa(
+    val nombre: String,
+    val especie: String,
+    val sexo: String,
+    val color: String,
+    val raza: String,
+    val edad: String,
+    val peso: Double,
+    val esterilizado: Boolean,
+    val descripcion: String
+)
+
+data class LugarAtencionActa(
+    val direccion: String,
+    val latitud: Double,
+    val longitud: Double
+)
+
+data class FuncionarioActa(
+    val id_usuario: Int?,
+    val es_principal: Boolean,
+    val nombre: String?,
+    val cargo: String?
+)
+
+data class SeguimientoPeticionVisitaRequest(
+    val id_peticion: Int,
+    val numero_radicado: String,
+    val fecha_atencion: String,
+    val propietario_nombre: String,
+    val propietario_cedula: String,
+    val propietario_telefono: String,
+    val propietario_barrio: String,
+    val propietario_direccion: String,
+    val quien_reporta: String,
+    val solicitud_atencion_por: String,
+    val lugar_atencion: LugarAtencionActa,
+    val animales: List<AnimalActa>,
+    val anamnesis_descripcion_queja: String,
+    val tratamiento_realizado: String,
+    val desparasitacion: Boolean,
+    val pruebas_complementarias: String,
+    val resultado_pruebas: String,
+    val compromisos: String,
+    val fundamento_legal: String,
+    val plazo_dias_cumplimiento: Int,
+    val funcionarios: List<FuncionarioActa>
 )

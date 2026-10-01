@@ -2,66 +2,85 @@ package com.example.petvetericano
 
 import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.adapters.PetitionAdapter
 import com.example.petvetericano.databinding.ActivityPetitionsListBinding
 import com.example.petvetericano.models.Petition
+import com.example.petvetericano.network.RetrofitClient
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class PetitionsListActivity : AppCompatActivity() {
 
-    // Declaramos la variable del binding
     private lateinit var binding: ActivityPetitionsListBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
-        // Inicializamos el binding inflando el layout
         binding = ActivityPetitionsListBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // 1. Configuración del RecyclerView usando binding.recyclerPeticiones
         binding.recyclerPeticiones.layoutManager = LinearLayoutManager(this)
 
-        // Lista de ejemplo basada en tu diseño de Figma
-        val samplePetitions = listOf(
-            Petition("#INC-2026-000123", "Canino-Animal herido o enfermo", "Barrio el poblado, com. 14", "08:15", "Urgente", 1),
-            Petition("#INC-2026-000124", "Felino- Herida abierta", "Barrio San Fernando, com.9", "09:02", "Asignada", 2),
-            Petition("#INC-2026-000125", "Ave- Ala lesionada", "Barrio las granjas, com. 5", "07:30", "En proceso", 3)
-        )
+        setupBottomNavigation()
+        fetchPeticiones()
+    }
 
-        // AQUÍ ESTÁ CONECTADO EL BOTÓN "VER DETALLE"
-        binding.recyclerPeticiones.adapter = PetitionAdapter(samplePetitions) { petition ->
-            val intent = Intent(this, DetallePeticion::class.java).apply {
-                // Como el último parámetro que le pasas al modelo es un Int,
-                // usa la propiedad correcta de tu clase Petition (ej. petition.id o el campo que corresponda)
-                putExtra("PETICION_ID", 1) // O ponle la propiedad exacta que tenga tu modelo
-            }
-            startActivity(intent)
+    private fun fetchPeticiones() {
+        val sharedPreferences = getSharedPreferences("PetVetericanoPrefs", MODE_PRIVATE)
+        val token = sharedPreferences.getString("access_token", "") ?: ""
+
+        if (token.isEmpty()) {
+            Toast.makeText(this, "Debe iniciar sesión", Toast.LENGTH_SHORT).show()
+            return
         }
 
-        // 2. Configuración de la barra de navegación inferior con binding
-        setupBottomNavigation()
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val response = RetrofitClient.apiService.listarPeticiones("Bearer $token")
+                withContext(Dispatchers.Main) {
+                    if (response.isSuccessful && response.body() != null) {
+                        val listaOriginal = response.body()!!
+                        val petitionList = listaOriginal.map {
+                            Petition(
+                                code = it.numero_radicado ?: "Sin Radicado",
+                                title = it.tipo ?: "Desconocido",
+                                location = it.ubicacion_direccion ?: "No especificada",
+                                time = it.fecha ?: "",
+                                status = it.estado ?: "Pendiente",
+                                priorityType = it.id_peticion // Usamos priorityType como el ID real
+                            )
+                        }
+                        
+                        binding.recyclerPeticiones.adapter = PetitionAdapter(petitionList) { petition ->
+                            val intent = Intent(this@PetitionsListActivity, DetallePeticion::class.java).apply {
+                                putExtra("PETICION_ID", petition.priorityType)
+                            }
+                            startActivity(intent)
+                        }
+                    } else {
+                        Toast.makeText(this@PetitionsListActivity, "Error al cargar peticiones", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } catch (e: Exception) {
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(this@PetitionsListActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     private fun setupBottomNavigation() {
-        // Accedemos directamente a los elementos gracias a View Binding
         binding.ivNavInicio.setOnClickListener {
             val intent = Intent(this, bienvenida::class.java)
             startActivity(intent)
             finish()
         }
-
-        binding.cardNavPrincipal.setOnClickListener {
-            // Lógica para el botón central de reportar
-        }
-
-        binding.ivNavFavoritos.setOnClickListener {
-            // Lógica para eventos / favoritos
-        }
-
-        binding.ivNavPerfil.setOnClickListener {
-            // Lógica para el perfil
-        }
+        binding.cardNavPrincipal.setOnClickListener { }
+        binding.ivNavFavoritos.setOnClickListener { }
+        binding.ivNavPerfil.setOnClickListener { }
     }
 }

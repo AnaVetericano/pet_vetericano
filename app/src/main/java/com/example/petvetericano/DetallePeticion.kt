@@ -46,8 +46,15 @@ class DetallePeticion : AppCompatActivity() {
         }
 
         // Botones de acción inferiores
-        binding.btnReasignar.setOnClickListener {
-            // TODO: Lógica de reasignación
+        binding.btnActualizarEstado.setOnClickListener {
+            // TODO: Lógica para actualizar estado
+        }
+
+        binding.btnAtender.setOnClickListener {
+            // Iniciar actividad de Acta de Atención
+            val intent = android.content.Intent(this, ActaAtencionActivity::class.java)
+            intent.putExtra("PETICION_ID", peticionId)
+            startActivity(intent)
         }
 
         binding.btnVerRuta.setOnClickListener {

@@ -118,6 +118,10 @@
             android:name=".DetallePeticion"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".ActaAtencionActivity"
+            android:exported="false"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 
 </manifest>

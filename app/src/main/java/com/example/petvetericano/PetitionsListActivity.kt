@@ -30,8 +30,14 @@ class PetitionsListActivity : AppCompatActivity() {
             Petition("#INC-2026-000125", "Ave- Ala lesionada", "Barrio las granjas, com. 5", "07:30", "En proceso", 3)
         )
 
+        // AQUÍ ESTÁ CONECTADO EL BOTÓN "VER DETALLE"
         binding.recyclerPeticiones.adapter = PetitionAdapter(samplePetitions) { petition ->
-            // Acción al hacer clic en una petición (Ver detalle)
+            val intent = Intent(this, DetallePeticion::class.java).apply {
+                // Como el último parámetro que le pasas al modelo es un Int,
+                // usa la propiedad correcta de tu clase Petition (ej. petition.id o el campo que corresponda)
+                putExtra("PETICION_ID", 1) // O ponle la propiedad exacta que tenga tu modelo
+            }
+            startActivity(intent)
         }
 
         // 2. Configuración de la barra de navegación inferior con binding

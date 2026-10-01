@@ -17,7 +17,7 @@ import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
 
 class dahsboard_veterianrio : AppCompatActivity() {
-
+ //a la verga
     private lateinit var binding: ActivityDahsboardVeterianrioBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {

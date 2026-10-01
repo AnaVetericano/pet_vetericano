@@ -1,5 +1,6 @@
 package com.example.petvetericano.models
 
+import com.bumptech.glide.Priority
 import com.google.gson.annotations.SerializedName
 
 // --- Login ---
@@ -140,4 +141,14 @@ data class AdopcionAnimalResponse(
     val imagen: String?,
     val disponible: Boolean,
     @SerializedName("fecha_creacion") val fechaCreacion: String? = null
+)
+
+// peticion
+data class Petition(
+    val code: String,
+    val title: String,
+    val location: String,
+    val time: String,
+    val status: String,
+    val priorityType: Int
 )

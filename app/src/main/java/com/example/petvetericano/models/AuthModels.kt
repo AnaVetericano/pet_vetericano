@@ -9,6 +9,21 @@ data class LoginRequest(
     val email: String,
     val password: String
 )
+//detalle peticion
+
+data class DetallePeticionResponse(
+    val codigo: String,
+    val estado: String,
+    val tipoEstado: String,
+    val solicitanteNombre: String,
+    val solicitanteTelefono: String,
+    val solicitanteDireccion: String,
+    val solicitanteComuna: String,
+    val especie: String,
+    val motivo: String,
+    val fechaAsignada: String,
+    val observaciones: String
+)
 
 //veterinario
 

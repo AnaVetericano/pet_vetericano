@@ -9,6 +9,8 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.petvetericano.R
 import com.example.petvetericano.models.Petition // 2. Importación correcta de tu modelo
 
+
+
 class PetitionAdapter(
     private val petitionList: List<Petition>,
     private val onItemClick: (Petition) -> Unit

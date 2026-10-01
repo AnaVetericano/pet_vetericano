@@ -1,4 +1,4 @@
-package com.example.petvetericano.adapters // 1. Paquete correcto según tu estructura
+package com.example.petvetericano.adapters
 
 import android.graphics.Color
 import android.view.LayoutInflater
@@ -7,9 +7,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.petvetericano.R
-import com.example.petvetericano.models.Petition // 2. Importación correcta de tu modelo
-
-
+import com.example.petvetericano.models.Petition
 
 class PetitionAdapter(
     private val petitionList: List<Petition>,
@@ -37,25 +35,34 @@ class PetitionAdapter(
         holder.tvCode.text = petition.code
         holder.tvTitle.text = petition.title
         holder.tvLocation.text = petition.location
-        holder.tvTime.text = "Asignada: ${petition.time}" // Corregido el warning de concatenación
+        holder.tvTime.text = "Asignada: ${petition.time}"
         holder.tvStatusBadge.text = petition.status
 
-        // Regla de Negocio: Colores semánticos en el Badge
-        when (petition.status.lowercase()) {
-            "urgente" -> {
-                holder.tvStatusBadge.setTextColor(Color.parseColor("#EF4444")) // Rojo semántico
+        // Colores semánticos en el Badge según el estado
+        when {
+            petition.status.lowercase().contains("urgente") -> {
+                holder.tvStatusBadge.setTextColor(Color.parseColor("#EF4444"))
+                holder.tvStatusBadge.setBackgroundColor(Color.parseColor("#FEF2F2"))
             }
-            "asignada" -> {
-                holder.tvStatusBadge.setTextColor(Color.parseColor("#F1C63C")) // Amarillo semántico
+            petition.status.lowercase().contains("proceso") ||
+            petition.status.lowercase().contains("tratamiento") -> {
+                holder.tvStatusBadge.setTextColor(Color.parseColor("#10B981"))
+                holder.tvStatusBadge.setBackgroundColor(Color.parseColor("#ECFDF5"))
             }
-            "en proceso" -> {
-                holder.tvStatusBadge.setTextColor(Color.parseColor("#10B981")) // Verde semántico
+            petition.status.lowercase().contains("atendida") ||
+            petition.status.lowercase().contains("finaliz") -> {
+                holder.tvStatusBadge.setTextColor(Color.parseColor("#6366F1"))
+                holder.tvStatusBadge.setBackgroundColor(Color.parseColor("#EEF2FF"))
+            }
+            else -> {
+                holder.tvStatusBadge.setTextColor(Color.parseColor("#F59E0B"))
+                holder.tvStatusBadge.setBackgroundColor(Color.parseColor("#FFFBEB"))
             }
         }
 
-        holder.tvViewDetail.setOnClickListener {
-            onItemClick(petition)
-        }
+        // Click en toda la tarjeta Y en "Ver detalle"
+        holder.itemView.setOnClickListener { onItemClick(petition) }
+        holder.tvViewDetail.setOnClickListener { onItemClick(petition) }
     }
 
     override fun getItemCount(): Int = petitionList.size

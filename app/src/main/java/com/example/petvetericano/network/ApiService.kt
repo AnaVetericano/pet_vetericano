@@ -51,8 +51,16 @@ interface ApiService {
 
     @GET("peticiones/{id}/")
     suspend fun obtenerDetallePeticion(
+        @Header("Authorization") token: String,
         @Path("id") id: Int
     ): Response<DetallePeticionResponse>
+
+    @PATCH("peticiones/{id}/estado/")
+    suspend fun actualizarEstadoPeticion(
+        @Header("Authorization") token: String,
+        @Path("id") id: Int,
+        @Body request: com.example.petvetericano.models.ActualizarEstadoRequest
+    ): Response<com.example.petvetericano.models.ActualizarEstadoResponse>
 
     @GET("peticiones/listar/")
     suspend fun listarPeticiones(

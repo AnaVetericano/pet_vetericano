@@ -28,10 +28,22 @@ data class DetallePeticionResponse(
 //veterinario
 
 data class PeticionPendiente(
+    val id_peticion: Int = 0,
     val titulo: String,
     val paciente: String,
     val estado: String,
     val tipoEstado: TipoEstado
+)
+
+data class ActualizarEstadoRequest(
+    val estado: String,
+    val observacion: String? = null
+)
+
+data class ActualizarEstadoResponse(
+    val mensaje: String,
+    val id_peticion: Int? = null,
+    val estado: String? = null
 )
 
 enum class TipoEstado {
@@ -44,6 +56,7 @@ data class LoginResponse(
     @SerializedName("id_usuario") val idUsuario: Int,
     @SerializedName("id_rol") val idRol: Int,
     val nombre: String?,
+    val apellido: String?,
     val tokens: TokenData
 )
 

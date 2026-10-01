@@ -246,9 +246,8 @@ class ActaAtencionActivity : AppCompatActivity() {
         // Enviar a la API
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // Obtener el token del SharedPreferences (asumiendo que se guarda así)
-                val sharedPreferences = getSharedPreferences("PetVetericanoPrefs", MODE_PRIVATE)
-                val token = sharedPreferences.getString("access_token", "") ?: ""
+                val prefs = SharedPreferencesManager(this@ActaAtencionActivity)
+                val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
 
                 if (token.isEmpty()) {
                     withContext(Dispatchers.Main) {

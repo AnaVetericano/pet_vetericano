@@ -9,7 +9,8 @@ import com.example.petvetericano.models.PeticionPendiente
 import com.example.petvetericano.models.TipoEstado
 
 class PendientesAdapter(
-    private val pendientes: List<PeticionPendiente>
+    private val pendientes: List<PeticionPendiente>,
+    private val onItemClick: ((PeticionPendiente) -> Unit)? = null
 ) : RecyclerView.Adapter<PendientesAdapter.PendienteViewHolder>() {
 
     inner class PendienteViewHolder(val binding: ItemPendienteBinding) :
@@ -32,6 +33,10 @@ class PendientesAdapter(
             binding.tvEstadoBadge.backgroundTintList = ContextCompat.getColorStateList(context, bgColor)
             binding.tvEstadoBadge.setTextColor(ContextCompat.getColor(context, textColor))
             binding.vwIndicadorColor.backgroundTintList = ContextCompat.getColorStateList(context, textColor)
+
+            binding.root.setOnClickListener {
+                onItemClick?.invoke(peticion)
+            }
         }
     }
 

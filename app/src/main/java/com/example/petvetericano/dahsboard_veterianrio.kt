@@ -39,17 +39,62 @@ class dahsboard_veterianrio : AppCompatActivity() {
 
         binding.rvPendientes.layoutManager = LinearLayoutManager(this)
 
+        // Cargar nombre e iniciales del veterinario desde SharedPreferences
+        val prefs = SharedPreferencesManager(this)
+        val nombre = prefs.getUserName()
+        val apellido = prefs.getUserLastName()
+        val nombreCompleto = if (apellido.isNotEmpty()) "$nombre $apellido" else nombre
+        binding.tvNombreUsuario.text = nombreCompleto.ifEmpty { "Veterinario" }
+
+        val iniciales = buildString {
+            if (nombre.isNotEmpty()) append(nombre.first().uppercaseChar())
+            if (apellido.isNotEmpty()) append(apellido.first().uppercaseChar())
+            else if (nombre.length > 1) append(nombre[1].uppercaseChar())
+        }
+        binding.tvInicialesAvatar.text = iniciales.ifEmpty { "V" }
+
+        // Botones de navegación de acciones
         binding.btnPeticiones.setOnClickListener {
-            val intent= Intent(this, PetitionsListActivity::class.java)
+            startActivity(Intent(this, PetitionsListActivity::class.java))
+        }
+
+        binding.btnHistorias.setOnClickListener {
+            Toast.makeText(this, "Historia clínica disponible en la versión Web", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.btnInventario.setOnClickListener {
+            Toast.makeText(this, "Inventario próximamente disponible", Toast.LENGTH_SHORT).show()
+        }
+
+        binding.btnPerfil.setOnClickListener {
+            startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
+        }
+
+        // Bottom Navigation: Inicio ya es esta pantalla, pero permitir re-scroll o no hacer nada
+        binding.ivNavInicio.setOnClickListener {
+            // Ya estamos en inicio
+        }
+
+        binding.ivNavPeticiones.setOnClickListener {
+            val intent = Intent(this, PetitionsListActivity::class.java)
             startActivity(intent)
         }
-        
+
+        binding.ivNavPerfil.setOnClickListener {
+            startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
+        }
+
+        fetchDashboardData()
+    }
+
+    override fun onResume() {
+        super.onResume()
         fetchDashboardData()
     }
 
     private fun fetchDashboardData() {
-        val sharedPreferences = getSharedPreferences("PetVetericanoPrefs", MODE_PRIVATE)
-        val token = sharedPreferences.getString("access_token", "") ?: ""
+        val prefs = SharedPreferencesManager(this)
+        val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
 
         if (token.isEmpty()) {
             Toast.makeText(this, "Debe iniciar sesión", Toast.LENGTH_SHORT).show()
@@ -62,32 +107,61 @@ class dahsboard_veterianrio : AppCompatActivity() {
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful && response.body() != null) {
                         val petitions = response.body()!!
-                        
-                        // Counts
-                        val asignadas = petitions.count { it.estado == "Asignada" }
-                        val atendidas = petitions.count { it.estado == "Atendida" || it.estado == "Finalizada" }
-                        val reasignadas = petitions.count { it.estado == "Reasignada" }
-                        val total = asignadas + atendidas + reasignadas
-                        
+
+                        // Conteos
+                        val asignadas = petitions.count {
+                            val st = it.estado?.lowercase() ?: ""
+                            st.contains("asignad") || st.contains("evaluaci") || st.contains("urgente")
+                        }
+                        val atendidas = petitions.count {
+                            val st = it.estado?.lowercase() ?: ""
+                            st.contains("atendida") || st.contains("finaliz") || st.contains("alta") || st.contains("fallecid")
+                        }
+                        val reasignadas = petitions.count {
+                            val st = it.estado?.lowercase() ?: ""
+                            st.contains("reasignad") || st.contains("proceso") || st.contains("tratamiento") || st.contains("observaci")
+                        }
+                        val urgentes = petitions.count {
+                            val st = it.estado?.lowercase() ?: ""
+                            st.contains("urgente")
+                        }
+                        val total = petitions.size
+
+                        // Actualizar leyenda y contadores
+                        binding.tvGraficoAsignadas.text = asignadas.toString()
+                        binding.tvGraficoAtendidas.text = atendidas.toString()
+                        binding.tvGraficoReasignadas.text = reasignadas.toString()
+                        binding.tvPeticionesAsignadas.text = asignadas.toString()
+                        binding.tvConteoAtencion.text = atendidas.toString()
+                        binding.tvCantidadUrgentes.text = "$urgentes urgentes"
+
                         configurarGrafico(asignadas, atendidas, reasignadas, total)
-                        
-                        // Map for Recycler View (only pending or all latest)
-                        val listaParaRv = petitions.take(5).map {
-                            val estadoStr = it.estado?.lowercase() ?: ""
+
+                        // Lista para RecyclerView: las 5 más recientes
+                        val listaParaRv = petitions.take(5).map { pet ->
+                            val estadoStr = pet.estado?.lowercase() ?: ""
                             val tipo = when {
                                 estadoStr.contains("urgente") -> TipoEstado.URGENTE
-                                estadoStr.contains("proceso") -> TipoEstado.EN_PROCESO
+                                estadoStr.contains("proceso") || estadoStr.contains("tratamiento") || estadoStr.contains("observaci") -> TipoEstado.EN_PROCESO
                                 else -> TipoEstado.ASIGNADA
                             }
                             PeticionPendiente(
-                                titulo = it.tipo ?: "Desconocido",
-                                paciente = "${it.numero_radicado ?: ""} - ${it.ubicacion_direccion ?: ""}",
-                                estado = it.estado ?: "Asignada",
+                                id_peticion = pet.id_peticion,
+                                titulo = pet.tipo ?: "Desconocido",
+                                paciente = "${pet.numero_radicado ?: ""} — ${pet.ubicacion_direccion ?: "Sin dirección"}",
+                                estado = pet.estado ?: "Asignada",
                                 tipoEstado = tipo
                             )
                         }
-                        
-                        binding.rvPendientes.adapter = PendientesAdapter(listaParaRv)
+
+                        binding.rvPendientes.adapter = PendientesAdapter(listaParaRv) { item ->
+                            if (item.id_peticion > 0) {
+                                val intent = Intent(this@dahsboard_veterianrio, DetallePeticion::class.java).apply {
+                                    putExtra("PETICION_ID", item.id_peticion)
+                                }
+                                startActivity(intent)
+                            }
+                        }
                     } else {
                         Toast.makeText(this@dahsboard_veterianrio, "Error al cargar dashboard", Toast.LENGTH_SHORT).show()
                     }
@@ -109,7 +183,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
         if (reasignadas > 0) entries.add(PieEntry(reasignadas.toFloat(), ""))
 
         if (entries.isEmpty()) {
-            entries.add(PieEntry(1f, "")) // dummy para que no quede vacio
+            entries.add(PieEntry(1f, "")) // dummy para que no quede vacío
         }
 
         val dataSet = PieDataSet(entries, "")

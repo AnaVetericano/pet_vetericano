@@ -74,6 +74,7 @@ class inicio_sesion : AppCompatActivity() {
                             email = datos.email,
                             phone = ""
                         )
+                        prefs.saveUserLastName(datos.apellido ?: "")
                         prefs.saveAccessToken(datos.tokens.access)
                         prefs.saveUserId(datos.idUsuario)
 

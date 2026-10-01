@@ -114,6 +114,9 @@
             android:name=".PetitionsListActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+        <activity
+            android:name=".UpdateStatusActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

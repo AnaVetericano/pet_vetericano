@@ -46,7 +46,11 @@ class SharedPreferencesManager(context: Context) {
         prefs.edit().putString("ACCESS_TOKEN", token).apply()
     }
 
-    fun getAccessToken(): String = prefs.getString("ACCESS_TOKEN", "") ?: ""
+    fun getAccessToken(): String {
+        val token = prefs.getString("ACCESS_TOKEN", "") ?: ""
+        if (token.isNotEmpty()) return token
+        return prefs.getString("access_token", "") ?: ""
+    }
 
     fun setLanguage(lang: String) {
         prefs.edit().putString("APP_LANGUAGE", lang).apply()

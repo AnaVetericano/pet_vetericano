@@ -234,6 +234,28 @@
                         android:layout_marginBottom="8dp"
                         android:background="#F1F5F9" />
 
+                    <!-- Fila Especie -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginBottom="6dp"
+                        android:orientation="horizontal">
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Especie"
+                            android:textColor="#94A3B8"
+                            android:textSize="13sp" />
+                        <TextView
+                            android:id="@+id/tvEspecieAnimal"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#0F172A"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+
                     <!-- Fila Motivo -->
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -413,13 +435,13 @@
             android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnReasignar"
+                android:id="@+id/btnActualizarEstado"
                 style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                android:text="Reasignar"
+                android:text="Actualizar estado"
                 android:textAllCaps="false"
                 android:textColor="#4141A5"
                 android:textSize="14sp"
@@ -429,12 +451,12 @@
                 app:strokeWidth="1.5dp" />
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnActualizar"
+                android:id="@+id/btnAtender"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                android:text="Actualizar"
+                android:text="Atender"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="14sp"

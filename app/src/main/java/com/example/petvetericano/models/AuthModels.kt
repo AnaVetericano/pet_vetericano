@@ -19,7 +19,6 @@ data class DetallePeticionResponse(
     val solicitanteTelefono: String,
     val solicitanteDireccion: String,
     val solicitanteComuna: String,
-    val especie: String,
     val motivo: String,
     val fechaAsignada: String,
     val observaciones: String

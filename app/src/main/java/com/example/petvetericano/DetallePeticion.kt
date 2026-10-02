@@ -146,7 +146,6 @@ class DetallePeticion : AppCompatActivity() {
         binding.tvComunaSolicitante.text = if (detalle.solicitanteComuna.isNotEmpty()) detalle.solicitanteComuna else "N/A"
 
         // Animal
-        binding.tvEspecieAnimal.text = if (detalle.especie.isNotEmpty()) detalle.especie else "No especificada"
         binding.tvMotivoAnimal.text = if (detalle.motivo.isNotEmpty()) detalle.motivo else "Sin motivo"
         binding.tvFechaAsignada.text = if (detalle.fechaAsignada.isNotEmpty()) detalle.fechaAsignada else "Pendiente"
 

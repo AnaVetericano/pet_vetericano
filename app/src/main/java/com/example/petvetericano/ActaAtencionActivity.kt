@@ -1,8 +1,10 @@
 package com.example.petvetericano
 
 import android.os.Bundle
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.ArrayAdapter
+import android.widget.Spinner
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -15,6 +17,8 @@ import com.example.petvetericano.models.FuncionarioActa
 import com.example.petvetericano.models.LugarAtencionActa
 import com.example.petvetericano.models.SeguimientoPeticionVisitaRequest
 import com.example.petvetericano.network.RetrofitClient
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -27,6 +31,9 @@ class ActaAtencionActivity : AppCompatActivity() {
     private lateinit var binding: ActivityActaAtencionBinding
     private var currentStep = 1
     private var peticionId: Int = -1
+
+    // Lista para guardar las vistas dinámicas de cada animal ingresado
+    private val animalViewsList = mutableListOf<View>()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +56,13 @@ class ActaAtencionActivity : AppCompatActivity() {
         setupUI()
         updateStepper()
 
+        // Agregar por defecto al menos un formulario de animal al iniciar
+        agregarFormularioAnimal()
+
+        binding.btnAddAnimal.setOnClickListener {
+            agregarFormularioAnimal()
+        }
+
         binding.btnSiguiente.setOnClickListener {
             if (currentStep < 3) {
                 currentStep++
@@ -70,36 +84,76 @@ class ActaAtencionActivity : AppCompatActivity() {
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val currentDate = sdf.format(Date())
         binding.etFechaAtencion.setText(currentDate)
-        
-        // El número radicado real viene del backend, generamos uno temporal en la UI
+
         val randomSuffix = (100..999).random()
         binding.etRadicado.setText("RAD-VIS-2026-$randomSuffix")
     }
 
     private fun setupSpinners() {
-        val solicitudPor = arrayOf("Oficial", "Comunidad", "Veeduria")
-        binding.spinnerSolicitudAtencion.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, solicitudPor)
-
         val quienReporta = arrayOf("Propietario", "Policia", "Fundacion")
         binding.spinnerQuienReporta.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, quienReporta)
+    }
+
+    /**
+     * Crea e inserta de forma dinámica una tarjeta de formulario para registrar un animal (Soporta múltiples)
+     */
+    private fun agregarFormularioAnimal() {
+        val animalView = LayoutInflater.from(this).inflate(layoutIdForAnimalCard(), binding.containerAnimales, false)
+
+        // Configurar spinners internos de cada tarjeta de animal
+        val spinnerEspecie = animalView.findViewById<Spinner>(R.id.spinnerEspecieCard)
+        val spinnerSexo = animalView.findViewById<Spinner>(R.id.spinnerSexoCard)
+        val spinnerEsterilizado = animalView.findViewById<Spinner>(R.id.spinnerEsterilizadoCard)
+        val btnEliminar = animalView.findViewById<MaterialButton>(R.id.btnEliminarAnimal)
 
         val especies = arrayOf("Canino", "Felino", "Ave", "Equino", "Bovino", "Porcino", "Otro")
-        binding.spinnerEspecie.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, especies)
+        spinnerEspecie.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, especies)
 
         val sexos = arrayOf("Macho", "Hembra", "Desconocido")
-        binding.spinnerSexo.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, sexos)
+        spinnerSexo.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, sexos)
 
         val esterilizado = arrayOf("Si", "No", "No se sabe")
-        binding.spinnerEsterilizado.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, esterilizado)
+        spinnerEsterilizado.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, esterilizado)
+
+        // Si hay más de un animal, permitir eliminar esta tarjeta
+        if (animalViewsList.isEmpty()) {
+            btnEliminar.visibility = View.GONE
+        } else {
+            actualizarVisibilidadBotonesEliminar()
+        }
+
+        btnEliminar.setOnClickListener {
+            binding.containerAnimales.removeView(animalView)
+            animalViewsList.remove(animalView)
+            actualizarVisibilidadBotonesEliminar()
+        }
+
+        binding.containerAnimales.addView(animalView)
+        animalViewsList.add(animalView)
+    }
+
+    private fun actualizarVisibilidadBotonesEliminar() {
+        for (i in animalViewsList.indices) {
+            val btn = animalViewsList[i].findViewById<MaterialButton>(R.id.btnEliminarAnimal)
+            btn.visibility = if (animalViewsList.size > 1) View.VISIBLE else View.GONE
+        }
+    }
+
+    /**
+     * Estructura XML generada mediante código para cada tarjeta de animal adicional
+     */
+    private fun layoutIdForAnimalCard(): Int {
+        // Creamos un layout programático o simulamos la vista tipo tarjeta para el animal
+        // Para mantenerlo limpio, inflamos un layout o usamos una vista compuesta.
+        // Como alternativa nativa limpia en un solo archivo, crearemos la vista dinámicamente abajo:
+        return R.layout.item_animal_formulario
     }
 
     private fun updateStepper() {
-        // Ocultar todos los layouts
         binding.step1Layout.visibility = View.GONE
         binding.step2Layout.visibility = View.GONE
         binding.step3Layout.visibility = View.GONE
 
-        // Reiniciar colores
         binding.tvStep1Num.setBackgroundResource(R.drawable.circle_gray)
         binding.tvStep2Num.setBackgroundResource(R.drawable.circle_gray)
         binding.tvStep3Num.setBackgroundResource(R.drawable.circle_gray)
@@ -112,7 +166,6 @@ class ActaAtencionActivity : AppCompatActivity() {
                 binding.step1Layout.visibility = View.VISIBLE
                 binding.tvStep1Num.setBackgroundResource(R.drawable.circle_blue)
                 binding.tvStep1Num.setTextColor(android.graphics.Color.WHITE)
-                
                 binding.btnAnterior.visibility = View.GONE
                 binding.btnSiguiente.text = "Siguiente paso"
             }
@@ -122,7 +175,6 @@ class ActaAtencionActivity : AppCompatActivity() {
                 binding.tvStep1Num.setTextColor(android.graphics.Color.WHITE)
                 binding.tvStep2Num.setBackgroundResource(R.drawable.circle_blue)
                 binding.tvStep2Num.setTextColor(android.graphics.Color.WHITE)
-                
                 binding.btnAnterior.visibility = View.VISIBLE
                 binding.btnSiguiente.text = "Siguiente paso"
             }
@@ -134,7 +186,6 @@ class ActaAtencionActivity : AppCompatActivity() {
                 binding.tvStep2Num.setTextColor(android.graphics.Color.WHITE)
                 binding.tvStep3Num.setBackgroundResource(R.drawable.circle_blue)
                 binding.tvStep3Num.setTextColor(android.graphics.Color.WHITE)
-                
                 binding.btnAnterior.visibility = View.VISIBLE
                 binding.btnSiguiente.text = "Terminar petición"
             }
@@ -147,7 +198,6 @@ class ActaAtencionActivity : AppCompatActivity() {
             return
         }
 
-        // Obtener datos del Step 1
         val radicado = binding.etRadicado.text.toString()
         val fechaAtencion = binding.etFechaAtencion.text.toString()
         val propietarioNombre = binding.etPropietarioNombre.text.toString()
@@ -155,26 +205,51 @@ class ActaAtencionActivity : AppCompatActivity() {
         val propietarioBarrio = binding.etPropietarioBarrio.text.toString()
         val propietarioDireccion = binding.etPropietarioDireccion.text.toString()
         val propietarioTelefono = binding.etPropietarioTelefono.text.toString()
-        val solicitudPor = binding.spinnerSolicitudAtencion.selectedItem?.toString() ?: ""
+
+        // Solicitud de atención por (múltiples personas separadas por texto)
+        val solicitudPor = binding.etSolicitudAtencion.text.toString()
         val quienReporta = binding.spinnerQuienReporta.selectedItem?.toString() ?: ""
         val lugarAtencionDir = binding.etLugarAtencion.text.toString()
 
-        // Obtener datos del Step 2
-        val pacienteNombre = binding.etPacienteNombre.text.toString()
-        val pacienteEspecie = binding.spinnerEspecie.selectedItem?.toString() ?: ""
-        val pacienteRaza = binding.etPacienteRaza.text.toString()
-        val pacienteSexo = binding.spinnerSexo.selectedItem?.toString() ?: ""
-        val pacienteColor = binding.etPacienteColor.text.toString()
-        val pacienteEdad = binding.etPacienteEdad.text.toString()
-        val pacientePeso = binding.etPacientePeso.text.toString().toDoubleOrNull() ?: 0.0
-        val pacienteDesc = binding.etPacienteDescripcion.text.toString()
-        val esterilizadoStr = binding.spinnerEsterilizado.selectedItem?.toString() ?: "No"
-        val esterilizado = esterilizadoStr.equals("Si", ignoreCase = true)
-        
+        // Recopilar lista de animales dinámicos
+        val animalesList = mutableListOf<AnimalActa>()
+        for (view in animalViewsList) {
+            val nombre = view.findViewById<TextInputEditText>(R.id.etPacienteNombreCard).text.toString()
+            val especie = view.findViewById<Spinner>(R.id.spinnerEspecieCard).selectedItem?.toString() ?: ""
+            val raza = view.findViewById<TextInputEditText>(R.id.etPacienteRazaCard).text.toString()
+            val sexo = view.findViewById<Spinner>(R.id.spinnerSexoCard).selectedItem?.toString() ?: ""
+            val color = view.findViewById<TextInputEditText>(R.id.etPacienteColorCard).text.toString()
+            val edad = view.findViewById<TextInputEditText>(R.id.etPacienteEdadCard).text.toString()
+            val peso = view.findViewById<TextInputEditText>(R.id.etPacientePesoCard).text.toString().toDoubleOrNull() ?: 0.0
+            val desc = view.findViewById<TextInputEditText>(R.id.etPacienteDescripcionCard).text.toString()
+            val esterilizadoStr = view.findViewById<Spinner>(R.id.spinnerEsterilizadoCard).selectedItem?.toString() ?: "No"
+            val esterilizado = esterilizadoStr.equals("Si", ignoreCase = true)
+
+            if (nombre.isNotEmpty()) {
+                animalesList.add(
+                    AnimalActa(
+                        nombre = nombre,
+                        especie = especie,
+                        sexo = sexo,
+                        color = color,
+                        raza = raza,
+                        edad = edad,
+                        peso = peso,
+                        esterilizado = esterilizado,
+                        descripcion = desc
+                    )
+                )
+            }
+        }
+
+        if (propietarioNombre.isEmpty() || animalesList.isEmpty()) {
+            Toast.makeText(this, "Complete los datos obligatorios y al menos un animal", Toast.LENGTH_SHORT).show()
+            return
+        }
+
         val anamnesis = binding.etAnamnesis.text.toString()
         val tratamiento = binding.etTratamiento.text.toString()
 
-        // Obtener datos del Step 3
         val desparasitacion = binding.swDesparasitacion.isChecked
         val pruebasComplementarias = binding.etPruebasComplementarias.text.toString()
         val resultadoPruebas = binding.etResultadoPruebas.text.toString()
@@ -182,27 +257,6 @@ class ActaAtencionActivity : AppCompatActivity() {
         val plazoDias = binding.etPlazoDias.text.toString().toIntOrNull() ?: 0
         val funcionarioNombre = binding.etFuncionarioNombre.text.toString()
         val funcionarioCargo = binding.etFuncionarioCargo.text.toString()
-
-        // Validaciones básicas
-        if (propietarioNombre.isEmpty() || pacienteNombre.isEmpty()) {
-            Toast.makeText(this, "Por favor complete los campos obligatorios", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        // Construir Request
-        val animalesList = listOf(
-            AnimalActa(
-                nombre = pacienteNombre,
-                especie = pacienteEspecie,
-                sexo = pacienteSexo,
-                color = pacienteColor,
-                raza = pacienteRaza,
-                edad = pacienteEdad,
-                peso = pacientePeso,
-                esterilizado = esterilizado,
-                descripcion = pacienteDesc
-            )
-        )
 
         val lugarAtencion = LugarAtencionActa(
             direccion = lugarAtencionDir,
@@ -243,7 +297,6 @@ class ActaAtencionActivity : AppCompatActivity() {
             funcionarios = funcionariosList
         )
 
-        // Enviar a la API
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val prefs = SharedPreferencesManager(this@ActaAtencionActivity)
@@ -251,13 +304,13 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                 if (token.isEmpty()) {
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(this@ActaAtencionActivity, "Token no encontrado. Por favor inicia sesión.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@ActaAtencionActivity, "Token no encontrado. Inicie sesión.", Toast.LENGTH_LONG).show()
                     }
                     return@launch
                 }
 
                 val response = RetrofitClient.apiService.crearSeguimientoPeticionVisita("Bearer $token", request)
-                
+
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful) {
                         Toast.makeText(this@ActaAtencionActivity, "Acta registrada exitosamente", Toast.LENGTH_SHORT).show()

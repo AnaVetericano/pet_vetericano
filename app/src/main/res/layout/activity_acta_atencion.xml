@@ -308,20 +308,19 @@
                         android:inputType="phone" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Dropdowns -->
-                <TextView
+                <!-- Solicitud de atención por (Soporte múltiples personas) -->
+                <com.google.android.material.textfield.TextInputLayout
+                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:text="Solicitud de atención por"
-                    android:textColor="#334155"
-                    android:textSize="12sp" />
-                <Spinner
-                    android:id="@+id/spinnerSolicitudAtencion"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
                     android:layout_marginBottom="12dp"
-                    android:background="@drawable/bg_spinner" />
+                    android:hint="Solicitud de atención por (Ej: Juan Pérez, María Gómez)"
+                    app:boxStrokeColor="#4141A5">
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etSolicitudAtencion"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content" />
+                </com.google.android.material.textfield.TextInputLayout>
 
                 <TextView
                     android:layout_width="match_parent"
@@ -360,7 +359,7 @@
                 </com.google.android.material.textfield.TextInputLayout>
             </LinearLayout>
 
-            <!-- ===================== PASO 2 ===================== -->
+            <!-- ===================== PASO 2 (Múltiples Animales) ===================== -->
             <LinearLayout
                 android:id="@+id/step2Layout"
                 android:layout_width="match_parent"
@@ -368,140 +367,46 @@
                 android:orientation="vertical"
                 android:visibility="gone">
 
-                <TextView
+                <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:text="Datos del paciente"
-                    android:textColor="#0F172A"
-                    android:textSize="16sp"
-                    android:textStyle="bold" />
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="12dp">
 
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:hint="Nombre"
-                    app:boxStrokeColor="#4141A5">
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etPacienteNombre"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:text="Especie"
-                    android:textColor="#334155"
-                    android:textSize="12sp" />
-                <Spinner
-                    android:id="@+id/spinnerEspecie"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginBottom="12dp"
-                    android:background="@drawable/bg_spinner" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:hint="Raza"
-                    app:boxStrokeColor="#4141A5">
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etPacienteRaza"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:text="Sexo"
-                    android:textColor="#334155"
-                    android:textSize="12sp" />
-                <Spinner
-                    android:id="@+id/spinnerSexo"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginBottom="12dp"
-                    android:background="@drawable/bg_spinner" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:hint="Color"
-                    app:boxStrokeColor="#4141A5">
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etPacienteColor"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:hint="Edad (e.g. 2 años, 5 meses)"
-                    app:boxStrokeColor="#4141A5">
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etPacienteEdad"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:hint="Peso (kg)"
-                    app:boxStrokeColor="#4141A5">
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etPacientePeso"
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:inputType="numberDecimal" />
-                </com.google.android.material.textfield.TextInputLayout>
+                        android:layout_weight="1"
+                        android:text="Pacientes / Animales atendidos"
+                        android:textColor="#0F172A"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
 
-                <com.google.android.material.textfield.TextInputLayout
-                    style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAddAnimal"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="36dp"
+                        android:text="+ Añadir animal"
+                        android:textAllCaps="false"
+                        android:textSize="12sp"
+                        app:cornerRadius="10dp"
+                        app:strokeColor="#4141A5" />
+                </LinearLayout>
+
+                <!-- Contenedor dinámico donde se agregarán los formularios por cada animal -->
+                <LinearLayout
+                    android:id="@+id/containerAnimales"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:hint="Descripción adicional"
-                    app:boxStrokeColor="#4141A5">
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etPacienteDescripcion"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="4dp"
-                    android:text="Esterilizado"
-                    android:textColor="#334155"
-                    android:textSize="12sp" />
-                <Spinner
-                    android:id="@+id/spinnerEsterilizado"
-                    android:layout_width="match_parent"
-                    android:layout_height="48dp"
-                    android:layout_marginBottom="24dp"
-                    android:background="@drawable/bg_spinner" />
+                    android:orientation="vertical" />
 
                 <!-- Cantidades y queja -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
                     android:layout_marginBottom="12dp"
                     android:text="Cantidades y queja"
                     android:textColor="#0F172A"

@@ -293,113 +293,11 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- 2. Historias (Web) -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/btnHistorias"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginHorizontal="4dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    app:cardBackgroundColor="@color/white"
-                    app:cardElevation="0dp"
-                    app:strokeColor="@color/card_stroke"
-                    app:strokeWidth="1dp"
-                    app:cardCornerRadius="12dp">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="72dp"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="8dp">
-                        <ImageView
-                            android:layout_width="22dp"
-                            android:layout_height="22dp"
-                            android:src="@drawable/file_text"
-                            app:tint="@color/primary" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:fontFamily="@font/nunito"
-                            android:text="Historias"
-                            android:textColor="@color/text_primary"
-                            android:textSize="11sp"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
 
-                <!-- 3. Inventario -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/btnInventario"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginHorizontal="4dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    app:cardBackgroundColor="@color/white"
-                    app:cardElevation="0dp"
-                    app:strokeColor="@color/card_stroke"
-                    app:strokeWidth="1dp"
-                    app:cardCornerRadius="12dp">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="72dp"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="8dp">
-                        <ImageView
-                            android:layout_width="22dp"
-                            android:layout_height="22dp"
-                            android:src="@drawable/ic_filter"
-                            app:tint="@color/primary" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:fontFamily="@font/nunito"
-                            android:text="Inventario"
-                            android:textColor="@color/text_primary"
-                            android:textSize="11sp"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
 
-                <!-- 4. Perfil -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/btnPerfil"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:layout_marginStart="4dp"
-                    android:clickable="true"
-                    android:focusable="true"
-                    app:cardBackgroundColor="@color/white"
-                    app:cardElevation="0dp"
-                    app:strokeColor="@color/card_stroke"
-                    app:strokeWidth="1dp"
-                    app:cardCornerRadius="12dp">
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="72dp"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="8dp">
-                        <ImageView
-                            android:layout_width="22dp"
-                            android:layout_height="22dp"
-                            android:src="@drawable/user"
-                            app:tint="@color/primary" />
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="4dp"
-                            android:fontFamily="@font/nunito"
-                            android:text="Perfil"
-                            android:textColor="@color/text_primary"
-                            android:textSize="11sp"/>
-                    </LinearLayout>
-                </com.google.android.material.card.MaterialCardView>
+
+
+
 
             </LinearLayout>
 

@@ -14,7 +14,6 @@ class inicio_sesion : AppCompatActivity() {
 
     private lateinit var binding: ActivityInicioSesionBinding
 
-    // 1. AQUÍ DECLARAS LOS ROLES (Adiós a los datos quemados)
     companion object {
         const val ROL_VETERINARIO = 3
     }
@@ -42,6 +41,10 @@ class inicio_sesion : AppCompatActivity() {
         val email = binding.editTextText.text.toString().trim()
         val password = binding.edtPassword.text.toString().trim()
 
+        // Limpiar errores previos
+        binding.editTextText.error = null
+        binding.tilPassword.error = null
+
         if (email.isEmpty()) {
             binding.editTextText.error = "Ingrese su correo electrónico"
             binding.editTextText.requestFocus()
@@ -49,7 +52,7 @@ class inicio_sesion : AppCompatActivity() {
         }
 
         if (password.isEmpty()) {
-            binding.edtPassword.error = "Ingrese su contraseña"
+            binding.tilPassword.error = "Ingrese su contraseña"
             binding.edtPassword.requestFocus()
             return
         }
@@ -78,12 +81,9 @@ class inicio_sesion : AppCompatActivity() {
                         prefs.saveAccessToken(datos.tokens.access)
                         prefs.saveUserId(datos.idUsuario)
 
-                        // 2. AQUÍ SE SEPARA EL CAMINO SEGÚN EL ROL
                         val intent = if (datos.idRol == ROL_VETERINARIO) {
-                            // Si es 2, va al dashboard del veterinario
                             Intent(this@inicio_sesion, dahsboard_veterianrio::class.java)
                         } else {
-                            // Si es cualquier otra cosa, va a la bienvenida normal
                             Intent(this@inicio_sesion, bienvenida::class.java)
                         }
 

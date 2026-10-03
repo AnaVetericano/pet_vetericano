@@ -58,17 +58,6 @@ class dahsboard_veterianrio : AppCompatActivity() {
             startActivity(Intent(this, PetitionsListActivity::class.java))
         }
 
-        binding.btnHistorias.setOnClickListener {
-            Toast.makeText(this, "Historia clínica disponible en la versión Web", Toast.LENGTH_SHORT).show()
-        }
-
-        binding.btnInventario.setOnClickListener {
-            Toast.makeText(this, "Inventario próximamente disponible", Toast.LENGTH_SHORT).show()
-        }
-
-        binding.btnPerfil.setOnClickListener {
-            startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
-        }
 
         // Bottom Navigation: Inicio ya es esta pantalla, pero permitir re-scroll o no hacer nada
         binding.ivNavInicio.setOnClickListener {

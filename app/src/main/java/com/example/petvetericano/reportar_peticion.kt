@@ -11,7 +11,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-// AGREGAMOS ESTAS DOS LÍNEAS PARA CONECTAR CON LOS ARCHIVOS UNIFICADOS
 import com.example.petvetericano.network.RetrofitClient
 import com.example.petvetericano.models.TipoPeticionResponse
 
@@ -37,7 +36,6 @@ class reportar_peticion : AppCompatActivity() {
 
         // 2. Configurar clics buscando el ID correspondiente de la lista obtenida
         binding.cardHerido.setOnClickListener {
-            // Busca el ID cuyo nombre coincida o corresponda a "Animal Herido"
             obtenerIdYAvanzar("Animal Herido")
         }
 
@@ -48,12 +46,16 @@ class reportar_peticion : AppCompatActivity() {
         binding.cardCalle.setOnClickListener {
             obtenerIdYAvanzar("Animal en condicion de calle")
         }
+
+        // 3. Configurar clic para la nueva tarjeta "Otros"
+        binding.cardOtros.setOnClickListener {
+            obtenerIdYAvanzar("Otros")
+        }
     }
 
     private fun cargarTiposDesdeApi() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // Aquí llamas al GET que ya creaste en tu ApiService
                 val response = RetrofitClient.apiService.obtenerTiposPeticion()
                 if (response.isSuccessful && response.body() != null) {
                     listaTipos = response.body()!!

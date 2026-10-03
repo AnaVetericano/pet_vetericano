@@ -99,7 +99,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="Nombre"
-                        app:errorEnabled="true"
                         app:boxBackgroundColor="@color/input_background"
                         app:boxBackgroundMode="outline"
                         app:boxCornerRadiusBottomEnd="14dp"
@@ -107,6 +106,7 @@
                         app:boxCornerRadiusTopEnd="14dp"
                         app:boxCornerRadiusTopStart="14dp"
                         app:boxStrokeColor="@color/blue"
+                        app:errorEnabled="true"
                         app:hintTextColor="@color/blue"
                         app:startIconDrawable="@drawable/user"
                         app:startIconTint="?attr/colorPrimary">
@@ -131,7 +131,6 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="14dp"
                         android:hint="Apellido"
-                        app:errorEnabled="true"
                         app:boxBackgroundColor="@color/input_background"
                         app:boxBackgroundMode="outline"
                         app:boxCornerRadiusBottomEnd="14dp"
@@ -139,6 +138,7 @@
                         app:boxCornerRadiusTopEnd="14dp"
                         app:boxCornerRadiusTopStart="14dp"
                         app:boxStrokeColor="@color/blue"
+                        app:errorEnabled="true"
                         app:hintTextColor="@color/blue"
                         app:startIconDrawable="@drawable/user"
                         app:startIconTint="?attr/colorPrimary">
@@ -148,8 +148,40 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:autofillHints="familyName"
-                            android:imeOptions="actionDone"
+                            android:imeOptions="actionNext"
                             android:inputType="textPersonName|textCapWords"
+                            android:maxLines="1"
+                            android:singleLine="true"
+                            android:textColor="@color/text_primary"
+                            android:textSize="14sp" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Campo Teléfono (NUEVO) -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilPhone"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="14dp"
+                        android:hint="Teléfono"
+                        app:boxBackgroundColor="@color/input_background"
+                        app:boxBackgroundMode="outline"
+                        app:boxCornerRadiusBottomEnd="14dp"
+                        app:boxCornerRadiusBottomStart="14dp"
+                        app:boxCornerRadiusTopEnd="14dp"
+                        app:boxCornerRadiusTopStart="14dp"
+                        app:boxStrokeColor="@color/blue"
+                        app:errorEnabled="true"
+                        app:hintTextColor="@color/blue"
+                        app:startIconDrawable="@drawable/user"
+                        app:startIconTint="?attr/colorPrimary">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etPhone"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:autofillHints="phone"
+                            android:imeOptions="actionDone"
+                            android:inputType="phone"
                             android:maxLines="1"
                             android:singleLine="true"
                             android:textColor="@color/text_primary"
@@ -164,8 +196,6 @@
                         android:layout_marginTop="14dp"
                         android:enabled="false"
                         android:hint="Correo electrónico"
-                        app:helperText="No se puede cambiar"
-                        app:helperTextEnabled="true"
                         app:boxBackgroundColor="@color/input_background"
                         app:boxBackgroundMode="outline"
                         app:boxCornerRadiusBottomEnd="14dp"
@@ -173,6 +203,8 @@
                         app:boxCornerRadiusTopEnd="14dp"
                         app:boxCornerRadiusTopStart="14dp"
                         app:boxStrokeColor="@color/blue"
+                        app:helperText="No se puede cambiar"
+                        app:helperTextEnabled="true"
                         app:hintTextColor="@color/blue"
                         app:startIconDrawable="@drawable/mail"
                         app:startIconTint="?attr/colorPrimary">
@@ -189,7 +221,7 @@
                             android:textSize="14sp" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Botón Guardar Cambios (M3 Filled): solo activo si hay cambios -->
+                    <!-- Botón Guardar Cambios -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnGuardarPerfil"
                         android:layout_width="match_parent"
@@ -206,7 +238,7 @@
                         app:cornerRadius="14dp"
                         app:elevation="2dp" />
 
-                    <!-- Botón Descartar (M3 Outlined): solo visible si hay cambios sin guardar -->
+                    <!-- Botón Descartar -->
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnDescartarPerfil"
                         style="@style/Widget.Material3.Button.OutlinedButton"
@@ -275,7 +307,7 @@
                 android:layout_marginTop="24dp"
                 android:background="@color/divider" />
 
-            <!-- Botón Cerrar sesión: ancho completo, estilo peligro M3 -->
+            <!-- Botón Cerrar sesión -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

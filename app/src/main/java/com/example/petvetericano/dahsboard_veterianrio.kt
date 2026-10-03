@@ -39,6 +39,11 @@ class dahsboard_veterianrio : AppCompatActivity() {
 
         binding.rvPendientes.layoutManager = LinearLayoutManager(this)
 
+        // Configurar el gesto de recargar (Swipe to Refresh)
+        binding.swipeRefreshLayout.setOnRefreshListener {
+            fetchDashboardData()
+        }
+
         // Cargar nombre e iniciales del veterinario desde SharedPreferences
         val prefs = SharedPreferencesManager(this)
         val nombre = prefs.getUserName()
@@ -58,9 +63,10 @@ class dahsboard_veterianrio : AppCompatActivity() {
             startActivity(Intent(this, PetitionsListActivity::class.java))
         }
 
-        // Bottom Navigation: Inicio ya es esta pantalla, pero permitir re-scroll o no hacer nada
+        // Bottom Navigation
         binding.ivNavInicio.setOnClickListener {
-            // Ya estamos en inicio
+            // Ya estamos en inicio, podemos hacer que suba el scroll al inicio
+            binding.rvPendientes.smoothScrollToPosition(0)
         }
 
         binding.ivNavPeticiones.setOnClickListener {
@@ -72,11 +78,14 @@ class dahsboard_veterianrio : AppCompatActivity() {
             startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
         }
 
+        // Mostrar animación de carga inicial
+        binding.swipeRefreshLayout.isRefreshing = true
         fetchDashboardData()
     }
 
     override fun onResume() {
         super.onResume()
+        // Cuando vuelve de otra pantalla también actualiza por si hubo cambios
         fetchDashboardData()
     }
 
@@ -86,6 +95,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
 
         if (token.isEmpty()) {
             Toast.makeText(this, "Debe iniciar sesión", Toast.LENGTH_SHORT).show()
+            binding.swipeRefreshLayout.isRefreshing = false
             return
         }
 
@@ -93,10 +103,12 @@ class dahsboard_veterianrio : AppCompatActivity() {
             try {
                 val response = RetrofitClient.apiService.listarPeticiones("Bearer $token")
                 withContext(Dispatchers.Main) {
+                    // Detener la animación de recarga
+                    binding.swipeRefreshLayout.isRefreshing = false
+
                     if (response.isSuccessful && response.body() != null) {
                         val petitions = response.body()!!
 
-                        // Conteos
                         val asignadas = petitions.count {
                             val st = it.estado?.lowercase() ?: ""
                             st.contains("asignad") || st.contains("evaluaci") || st.contains("urgente")
@@ -115,7 +127,6 @@ class dahsboard_veterianrio : AppCompatActivity() {
                         }
                         val total = petitions.size
 
-                        // Actualizar leyenda y contadores
                         binding.tvGraficoAsignadas.text = asignadas.toString()
                         binding.tvGraficoAtendidas.text = atendidas.toString()
                         binding.tvGraficoReasignadas.text = reasignadas.toString()
@@ -125,7 +136,6 @@ class dahsboard_veterianrio : AppCompatActivity() {
 
                         configurarGrafico(asignadas, atendidas, reasignadas, total)
 
-                        // Lista para RecyclerView: las 5 más recientes
                         val listaParaRv = petitions.take(5).map { pet ->
                             val estadoStr = pet.estado?.lowercase() ?: ""
                             val tipo = when {
@@ -156,6 +166,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    binding.swipeRefreshLayout.isRefreshing = false
                     Toast.makeText(this@dahsboard_veterianrio, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
                 }
             }
@@ -171,7 +182,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
         if (reasignadas > 0) entries.add(PieEntry(reasignadas.toFloat(), ""))
 
         if (entries.isEmpty()) {
-            entries.add(PieEntry(1f, "")) // dummy para que no quede vacío
+            entries.add(PieEntry(1f, ""))
         }
 
         val dataSet = PieDataSet(entries, "")

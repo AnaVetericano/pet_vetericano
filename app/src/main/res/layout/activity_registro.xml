@@ -270,48 +270,45 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- 6. Input Contraseña -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardPass"
+        <!-- 6. Input Contraseña (MD3 con Helper Text y Toggle de Ojo nativo) -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilPassword"
             android:layout_width="match_parent"
-            android:layout_height="54dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            app:cardBackgroundColor="@color/input_background"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
-            app:strokeColor="@color/input_stroke"
-            app:strokeWidth="1.5dp"
+            android:hint="@string/edt_Password"
+            app:boxBackgroundColor="@color/input_background"
+            app:boxBackgroundMode="outline"
+            app:boxCornerRadiusBottomEnd="16dp"
+            app:boxCornerRadiusBottomStart="16dp"
+            app:boxCornerRadiusTopEnd="16dp"
+            app:boxCornerRadiusTopStart="16dp"
+            app:boxStrokeColor="@color/blue"
+            app:boxStrokeWidth="1.5dp"
+            app:boxStrokeWidthFocused="2dp"
+            app:endIconMode="password_toggle"
+            app:endIconTint="@color/blue"
+            app:errorEnabled="true"
+            app:helperText="Mín. 8 caracteres, una mayúscula y un número"
+            app:helperTextTextColor="@color/text_muted"
+            app:hintTextColor="@color/blue"
+            app:startIconDrawable="@drawable/lock_icon"
+            app:startIconTint="?attr/colorPrimary"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/cardTelefono">
 
-            <LinearLayout
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtxtPassword"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp">
-
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:src="@drawable/lock_icon"
-                    app:tint="@color/blue" />
-
-                <EditText
-                    android:id="@+id/edtxtPassword"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@null"
-                    android:hint="@string/edt_Password"
-                    android:inputType="textPassword"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:textColor="@color/text_primary"
-                    android:textColorHint="@color/text_muted"
-                    android:textSize="14sp" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+                android:layout_height="54dp"
+                android:background="@null"
+                android:inputType="textPassword"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Enlace a iniciar sesión -->
         <LinearLayout
@@ -323,7 +320,7 @@
             android:orientation="horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/cardPass">
+            app:layout_constraintTop_toBottomOf="@+id/tilPassword">
 
             <TextView
                 android:id="@+id/txtaccountexist"

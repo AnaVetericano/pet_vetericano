@@ -1,7 +1,5 @@
 package com.example.petvetericano.models
 
-
-import com.bumptech.glide.Priority
 import com.google.gson.annotations.SerializedName
 
 // --- Login ---
@@ -9,22 +7,6 @@ data class LoginRequest(
     val email: String,
     val password: String
 )
-//detalle peticion
-
-data class DetallePeticionResponse(
-    val codigo: String,
-    val estado: String,
-    val tipoEstado: String,
-    val solicitanteNombre: String,
-    val solicitanteTelefono: String,
-    val solicitanteDireccion: String,
-    val solicitanteComuna: String,
-    val motivo: String,
-    val fechaAsignada: String,
-    val observaciones: String
-)
-
-//veterinario
 
 data class PeticionPendiente(
     val id_peticion: Int = 0,
@@ -137,10 +119,12 @@ data class confirmarpeticion(
     val foto : String?
 )
 
+// Declaración única para actualizar perfil
 data class ActualizarPerfilRequest(
     val nombre: String,
     val apellido: String,
-    val email: String
+    val email: String,
+    val telefono: String
 )
 
 data class TipoPeticionModel(

@@ -40,8 +40,11 @@ class Registro : AppCompatActivity() {
         val identificacion = binding.edtxtemailorphone.text.toString().trim()
         val nombre = binding.edtxtID.text.toString().trim()
         val apellido = binding.edtxtApellido.text.toString().trim()
-        val telefono = binding.edtxtTelefono.text.toString().trim() // 👈 Capturamos el teléfono
+        val telefono = binding.edtxtTelefono.text.toString().trim()
         val password = binding.edtxtPassword.text.toString().trim()
+
+        // Limpiamos errores previos en TextInputLayout
+        binding.tilPassword.error = null
 
         if (email.isEmpty()) {
             binding.editTextTextEmailAddress.error = "Ingrese su correo electrónico"
@@ -67,7 +70,6 @@ class Registro : AppCompatActivity() {
             return
         }
 
-        // 💡 Validar que el teléfono tenga al menos 10 cifras (estándar Colombia)
         if (telefono.isEmpty() || telefono.length < 10) {
             binding.edtxtTelefono.error = "Ingrese un número de teléfono válido (mínimo 10 dígitos)"
             binding.edtxtTelefono.requestFocus()
@@ -75,14 +77,17 @@ class Registro : AppCompatActivity() {
         }
 
         if (password.isEmpty()) {
-            binding.edtxtPassword.error = "Ingrese una contraseña"
+            binding.tilPassword.error = "Ingrese una contraseña"
             binding.edtxtPassword.requestFocus()
             return
         }
 
+        // Reglas de negocio de la contraseña: Mínimo 8 caracteres, una mayúscula y un número
         val contieneMayuscula = Regex("[A-Z]").containsMatchIn(password)
-        if (password.length < 8 || !contieneMayuscula) {
-            binding.edtxtPassword.error = "Mínimo 8 caracteres y al menos una letra mayúscula"
+        val contieneNumero = Regex("[0-9]").containsMatchIn(password)
+
+        if (password.length < 8 || !contieneMayuscula || !contieneNumero) {
+            binding.tilPassword.error = "Mín. 8 caracteres, una mayúscula y un número"
             binding.edtxtPassword.requestFocus()
             return
         }
@@ -97,13 +102,12 @@ class Registro : AppCompatActivity() {
                     password = password,
                     nombre = nombre,
                     apellido = apellido,
-                    telefono = telefono // 👈 Enviamos el teléfono en la petición
+                    telefono = telefono
                 )
 
                 val response = RetrofitClient.apiService.registro(request)
 
                 if (response.isSuccessful) {
-                    // Guardamos el teléfono localmente también por si se necesita en eventos
                     prefs.saveUserData(name = nombre, email = email, phone = telefono)
                     prefs.saveUserLastName(apellido)
 

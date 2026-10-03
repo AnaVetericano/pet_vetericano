@@ -11,11 +11,13 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityDetallePeticionBinding
-import com.example.petvetericano.models.DetallePeticionResponse
+import com.example.petvetericano.models.PeticionListResponse
 import com.example.petvetericano.network.RetrofitClient
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.text.SimpleDateFormat
+import java.util.Locale
 
 class DetallePeticion : AppCompatActivity() {
 
@@ -114,12 +116,19 @@ class DetallePeticion : AppCompatActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val response = RetrofitClient.apiService.obtenerDetallePeticion("Bearer $token", id)
+                // El backend NO expone un endpoint de detalle de petición
+                // (GET /peticiones/{id}/ responde 404). Se reutiliza el listado
+                // existente y se filtra por id de petición.
+                val response = RetrofitClient.apiService.listarPeticiones("Bearer $token")
 
                 withContext(Dispatchers.Main) {
-                    if (response.isSuccessful && response.body() != null) {
-                        val detalle = response.body()!!
-                        bindData(detalle)
+                    if (response.isSuccessful) {
+                        val peticion = response.body()?.firstOrNull { it.id_peticion == id }
+                        if (peticion != null) {
+                            bindData(peticion)
+                        } else {
+                            Toast.makeText(this@DetallePeticion, "No se encontró la petición", Toast.LENGTH_SHORT).show()
+                        }
                     } else {
                         Toast.makeText(this@DetallePeticion, "No se pudo cargar la información", Toast.LENGTH_SHORT).show()
                     }
@@ -132,28 +141,36 @@ class DetallePeticion : AppCompatActivity() {
         }
     }
 
-    private fun bindData(detalle: DetallePeticionResponse) {
-        direccionActual = detalle.solicitanteDireccion
+    private fun bindData(peticion: PeticionListResponse) {
+        // Dirección usada por el botón "Ver ruta"
+        direccionActual = peticion.ubicacion_direccion.orEmpty()
 
         // Cabecera
-        binding.tvCodigoPeticion.text = detalle.codigo
-        binding.tvBadgeEstado.text = detalle.estado
+        binding.tvCodigoPeticion.text = peticion.numero_radicado?.takeIf { it.isNotBlank() } ?: "N/A"
+        binding.tvBadgeEstado.text = peticion.estado?.takeIf { it.isNotBlank() } ?: "Sin estado"
 
-        // Solicitante
-        binding.tvNombreSolicitante.text = detalle.solicitanteNombre
-        binding.tvTelefonoSolicitante.text = if (detalle.solicitanteTelefono.isNotEmpty()) detalle.solicitanteTelefono else "No registrado"
-        binding.tvDireccionSolicitante.text = if (detalle.solicitanteDireccion.isNotEmpty()) detalle.solicitanteDireccion else "No registrada"
-        binding.tvComunaSolicitante.text = if (detalle.solicitanteComuna.isNotEmpty()) detalle.solicitanteComuna else "N/A"
+        // Animal: el animal aún no ha sido creado, por eso NO se muestra especie.
+        // "Motivo" corresponde al tipo de petición (tabla id_tipo), ej. "Animal Herido".
+        binding.tvMotivoAnimal.text = peticion.tipo?.trim()?.takeIf { it.isNotEmpty() } ?: "Sin motivo"
+        binding.tvFechaAsignada.text = formatearFecha(peticion.fecha_asignacion)
 
-        // Animal
-        binding.tvMotivoAnimal.text = if (detalle.motivo.isNotEmpty()) detalle.motivo else "Sin motivo"
-        binding.tvFechaAsignada.text = if (detalle.fechaAsignada.isNotEmpty()) detalle.fechaAsignada else "Pendiente"
+        // Observaciones (descripción de la petición)
+        binding.tvObservaciones.text = peticion.descripcion?.trim()?.takeIf { it.isNotEmpty() } ?: "Sin observaciones registradas."
 
-        // Observaciones
-        binding.tvObservaciones.text = if (detalle.observaciones.isNotEmpty()) detalle.observaciones else "Sin observaciones registradas."
+        // Ubicación
+        binding.tvUbicacionTexto.text = peticion.ubicacion_direccion?.trim()?.takeIf { it.isNotEmpty() } ?: "Ubicación no registrada"
+    }
 
-        // Ubicación texto inferior
-        val comunaTexto = if (detalle.solicitanteComuna.isNotEmpty()) ", com. ${detalle.solicitanteComuna}" else ""
-        binding.tvUbicacionTexto.text = "${detalle.solicitanteDireccion}$comunaTexto".ifEmpty { "Ubicación en campo" }
+    private fun formatearFecha(fechaISO: String?): String {
+        if (fechaISO.isNullOrBlank()) return "Pendiente"
+        return try {
+            // El backend envía ISO-8601, ej: 2026-10-02T01:43:01.388313-05:00
+            val limpio = fechaISO.substringBefore(".").take(19)
+            val entrada = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
+            val salida = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.forLanguageTag("es-ES"))
+            entrada.parse(limpio)?.let { salida.format(it) } ?: limpio
+        } catch (e: Exception) {
+            fechaISO
+        }
     }
 }

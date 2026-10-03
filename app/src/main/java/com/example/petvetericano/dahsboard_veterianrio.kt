@@ -58,7 +58,6 @@ class dahsboard_veterianrio : AppCompatActivity() {
             startActivity(Intent(this, PetitionsListActivity::class.java))
         }
 
-
         // Bottom Navigation: Inicio ya es esta pantalla, pero permitir re-scroll o no hacer nada
         binding.ivNavInicio.setOnClickListener {
             // Ya estamos en inicio

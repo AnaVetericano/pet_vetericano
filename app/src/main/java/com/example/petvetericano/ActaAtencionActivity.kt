@@ -98,9 +98,8 @@ class ActaAtencionActivity : AppCompatActivity() {
      * Crea e inserta de forma dinámica una tarjeta de formulario para registrar un animal (Soporta múltiples)
      */
     private fun agregarFormularioAnimal() {
-        val animalView = LayoutInflater.from(this).inflate(layoutIdForAnimalCard(), binding.containerAnimales, false)
+        val animalView = LayoutInflater.from(this).inflate(R.layout.item_animal_formulario, binding.containerAnimales, false)
 
-        // Configurar spinners internos de cada tarjeta de animal
         val spinnerEspecie = animalView.findViewById<Spinner>(R.id.spinnerEspecieCard)
         val spinnerSexo = animalView.findViewById<Spinner>(R.id.spinnerSexoCard)
         val spinnerEsterilizado = animalView.findViewById<Spinner>(R.id.spinnerEsterilizadoCard)
@@ -115,7 +114,6 @@ class ActaAtencionActivity : AppCompatActivity() {
         val esterilizado = arrayOf("Si", "No", "No se sabe")
         spinnerEsterilizado.adapter = ArrayAdapter(this, android.R.layout.simple_spinner_dropdown_item, esterilizado)
 
-        // Si hay más de un animal, permitir eliminar esta tarjeta
         if (animalViewsList.isEmpty()) {
             btnEliminar.visibility = View.GONE
         } else {
@@ -137,16 +135,6 @@ class ActaAtencionActivity : AppCompatActivity() {
             val btn = animalViewsList[i].findViewById<MaterialButton>(R.id.btnEliminarAnimal)
             btn.visibility = if (animalViewsList.size > 1) View.VISIBLE else View.GONE
         }
-    }
-
-    /**
-     * Estructura XML generada mediante código para cada tarjeta de animal adicional
-     */
-    private fun layoutIdForAnimalCard(): Int {
-        // Creamos un layout programático o simulamos la vista tipo tarjeta para el animal
-        // Para mantenerlo limpio, inflamos un layout o usamos una vista compuesta.
-        // Como alternativa nativa limpia en un solo archivo, crearemos la vista dinámicamente abajo:
-        return R.layout.item_animal_formulario
     }
 
     private fun updateStepper() {
@@ -206,12 +194,10 @@ class ActaAtencionActivity : AppCompatActivity() {
         val propietarioDireccion = binding.etPropietarioDireccion.text.toString()
         val propietarioTelefono = binding.etPropietarioTelefono.text.toString()
 
-        // Solicitud de atención por (múltiples personas separadas por texto)
         val solicitudPor = binding.etSolicitudAtencion.text.toString()
         val quienReporta = binding.spinnerQuienReporta.selectedItem?.toString() ?: ""
         val lugarAtencionDir = binding.etLugarAtencion.text.toString()
 
-        // Recopilar lista de animales dinámicos
         val animalesList = mutableListOf<AnimalActa>()
         for (view in animalViewsList) {
             val nombre = view.findViewById<TextInputEditText>(R.id.etPacienteNombreCard).text.toString()
@@ -255,6 +241,7 @@ class ActaAtencionActivity : AppCompatActivity() {
         val resultadoPruebas = binding.etResultadoPruebas.text.toString()
         val compromisos = binding.etCompromisos.text.toString()
         val plazoDias = binding.etPlazoDias.text.toString().toIntOrNull() ?: 0
+
         val funcionarioNombre = binding.etFuncionarioNombre.text.toString()
         val funcionarioCargo = binding.etFuncionarioCargo.text.toString()
 

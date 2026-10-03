@@ -178,7 +178,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/nunito_display"
-                        android:text="Observaciones"
+                        android:text="Descripción:"
                         android:textColor="#4141A5"
                         android:textSize="14sp"
                         android:textStyle="bold" />

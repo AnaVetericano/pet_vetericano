@@ -3,6 +3,7 @@ package com.example.petvetericano
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
@@ -10,6 +11,7 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import com.bumptech.glide.Glide
 import com.example.petvetericano.databinding.ActivityDetallePeticionBinding
 import com.example.petvetericano.models.PeticionListResponse
 import com.example.petvetericano.network.RetrofitClient
@@ -29,7 +31,6 @@ class DetallePeticion : AppCompatActivity() {
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
         if (result.resultCode == RESULT_OK) {
-            // Recargar detalle tras actualizar estado
             if (peticionId != -1) {
                 obtenerDetallePeticion(peticionId)
             }
@@ -59,20 +60,16 @@ class DetallePeticion : AppCompatActivity() {
             insets
         }
 
-        // 1. Recibir el ID de la petición enviada desde la lista
         peticionId = intent.getIntExtra("PETICION_ID", -1)
 
-        // Botón de retroceso
         binding.btnBack.setOnClickListener { finish() }
 
-        // 2. Consumir los datos desde la API si el ID es válido
         if (peticionId != -1) {
             obtenerDetallePeticion(peticionId)
         } else {
             Toast.makeText(this, "Error: ID de petición no válido", Toast.LENGTH_SHORT).show()
         }
 
-        // Botón Actualizar Estado
         binding.btnActualizarEstado.setOnClickListener {
             val intent = Intent(this, UpdateStatusActivity::class.java).apply {
                 putExtra("PETICION_ID", peticionId)
@@ -82,7 +79,6 @@ class DetallePeticion : AppCompatActivity() {
             updateStatusLauncher.launch(intent)
         }
 
-        // Botón Atender (Acta de atención en campo)
         binding.btnAtender.setOnClickListener {
             val intent = Intent(this, ActaAtencionActivity::class.java).apply {
                 putExtra("PETICION_ID", peticionId)
@@ -90,7 +86,6 @@ class DetallePeticion : AppCompatActivity() {
             actaLauncher.launch(intent)
         }
 
-        // Botón Ver Ruta en Mapa
         binding.btnVerRuta.setOnClickListener {
             if (direccionActual.isNotEmpty()) {
                 val gmmIntentUri = Uri.parse("geo:0,0?q=${Uri.encode(direccionActual)}")
@@ -100,7 +95,6 @@ class DetallePeticion : AppCompatActivity() {
                 if (mapIntent.resolveActivity(packageManager) != null) {
                     startActivity(mapIntent)
                 } else {
-                    // Fallback a navegador
                     val browserIntent = Intent(Intent.ACTION_VIEW, Uri.parse("https://www.google.com/maps/search/?api=1&query=${Uri.encode(direccionActual)}"))
                     startActivity(browserIntent)
                 }
@@ -116,9 +110,6 @@ class DetallePeticion : AppCompatActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                // El backend NO expone un endpoint de detalle de petición
-                // (GET /peticiones/{id}/ responde 404). Se reutiliza el listado
-                // existente y se filtra por id de petición.
                 val response = RetrofitClient.apiService.listarPeticiones("Bearer $token")
 
                 withContext(Dispatchers.Main) {
@@ -142,29 +133,38 @@ class DetallePeticion : AppCompatActivity() {
     }
 
     private fun bindData(peticion: PeticionListResponse) {
-        // Dirección usada por el botón "Ver ruta"
         direccionActual = peticion.ubicacion_direccion.orEmpty()
 
-        // Cabecera
         binding.tvCodigoPeticion.text = peticion.numero_radicado?.takeIf { it.isNotBlank() } ?: "N/A"
         binding.tvBadgeEstado.text = peticion.estado?.takeIf { it.isNotBlank() } ?: "Sin estado"
-
-        // Animal: el animal aún no ha sido creado, por eso NO se muestra especie.
-        // "Motivo" corresponde al tipo de petición (tabla id_tipo), ej. "Animal Herido".
         binding.tvMotivoAnimal.text = peticion.tipo?.trim()?.takeIf { it.isNotEmpty() } ?: "Sin motivo"
         binding.tvFechaAsignada.text = formatearFecha(peticion.fecha_asignacion)
-
-        // Observaciones (descripción de la petición)
         binding.tvObservaciones.text = peticion.descripcion?.trim()?.takeIf { it.isNotEmpty() } ?: "Sin observaciones registradas."
-
-        // Ubicación
         binding.tvUbicacionTexto.text = peticion.ubicacion_direccion?.trim()?.takeIf { it.isNotEmpty() } ?: "Ubicación no registrada"
+
+        // 🖼️ GESTIÓN Y CARGA DE LA FOTO DESDE LA BASE DE DATOS
+        val fotoUrl = peticion.foto
+        if (!fotoUrl.isNullOrBlank()) {
+            binding.cardFotoEvidencia.visibility = View.VISIBLE
+
+            // Ajusta la URL base de tu servidor si Django devuelve rutas relativas (/media/...)
+            val urlFinal = if (fotoUrl.startsWith("http")) {
+                fotoUrl
+            } else {
+                "https://tu-servidor.com$fotoUrl"
+            }
+
+            Glide.with(this)
+                .load(urlFinal)
+                .into(binding.ivPeticionFoto)
+        } else {
+            binding.cardFotoEvidencia.visibility = View.GONE
+        }
     }
 
     private fun formatearFecha(fechaISO: String?): String {
         if (fechaISO.isNullOrBlank()) return "Pendiente"
         return try {
-            // El backend envía ISO-8601, ej: 2026-10-02T01:43:01.388313-05:00
             val limpio = fechaISO.substringBefore(".").take(19)
             val entrada = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", Locale.getDefault())
             val salida = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.forLanguageTag("es-ES"))

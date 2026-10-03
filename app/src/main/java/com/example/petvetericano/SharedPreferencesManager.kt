@@ -22,6 +22,14 @@ class SharedPreferencesManager(context: Context) {
         }
     }
 
+    // Guardar Identificación / Cédula
+    fun saveUserIdentification(identification: String) {
+        if (identification.isNotEmpty()) {
+            prefs.edit().putString("USER_IDENTIFICATION", identification).apply()
+        }
+    }
+
+    fun getUserIdentification(): String = prefs.getString("USER_IDENTIFICATION", "") ?: ""
     fun getUserLastName(): String = prefs.getString("USER_LASTNAME", "") ?: ""
     fun getUserName(): String = prefs.getString("USER_NAME", "") ?: ""
     fun getUserEmail(): String = prefs.getString("USER_EMAIL", "") ?: ""

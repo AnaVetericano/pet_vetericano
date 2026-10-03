@@ -88,5 +88,8 @@ dependencies {
     //cloudinary
     implementation("com.cloudinary:cloudinary-android:2.5.0")
 
+    //para que aparesca una petciion al instante
+    implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
+
 
 }

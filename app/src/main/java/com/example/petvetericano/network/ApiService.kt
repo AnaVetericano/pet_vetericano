@@ -64,7 +64,12 @@ interface ApiService {
     suspend fun crearSeguimientoPeticionVisita(
         @Header("Authorization") token: String,
         @Body request: com.example.petvetericano.models.SeguimientoPeticionVisitaRequest
-    ): Response<Any>
+    ): Response<com.example.petvetericano.models.CrearActaResponse>
+
+    @GET("peticiones/seguimiento/funcionarios/")
+    suspend fun obtenerFuncionariosVisita(
+        @Header("Authorization") token: String
+    ): Response<List<com.example.petvetericano.models.FuncionarioItemResponse>>
 
 
     // --- ADOPCIONES ---

@@ -276,7 +276,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
-                    android:hint="Especifique quién reporta"
+                    android:hint="¿Quién reporta? (Especifique Otro) *"
                     android:visibility="gone"
                     app:boxStrokeColor="@color/primary">
 
@@ -505,11 +505,141 @@
                     android:layout_height="wrap_content"
                     android:orientation="vertical" />
 
+                <!-- Sección: Evaluación Clínica y Constantes Vitales -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:layout_marginBottom="8dp"
+                    android:fontFamily="@font/nunito_bold"
+                    android:text="Evaluación clínica y examen físico"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp" />
+
+                <com.google.android.material.card.MaterialCardView
+                    style="?attr/materialCardViewOutlinedStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="14dp"
+                    app:strokeColor="@color/card_stroke"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginBottom="10dp"
+                            android:fontFamily="@font/nunito_bold"
+                            android:text="Constantes fisiológicas básicas"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="13sp" />
+
+                        <!-- Fila 1: Temperatura y Frecuencia Cardíaca -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:baselineAligned="false"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="10dp">
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/tilTemperatura"
+                                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="6dp"
+                                android:layout_weight="1"
+                                android:hint="Temperatura"
+                                app:boxStrokeColor="@color/primary"
+                                app:suffixText="°C">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etTemperatura"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="numberDecimal"
+                                    android:textColor="@color/text_primary" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/tilFrecuenciaCardiaca"
+                                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:layout_weight="1"
+                                android:hint="Frec. Cardíaca"
+                                app:boxStrokeColor="@color/primary"
+                                app:suffixText="lpm">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etFrecuenciaCardiaca"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="number"
+                                    android:textColor="@color/text_primary" />
+                            </com.google.android.material.textfield.TextInputLayout>
+                        </LinearLayout>
+
+                        <!-- Fila 2: Frecuencia Respiratoria y Mucosas -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:baselineAligned="false"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/tilFrecuenciaRespiratoria"
+                                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="6dp"
+                                android:layout_weight="1"
+                                android:hint="Frec. Respiratoria"
+                                app:boxStrokeColor="@color/primary"
+                                app:suffixText="rpm">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etFrecuenciaRespiratoria"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="number"
+                                    android:textColor="@color/text_primary" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/tilMucosas"
+                                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="6dp"
+                                android:layout_weight="1"
+                                android:hint="Mucosas / TLLC"
+                                app:boxStrokeColor="@color/primary">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etMucosas"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="textCapWords"
+                                    android:textColor="@color/text_primary" />
+                            </com.google.android.material.textfield.TextInputLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
                 <!-- Sección: Anamnesis / Queja -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
+                    android:layout_marginTop="8dp"
                     android:layout_marginBottom="8dp"
                     android:fontFamily="@font/nunito_bold"
                     android:text="Anamnesis y queja"
@@ -586,6 +716,7 @@
                     android:textColor="@color/text_primary"
                     android:textSize="16sp" />
 
+                <!-- Switch Desparasitación -->
                 <com.google.android.material.card.MaterialCardView
                     style="?attr/materialCardViewOutlinedStyle"
                     android:layout_width="match_parent"
@@ -620,13 +751,31 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- Selector de tipo de prueba rápida -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilTipoPruebaDropdown"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:hint="Tipo de prueba rápida / Examen"
+                    app:boxStrokeColor="@color/primary">
+
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                        android:id="@+id/autoCompleteTipoPrueba"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none"
+                        android:textColor="@color/text_primary" />
+                </com.google.android.material.textfield.TextInputLayout>
+
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilPruebasComplementarias"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
-                    android:hint="Pruebas complementarias (ej: Parvovirus, Moquillo)"
+                    android:hint="Pruebas complementarias (descripción / detalle)"
                     app:boxStrokeColor="@color/primary">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -797,7 +946,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="6dp"
                         android:layout_weight="1"
-                        android:hint="Funcionario / Notificador"
+                        android:hint="Nombre del funcionario *"
                         app:boxStrokeColor="@color/primary">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -815,7 +964,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
                         android:layout_weight="1"
-                        android:hint="Cargo"
+                        android:hint="Cargo del funcionario *"
                         app:boxStrokeColor="@color/primary">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -827,12 +976,172 @@
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
 
+                <!-- Cédula / Identificación del Funcionario Notificador -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilFuncionarioIdentificacion"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    android:hint="Cédula / Identificación del Notificador"
+                    app:boxStrokeColor="@color/primary">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etFuncionarioIdentificacion"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="number"
+                        android:textColor="@color/text_primary" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Sección: Firmas Digitales de Cierre -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:layout_marginBottom="8dp"
+                    android:fontFamily="@font/nunito_bold"
+                    android:text="Firmas digitales del acta"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp" />
+
+                <!-- Firma del Notificador / Funcionario -->
+                <com.google.android.material.card.MaterialCardView
+                    style="?attr/materialCardViewOutlinedStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="12dp"
+                    app:strokeColor="@color/card_stroke">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="6dp">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/nunito_bold"
+                                android:text="Firma del funcionario / notificador"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="13sp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnClearSignatureNotificador"
+                                style="?attr/materialButtonOutlinedStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="36dp"
+                                android:text="Limpiar"
+                                android:textSize="11sp"
+                                app:cornerRadius="8dp"
+                                app:strokeWidth="1dp" />
+                        </LinearLayout>
+
+                        <com.example.petvetericano.SignatureView
+                            android:id="@+id/signatureNotificador"
+                            android:layout_width="match_parent"
+                            android:layout_height="120dp"
+                            android:background="#F8FAFC" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Firma del Notificado / Ciudadano -->
+                <com.google.android.material.card.MaterialCardView
+                    style="?attr/materialCardViewOutlinedStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="16dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="12dp"
+                    app:strokeColor="@color/card_stroke">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:layout_marginBottom="6dp">
+
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/nunito_bold"
+                                android:text="Firma del ciudadano notificado"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="13sp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnClearSignatureNotificado"
+                                style="?attr/materialButtonOutlinedStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="36dp"
+                                android:text="Limpiar"
+                                android:textSize="11sp"
+                                app:cornerRadius="8dp"
+                                app:strokeWidth="1dp" />
+                        </LinearLayout>
+
+                        <com.example.petvetericano.SignatureView
+                            android:id="@+id/signatureNotificado"
+                            android:layout_width="match_parent"
+                            android:layout_height="120dp"
+                            android:background="#F8FAFC" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Cierre del caso / Petición -->
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"
+                    android:fontFamily="@font/nunito_bold"
+                    android:text="Cierre del caso y resolución"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp" />
+
+                <!-- Selector de estado final de la petición -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilEstadoCierre"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:hint="Estado final de la petición"
+                    app:boxStrokeColor="@color/primary">
+
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                        android:id="@+id/autoCompleteEstadoCierre"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="none"
+                        android:textColor="@color/text_primary" />
+                </com.google.android.material.textfield.TextInputLayout>
+
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilObservaciones"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Observaciones generales"
+                    android:hint="Observaciones generales de cierre"
                     app:boxStrokeColor="@color/primary">
 
                     <com.google.android.material.textfield.TextInputEditText

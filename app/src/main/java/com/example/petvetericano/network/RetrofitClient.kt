@@ -30,11 +30,17 @@ object RetrofitClient {
             .build()
     }
 
+    private val gson by lazy {
+        com.google.gson.GsonBuilder()
+            .serializeNulls()
+            .create()
+    }
+
     val apiService: ApiService by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttpClient)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(ApiService::class.java)
     }

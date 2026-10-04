@@ -9,6 +9,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityActaAtencionBinding
 import com.example.petvetericano.databinding.ItemAnimalFormularioBinding
@@ -72,6 +73,12 @@ class ActaAtencionActivity : AppCompatActivity() {
                 2 -> {
                     if (validarPaso2()) {
                         currentStep = 3
+                        if (binding.etNotificadoNombre.text.isNullOrEmpty()) {
+                            binding.etNotificadoNombre.setText(binding.etPropietarioNombre.text.toString().trim())
+                        }
+                        if (binding.etNotificadoIdentificacion.text.isNullOrEmpty()) {
+                            binding.etNotificadoIdentificacion.setText(binding.etPropietarioCedula.text.toString().trim())
+                        }
                         updateStepper()
                     }
                 }
@@ -107,10 +114,27 @@ class ActaAtencionActivity : AppCompatActivity() {
         binding.etRadicado.setText("RAD-VIS-$year-$randomSuffix")
 
         val prefs = SharedPreferencesManager(this)
-        val nombreCompleto = "${prefs.getUserName()} ${prefs.getUserLastName()}".trim()
-        if (nombreCompleto.isNotEmpty()) {
-            binding.etFuncionarioNombre.setText(nombreCompleto)
-            binding.etFuncionarioCargo.setText("Médico Veterinario")
+        val nombreGuardado = prefs.getUserName().trim()
+        val apellidoGuardado = prefs.getUserLastName().trim()
+        val nombreCompleto = if (nombreGuardado.isNotEmpty() || apellidoGuardado.isNotEmpty()) {
+            "$nombreGuardado $apellidoGuardado".trim()
+        } else {
+            "Médico Veterinario"
+        }
+        binding.etFuncionarioNombre.setText(nombreCompleto)
+        binding.etFuncionarioCargo.setText("Médico Veterinario")
+
+        val identificacion = prefs.getUserIdentification()
+        if (identificacion.isNotEmpty()) {
+            binding.etFuncionarioIdentificacion.setText(identificacion)
+        }
+
+        binding.btnClearSignatureNotificador.setOnClickListener {
+            binding.signatureNotificador.clear()
+        }
+
+        binding.btnClearSignatureNotificado.setOnClickListener {
+            binding.signatureNotificado.clear()
         }
     }
 
@@ -120,15 +144,57 @@ class ActaAtencionActivity : AppCompatActivity() {
         binding.autoCompleteQuienReporta.setAdapter(adapterReporta)
         binding.autoCompleteQuienReporta.setText(quienReportaOpciones[0], false)
 
-        binding.autoCompleteQuienReporta.setOnItemClickListener { _, _, position, _ ->
-            val seleccion = quienReportaOpciones[position]
+        val actualizarVisibilidadQuienReporta = { seleccion: String ->
             if (seleccion.equals("Otro", ignoreCase = true)) {
                 binding.tilQuienReportaOtro.visibility = View.VISIBLE
             } else {
                 binding.tilQuienReportaOtro.visibility = View.GONE
-                binding.etQuienReportaOtro.text?.clear()
             }
         }
+
+        binding.autoCompleteQuienReporta.setOnItemClickListener { _, _, position, _ ->
+            actualizarVisibilidadQuienReporta(quienReportaOpciones[position])
+        }
+
+        binding.autoCompleteQuienReporta.addTextChangedListener {
+            actualizarVisibilidadQuienReporta(binding.autoCompleteQuienReporta.text.toString().trim())
+        }
+
+        // Dropdown Paso 3: Selector de pruebas rápidas / complementarias
+        val pruebasOpciones = arrayOf(
+            "Ninguna / No requerida",
+            "Test Rápido Parvovirus Canino",
+            "Test Rápido Distemper / Moquillo",
+            "Test Rápido Hemoparásitos (Ehrlichia / Anaplasma)",
+            "Test Rápido Triple Felina (VIF / FeLV)",
+            "Raspado Cutáneo / Ectoparásitos",
+            "Coprológico directo",
+            "Otro examen específico"
+        )
+        val adapterPruebas = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, pruebasOpciones)
+        binding.autoCompleteTipoPrueba.setAdapter(adapterPruebas)
+        binding.autoCompleteTipoPrueba.setText(pruebasOpciones[0], false)
+
+        binding.autoCompleteTipoPrueba.setOnItemClickListener { _, _, position, _ ->
+            val seleccion = pruebasOpciones[position]
+            if (position > 0) {
+                if (binding.etPruebasComplementarias.text.isNullOrEmpty() || pruebasOpciones.contains(binding.etPruebasComplementarias.text.toString())) {
+                    binding.etPruebasComplementarias.setText(seleccion)
+                }
+                if (binding.etResultadoPruebas.text.isNullOrEmpty()) {
+                    binding.etResultadoPruebas.setText("Negativo")
+                }
+            } else {
+                binding.etPruebasComplementarias.text?.clear()
+                binding.etResultadoPruebas.text?.clear()
+            }
+        }
+
+        // Dropdown Paso 3: Estado de Cierre de la Petición
+        val estadosCierre = arrayOf("Atendida", "En Proceso", "Cerrada")
+        val adapterCierre = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, estadosCierre)
+        binding.autoCompleteEstadoCierre.setAdapter(adapterCierre)
+        binding.autoCompleteEstadoCierre.setText(estadosCierre[0], false)
     }
 
     /**
@@ -245,6 +311,19 @@ class ActaAtencionActivity : AppCompatActivity() {
             binding.tilSolicitudAtencion.error = null
         }
 
+        val quienReporta = binding.autoCompleteQuienReporta.text.toString().trim()
+        if (quienReporta.equals("Otro", ignoreCase = true)) {
+            val quienOtro = binding.etQuienReportaOtro.text.toString().trim()
+            if (quienOtro.isEmpty()) {
+                binding.tilQuienReportaOtro.error = "Especifique quién reporta"
+                valido = false
+            } else {
+                binding.tilQuienReportaOtro.error = null
+            }
+        } else {
+            binding.tilQuienReportaOtro.error = null
+        }
+
         val nombre = binding.etPropietarioNombre.text.toString().trim()
         if (nombre.isEmpty()) {
             binding.tilPropietarioNombre.error = "Nombre requerido"
@@ -349,6 +428,40 @@ class ActaAtencionActivity : AppCompatActivity() {
             binding.tilCompromisos.error = null
         }
 
+        val tipoPrueba = binding.autoCompleteTipoPrueba.text.toString().trim()
+        val pruebas = binding.etPruebasComplementarias.text.toString().trim()
+        val resultado = binding.etResultadoPruebas.text.toString().trim()
+
+        if ((tipoPrueba.isNotEmpty() && !tipoPrueba.contains("Ninguna", ignoreCase = true)) || pruebas.isNotEmpty()) {
+            if (resultado.isEmpty()) {
+                binding.tilResultadoPruebas.error = "Ingrese el resultado de la prueba complementaria"
+                valido = false
+            } else {
+                binding.tilResultadoPruebas.error = null
+            }
+        } else {
+            binding.tilResultadoPruebas.error = null
+        }
+
+        val funcionarioNombre = binding.etFuncionarioNombre.text.toString().trim()
+        if (funcionarioNombre.isEmpty()) {
+            binding.tilFuncionarioNombre.error = "Nombre del funcionario requerido *"
+            valido = false
+        } else {
+            binding.tilFuncionarioNombre.error = null
+        }
+
+        val funcionarioCargo = binding.etFuncionarioCargo.text.toString().trim()
+        if (funcionarioCargo.isEmpty()) {
+            binding.tilFuncionarioCargo.error = "Cargo del funcionario requerido *"
+            valido = false
+        } else {
+            binding.tilFuncionarioCargo.error = null
+        }
+
+        if (!valido) {
+            Toast.makeText(this, "Complete los campos obligatorios del cierre", Toast.LENGTH_SHORT).show()
+        }
         return valido
     }
 
@@ -407,31 +520,50 @@ class ActaAtencionActivity : AppCompatActivity() {
             )
         }
 
+        // Datos del paciente principal (Modo A en Django y columnas directas en SeguimientoPeticionesVisita)
+        val primerAnimalBinding = animalBindingsList.firstOrNull()
+        val nombrePaciente = primerAnimalBinding?.etPacienteNombreCard?.text?.toString()?.trim()?.ifEmpty { null }
+        val pacienteEspecie = primerAnimalBinding?.autoCompleteEspecieCard?.text?.toString()?.trim()?.ifEmpty { null }
+        val pacienteSexo = primerAnimalBinding?.autoCompleteSexoCard?.text?.toString()?.trim()?.ifEmpty { null }
+        val pacienteColor = primerAnimalBinding?.etPacienteColorCard?.text?.toString()?.trim()?.ifEmpty { null }
+        val pacienteRaza = primerAnimalBinding?.etPacienteRazaCard?.text?.toString()?.trim()?.ifEmpty { null }
+        val pacienteEdad = primerAnimalBinding?.etPacienteEdadCard?.text?.toString()?.trim()?.ifEmpty { null }
+        val pesoPaciente = primerAnimalBinding?.etPacientePesoCard?.text?.toString()?.trim()?.toDoubleOrNull()
+        val esterilizadoStr = primerAnimalBinding?.autoCompleteEsterilizadoCard?.text?.toString()?.trim()
+        val esterilizacionPaciente = when {
+            esterilizadoStr.equals("Si", ignoreCase = true) -> true
+            esterilizadoStr.equals("No", ignoreCase = true) -> false
+            else -> null
+        }
+        val descripcionPaciente = primerAnimalBinding?.etPacienteDescripcionCard?.text?.toString()?.trim()?.ifEmpty { null }
+
         val lugarAtencion = LugarAtencionActa(
             direccion = binding.etLugarAtencion.text.toString().trim(),
             latitud = 0.0,
             longitud = 0.0
         )
 
-        val funcionarioNombre = binding.etFuncionarioNombre.text.toString().trim()
-        val funcionarioCargo = binding.etFuncionarioCargo.text.toString().trim()
+        val funcionarioNombre = binding.etFuncionarioNombre.text.toString().trim().ifEmpty { "Médico Veterinario" }
+        val funcionarioCargo = binding.etFuncionarioCargo.text.toString().trim().ifEmpty { "Médico Veterinario" }
+        val notificadorIdentificacion = binding.etFuncionarioIdentificacion.text.toString().trim().ifEmpty { null }
 
-        val listaFuncionarios = if (funcionarioNombre.isNotEmpty()) {
-            listOf(
-                FuncionarioActaRequest(
-                    idUsuario = idVeterinario,
-                    nombre = funcionarioNombre,
-                    cargo = funcionarioCargo.ifEmpty { "Médico Veterinario" },
-                    esExterno = false,
-                    esPrincipal = true
-                )
+        val listaFuncionarios = listOf(
+            FuncionarioActaRequest(
+                idUsuario = idVeterinario,
+                nombre = funcionarioNombre,
+                cargo = funcionarioCargo,
+                esExterno = false,
+                esPrincipal = true
             )
-        } else null
+        )
 
         val quienReporta = binding.autoCompleteQuienReporta.text.toString().trim()
-        val quienReportaOtro = if (quienReporta.equals("Otro", ignoreCase = true)) {
-            binding.etQuienReportaOtro.text.toString().trim().ifEmpty { null }
-        } else null
+        val textoQuienOtro = binding.etQuienReportaOtro.text.toString().trim()
+        val quienReportaOtro = when {
+            quienReporta.equals("Otro", ignoreCase = true) -> textoQuienOtro.ifEmpty { "Otro" }
+            textoQuienOtro.isNotEmpty() -> textoQuienOtro
+            else -> null
+        }
 
         val emailPropietario = binding.etPropietarioEmail.text.toString().trim().ifEmpty { null }
         val plazoDias = binding.etPlazoDias.text.toString().trim().toIntOrNull()
@@ -441,11 +573,49 @@ class ActaAtencionActivity : AppCompatActivity() {
         val notificadoNombre = binding.etNotificadoNombre.text.toString().trim().ifEmpty { null }
         val notificadoId = binding.etNotificadoIdentificacion.text.toString().trim().ifEmpty { null }
         val fechaAtencion = binding.etFechaAtencion.text.toString().trim()
+        val radicado = binding.etRadicado.text.toString().trim()
+
+        val firmaNotificador = binding.signatureNotificador.toBase64()
+        val firmaNotificado = binding.signatureNotificado.toBase64()
+        val desparasitacion = binding.swDesparasitacion.isChecked
+
+        // Recopilación de constantes vitales del Paso 2 para enriquecer la anamnesis clínica
+        val temp = binding.etTemperatura.text.toString().trim()
+        val fc = binding.etFrecuenciaCardiaca.text.toString().trim()
+        val fr = binding.etFrecuenciaRespiratoria.text.toString().trim()
+        val mucosas = binding.etMucosas.text.toString().trim()
+
+        val signosVitales = buildString {
+            if (temp.isNotEmpty()) append("Temp: ${temp}°C. ")
+            if (fc.isNotEmpty()) append("FC: ${fc} lpm. ")
+            if (fr.isNotEmpty()) append("FR: ${fr} rpm. ")
+            if (mucosas.isNotEmpty()) append("Mucosas: $mucosas. ")
+        }.trim()
+
+        val anamnesisBase = binding.etAnamnesis.text.toString().trim()
+        val anamnesisFinal = if (signosVitales.isNotEmpty()) {
+            "$anamnesisBase [Examen clínico: $signosVitales]"
+        } else {
+            anamnesisBase
+        }
+
+        // Pruebas complementarias del Paso 3
+        val tipoPrueba = binding.autoCompleteTipoPrueba.text.toString().trim()
+        val pruebaDetalle = binding.etPruebasComplementarias.text.toString().trim()
+        val pruebaFinal = when {
+            pruebaDetalle.isNotEmpty() -> pruebaDetalle
+            tipoPrueba.isNotEmpty() && !tipoPrueba.contains("Ninguna", ignoreCase = true) -> tipoPrueba
+            else -> null
+        }
+        val resultadoPruebas = binding.etResultadoPruebas.text.toString().trim().ifEmpty { null }
+
+        // Estado de resolución / cierre del Paso 3
+        val estadoCierre = binding.autoCompleteEstadoCierre.text.toString().trim().ifEmpty { "Atendida" }
 
         val request = SeguimientoPeticionVisitaRequest(
             idPeticion = peticionId,
             idVeterinario = idVeterinario,
-            numeroRadicado = binding.etRadicado.text.toString().trim(),
+            numeroRadicado = radicado,
             fechaAtencion = fechaAtencion,
             propietarioNombre = binding.etPropietarioNombre.text.toString().trim(),
             propietarioCedula = binding.etPropietarioCedula.text.toString().trim(),
@@ -457,23 +627,36 @@ class ActaAtencionActivity : AppCompatActivity() {
             quienReportaOtro = quienReportaOtro,
             solicitudAtencionPor = binding.etSolicitudAtencion.text.toString().trim(),
             lugarAtencion = lugarAtencion,
+            nombrePaciente = nombrePaciente,
+            pacienteEspecie = pacienteEspecie,
+            pacienteSexo = pacienteSexo,
+            pacienteColor = pacienteColor,
+            pacienteRaza = pacienteRaza,
+            pacienteEdad = pacienteEdad,
+            pesoPaciente = pesoPaciente,
+            esterilizacionPaciente = esterilizacionPaciente,
+            descripcionPaciente = descripcionPaciente,
             animales = listaAnimales,
             nroAnimalesAtendidos = listaAnimales.size,
-            anamnesisDescripcionQueja = binding.etAnamnesis.text.toString().trim(),
+            anamnesisDescripcionQueja = anamnesisFinal,
             tratamientoRealizado = binding.etTratamiento.text.toString().trim(),
-            desparasitacion = binding.swDesparasitacion.isChecked,
-            pruebasComplementarias = binding.etPruebasComplementarias.text.toString().trim().ifEmpty { null },
-            resultadoPruebas = binding.etResultadoPruebas.text.toString().trim().ifEmpty { null },
+            desparasitacion = desparasitacion,
+            pruebasComplementarias = pruebaFinal,
+            resultadoPruebas = resultadoPruebas,
             compromisos = binding.etCompromisos.text.toString().trim(),
             fundamentoLegal = fundamentoLegal,
             plazoDiasCumplimiento = plazoDias,
+            nombreFuncionario = funcionarioNombre,
+            funcionarioCargo = funcionarioCargo,
             funcionarios = listaFuncionarios,
             notificadoNombre = notificadoNombre,
             notificacionesIdentificacion = notificadoId,
             fechaNotificacion = if (notificadoNombre != null) fechaAtencion else null,
-            notificadorNombre = funcionarioNombre.ifEmpty { null },
-            notificadorIdentificacion = null,
-            notificadorCargo = funcionarioCargo.ifEmpty { null },
+            notificadorNombre = funcionarioNombre,
+            notificadorIdentificacion = notificadorIdentificacion,
+            notificadorCargo = funcionarioCargo,
+            firmaNotificador = firmaNotificador,
+            firmaNotificado = firmaNotificado,
             observacion = observacion
         )
 
@@ -482,7 +665,6 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val prefs = SharedPreferencesManager(this@ActaAtencionActivity)
                 val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
 
                 if (token.isEmpty()) {
@@ -493,23 +675,44 @@ class ActaAtencionActivity : AppCompatActivity() {
                     return@launch
                 }
 
+                // 1. Enviar el Acta completa de atención en campo (POST /api/peticiones/seguimiento/crear/)
                 val response = RetrofitClient.apiService.crearSeguimientoPeticionVisita("Bearer $token", request)
 
-                withContext(Dispatchers.Main) {
-                    setLoadingState(false)
-                    if (response.isSuccessful && response.body() != null) {
-                        val body = response.body()!!
-                        val idSeg = body.idSeguimiento ?: 0
+                if (response.isSuccessful && response.body() != null) {
+                    val body = response.body()!!
+                    val idSeg = body.idSeguimiento ?: 0
+
+                    // 2. Cierre y actualización del estado de la petición en el backend (PATCH /api/peticiones/{id}/estado/)
+                    if (peticionId != -1) {
+                        try {
+                            RetrofitClient.apiService.actualizarEstadoPeticion(
+                                "Bearer $token",
+                                peticionId,
+                                com.example.petvetericano.models.ActualizarEstadoRequest(
+                                    estado = estadoCierre,
+                                    observacion = "Acta de atención en campo registrada con radicado $radicado (ID Acta: #$idSeg)"
+                                )
+                            )
+                        } catch (_: Exception) {
+                            // Si falla la actualización secundaria del estado, el acta principal ya quedó registrada exitosamente
+                        }
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        setLoadingState(false)
                         Toast.makeText(
                             this@ActaAtencionActivity,
-                            "Acta registrada exitosamente (ID #$idSeg)",
+                            "Acta registrada exitosamente (ID #$idSeg) - Estado: $estadoCierre",
                             Toast.LENGTH_LONG
                         ).show()
                         setResult(Activity.RESULT_OK)
                         finish()
-                    } else {
-                        val errorStr = response.errorBody()?.string() ?: ""
-                        val mensajeError = parsearErrorDjango(errorStr, response.code())
+                    }
+                } else {
+                    val errorStr = response.errorBody()?.string() ?: ""
+                    val mensajeError = parsearErrorDjango(errorStr, response.code())
+                    withContext(Dispatchers.Main) {
+                        setLoadingState(false)
                         Toast.makeText(this@ActaAtencionActivity, mensajeError, Toast.LENGTH_LONG).show()
                     }
                 }

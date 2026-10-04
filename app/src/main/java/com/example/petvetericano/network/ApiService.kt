@@ -71,6 +71,33 @@ interface ApiService {
         @Header("Authorization") token: String
     ): Response<List<com.example.petvetericano.models.FuncionarioItemResponse>>
 
+    // --- PASO 2: PACIENTES Y CLÍNICA (POST) ---
+    @POST("animales/animales/")
+    suspend fun registrarAnimal(
+        @Header("Authorization") token: String,
+        @Body request: com.example.petvetericano.models.AnimalRequest
+    ): Response<com.example.petvetericano.models.AnimalResponse>
+
+    @POST("clinica/consultas/")
+    suspend fun registrarConsultaClinica(
+        @Header("Authorization") token: String,
+        @Body request: com.example.petvetericano.models.ConsultaClinicaRequest
+    ): Response<com.example.petvetericano.models.ConsultaClinicaResponse>
+
+    @POST("clinica/tratamientos/")
+    suspend fun registrarTratamientoClinico(
+        @Header("Authorization") token: String,
+        @Body request: com.example.petvetericano.models.TratamientoClinicoRequest
+    ): Response<com.example.petvetericano.models.TratamientoClinicoResponse>
+
+    // --- PASO 3: PRUEBAS Y CIERRE (POST) ---
+    @POST("examenes-clinicos/examenes/")
+    suspend fun registrarExamenClinico(
+        @Header("Authorization") token: String,
+        @Body request: com.example.petvetericano.models.ExamenClinicoRequest
+    ): Response<com.example.petvetericano.models.ExamenClinicoResponse>
+
+
 
     // --- ADOPCIONES ---
     @GET("adopciones/")

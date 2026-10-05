@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -47,6 +48,19 @@ class DetallePeticion : AppCompatActivity() {
         }
     }
 
+    private val corregirDireccionLauncher = registerForActivityResult(
+        ActivityResultContracts.StartActivityForResult()
+    ) { result ->
+        if (result.resultCode == RESULT_OK) {
+            val nuevaDireccion = result.data?.getStringExtra("NUEVA_DIRECCION")
+            if (!nuevaDireccion.isNullOrBlank()) {
+                direccionActual = nuevaDireccion
+                binding.tvUbicacionTexto.text = nuevaDireccion
+                Toast.makeText(this, "Dirección actualizada correctamente", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -70,13 +84,23 @@ class DetallePeticion : AppCompatActivity() {
             Toast.makeText(this, "Error: ID de petición no válido", Toast.LENGTH_SHORT).show()
         }
 
-        binding.btnActualizarEstado.setOnClickListener {
-            val intent = Intent(this, UpdateStatusActivity::class.java).apply {
-                putExtra("PETICION_ID", peticionId)
-                putExtra("PETICION_CODIGO", binding.tvCodigoPeticion.text.toString())
-                putExtra("ESTADO_ACTUAL", binding.tvBadgeEstado.text.toString())
-            }
-            updateStatusLauncher.launch(intent)
+        // 🛠️ CONFIGURACIÓN DEL BOTÓN CORREGIR DIRECCIÓN CON ALERTA DE CONFIRMACIÓN
+        binding.btnCorregirDireccion.setOnClickListener {
+            AlertDialog.Builder(this)
+                .setTitle("Corregir dirección")
+                .setMessage("¿Desea corregir la dirección de esta petición utilizando el mapa?")
+                .setPositiveButton("Sí") { dialog, _ ->
+                    dialog.dismiss()
+                    val intent = Intent(this, CorregirDireccionActivity::class.java).apply {
+                        putExtra("DIRECCION_ACTUAL", direccionActual)
+                        putExtra("PETICION_ID", peticionId)
+                    }
+                    corregirDireccionLauncher.launch(intent)
+                }
+                .setNegativeButton("Cancelar") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
         }
 
         binding.btnAtender.setOnClickListener {
@@ -147,7 +171,6 @@ class DetallePeticion : AppCompatActivity() {
         if (!fotoUrl.isNullOrBlank()) {
             binding.cardFotoEvidencia.visibility = View.VISIBLE
 
-            // Ajusta la URL base de tu servidor si Django devuelve rutas relativas (/media/...)
             val urlFinal = if (fotoUrl.startsWith("http")) {
                 fotoUrl
             } else {

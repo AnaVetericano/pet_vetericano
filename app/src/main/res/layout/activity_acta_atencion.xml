@@ -809,7 +809,7 @@
 
                             <com.google.android.material.button.MaterialButton
                                 android:id="@+id/btnCapturarUbicacion"
-                                style="?attr/materialButtonFilledTonalStyle"
+                                style="?attr/materialButtonOutlinedStyle"
                                 android:layout_width="wrap_content"
                                 android:layout_height="40dp"
                                 android:fontFamily="@font/nunito_bold"
@@ -821,7 +821,9 @@
                                 app:cornerRadius="10dp"
                                 app:icon="@drawable/location_icon"
                                 app:iconSize="16dp"
-                                app:iconTint="@color/primary" />
+                                app:iconTint="@color/primary"
+                                app:strokeColor="@color/primary"
+                                app:strokeWidth="1dp" />
 
                             <TextView
                                 android:id="@+id/tvLugarAtencionStatus"

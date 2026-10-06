@@ -234,6 +234,7 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:fillViewport="true"
+        android:clipToPadding="false"
         android:layout_marginTop="8dp"
         app:layout_constraintBottom_toTopOf="@id/bottomLayout"
         app:layout_constraintTop_toBottomOf="@id/cardStepper">
@@ -241,8 +242,9 @@
         <FrameLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:clipToPadding="false"
             android:paddingHorizontal="16dp"
-            android:paddingBottom="24dp"
+            android:paddingBottom="96dp"
             android:paddingTop="8dp">
 
             <!-- ======================================================= -->
@@ -781,24 +783,76 @@
                     android:textColor="@color/text_primary"
                     android:textSize="16sp" />
 
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilLugarAtencion"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardLugarAtencion"
+                    style="?attr/materialCardViewOutlinedStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
-                    android:hint="Dirección o punto de atención *"
-                    app:boxStrokeColor="@color/primary"
-                    app:startIconDrawable="@drawable/location_icon"
-                    app:startIconTint="@color/primary">
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/card_stroke"
+                    app:strokeWidth="1dp">
 
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etLugarAtencion"
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:inputType="textCapSentences"
-                        android:textColor="@color/text_primary" />
-                </com.google.android.material.textfield.TextInputLayout>
+                        android:orientation="vertical"
+                        android:padding="12dp">
+
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/btnCapturarUbicacion"
+                                style="?attr/materialButtonFilledTonalStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="40dp"
+                                android:fontFamily="@font/nunito_bold"
+                                android:text="Posición actual"
+                                android:textAllCaps="false"
+                                android:textColor="@color/primary"
+                                android:textSize="12sp"
+                                app:backgroundTint="#EDE9FE"
+                                app:cornerRadius="10dp"
+                                app:icon="@drawable/location_icon"
+                                app:iconSize="16dp"
+                                app:iconTint="@color/primary" />
+
+                            <TextView
+                                android:id="@+id/tvLugarAtencionStatus"
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_marginStart="10dp"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/nunito_bold"
+                                android:text="Sin capturar"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <TextView
+                            android:id="@+id/tvLugarAtencionInfo"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:fontFamily="@font/nunito"
+                            android:text="Presione el botón para fijar la ubicación GPS del operativo."
+                            android:textColor="@color/text_secondary"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- Input oculto para enlace de datos y validaciones -->
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/etLugarAtencion"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:visibility="gone" />
             </LinearLayout>
 
             <!-- ======================================================= -->
@@ -1723,12 +1777,21 @@
                                 android:textColor="@color/text_primary"
                                 android:textSize="14sp" />
 
+                            <TextView
+                                android:id="@+id/tvEstadoDesparasitacion"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="10dp"
+                                android:fontFamily="@font/nunito_bold"
+                                android:text="No aplicada"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+
                             <com.google.android.material.materialswitch.MaterialSwitch
                                 android:id="@+id/swDesparasitacion"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
-                                app:thumbTint="@color/white"
-                                app:trackTint="@color/primary" />
+                                android:checked="false" />
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 

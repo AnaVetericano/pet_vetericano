@@ -121,6 +121,7 @@ class DetallePeticion : AppCompatActivity() {
         binding.btnAtender.setOnClickListener {
             val intent = Intent(this, ActaAtencionActivity::class.java).apply {
                 putExtra("PETICION_ID", peticionId)
+                putExtra("DIRECCION_ACTUAL", direccionActual)
             }
             actaLauncher.launch(intent)
         }

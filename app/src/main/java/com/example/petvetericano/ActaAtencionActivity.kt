@@ -1,12 +1,20 @@
 package com.example.petvetericano
 
+import android.Manifest
 import android.app.Activity
+import android.content.pm.PackageManager
+import android.graphics.Color
+import android.graphics.Rect
+import android.location.Geocoder
+import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.addTextChangedListener
@@ -18,6 +26,8 @@ import com.example.petvetericano.models.FuncionarioActaRequest
 import com.example.petvetericano.models.LugarAtencionActa
 import com.example.petvetericano.models.SeguimientoPeticionVisitaRequest
 import com.example.petvetericano.network.RetrofitClient
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -39,6 +49,23 @@ class ActaAtencionActivity : AppCompatActivity() {
     private var peticionId: Int = -1
     private var tipoActaActual = TipoActa.SERES_SINTIENTES
 
+    // Localización en campo
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+    private var latitudVisita: Double = 0.0
+    private var longitudVisita: Double = 0.0
+
+    private val locationPermissionRequest = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            obtenerUbicacionActual()
+        } else {
+            Toast.makeText(this, "Permiso de ubicación denegado. Se requiere para fijar el punto en campo.", Toast.LENGTH_SHORT).show()
+            binding.tvLugarAtencionStatus.text = "Sin permiso"
+            binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#B91C1C"))
+        }
+    }
+
     // Lista de ViewBindings dinámicos para cada tarjeta de animal
     private val animalBindingsList = mutableListOf<ItemAnimalFormularioBinding>()
 
@@ -49,9 +76,15 @@ class ActaAtencionActivity : AppCompatActivity() {
         binding = ActivityActaAtencionBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
+
+        // Manejo adecuado de Insets (Barras del sistema + Teclado virtual IME)
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            val ime = insets.getInsets(WindowInsetsCompat.Type.ime())
+            val isImeVisible = insets.isVisible(WindowInsetsCompat.Type.ime())
+            val bottomPadding = if (isImeVisible) ime.bottom else systemBars.bottom
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, bottomPadding)
             insets
         }
 
@@ -61,6 +94,9 @@ class ActaAtencionActivity : AppCompatActivity() {
         setupUI()
         setupDropdowns()
         setupSelectorTipoActa()
+        setupLugarAtencion()
+        setupDesparasitacionSwitch()
+        setupAutoScrollOnFocus()
         updateStepper()
 
         // Agregar por defecto al menos un formulario de paciente al iniciar
@@ -279,6 +315,157 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupLugarAtencion() {
+        val dirPrevia = intent.getStringExtra("DIRECCION_ACTUAL")
+        if (!dirPrevia.isNullOrBlank()) {
+            binding.etLugarAtencion.setText(dirPrevia)
+            binding.tvLugarAtencionInfo.text = "📍 $dirPrevia (Reportada en petición)"
+            binding.tvLugarAtencionStatus.text = "Asignada"
+            binding.tvLugarAtencionStatus.setTextColor(ContextCompat.getColor(this, R.color.primary))
+        }
+
+        binding.btnCapturarUbicacion.setOnClickListener {
+            verificarPermisosUbicacion()
+        }
+    }
+
+    private fun verificarPermisosUbicacion() {
+        when {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                obtenerUbicacionActual()
+            }
+            else -> {
+                locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            }
+        }
+    }
+
+    private fun obtenerUbicacionActual() {
+        binding.tvLugarAtencionStatus.text = "Detectando..."
+        binding.tvLugarAtencionStatus.setTextColor(ContextCompat.getColor(this, R.color.primary))
+        try {
+            fusedLocationClient.lastLocation
+                .addOnSuccessListener { location ->
+                    if (location != null) {
+                        latitudVisita = location.latitude
+                        longitudVisita = location.longitude
+                        obtenerDireccionDesdeCoordenadas(location.latitude, location.longitude)
+                    } else {
+                        // Fallback a getCurrentLocation si lastLocation es nulo
+                        fusedLocationClient.getCurrentLocation(
+                            com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY,
+                            null
+                        ).addOnSuccessListener { loc ->
+                            if (loc != null) {
+                                latitudVisita = loc.latitude
+                                longitudVisita = loc.longitude
+                                obtenerDireccionDesdeCoordenadas(loc.latitude, loc.longitude)
+                            } else {
+                                binding.tvLugarAtencionStatus.text = "Error GPS"
+                                binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#B91C1C"))
+                                Toast.makeText(this, "No se pudo obtener la señal GPS actual.", Toast.LENGTH_SHORT).show()
+                            }
+                        }
+                    }
+                }
+                .addOnFailureListener { e ->
+                    binding.tvLugarAtencionStatus.text = "Error GPS"
+                    binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#B91C1C"))
+                    Toast.makeText(this, "Error al capturar ubicación: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+        } catch (e: SecurityException) {
+            binding.tvLugarAtencionStatus.text = "Sin permiso"
+            binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#B91C1C"))
+        }
+    }
+
+    private fun obtenerDireccionDesdeCoordenadas(lat: Double, lng: Double) {
+        val geocoder = Geocoder(this, Locale.getDefault())
+        val fallbackTexto = String.format(Locale.US, "Coordenadas: %.5f, %.5f", lat, lng)
+
+        val aplicarDireccion = { dir: String ->
+            runOnUiThread {
+                binding.etLugarAtencion.setText(dir)
+                binding.tvLugarAtencionInfo.text = "📍 $dir"
+                binding.tvLugarAtencionStatus.text = "✓ Guardada"
+                binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#047857"))
+                Toast.makeText(this, "Ubicación fijada correctamente", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            geocoder.getFromLocation(lat, lng, 1) { addresses ->
+                val dir = if (!addresses.isNullOrEmpty()) {
+                    addresses[0].getAddressLine(0) ?: fallbackTexto
+                } else {
+                    fallbackTexto
+                }
+                aplicarDireccion(dir)
+            }
+        } else {
+            try {
+                @Suppress("DEPRECATION")
+                val addresses = geocoder.getFromLocation(lat, lng, 1)
+                val dir = if (!addresses.isNullOrEmpty()) {
+                    addresses[0].getAddressLine(0) ?: fallbackTexto
+                } else {
+                    fallbackTexto
+                }
+                aplicarDireccion(dir)
+            } catch (_: Exception) {
+                aplicarDireccion(fallbackTexto)
+            }
+        }
+    }
+
+    private fun setupDesparasitacionSwitch() {
+        binding.swDesparasitacion.isChecked = false
+        binding.tvEstadoDesparasitacion.text = "No aplicada"
+        binding.tvEstadoDesparasitacion.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
+
+        binding.swDesparasitacion.setOnCheckedChangeListener { _, isChecked ->
+            if (isChecked) {
+                binding.tvEstadoDesparasitacion.text = "Sí aplicada"
+                binding.tvEstadoDesparasitacion.setTextColor(ContextCompat.getColor(this, R.color.primary))
+            } else {
+                binding.tvEstadoDesparasitacion.text = "No aplicada"
+                binding.tvEstadoDesparasitacion.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
+            }
+        }
+    }
+
+    private fun setupAutoScrollOnFocus() {
+        val camposCriticos = listOf(
+            binding.etTemperatura,
+            binding.etFrecuenciaCardiaca,
+            binding.etFrecuenciaRespiratoria,
+            binding.etMucosas,
+            binding.etAnamnesis,
+            binding.etTratamiento,
+            binding.etCompromisos,
+            binding.etObservaciones,
+            binding.etNotificadoNombre,
+            binding.etNotificadoIdentificacion,
+            binding.etObservacionesRescate,
+            binding.etObservacionesRecepcion
+        )
+
+        for (campo in camposCriticos) {
+            campo.setOnFocusChangeListener { view, hasFocus ->
+                if (hasFocus) {
+                    view.postDelayed({
+                        val rect = Rect()
+                        view.getDrawingRect(rect)
+                        binding.scrollForm.requestChildRectangleOnScreen(view, rect, false)
+                    }, 280)
+                }
+            }
+        }
+    }
+
     private fun setupDropdowns() {
         val quienReportaOpciones = arrayOf("Propietario", "Comunidad", "Policia", "Fundacion", "Otro")
         val adapterReporta = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, quienReportaOpciones)
@@ -467,10 +654,12 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         val lugarAtencion = binding.etLugarAtencion.text.toString().trim()
         if (lugarAtencion.isEmpty()) {
-            binding.tilLugarAtencion.error = "Lugar de atención requerido"
+            binding.tvLugarAtencionStatus.text = "Requerido"
+            binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#B91C1C"))
+            Toast.makeText(this, "Debe capturar la posición actual del lugar de atención.", Toast.LENGTH_SHORT).show()
             valido = false
         } else {
-            binding.tilLugarAtencion.error = null
+            binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#047857"))
         }
 
         if (tipoActaActual == TipoActa.SERES_SINTIENTES) {
@@ -739,8 +928,8 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         val lugarAtencion = LugarAtencionActa(
             direccion = binding.etLugarAtencion.text.toString().trim(),
-            latitud = 0.0,
-            longitud = 0.0
+            latitud = if (latitudVisita != 0.0) latitudVisita else 2.4419,
+            longitud = if (longitudVisita != 0.0) longitudVisita else -76.6063
         )
 
         val funcionarioNombre = binding.etFuncionarioNombre.text.toString().trim().ifEmpty { "Médico Veterinario" }

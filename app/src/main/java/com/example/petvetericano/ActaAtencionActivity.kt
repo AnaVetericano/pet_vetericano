@@ -18,6 +18,7 @@ import com.example.petvetericano.models.FuncionarioActaRequest
 import com.example.petvetericano.models.LugarAtencionActa
 import com.example.petvetericano.models.SeguimientoPeticionVisitaRequest
 import com.example.petvetericano.network.RetrofitClient
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -26,11 +27,17 @@ import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 
+enum class TipoActa {
+    SERES_SINTIENTES,
+    RESCATE
+}
+
 class ActaAtencionActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityActaAtencionBinding
     private var currentStep = 1
     private var peticionId: Int = -1
+    private var tipoActaActual = TipoActa.SERES_SINTIENTES
 
     // Lista de ViewBindings dinámicos para cada tarjeta de animal
     private val animalBindingsList = mutableListOf<ItemAnimalFormularioBinding>()
@@ -53,6 +60,7 @@ class ActaAtencionActivity : AppCompatActivity() {
         setupToolbar()
         setupUI()
         setupDropdowns()
+        setupSelectorTipoActa()
         updateStepper()
 
         // Agregar por defecto al menos un formulario de paciente al iniciar
@@ -73,11 +81,23 @@ class ActaAtencionActivity : AppCompatActivity() {
                 2 -> {
                     if (validarPaso2()) {
                         currentStep = 3
-                        if (binding.etNotificadoNombre.text.isNullOrEmpty()) {
-                            binding.etNotificadoNombre.setText(binding.etPropietarioNombre.text.toString().trim())
-                        }
-                        if (binding.etNotificadoIdentificacion.text.isNullOrEmpty()) {
-                            binding.etNotificadoIdentificacion.setText(binding.etPropietarioCedula.text.toString().trim())
+                        if (tipoActaActual == TipoActa.SERES_SINTIENTES) {
+                            if (binding.etNotificadoNombre.text.isNullOrEmpty()) {
+                                binding.etNotificadoNombre.setText(binding.etPropietarioNombre.text.toString().trim())
+                            }
+                            if (binding.etNotificadoIdentificacion.text.isNullOrEmpty()) {
+                                binding.etNotificadoIdentificacion.setText(binding.etPropietarioCedula.text.toString().trim())
+                            }
+                        } else {
+                            if (binding.etNotificadoNombre.text.isNullOrEmpty()) {
+                                binding.etNotificadoNombre.setText("Testigo: " + binding.etTestigo1Nombre.text.toString().trim())
+                            }
+                            if (binding.etNotificadoIdentificacion.text.isNullOrEmpty()) {
+                                binding.etNotificadoIdentificacion.setText(binding.etTestigo1Cedula.text.toString().trim())
+                            }
+                            if (binding.etVeterinarioReceptor.text.isNullOrEmpty()) {
+                                binding.etVeterinarioReceptor.setText(binding.etFuncionarioNombre.text.toString().trim())
+                            }
                         }
                         updateStepper()
                     }
@@ -104,6 +124,121 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
     }
 
+    private fun setupSelectorTipoActa() {
+        actualizarModoActaUI()
+
+        binding.btnCambiarTipoActa.setOnClickListener {
+            when (tipoActaActual) {
+                TipoActa.SERES_SINTIENTES -> {
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle("Acceder a Acta de Rescate")
+                        .setMessage("¿Desea acceder al formato de Acta de Rescate? Se cargarán los campos para verificación de ausencia de propietario, testigos y la lista de chequeo clínico por sistemas de la Alcaldía de Popayán.")
+                        .setPositiveButton("Sí, acceder") { _, _ ->
+                            tipoActaActual = TipoActa.RESCATE
+                            actualizarModoActaUI()
+                            Toast.makeText(this, "Formato cambiado a Acta de Rescate", Toast.LENGTH_SHORT).show()
+                        }
+                        .setNegativeButton("Cancelar", null)
+                        .show()
+                }
+                TipoActa.RESCATE -> {
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle("Acceder a Acta de Seres Sintientes")
+                        .setMessage("¿Desea acceder al formato de Acta de Seres Sintientes (Atención en Campo)? Se habilitarán los campos de propietario y evaluación clínica general.")
+                        .setPositiveButton("Sí, acceder") { _, _ ->
+                            tipoActaActual = TipoActa.SERES_SINTIENTES
+                            actualizarModoActaUI()
+                            Toast.makeText(this, "Formato cambiado a Acta de Seres Sintientes", Toast.LENGTH_SHORT).show()
+                        }
+                        .setNegativeButton("Cancelar", null)
+                        .show()
+                }
+            }
+        }
+    }
+
+    private fun actualizarModoActaUI() {
+        val year = SimpleDateFormat("yyyy", Locale.getDefault()).format(Date())
+        val randomSuffix = (100..999).random()
+
+        when (tipoActaActual) {
+            TipoActa.SERES_SINTIENTES -> {
+                binding.topAppBar.title = "Acta de atención en campo"
+                binding.tvTipoActaActual.text = "Acta de Seres Sintientes"
+                binding.tvTipoActaSubtitulo.text = "Atención veterinaria en campo"
+                binding.btnCambiarTipoActa.text = "Acta de rescate"
+                binding.ivTipoActaIcon.setImageResource(R.drawable.baseline_pets_24)
+
+                // Stepper indicadores
+                binding.tvStep1Text.text = "Datos\nGenerales"
+                binding.tvStep2Text.text = "Pacientes\ny Clínica"
+                binding.tvStep3Text.text = "Pruebas\ny Cierre"
+
+                // Paso 1
+                binding.layoutDatosPropietario.visibility = View.VISIBLE
+                binding.layoutDatosRescatePaso1.visibility = View.GONE
+
+                // Paso 2
+                binding.layoutClinicaSeresSintientes.visibility = View.VISIBLE
+                binding.layoutChecklistRescate.visibility = View.GONE
+
+                // Paso 3
+                binding.layoutProcedimientosSeresSintientes.visibility = View.VISIBLE
+                binding.layoutRecepcionVeterinaria.visibility = View.GONE
+                binding.tvFirma1Titulo.text = "Firma del funcionario / notificador"
+                binding.tvFirma2Titulo.text = "Firma del ciudadano notificado"
+
+                if (binding.etRadicado.text.toString().contains("RESC")) {
+                    binding.etRadicado.setText("RAD-VIS-$year-$randomSuffix")
+                }
+            }
+            TipoActa.RESCATE -> {
+                binding.topAppBar.title = "Formato de Rescate (Popayán)"
+                binding.tvTipoActaActual.text = "Formato de Rescate"
+                binding.tvTipoActaSubtitulo.text = "F-GS-C01-03-33 (Alcaldía de Popayán)"
+                binding.btnCambiarTipoActa.text = "Acta seres sintientes"
+                binding.ivTipoActaIcon.setImageResource(R.drawable.baseline_pets_24)
+
+                // Stepper indicadores
+                binding.tvStep1Text.text = "Reporte y\nTestigos"
+                binding.tvStep2Text.text = "Paciente y\nSistemas"
+                binding.tvStep3Text.text = "Firmas y\nRecepción"
+
+                // Paso 1
+                binding.layoutDatosPropietario.visibility = View.GONE
+                binding.layoutDatosRescatePaso1.visibility = View.VISIBLE
+
+                // Paso 2
+                binding.layoutClinicaSeresSintientes.visibility = View.GONE
+                binding.layoutChecklistRescate.visibility = View.VISIBLE
+
+                // Paso 3
+                binding.layoutProcedimientosSeresSintientes.visibility = View.GONE
+                binding.layoutRecepcionVeterinaria.visibility = View.VISIBLE
+                binding.tvFirma1Titulo.text = "Firma del rescatista"
+                binding.tvFirma2Titulo.text = "Firma del testigo (sin propietario)"
+
+                if (binding.etRadicado.text.toString().contains("VIS")) {
+                    binding.etRadicado.setText("RAD-RESC-$year-$randomSuffix")
+                }
+
+                // Autocompletar datos de recepción por defecto si están vacíos
+                if (binding.etVeterinarioReceptor.text.isNullOrEmpty()) {
+                    binding.etVeterinarioReceptor.setText(binding.etFuncionarioNombre.text.toString().trim())
+                }
+                if (binding.etFechaRecepcion.text.isNullOrEmpty()) {
+                    val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                    binding.etFechaRecepcion.setText(sdf.format(Date()))
+                }
+                if (binding.etHoraRecepcion.text.isNullOrEmpty()) {
+                    val hf = SimpleDateFormat("HH:mm", Locale.getDefault())
+                    binding.etHoraRecepcion.setText(hf.format(Date()))
+                }
+            }
+        }
+        updateStepper()
+    }
+
     private fun setupUI() {
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val currentDate = sdf.format(Date())
@@ -128,6 +263,12 @@ class ActaAtencionActivity : AppCompatActivity() {
         if (identificacion.isNotEmpty()) {
             binding.etFuncionarioIdentificacion.setText(identificacion)
         }
+
+        // Datos por defecto de recepción en rescate
+        binding.etVeterinarioReceptor.setText(nombreCompleto)
+        binding.etFechaRecepcion.setText(currentDate)
+        val hf = SimpleDateFormat("HH:mm", Locale.getDefault())
+        binding.etHoraRecepcion.setText(hf.format(Date()))
 
         binding.btnClearSignatureNotificador.setOnClickListener {
             binding.signatureNotificador.clear()
@@ -324,52 +465,95 @@ class ActaAtencionActivity : AppCompatActivity() {
             binding.tilQuienReportaOtro.error = null
         }
 
-        val nombre = binding.etPropietarioNombre.text.toString().trim()
-        if (nombre.isEmpty()) {
-            binding.tilPropietarioNombre.error = "Nombre requerido"
-            valido = false
-        } else {
-            binding.tilPropietarioNombre.error = null
-        }
-
-        val cedula = binding.etPropietarioCedula.text.toString().trim()
-        if (cedula.isEmpty()) {
-            binding.tilPropietarioCedula.error = "Cédula requerida"
-            valido = false
-        } else {
-            binding.tilPropietarioCedula.error = null
-        }
-
-        val telefono = binding.etPropietarioTelefono.text.toString().trim()
-        if (telefono.isEmpty()) {
-            binding.tilPropietarioTelefono.error = "Teléfono requerido"
-            valido = false
-        } else {
-            binding.tilPropietarioTelefono.error = null
-        }
-
-        val barrio = binding.etPropietarioBarrio.text.toString().trim()
-        if (barrio.isEmpty()) {
-            binding.tilPropietarioBarrio.error = "Barrio requerido"
-            valido = false
-        } else {
-            binding.tilPropietarioBarrio.error = null
-        }
-
-        val direccion = binding.etPropietarioDireccion.text.toString().trim()
-        if (direccion.isEmpty()) {
-            binding.tilPropietarioDireccion.error = "Dirección requerida"
-            valido = false
-        } else {
-            binding.tilPropietarioDireccion.error = null
-        }
-
         val lugarAtencion = binding.etLugarAtencion.text.toString().trim()
         if (lugarAtencion.isEmpty()) {
             binding.tilLugarAtencion.error = "Lugar de atención requerido"
             valido = false
         } else {
             binding.tilLugarAtencion.error = null
+        }
+
+        if (tipoActaActual == TipoActa.SERES_SINTIENTES) {
+            val nombre = binding.etPropietarioNombre.text.toString().trim()
+            if (nombre.isEmpty()) {
+                binding.tilPropietarioNombre.error = "Nombre requerido"
+                valido = false
+            } else {
+                binding.tilPropietarioNombre.error = null
+            }
+
+            val cedula = binding.etPropietarioCedula.text.toString().trim()
+            if (cedula.isEmpty()) {
+                binding.tilPropietarioCedula.error = "Cédula requerida"
+                valido = false
+            } else {
+                binding.tilPropietarioCedula.error = null
+            }
+
+            val telefono = binding.etPropietarioTelefono.text.toString().trim()
+            if (telefono.isEmpty()) {
+                binding.tilPropietarioTelefono.error = "Teléfono requerido"
+                valido = false
+            } else {
+                binding.tilPropietarioTelefono.error = null
+            }
+
+            val barrio = binding.etPropietarioBarrio.text.toString().trim()
+            if (barrio.isEmpty()) {
+                binding.tilPropietarioBarrio.error = "Barrio requerido"
+                valido = false
+            } else {
+                binding.tilPropietarioBarrio.error = null
+            }
+
+            val direccion = binding.etPropietarioDireccion.text.toString().trim()
+            if (direccion.isEmpty()) {
+                binding.tilPropietarioDireccion.error = "Dirección requerida"
+                valido = false
+            } else {
+                binding.tilPropietarioDireccion.error = null
+            }
+        } else {
+            // MODO RESCATE (Testigos y ausencia de propietario)
+            val personaAtiende = binding.etPersonaAtiendeRescatista.text.toString().trim()
+            if (personaAtiende.isEmpty()) {
+                binding.tilPersonaAtiendeRescatista.error = "Persona que atiende requerida"
+                valido = false
+            } else {
+                binding.tilPersonaAtiendeRescatista.error = null
+            }
+
+            val personaAtiendeTel = binding.etPersonaAtiendeTelefono.text.toString().trim()
+            if (personaAtiendeTel.isEmpty()) {
+                binding.tilPersonaAtiendeTelefono.error = "Teléfono requerido"
+                valido = false
+            } else {
+                binding.tilPersonaAtiendeTelefono.error = null
+            }
+
+            val testigo1Nombre = binding.etTestigo1Nombre.text.toString().trim()
+            if (testigo1Nombre.isEmpty()) {
+                binding.tilTestigo1Nombre.error = "Testigo 1 requerido"
+                valido = false
+            } else {
+                binding.tilTestigo1Nombre.error = null
+            }
+
+            val testigo1Cedula = binding.etTestigo1Cedula.text.toString().trim()
+            if (testigo1Cedula.isEmpty()) {
+                binding.tilTestigo1Cedula.error = "Cédula Testigo 1 requerida"
+                valido = false
+            } else {
+                binding.tilTestigo1Cedula.error = null
+            }
+
+            val barrioRescate = binding.etBarrioRescate.text.toString().trim()
+            if (barrioRescate.isEmpty()) {
+                binding.tilBarrioRescate.error = "Barrio del rescate requerido"
+                valido = false
+            } else {
+                binding.tilBarrioRescate.error = null
+            }
         }
 
         if (!valido) {
@@ -386,7 +570,7 @@ class ActaAtencionActivity : AppCompatActivity() {
             return false
         }
 
-        for ((index, itemBinding) in animalBindingsList.withIndex()) {
+        for (itemBinding in animalBindingsList) {
             val nombre = itemBinding.etPacienteNombreCard.text.toString().trim()
             if (nombre.isEmpty()) {
                 itemBinding.tilPacienteNombre.error = "Nombre requerido"
@@ -396,20 +580,31 @@ class ActaAtencionActivity : AppCompatActivity() {
             }
         }
 
-        val anamnesis = binding.etAnamnesis.text.toString().trim()
-        if (anamnesis.isEmpty()) {
-            binding.tilAnamnesis.error = "Anamnesis requerida"
-            valido = false
-        } else {
-            binding.tilAnamnesis.error = null
-        }
+        if (tipoActaActual == TipoActa.SERES_SINTIENTES) {
+            val anamnesis = binding.etAnamnesis.text.toString().trim()
+            if (anamnesis.isEmpty()) {
+                binding.tilAnamnesis.error = "Anamnesis requerida"
+                valido = false
+            } else {
+                binding.tilAnamnesis.error = null
+            }
 
-        val tratamiento = binding.etTratamiento.text.toString().trim()
-        if (tratamiento.isEmpty()) {
-            binding.tilTratamiento.error = "Tratamiento requerido"
-            valido = false
+            val tratamiento = binding.etTratamiento.text.toString().trim()
+            if (tratamiento.isEmpty()) {
+                binding.tilTratamiento.error = "Tratamiento requerido"
+                valido = false
+            } else {
+                binding.tilTratamiento.error = null
+            }
         } else {
-            binding.tilTratamiento.error = null
+            // MODO RESCATE
+            val obsRescate = binding.etObservacionesRescate.text.toString().trim()
+            if (obsRescate.isEmpty()) {
+                binding.tilObservacionesRescate.error = "Ingrese observaciones del rescate *"
+                valido = false
+            } else {
+                binding.tilObservacionesRescate.error = null
+            }
         }
 
         if (!valido) {
@@ -420,27 +615,30 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     private fun validarPaso3(): Boolean {
         var valido = true
-        val compromisos = binding.etCompromisos.text.toString().trim()
-        if (compromisos.isEmpty()) {
-            binding.tilCompromisos.error = "Especifique los compromisos o acuerdos"
-            valido = false
-        } else {
-            binding.tilCompromisos.error = null
-        }
 
-        val tipoPrueba = binding.autoCompleteTipoPrueba.text.toString().trim()
-        val pruebas = binding.etPruebasComplementarias.text.toString().trim()
-        val resultado = binding.etResultadoPruebas.text.toString().trim()
-
-        if ((tipoPrueba.isNotEmpty() && !tipoPrueba.contains("Ninguna", ignoreCase = true)) || pruebas.isNotEmpty()) {
-            if (resultado.isEmpty()) {
-                binding.tilResultadoPruebas.error = "Ingrese el resultado de la prueba complementaria"
+        if (tipoActaActual == TipoActa.SERES_SINTIENTES) {
+            val compromisos = binding.etCompromisos.text.toString().trim()
+            if (compromisos.isEmpty()) {
+                binding.tilCompromisos.error = "Especifique los compromisos o acuerdos"
                 valido = false
+            } else {
+                binding.tilCompromisos.error = null
+            }
+
+            val tipoPrueba = binding.autoCompleteTipoPrueba.text.toString().trim()
+            val pruebas = binding.etPruebasComplementarias.text.toString().trim()
+            val resultado = binding.etResultadoPruebas.text.toString().trim()
+
+            if ((tipoPrueba.isNotEmpty() && !tipoPrueba.contains("Ninguna", ignoreCase = true)) || pruebas.isNotEmpty()) {
+                if (resultado.isEmpty()) {
+                    binding.tilResultadoPruebas.error = "Ingrese el resultado de la prueba complementaria"
+                    valido = false
+                } else {
+                    binding.tilResultadoPruebas.error = null
+                }
             } else {
                 binding.tilResultadoPruebas.error = null
             }
-        } else {
-            binding.tilResultadoPruebas.error = null
         }
 
         val funcionarioNombre = binding.etFuncionarioNombre.text.toString().trim()
@@ -464,6 +662,8 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
         return valido
     }
+
+    private fun siNo(valor: Boolean): String = if (valor) "SÍ" else "NO"
 
     private fun submitActa() {
         if (peticionId == -1) {
@@ -612,53 +812,175 @@ class ActaAtencionActivity : AppCompatActivity() {
         // Estado de resolución / cierre del Paso 3
         val estadoCierre = binding.autoCompleteEstadoCierre.text.toString().trim().ifEmpty { "Atendida" }
 
-        val request = SeguimientoPeticionVisitaRequest(
-            idPeticion = peticionId,
-            idVeterinario = idVeterinario,
-            numeroRadicado = radicado,
-            fechaAtencion = fechaAtencion,
-            propietarioNombre = binding.etPropietarioNombre.text.toString().trim(),
-            propietarioCedula = binding.etPropietarioCedula.text.toString().trim(),
-            propietarioTelefono = binding.etPropietarioTelefono.text.toString().trim(),
-            propietarioEmail = emailPropietario,
-            propietarioBarrio = binding.etPropietarioBarrio.text.toString().trim(),
-            propietarioDireccion = binding.etPropietarioDireccion.text.toString().trim(),
-            quienReporta = quienReporta,
-            quienReportaOtro = quienReportaOtro,
-            solicitudAtencionPor = binding.etSolicitudAtencion.text.toString().trim(),
-            lugarAtencion = lugarAtencion,
-            nombrePaciente = nombrePaciente,
-            pacienteEspecie = pacienteEspecie,
-            pacienteSexo = pacienteSexo,
-            pacienteColor = pacienteColor,
-            pacienteRaza = pacienteRaza,
-            pacienteEdad = pacienteEdad,
-            pesoPaciente = pesoPaciente,
-            esterilizacionPaciente = esterilizacionPaciente,
-            descripcionPaciente = descripcionPaciente,
-            animales = listaAnimales,
-            nroAnimalesAtendidos = listaAnimales.size,
-            anamnesisDescripcionQueja = anamnesisFinal,
-            tratamientoRealizado = binding.etTratamiento.text.toString().trim(),
-            desparasitacion = desparasitacion,
-            pruebasComplementarias = pruebaFinal,
-            resultadoPruebas = resultadoPruebas,
-            compromisos = binding.etCompromisos.text.toString().trim(),
-            fundamentoLegal = fundamentoLegal,
-            plazoDiasCumplimiento = plazoDias,
-            nombreFuncionario = funcionarioNombre,
-            funcionarioCargo = funcionarioCargo,
-            funcionarios = listaFuncionarios,
-            notificadoNombre = notificadoNombre,
-            notificacionesIdentificacion = notificadoId,
-            fechaNotificacion = if (notificadoNombre != null) fechaAtencion else null,
-            notificadorNombre = funcionarioNombre,
-            notificadorIdentificacion = notificadorIdentificacion,
-            notificadorCargo = funcionarioCargo,
-            firmaNotificador = firmaNotificador,
-            firmaNotificado = firmaNotificado,
-            observacion = observacion
-        )
+        val request = if (tipoActaActual == TipoActa.SERES_SINTIENTES) {
+            SeguimientoPeticionVisitaRequest(
+                idPeticion = peticionId,
+                idVeterinario = idVeterinario,
+                numeroRadicado = radicado,
+                fechaAtencion = fechaAtencion,
+                propietarioNombre = binding.etPropietarioNombre.text.toString().trim(),
+                propietarioCedula = binding.etPropietarioCedula.text.toString().trim(),
+                propietarioTelefono = binding.etPropietarioTelefono.text.toString().trim(),
+                propietarioEmail = emailPropietario,
+                propietarioBarrio = binding.etPropietarioBarrio.text.toString().trim(),
+                propietarioDireccion = binding.etPropietarioDireccion.text.toString().trim(),
+                quienReporta = quienReporta,
+                quienReportaOtro = quienReportaOtro,
+                solicitudAtencionPor = binding.etSolicitudAtencion.text.toString().trim(),
+                lugarAtencion = lugarAtencion,
+                nombrePaciente = nombrePaciente,
+                pacienteEspecie = pacienteEspecie,
+                pacienteSexo = pacienteSexo,
+                pacienteColor = pacienteColor,
+                pacienteRaza = pacienteRaza,
+                pacienteEdad = pacienteEdad,
+                pesoPaciente = pesoPaciente,
+                esterilizacionPaciente = esterilizacionPaciente,
+                descripcionPaciente = descripcionPaciente,
+                animales = listaAnimales,
+                nroAnimalesAtendidos = listaAnimales.size,
+                anamnesisDescripcionQueja = anamnesisFinal,
+                tratamientoRealizado = binding.etTratamiento.text.toString().trim(),
+                desparasitacion = desparasitacion,
+                pruebasComplementarias = pruebaFinal,
+                resultadoPruebas = resultadoPruebas,
+                compromisos = binding.etCompromisos.text.toString().trim(),
+                fundamentoLegal = fundamentoLegal,
+                plazoDiasCumplimiento = plazoDias,
+                nombreFuncionario = funcionarioNombre,
+                funcionarioCargo = funcionarioCargo,
+                funcionarios = listaFuncionarios,
+                notificadoNombre = notificadoNombre,
+                notificacionesIdentificacion = notificadoId,
+                fechaNotificacion = if (notificadoNombre != null) fechaAtencion else null,
+                notificadorNombre = funcionarioNombre,
+                notificadorIdentificacion = notificadorIdentificacion,
+                notificadorCargo = funcionarioCargo,
+                firmaNotificador = firmaNotificador,
+                firmaNotificado = firmaNotificado,
+                observacion = observacion
+            )
+        } else {
+            // MODO RESCATE (Formato Oficial F-GS-C01-03-33)
+            val personaAtiende = binding.etPersonaAtiendeRescatista.text.toString().trim()
+            val personaAtiendeTel = binding.etPersonaAtiendeTelefono.text.toString().trim()
+            val testigo1Nombre = binding.etTestigo1Nombre.text.toString().trim()
+            val testigo1Cedula = binding.etTestigo1Cedula.text.toString().trim()
+            val testigo1Tel = binding.etTestigo1Telefono.text.toString().trim()
+            val testigo2Nombre = binding.etTestigo2Nombre.text.toString().trim()
+            val testigo2Cedula = binding.etTestigo2Cedula.text.toString().trim()
+            val testigo2Tel = binding.etTestigo2Telefono.text.toString().trim()
+            val barrioRescate = binding.etBarrioRescate.text.toString().trim()
+            val lugarRescate = binding.etLugarAtencion.text.toString().trim()
+
+            val obsRescate = binding.etObservacionesRescate.text.toString().trim()
+            val vetReceptor = binding.etVeterinarioReceptor.text.toString().trim()
+            val fechaRecep = binding.etFechaRecepcion.text.toString().trim()
+            val horaRecep = binding.etHoraRecepcion.text.toString().trim()
+            val obsRecep = binding.etObservacionesRecepcion.text.toString().trim()
+
+            val checklistDetalle = buildString {
+                appendLine("=== ACTA DE RESCATE (Formato F-GS-C01-03-33, Versión 02) ===")
+                appendLine("• Persona que atiende al rescatista: $personaAtiende")
+                if (personaAtiendeTel.isNotEmpty()) appendLine("• Teléfono de contacto: $personaAtiendeTel")
+                appendLine("• Testigo 1 (Certifica no propietario): $testigo1Nombre - CC: $testigo1Cedula ${if (testigo1Tel.isNotEmpty()) "- Tel: $testigo1Tel" else ""}")
+                if (testigo2Nombre.isNotEmpty()) {
+                    appendLine("• Testigo 2: $testigo2Nombre - CC: $testigo2Cedula ${if (testigo2Tel.isNotEmpty()) "- Tel: $testigo2Tel" else ""}")
+                }
+                appendLine("• Barrio de rescate: $barrioRescate")
+                appendLine("• Lugar de rescate: $lugarRescate")
+                appendLine()
+                appendLine("--- EVALUACIÓN CLÍNICA POR SISTEMAS (SÍ / NO) ---")
+                appendLine("1. Sistema Respiratorio:")
+                appendLine("   - Presenta moco: ${siNo(binding.swRespiratorioMoco.isChecked)}")
+                appendLine("   - Se le dificulta respirar: ${siNo(binding.swRespiratorioDificultad.isChecked)}")
+                appendLine("   - Tos: ${siNo(binding.swRespiratorioTos.isChecked)}")
+                appendLine("   - Lagaña o lagrimeo: ${siNo(binding.swRespiratorioLaganeo.isChecked)}")
+                appendLine("2. Sistema Digestivo:")
+                appendLine("   - Presenta vómito: ${siNo(binding.swDigestivoVomito.isChecked)}")
+                appendLine("   - Presenta diarrea: ${siNo(binding.swDigestivoDiarrea.isChecked)}")
+                appendLine("   - Flaco o desnutrido: ${siNo(binding.swDigestivoDesnutrido.isChecked)}")
+                appendLine("   - Deshidratado: ${siNo(binding.swDigestivoDeshidratado.isChecked)}")
+                appendLine("3. Sistema Músculo Esquelético:")
+                appendLine("   - Caída de las patas de atrás: ${siNo(binding.swMusculoCaidaPatas.isChecked)}")
+                appendLine("   - Cojo: ${siNo(binding.swMusculoCojo.isChecked)}")
+                appendLine("   - Presenta herida abierta: ${siNo(binding.swMusculoHeridaAbierta.isChecked)}")
+                appendLine("   - Observa moscos o gusanos: ${siNo(binding.swMusculoGusanos.isChecked)}")
+                appendLine("   - Postrado: ${siNo(binding.swMusculoPostrado.isChecked)}")
+                appendLine("4. Sistema Dermatológico:")
+                appendLine("   - Presenta peladuras: ${siNo(binding.swDermatoPeladuras.isChecked)}")
+                appendLine("   - Heridas con sangre: ${siNo(binding.swDermatoHeridasSangre.isChecked)}")
+                appendLine("   - Pulgas o garrapatas: ${siNo(binding.swDermatoPulgas.isChecked)}")
+                appendLine("5. Sistema Genitourinario:")
+                appendLine("   - Presenta masa o secreción: ${siNo(binding.swGenitoMasaSecrecion.isChecked)}")
+                appendLine("   - Se encuentra gestante: ${siNo(binding.swGenitoGestante.isChecked)}")
+                appendLine("   - Se encuentra en celo: ${siNo(binding.swGenitoCelo.isChecked)}")
+                appendLine()
+                appendLine("--- OBSERVACIONES DEL RESCATE ---")
+                appendLine(obsRescate)
+                if (vetReceptor.isNotEmpty() || fechaRecep.isNotEmpty() || obsRecep.isNotEmpty()) {
+                    appendLine()
+                    appendLine("--- RECEPCIÓN EN CLÍNICA / CBA ---")
+                    if (vetReceptor.isNotEmpty()) appendLine("• Veterinario receptor: $vetReceptor")
+                    if (fechaRecep.isNotEmpty() || horaRecep.isNotEmpty()) appendLine("• Fecha/Hora de recepción: $fechaRecep $horaRecep".trim())
+                    if (obsRecep.isNotEmpty()) appendLine("• Observaciones recepción: $obsRecep")
+                }
+            }.trim()
+
+            val propietarioNombreRescate = if (personaAtiende.isNotEmpty()) {
+                "Animal Rescatado (Atendió: $personaAtiende)"
+            } else {
+                "Animal Rescatado (Sin propietario verificado)"
+            }
+
+            SeguimientoPeticionVisitaRequest(
+                idPeticion = peticionId,
+                idVeterinario = idVeterinario,
+                numeroRadicado = radicado,
+                fechaAtencion = fechaAtencion,
+                propietarioNombre = propietarioNombreRescate,
+                propietarioCedula = "Sin propietario",
+                propietarioTelefono = personaAtiendeTel.ifEmpty { "N/A" },
+                propietarioEmail = null,
+                propietarioBarrio = barrioRescate,
+                propietarioDireccion = lugarRescate,
+                quienReporta = "Rescate en campo",
+                quienReportaOtro = "Formato Rescate F-GS-C01-03-33",
+                solicitudAtencionPor = binding.etSolicitudAtencion.text.toString().trim().ifEmpty { "Operativo de rescate animal en vía pública" },
+                lugarAtencion = lugarAtencion,
+                nombrePaciente = nombrePaciente ?: "Paciente Rescatado",
+                pacienteEspecie = pacienteEspecie,
+                pacienteSexo = pacienteSexo,
+                pacienteColor = pacienteColor,
+                pacienteRaza = pacienteRaza,
+                pacienteEdad = pacienteEdad,
+                pesoPaciente = pesoPaciente,
+                esterilizacionPaciente = esterilizacionPaciente,
+                descripcionPaciente = descripcionPaciente,
+                animales = listaAnimales,
+                nroAnimalesAtendidos = listaAnimales.size,
+                anamnesisDescripcionQueja = checklistDetalle,
+                tratamientoRealizado = "Evaluación primaria de rescate y estabilización en campo",
+                desparasitacion = false,
+                pruebasComplementarias = null,
+                resultadoPruebas = null,
+                compromisos = "Recepción y traslado de animal rescatado para custodia y valoración médica",
+                fundamentoLegal = "Formato de Rescate F-GS-C01-03-33 / Ley 1774 de 2016",
+                plazoDiasCumplimiento = null,
+                nombreFuncionario = funcionarioNombre,
+                funcionarioCargo = funcionarioCargo,
+                funcionarios = listaFuncionarios,
+                notificadoNombre = testigo1Nombre,
+                notificacionesIdentificacion = testigo1Cedula,
+                fechaNotificacion = fechaAtencion,
+                notificadorNombre = funcionarioNombre,
+                notificadorIdentificacion = notificadorIdentificacion,
+                notificadorCargo = funcionarioCargo,
+                firmaNotificador = firmaNotificador,
+                firmaNotificado = firmaNotificado,
+                observacion = observacion
+            )
+        }
 
         // Estado de carga UI
         setLoadingState(true)

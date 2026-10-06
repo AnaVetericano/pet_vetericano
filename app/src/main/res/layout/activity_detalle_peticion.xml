@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="#F8FAFC"
@@ -63,12 +64,14 @@
 
     <!-- CONTENIDO CON SCROLL -->
     <ScrollView
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:layout_marginTop="16dp"
         android:layout_marginBottom="12dp"
         android:scrollbars="none"
         app:layout_constraintBottom_toTopOf="@id/layoutAcciones"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/tvCodigoPeticion">
 
         <LinearLayout
@@ -116,6 +119,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="6dp"
                         android:orientation="horizontal">
+
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -123,6 +127,7 @@
                             android:text="Motivo"
                             android:textColor="#94A3B8"
                             android:textSize="13sp" />
+
                         <TextView
                             android:id="@+id/tvMotivoAnimal"
                             android:layout_width="0dp"
@@ -139,6 +144,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="horizontal">
+
                         <TextView
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
@@ -146,6 +152,7 @@
                             android:text="Asignada"
                             android:textColor="#94A3B8"
                             android:textSize="13sp" />
+
                         <TextView
                             android:id="@+id/tvFechaAsignada"
                             android:layout_width="wrap_content"
@@ -248,6 +255,7 @@
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:layout_marginBottom="8dp"
                 app:cardBackgroundColor="@color/white"
                 app:cardCornerRadius="16dp"
                 app:cardElevation="1dp"
@@ -278,7 +286,7 @@
 
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="80dp"
+                        android:layout_height="152dp"
                         android:background="#F3F0FA"
                         android:gravity="center"
                         android:orientation="vertical">
@@ -300,6 +308,22 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- BOTÓN CORREGIR DIRECCIÓN (Justo debajo del mapa/ubicación) -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCorregirDireccion"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginBottom="4dp"
+                android:text="Corregir dirección"
+                android:textAllCaps="false"
+                android:textColor="#4141A5"
+                android:textSize="14sp"
+                android:textStyle="bold"
+                app:backgroundTint="#EDE9FE"
+                app:cornerRadius="12dp"
+                app:strokeColor="#4141A5"
+                app:strokeWidth="1dp" />
+
         </LinearLayout>
     </ScrollView>
 
@@ -311,40 +335,24 @@
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent">
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnVerRuta"
-            android:layout_width="200dp"
-            android:layout_height="48dp"
-            android:layout_gravity="center_horizontal"
-            android:layout_marginBottom="8dp"
-            android:text="Ver ruta"
-            android:textAllCaps="false"
-            android:textColor="@color/white"
-            android:textSize="15sp"
-            android:textStyle="bold"
-            app:backgroundTint="#4141A5"
-            app:cornerRadius="14dp" />
-
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnActualizarEstado"
-                style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="0dp"
+                android:id="@+id/btnVerRuta"
+                android:layout_width="200dp"
                 android:layout_height="48dp"
-                android:layout_marginEnd="6dp"
-                android:layout_weight="1"
-                android:text="Actualizar estado"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="8dp"
+                android:text="Ver ruta"
                 android:textAllCaps="false"
-                android:textColor="#4141A5"
-                android:textSize="14sp"
+                android:textColor="@color/white"
+                android:textSize="15sp"
                 android:textStyle="bold"
-                app:cornerRadius="14dp"
-                app:strokeColor="#4141A5"
-                app:strokeWidth="1.5dp" />
+                app:backgroundTint="#4141A5"
+                app:cornerRadius="14dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAtender"
@@ -359,6 +367,7 @@
                 android:textStyle="bold"
                 app:backgroundTint="#4141A5"
                 app:cornerRadius="14dp" />
+
         </LinearLayout>
 
     </LinearLayout>

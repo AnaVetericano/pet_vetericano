@@ -331,8 +331,8 @@ class ActaAtencionActivity : AppCompatActivity() {
             }
         }
 
-        // Dropdown Paso 3: Estado de Cierre de la Petición
-        val estadosCierre = arrayOf("Atendida", "En Proceso", "Cerrada")
+        // Dropdown Paso 3: Estado de Cierre de la Petición (Ciclo de Vida Clínico)
+        val estadosCierre = arrayOf("En tratamiento", "En observación", "Alta médica")
         val adapterCierre = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, estadosCierre)
         binding.autoCompleteEstadoCierre.setAdapter(adapterCierre)
         binding.autoCompleteEstadoCierre.setText(estadosCierre[0], false)
@@ -810,7 +810,7 @@ class ActaAtencionActivity : AppCompatActivity() {
         val resultadoPruebas = binding.etResultadoPruebas.text.toString().trim().ifEmpty { null }
 
         // Estado de resolución / cierre del Paso 3
-        val estadoCierre = binding.autoCompleteEstadoCierre.text.toString().trim().ifEmpty { "Atendida" }
+        val estadoCierre = binding.autoCompleteEstadoCierre.text.toString().trim().ifEmpty { "En tratamiento" }
 
         val request = if (tipoActaActual == TipoActa.SERES_SINTIENTES) {
             SeguimientoPeticionVisitaRequest(

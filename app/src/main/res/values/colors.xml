@@ -59,4 +59,12 @@
     <!-- Elementos adicionales de UI -->
     <color name="color_avatar_bg">#EEF0FF</color>        <!-- primary_light -->
 
+    <!-- Colores para estados clínicos y especiales -->
+    <color name="badge_transferido_bg">#EDE9FE</color>
+    <color name="badge_transferido_text">#6D28D9</color>
+    <color name="badge_alta_bg">#D1FAE5</color>
+    <color name="badge_alta_text">#047857</color>
+    <color name="badge_observacion_bg">#CCFBF1</color>
+    <color name="badge_observacion_text">#0F766E</color>
+
 </resources>

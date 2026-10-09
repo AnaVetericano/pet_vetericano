@@ -30,14 +30,16 @@ class UpdateStatusActivity : AppCompatActivity() {
         }
         binding.tvBadgeEstadoActual.text = estadoActual
 
-        // Preseleccionar según estado actual
-        when (estadoActual.lowercase()) {
-            "en evaluación", "en evaluacion" -> binding.rbEnEvaluacion.isChecked = true
-            "en tratamiento" -> binding.rbEnTratamiento.isChecked = true
-            "en observación", "en observacion" -> binding.rbEnObservacion.isChecked = true
-            "alta médica", "alta medica" -> binding.rbAltaMedica.isChecked = true
-            "fallecido" -> binding.rbFallecido.isChecked = true
-            "transferido a otro centro" -> binding.rbTransferido.isChecked = true
+        // Preseleccionar según estado actual (tolerante a tildes y variantes)
+        val estadoNorm = estadoActual.trim().lowercase()
+        when {
+            estadoNorm.contains("evaluac") || estadoNorm.contains("pendient") -> binding.rbEnEvaluacion.isChecked = true
+            estadoNorm.contains("tratamient") -> binding.rbEnTratamiento.isChecked = true
+            estadoNorm.contains("observac") -> binding.rbEnObservacion.isChecked = true
+            estadoNorm.contains("alta") -> binding.rbAltaMedica.isChecked = true
+            estadoNorm.contains("fallecid") -> binding.rbFallecido.isChecked = true
+            estadoNorm.contains("transferid") -> binding.rbTransferido.isChecked = true
+            else -> binding.rbEnEvaluacion.isChecked = true
         }
 
         binding.ivBack.setOnClickListener {

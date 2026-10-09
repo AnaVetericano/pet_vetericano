@@ -1,6 +1,8 @@
 package com.example.petvetericano
 
 import android.content.Intent
+import android.graphics.Color
+import android.graphics.drawable.GradientDrawable
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
@@ -84,6 +86,19 @@ class DetallePeticion : AppCompatActivity() {
             Toast.makeText(this, "Error: ID de petición no válido", Toast.LENGTH_SHORT).show()
         }
 
+        // 🔄 CONFIGURACIÓN PARA ACTUALIZAR ESTADO DEL CASO (Desde botón o desde el badge)
+        val abrirActualizarEstado = {
+            val intent = Intent(this, UpdateStatusActivity::class.java).apply {
+                putExtra("PETICION_ID", peticionId)
+                putExtra("PETICION_CODIGO", binding.tvCodigoPeticion.text.toString())
+                putExtra("ESTADO_ACTUAL", binding.tvBadgeEstado.text.toString())
+            }
+            updateStatusLauncher.launch(intent)
+        }
+
+        binding.btnActualizarEstado.setOnClickListener { abrirActualizarEstado() }
+        binding.tvBadgeEstado.setOnClickListener { abrirActualizarEstado() }
+
         // 🛠️ CONFIGURACIÓN DEL BOTÓN CORREGIR DIRECCIÓN CON ALERTA DE CONFIRMACIÓN
         binding.btnCorregirDireccion.setOnClickListener {
             AlertDialog.Builder(this)
@@ -106,6 +121,7 @@ class DetallePeticion : AppCompatActivity() {
         binding.btnAtender.setOnClickListener {
             val intent = Intent(this, ActaAtencionActivity::class.java).apply {
                 putExtra("PETICION_ID", peticionId)
+                putExtra("DIRECCION_ACTUAL", direccionActual)
             }
             actaLauncher.launch(intent)
         }
@@ -159,8 +175,11 @@ class DetallePeticion : AppCompatActivity() {
     private fun bindData(peticion: PeticionListResponse) {
         direccionActual = peticion.ubicacion_direccion.orEmpty()
 
+        val estadoActual = peticion.estado?.takeIf { it.isNotBlank() } ?: "Sin estado"
         binding.tvCodigoPeticion.text = peticion.numero_radicado?.takeIf { it.isNotBlank() } ?: "N/A"
-        binding.tvBadgeEstado.text = peticion.estado?.takeIf { it.isNotBlank() } ?: "Sin estado"
+        binding.tvBadgeEstado.text = estadoActual
+        actualizarEstiloBadge(estadoActual)
+
         binding.tvMotivoAnimal.text = peticion.tipo?.trim()?.takeIf { it.isNotEmpty() } ?: "Sin motivo"
         binding.tvFechaAsignada.text = formatearFecha(peticion.fecha_asignacion)
         binding.tvObservaciones.text = peticion.descripcion?.trim()?.takeIf { it.isNotEmpty() } ?: "Sin observaciones registradas."
@@ -183,6 +202,42 @@ class DetallePeticion : AppCompatActivity() {
         } else {
             binding.cardFotoEvidencia.visibility = View.GONE
         }
+    }
+
+    private fun actualizarEstiloBadge(estado: String) {
+        val st = estado.lowercase()
+        val (colorTexto, colorFondo) = when {
+            st.contains("fallecido") || st.contains("urgente") -> {
+                Color.parseColor("#B91C1C") to Color.parseColor("#FEE2E2")
+            }
+            st.contains("evaluación") || st.contains("evaluacion") || st.contains("pendiente") -> {
+                Color.parseColor("#B45309") to Color.parseColor("#FEF3C7")
+            }
+            st.contains("tratamiento") -> {
+                Color.parseColor("#1D4ED8") to Color.parseColor("#DBEAFE")
+            }
+            st.contains("observación") || st.contains("observacion") -> {
+                Color.parseColor("#0F766E") to Color.parseColor("#CCFBF1")
+            }
+            st.contains("alta") || st.contains("atendida") || st.contains("resuelta") -> {
+                Color.parseColor("#047857") to Color.parseColor("#D1FAE5")
+            }
+            st.contains("transferido") -> {
+                Color.parseColor("#6D28D9") to Color.parseColor("#EDE9FE")
+            }
+            else -> {
+                Color.parseColor("#4B5563") to Color.parseColor("#F3F4F6")
+            }
+        }
+
+        val backgroundDrawable = GradientDrawable().apply {
+            shape = GradientDrawable.RECTANGLE
+            cornerRadius = resources.displayMetrics.density * 8
+            setColor(colorFondo)
+        }
+
+        binding.tvBadgeEstado.background = backgroundDrawable
+        binding.tvBadgeEstado.setTextColor(colorTexto)
     }
 
     private fun formatearFecha(fechaISO: String?): String {

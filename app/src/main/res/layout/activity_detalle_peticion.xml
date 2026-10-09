@@ -53,6 +53,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:background="@drawable/bg_badge_urgent"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
         android:paddingHorizontal="10dp"
         android:paddingVertical="4dp"
         android:textColor="@color/badge_urgente_text"
@@ -335,6 +338,22 @@
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent">
 
+        <!-- BOTÓN ACTUALIZAR ESTADO DEL CASO -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnActualizarEstado"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:layout_marginBottom="8dp"
+            android:text="Actualizar estado del caso"
+            android:textAllCaps="false"
+            android:textColor="#4141A5"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            app:strokeColor="#4141A5"
+            app:strokeWidth="1.2dp" />
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -342,23 +361,23 @@
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnVerRuta"
-                android:layout_width="200dp"
+                android:layout_width="0dp"
                 android:layout_height="48dp"
-                android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="8dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="4dp"
                 android:text="Ver ruta"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
                 app:backgroundTint="#4141A5"
-                app:cornerRadius="14dp" />
+                app:cornerRadius="12dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnAtender"
                 android:layout_width="0dp"
                 android:layout_height="48dp"
-                android:layout_marginStart="6dp"
+                android:layout_marginStart="4dp"
                 android:layout_weight="1"
                 android:text="Atender"
                 android:textAllCaps="false"
@@ -366,7 +385,7 @@
                 android:textSize="14sp"
                 android:textStyle="bold"
                 app:backgroundTint="#4141A5"
-                app:cornerRadius="14dp" />
+                app:cornerRadius="12dp" />
 
         </LinearLayout>
 

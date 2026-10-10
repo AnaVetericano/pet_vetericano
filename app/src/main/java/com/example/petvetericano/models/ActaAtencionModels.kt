@@ -248,6 +248,74 @@ data class CrearActaResponse(
     val idSeguimiento: Int?
 )
 
+data class RazaItemResponse(
+    @SerializedName("id_raza")
+    val idRaza: Int,
+
+    @SerializedName("id_especie")
+    val idEspecie: Int? = null,
+
+    @SerializedName("nombre_especie")
+    val nombreEspecie: String? = null,
+
+    @SerializedName("nombre")
+    val nombre: String,
+
+    @SerializedName("descripcion")
+    val descripcion: String? = null,
+
+    @SerializedName("activo")
+    val activo: Boolean? = true
+)
+
+data class EspecieItemResponse(
+    @SerializedName("id_especie")
+    val idEspecie: Int,
+
+    @SerializedName("nombre")
+    val nombre: String,
+
+    @SerializedName("descripcion")
+    val descripcion: String? = null,
+
+    @SerializedName("activo")
+    val activo: Boolean? = true
+)
+
+data class ExamenCatalogoItemResponse(
+    @SerializedName("id_examen")
+    val idExamen: Int? = null,
+
+    @SerializedName("nombre_tipo_examen")
+    val nombreTipoExamen: String? = null,
+
+    @SerializedName("nombre_tipo")
+    val nombreTipo: String? = null,
+
+    @SerializedName("descripcion_hallazgos")
+    val descripcionHallazgos: String? = null,
+
+    @SerializedName("estado")
+    val estado: String? = "activo"
+) {
+    fun obtenerNombre(): String {
+        return nombreTipo?.takeIf { it.isNotBlank() }
+            ?: nombreTipoExamen?.takeIf { it.isNotBlank() }
+            ?: "Examen #${idExamen ?: 0}"
+    }
+
+    fun esActivo(): Boolean {
+        val st = estado?.trim()?.lowercase() ?: "activo"
+        return st == "activo" || st == "true" || st == "1"
+    }
+}
+
+data class ExamenSeleccionadoActa(
+    val idExamenCatalogo: Int? = null,
+    val nombreExamen: String,
+    var resultado: String
+)
+
 // ==========================================
 // MODELOS PARA PASO 2: PACIENTES Y CLÍNICA
 // ==========================================

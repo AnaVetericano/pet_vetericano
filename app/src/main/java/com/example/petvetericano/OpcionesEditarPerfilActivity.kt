@@ -85,5 +85,35 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
             // Finaliza la actividad para regresar al usuario a su menú de manera automática tras un guardado exitoso.
             finish()
         }
+
+        // Acción de clic para cerrar sesión del veterinario
+        binding.btnLogout.setOnClickListener {
+            mostrarConfirmacionCerrarSesion()
+        }
+    }
+
+    private fun mostrarConfirmacionCerrarSesion() {
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle("¿Cerrar sesión?")
+            .setMessage("Se cerrará la sesión actual de médico veterinario. Tendrás que ingresar tus credenciales nuevamente para acceder al sistema.")
+            .setNegativeButton("Cancelar") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton("Cerrar sesión") { dialog, _ ->
+                dialog.dismiss()
+                cerrarSesion()
+            }
+            .show()
+    }
+
+    private fun cerrarSesion() {
+        prefs.clearSession()
+        com.example.petvetericano.network.RetrofitClient.authToken = null
+
+        val intent = android.content.Intent(this, inicio_sesion::class.java).apply {
+            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        finish()
     }
 }

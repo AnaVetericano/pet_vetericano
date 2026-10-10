@@ -105,7 +105,19 @@ interface ApiService {
 
     // --- OTROS MODULOS ---
     @GET("especies/especies/")
-    suspend fun obtenerEspecies(): Response<Any>
+    suspend fun obtenerEspecies(
+        @Header("Authorization") token: String? = null
+    ): Response<List<com.example.petvetericano.models.EspecieItemResponse>>
+
+    @GET("especies/razas/")
+    suspend fun obtenerRazas(
+        @Header("Authorization") token: String? = null
+    ): Response<List<com.example.petvetericano.models.RazaItemResponse>>
+
+    @GET("examenes-clinicos/catalogo/")
+    suspend fun obtenerCatalogoExamenes(
+        @Header("Authorization") token: String? = null
+    ): Response<List<com.example.petvetericano.models.ExamenCatalogoItemResponse>>
 
     @GET("medicamentos/")
     suspend fun obtenerMedicamentos(): Response<Any>

@@ -59,13 +59,13 @@
                 app:strokeWidth="1dp" />
         </LinearLayout>
 
-        <!-- Nombre del paciente -->
+        <!-- Nombre del paciente con chip de autocompletado rápido -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilPacienteNombre"
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="6dp"
             android:hint="Nombre del paciente *"
             app:boxStrokeColor="@color/primary"
             app:hintTextColor="@color/primary"
@@ -79,6 +79,26 @@
                 android:inputType="textCapWords"
                 android:textColor="@color/text_primary" />
         </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Acceso rápido: Paciente sin nombre / rescatado -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="12dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chipSinNombre"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:text="+ Sin nombre (Callejero)"
+                android:textSize="11sp"
+                android:textColor="@color/text_secondary"
+                app:cornerRadius="8dp"
+                app:strokeColor="@color/card_stroke"
+                app:strokeWidth="1dp" />
+        </LinearLayout>
 
         <!-- Fila: Especie y Sexo (Material 3 Exposed Dropdowns) -->
         <LinearLayout
@@ -125,7 +145,7 @@
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
-        <!-- Raza y Color -->
+        <!-- Fila: Raza (Consumida del backend / Autocompletable) y Color (Sugerencias M3) -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -135,75 +155,236 @@
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilPacienteRaza"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                android:hint="Raza (ej: Mestizo)"
+                android:hint="Raza *"
                 app:boxStrokeColor="@color/primary">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etPacienteRazaCard"
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                    android:id="@+id/autoCompleteRazaCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textCapWords"
+                    android:completionThreshold="1"
                     android:textColor="@color/text_primary" />
             </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilPacienteColor"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                android:hint="Color"
+                android:hint="Color *"
                 app:boxStrokeColor="@color/primary">
 
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etPacienteColorCard"
+                <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                    android:id="@+id/autoCompleteColorCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:inputType="textCapWords"
+                    android:completionThreshold="1"
                     android:textColor="@color/text_primary" />
             </com.google.android.material.textfield.TextInputLayout>
         </LinearLayout>
 
-        <!-- Fila: Edad y Peso -->
+        <!-- SECCIÓN: EDAD DEL PACIENTE CON CONTADOR / STEPPER INTERACTIVO (M3) -->
+        <com.google.android.material.card.MaterialCardView
+            style="?attr/materialCardViewOutlinedStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp"
+            app:cardBackgroundColor="@color/bg_screen"
+            app:cardCornerRadius="12dp"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/nunito_bold"
+                    android:text="Edad del paciente *"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp"
+                    android:layout_marginBottom="8dp" />
+
+                <!-- Fila del Stepper / Flechitas y Unidad -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <!-- Botón Flecha Menos [-] -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEdadMenos"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
+                        android:padding="0dp"
+                        app:icon="@drawable/ic_remove"
+                        app:iconGravity="textStart"
+                        app:iconSize="20dp"
+                        app:iconTint="@color/primary"
+                        app:cornerRadius="12dp"
+                        app:strokeColor="@color/primary"
+                        app:strokeWidth="1.5dp" />
+
+                    <!-- Contador numérico central -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilEdadNumero"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="60dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginHorizontal="6dp"
+                        app:boxStrokeColor="@color/primary">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etEdadNumero"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:inputType="number"
+                            android:text="1"
+                            android:fontFamily="@font/nunito_bold"
+                            android:textColor="@color/text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+
+                    <!-- Botón Flecha Más [+] -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEdadMas"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:insetLeft="0dp"
+                        android:insetTop="0dp"
+                        android:insetRight="0dp"
+                        android:insetBottom="0dp"
+                        android:padding="0dp"
+                        app:icon="@drawable/ic_add"
+                        app:iconGravity="textStart"
+                        app:iconSize="20dp"
+                        app:iconTint="@color/primary"
+                        app:cornerRadius="12dp"
+                        app:strokeColor="@color/primary"
+                        app:strokeWidth="1.5dp" />
+
+                    <!-- Selector de unidad de tiempo: Años / Meses / Semanas -->
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilEdadUnidad"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="8dp"
+                        android:layout_weight="1"
+                        android:hint="Unidad"
+                        app:boxStrokeColor="@color/primary">
+
+                        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                            android:id="@+id/autoCompleteEdadUnidad"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="none"
+                            android:textColor="@color/text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
+
+                <!-- Chips rápidos de etapa biológica -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginTop="8dp">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/chipCachorro"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:text="Cachorro (6 m)"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_secondary"
+                        app:cornerRadius="8dp"
+                        app:strokeColor="@color/card_stroke"
+                        app:strokeWidth="1dp"
+                        android:layout_marginEnd="6dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/chipAdulto"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:text="Adulto (2 a)"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_secondary"
+                        app:cornerRadius="8dp"
+                        app:strokeColor="@color/card_stroke"
+                        app:strokeWidth="1dp"
+                        android:layout_marginEnd="6dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/chipSenior"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:text="Senior (9 a)"
+                        android:textSize="11sp"
+                        android:textColor="@color/text_secondary"
+                        app:cornerRadius="8dp"
+                        app:strokeColor="@color/card_stroke"
+                        app:strokeWidth="1dp" />
+                </LinearLayout>
+
+                <!-- Campo de compatibilidad directa / editable con texto final generado -->
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilPacienteEdad"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:hint="Edad calculada para el acta"
+                    app:boxStrokeColor="@color/primary">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etPacienteEdadCard"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="text"
+                        android:textColor="@color/text_primary" />
+                </com.google.android.material.textfield.TextInputLayout>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Fila: Peso con botones rápidos +/- 1kg -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:baselineAligned="false"
             android:orientation="horizontal"
+            android:gravity="center_vertical"
             android:layout_marginBottom="12dp">
-
-            <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilPacienteEdad"
-                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginEnd="6dp"
-                android:layout_weight="1"
-                android:hint="Edad (ej: 2 años)"
-                app:boxStrokeColor="@color/primary">
-
-                <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/etPacienteEdadCard"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:inputType="text"
-                    android:textColor="@color/text_primary" />
-            </com.google.android.material.textfield.TextInputLayout>
 
             <com.google.android.material.textfield.TextInputLayout
                 android:id="@+id/tilPacientePeso"
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                android:hint="Peso (kg)"
+                android:hint="Peso estimado (kg)"
                 app:boxStrokeColor="@color/primary"
                 app:suffixText="kg">
 
@@ -214,6 +395,32 @@
                     android:inputType="numberDecimal"
                     android:textColor="@color/text_primary" />
             </com.google.android.material.textfield.TextInputLayout>
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPesoMenos"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="44dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="8dp"
+                android:text="-1"
+                android:textSize="12sp"
+                android:textColor="@color/primary"
+                app:cornerRadius="10dp"
+                app:strokeColor="@color/primary"
+                app:strokeWidth="1.5dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnPesoMas"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="44dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="6dp"
+                android:text="+1"
+                android:textSize="12sp"
+                android:textColor="@color/primary"
+                app:cornerRadius="10dp"
+                app:strokeColor="@color/primary"
+                app:strokeWidth="1.5dp" />
         </LinearLayout>
 
         <!-- Esterilizado (Material 3 Exposed Dropdown) -->

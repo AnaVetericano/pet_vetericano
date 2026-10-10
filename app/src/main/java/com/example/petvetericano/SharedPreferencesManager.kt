@@ -1,0 +1,73 @@
+package com.example.petvetericano
+
+import android.content.Context
+import android.content.SharedPreferences
+
+class SharedPreferencesManager(context: Context) {
+    private val prefs: SharedPreferences =
+        context.getSharedPreferences("PetVetericanoPrefs", Context.MODE_PRIVATE)
+
+    fun saveUserData(name: String, email: String, phone: String) {
+        prefs.edit().apply {
+            if (name.isNotEmpty())  putString("USER_NAME",  name)
+            if (email.isNotEmpty()) putString("USER_EMAIL", email)
+            if (phone.isNotEmpty()) putString("USER_PHONE", phone)
+            apply()
+        }
+    }
+
+    fun saveUserLastName(lastName: String) {
+        if (lastName.isNotEmpty()) {
+            prefs.edit().putString("USER_LASTNAME", lastName).apply()
+        }
+    }
+
+    // Guardar Identificación / Cédula
+    fun saveUserIdentification(identification: String) {
+        if (identification.isNotEmpty()) {
+            prefs.edit().putString("USER_IDENTIFICATION", identification).apply()
+        }
+    }
+
+    fun getUserIdentification(): String = prefs.getString("USER_IDENTIFICATION", "") ?: ""
+    fun getUserLastName(): String = prefs.getString("USER_LASTNAME", "") ?: ""
+    fun getUserName(): String = prefs.getString("USER_NAME", "") ?: ""
+    fun getUserEmail(): String = prefs.getString("USER_EMAIL", "") ?: ""
+    fun getUserPhone(): String = prefs.getString("USER_PHONE", "") ?: ""
+
+    // ID de Usuario
+    fun saveUserId(userId: Int) {
+        prefs.edit().putInt("ID_USUARIO", userId).apply()
+    }
+
+    fun getUserId(): Int = prefs.getInt("ID_USUARIO", -1)
+
+    // Foto de perfil
+    fun saveProfileImagePath(path: String) {
+        prefs.edit().putString("PROFILE_IMAGE_PATH", path).apply()
+    }
+
+    fun getProfileImagePath(): String = prefs.getString("PROFILE_IMAGE_PATH", "") ?: ""
+
+    // Token JWT
+    fun saveAccessToken(token: String) {
+        prefs.edit().putString("ACCESS_TOKEN", token).apply()
+    }
+
+    fun getAccessToken(): String {
+        val token = prefs.getString("ACCESS_TOKEN", "") ?: ""
+        if (token.isNotEmpty()) return token
+        return prefs.getString("access_token", "") ?: ""
+    }
+
+    fun setLanguage(lang: String) {
+        prefs.edit().putString("APP_LANGUAGE", lang).apply()
+    }
+
+    fun getLanguage(): String = prefs.getString("APP_LANGUAGE", "es") ?: "es"
+
+    // Limpiar sesión completa
+    fun clearSession() {
+        prefs.edit().clear().apply()
+    }
+}

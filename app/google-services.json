@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "414064158617",
+    "project_id": "petvetericano",
+    "storage_bucket": "petvetericano.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:414064158617:android:949c2ccaf0a23625ecd508",
+        "android_client_info": {
+          "package_name": "com.example.petvetericano"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBxLoejDg_n1vXD5ADLZT2epktscxQaZrU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

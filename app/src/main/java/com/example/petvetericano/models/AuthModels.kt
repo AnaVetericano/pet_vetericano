@@ -192,5 +192,7 @@ data class PeticionListResponse(
     val ubicacion_direccion: String?,
     val ubicacion_latitud: String?,
     val ubicacion_longitud: String?,
-    val foto: String?
+    val foto: String?,
+    val tiene_acta: Boolean? = false,
+    val id_seguimiento: Int? = null
 )

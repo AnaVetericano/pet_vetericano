@@ -64,31 +64,40 @@
                     android:fontFamily="@font/nunito_bold"
                     android:text="Acta de Seres Sintientes"
                     android:textColor="@color/text_primary"
-                    android:textSize="13sp" />
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/tvTipoActaSubtitulo"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/nunito"
-                    android:text="Atención veterinaria en campo"
+                    android:text="Atención y valoración clínica en campo"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
             </LinearLayout>
 
-            <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnCambiarTipoActa"
-                style="?attr/materialButtonOutlinedStyle"
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardBadgeRescateActivo"
+                style="?attr/materialCardViewFilledStyle"
                 android:layout_width="wrap_content"
-                android:layout_height="38dp"
-                android:fontFamily="@font/nunito_bold"
-                android:text="Acta de rescate"
-                android:textColor="@color/primary"
-                android:textSize="11sp"
-                app:cornerRadius="10dp"
-                app:strokeColor="@color/primary"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="#FEF3C7"
+                app:cardCornerRadius="8dp"
+                app:strokeColor="#F59E0B"
                 app:strokeWidth="1dp"
-                android:textAllCaps="false" />
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvBadgeRescateActivo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="4dp"
+                    android:fontFamily="@font/nunito_bold"
+                    android:text="Con Rescate CBA"
+                    android:textColor="#B45309"
+                    android:textSize="11sp" />
+            </com.google.android.material.card.MaterialCardView>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -511,267 +520,6 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- ============================================== -->
-                <!-- DATOS DEL RESCATE / TESTIGOS (Modo: Rescate) -->
-                <!-- ============================================== -->
-                <LinearLayout
-                    android:id="@+id/layoutDatosRescatePaso1"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
-                        android:layout_marginBottom="8dp"
-                        android:fontFamily="@font/nunito_bold"
-                        android:text="Reporte del rescatista y atención"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp" />
-
-                    <!-- Persona quien atiende al rescatista -->
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilPersonaAtiendeRescatista"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:hint="Persona quien atiende al rescatista *"
-                        app:boxStrokeColor="@color/primary"
-                        app:startIconDrawable="@drawable/user"
-                        app:startIconTint="@color/primary">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etPersonaAtiendeRescatista"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textCapWords"
-                            android:textColor="@color/text_primary" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:baselineAligned="false"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="12dp">
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/tilPersonaAtiendeCedula"
-                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="6dp"
-                            android:layout_weight="1"
-                            android:hint="No. Cédula"
-                            app:boxStrokeColor="@color/primary">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/etPersonaAtiendeCedula"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="number"
-                                android:textColor="@color/text_primary" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/tilPersonaAtiendeTelefono"
-                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:layout_weight="1"
-                            android:hint="Teléfono *"
-                            app:boxStrokeColor="@color/primary"
-                            app:startIconDrawable="@drawable/phone"
-                            app:startIconTint="@color/primary">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/etPersonaAtiendeTelefono"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="phone"
-                                android:textColor="@color/text_primary" />
-                        </com.google.android.material.textfield.TextInputLayout>
-                    </LinearLayout>
-
-                    <!-- Verificación de ausencia de propietario: Testigo 1 -->
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
-                        android:layout_marginBottom="2dp"
-                        android:fontFamily="@font/nunito_bold"
-                        android:text="Testigo 1 (Verificación de no propietario) *"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:fontFamily="@font/nunito"
-                        android:text="Testigo para verificar que el animal no tenga propietario"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="11sp" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilTestigo1Nombre"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:hint="Nombre completo del Testigo 1 *"
-                        app:boxStrokeColor="@color/primary"
-                        app:startIconDrawable="@drawable/user"
-                        app:startIconTint="@color/primary">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etTestigo1Nombre"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textCapWords"
-                            android:textColor="@color/text_primary" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:baselineAligned="false"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="12dp">
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/tilTestigo1Cedula"
-                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="6dp"
-                            android:layout_weight="1"
-                            android:hint="Cédula Testigo 1 *"
-                            app:boxStrokeColor="@color/primary">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/etTestigo1Cedula"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="number"
-                                android:textColor="@color/text_primary" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/tilTestigo1Telefono"
-                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:layout_weight="1"
-                            android:hint="Teléfono Testigo 1"
-                            app:boxStrokeColor="@color/primary"
-                            app:startIconDrawable="@drawable/phone"
-                            app:startIconTint="@color/primary">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/etTestigo1Telefono"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="phone"
-                                android:textColor="@color/text_primary" />
-                        </com.google.android.material.textfield.TextInputLayout>
-                    </LinearLayout>
-
-                    <!-- Testigo 2 (Opcional) -->
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginBottom="4dp"
-                        android:fontFamily="@font/nunito_bold"
-                        android:text="Testigo 2 (Opcional según formato Popayán)"
-                        android:textColor="@color/text_primary"
-                        android:textSize="14sp" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilTestigo2Nombre"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:hint="Nombre completo del Testigo 2 (opcional)"
-                        app:boxStrokeColor="@color/primary">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etTestigo2Nombre"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textCapWords"
-                            android:textColor="@color/text_primary" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:baselineAligned="false"
-                        android:orientation="horizontal"
-                        android:layout_marginBottom="12dp">
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/tilTestigo2Cedula"
-                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="6dp"
-                            android:layout_weight="1"
-                            android:hint="Cédula Testigo 2"
-                            app:boxStrokeColor="@color/primary">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/etTestigo2Cedula"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="number"
-                                android:textColor="@color/text_primary" />
-                        </com.google.android.material.textfield.TextInputLayout>
-
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/tilTestigo2Telefono"
-                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:layout_weight="1"
-                            android:hint="Teléfono Testigo 2"
-                            app:boxStrokeColor="@color/primary">
-
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/etTestigo2Telefono"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:inputType="phone"
-                                android:textColor="@color/text_primary" />
-                        </com.google.android.material.textfield.TextInputLayout>
-                    </LinearLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilBarrioRescate"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:hint="Barrio del rescate *"
-                        app:boxStrokeColor="@color/primary">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etBarrioRescate"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="textCapWords"
-                            android:textColor="@color/text_primary" />
-                    </com.google.android.material.textfield.TextInputLayout>
-                </LinearLayout>
-
                 <!-- Sección: Lugar de Atención -->
                 <TextView
                     android:layout_width="match_parent"
@@ -1103,623 +851,7 @@
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
 
-                <!-- ============================================== -->
-                <!-- EVALUACIÓN POR SISTEMAS (Modo: Rescate Popayán)-->
-                <!-- ============================================== -->
-                <LinearLayout
-                    android:id="@+id/layoutChecklistRescate"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
-                        android:layout_marginBottom="4dp"
-                        android:fontFamily="@font/nunito_bold"
-                        android:text="Evaluación de rescate por sistemas"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp" />
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="10dp"
-                        android:fontFamily="@font/nunito"
-                        android:text="Marque SI o NO según los hallazgos en campo (Formato F-GS-C01-03-33)"
-                        android:textColor="@color/text_secondary"
-                        android:textSize="12sp" />
-
-                    <!-- 1. RESPIRATORIO -->
-                    <com.google.android.material.card.MaterialCardView
-                        style="?attr/materialCardViewOutlinedStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="10dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardCornerRadius="14dp"
-                        app:strokeColor="@color/card_stroke"
-                        app:strokeWidth="1dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="12dp">
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="6dp"
-                                android:fontFamily="@font/nunito_bold"
-                                android:text="1. Sistema Respiratorio"
-                                android:textColor="@color/primary"
-                                android:textSize="14sp" />
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Presenta moco"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swRespiratorioMoco"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Se le dificulta respirar"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swRespiratorioDificultad"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Tos"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swRespiratorioTos"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Lagaña o lagrimeo"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swRespiratorioLaganeo"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- 2. DIGESTIVO -->
-                    <com.google.android.material.card.MaterialCardView
-                        style="?attr/materialCardViewOutlinedStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="10dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardCornerRadius="14dp"
-                        app:strokeColor="@color/card_stroke"
-                        app:strokeWidth="1dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="12dp">
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="6dp"
-                                android:fontFamily="@font/nunito_bold"
-                                android:text="2. Sistema Digestivo"
-                                android:textColor="@color/primary"
-                                android:textSize="14sp" />
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Presenta vómito"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swDigestivoVomito"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Presenta diarrea"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swDigestivoDiarrea"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Lo encuentra flaco o desnutrido"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swDigestivoDesnutrido"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Deshidratado"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swDigestivoDeshidratado"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- 3. MÚSCULO ESQUELÉTICO -->
-                    <com.google.android.material.card.MaterialCardView
-                        style="?attr/materialCardViewOutlinedStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="10dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardCornerRadius="14dp"
-                        app:strokeColor="@color/card_stroke"
-                        app:strokeWidth="1dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="12dp">
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="6dp"
-                                android:fontFamily="@font/nunito_bold"
-                                android:text="3. Sistema Músculo Esquelético"
-                                android:textColor="@color/primary"
-                                android:textSize="14sp" />
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Caída de las patas de atrás"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swMusculoCaidaPatas"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Cojo"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swMusculoCojo"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Presenta herida abierta"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swMusculoHeridaAbierta"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Observa moscos o gusanos"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swMusculoGusanos"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Postrado"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swMusculoPostrado"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- 4. DERMATOLÓGICO -->
-                    <com.google.android.material.card.MaterialCardView
-                        style="?attr/materialCardViewOutlinedStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="10dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardCornerRadius="14dp"
-                        app:strokeColor="@color/card_stroke"
-                        app:strokeWidth="1dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="12dp">
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="6dp"
-                                android:fontFamily="@font/nunito_bold"
-                                android:text="4. Sistema Dermatológico"
-                                android:textColor="@color/primary"
-                                android:textSize="14sp" />
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Presenta peladuras"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swDermatoPeladuras"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Heridas con sangre"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swDermatoHeridasSangre"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Pulgas o garrapatas"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swDermatoPulgas"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- 5. GENITOURINARIO -->
-                    <com.google.android.material.card.MaterialCardView
-                        style="?attr/materialCardViewOutlinedStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardCornerRadius="14dp"
-                        app:strokeColor="@color/card_stroke"
-                        app:strokeWidth="1dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="12dp">
-
-                            <TextView
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="6dp"
-                                android:fontFamily="@font/nunito_bold"
-                                android:text="5. Sistema Genitourinario"
-                                android:textColor="@color/primary"
-                                android:textSize="14sp" />
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Presenta masa o secreción (vagina/pene)"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swGenitoMasaSecrecion"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Se encuentra gestante"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swGenitoGestante"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:gravity="center_vertical"
-                                android:orientation="horizontal"
-                                android:paddingVertical="3dp">
-                                <TextView
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_weight="1"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Se encuentra en celo"
-                                    android:textColor="@color/text_primary"
-                                    android:textSize="13sp" />
-                                <com.google.android.material.materialswitch.MaterialSwitch
-                                    android:id="@+id/swGenitoCelo"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    app:thumbTint="@color/white"
-                                    app:trackTint="@color/primary" />
-                            </LinearLayout>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Observaciones del Rescate -->
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
-                        android:fontFamily="@font/nunito_bold"
-                        android:text="Observaciones del rescate"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp" />
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilObservacionesRescate"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="12dp"
-                        android:hint="Observaciones y detalles adicionales *"
-                        app:boxStrokeColor="@color/primary">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etObservacionesRescate"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:gravity="top|start"
-                            android:inputType="textMultiLine"
-                            android:minLines="3"
-                            android:textColor="@color/text_primary" />
-                    </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
-            </LinearLayout>
 
             <!-- ======================================================= -->
             <!-- ===================== PASO 3 ========================== -->
@@ -1922,7 +1054,1252 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- Notificación y Cierre -->
+                                <!-- ==================================================== -->
+                <!-- MÓDULO INTEGRADO: ACTA DE RESCATE (Formato Popayán)   -->
+                <!-- Aparece como opción al final si el animal es retirado -->
+                <!-- ==================================================== -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardOpcionRescate"
+                    style="?attr/materialCardViewOutlinedStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="16dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="16dp"
+                    app:strokeColor="@color/primary"
+                    app:strokeWidth="1.5dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:padding="14dp">
+
+                        <!-- Encabezado con Interruptor para Activar Rescate -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <ImageView
+                                android:layout_width="32dp"
+                                android:layout_height="32dp"
+                                android:layout_marginEnd="10dp"
+                                android:src="@drawable/baseline_pets_24"
+                                app:tint="@color/primary" />
+
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="¿Requiere rescate o traslado al CBA?"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="14sp" />
+
+                                <TextView
+                                    android:id="@+id/tvEstadoRequiereRescate"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="No requerido (atención normal)"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="11sp" />
+                            </LinearLayout>
+
+                            <com.google.android.material.materialswitch.MaterialSwitch
+                                android:id="@+id/swRequiereRescate"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:checked="false" />
+                        </LinearLayout>
+
+                        <!-- Contenedor expandible del Formato de Rescate -->
+                        <LinearLayout
+                            android:id="@+id/layoutModuloRescateIntegrado"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="14dp"
+                            android:orientation="vertical"
+                            android:visibility="gone">
+
+                            <!-- Banner Informativo con Botón de Sincronización Automática -->
+                            <com.google.android.material.card.MaterialCardView
+                                style="?attr/materialCardViewFilledStyle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="14dp"
+                                app:cardBackgroundColor="#F0FDF4"
+                                app:cardCornerRadius="12dp"
+                                app:strokeColor="#BBF7D0"
+                                app:strokeWidth="1dp">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical"
+                                    android:padding="12dp">
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/nunito_bold"
+                                        android:text="Formato Oficial de Rescate (Popayán F-GS-C01-03-33)"
+                                        android:textColor="#166534"
+                                        android:textSize="13sp" />
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginTop="2dp"
+                                        android:layout_marginBottom="8dp"
+                                        android:fontFamily="@font/nunito"
+                                        android:text="El animal es retirado por salud crítica o maltrato. Pulse para precargar los datos ya digitados en la atención."
+                                        android:textColor="#15803D"
+                                        android:textSize="11sp" />
+
+                                    <com.google.android.material.button.MaterialButton
+                                        android:id="@+id/btnCargarDatosRescate"
+                                        style="?attr/materialButtonStyle"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="44dp"
+                                        android:fontFamily="@font/nunito_bold"
+                                        android:text="Sincronizar datos de la atención"
+                                        android:textAllCaps="false"
+                                        android:textColor="@color/white"
+                                        android:textSize="12sp"
+                                        app:icon="@drawable/ic_sync"
+                                        app:iconGravity="textStart"
+                                        app:iconPadding="8dp"
+                                        app:iconSize="18dp"
+                                        app:iconTint="@color/white"
+                                        app:backgroundTint="@color/primary"
+                                        app:cornerRadius="8dp" />
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <!-- Causal de Rescate / Traslado -->
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/tilMotivoRescateDropdown"
+                                style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="12dp"
+                                android:hint="Causal de rescate / traslado *"
+                                app:boxStrokeColor="@color/primary">
+
+                                <com.google.android.material.textfield.MaterialAutoCompleteTextView
+                                    android:id="@+id/autoCompleteMotivoRescate"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="none"
+                                    android:textColor="@color/text_primary" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <!-- Persona que atiende / entrega al animal -->
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:layout_marginBottom="6dp"
+                                android:fontFamily="@font/nunito_bold"
+                                android:text="Persona en predio y ubicación del rescate"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp" />
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/tilPersonaAtiendeRescatista"
+                                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="12dp"
+                                android:hint="Persona quien atiende al rescatista *"
+                                app:boxStrokeColor="@color/primary"
+                                app:startIconDrawable="@drawable/user"
+                                app:startIconTint="@color/primary">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etPersonaAtiendeRescatista"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="textCapWords"
+                                    android:textColor="@color/text_primary" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:baselineAligned="false"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="12dp">
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    android:id="@+id/tilPersonaAtiendeCedula"
+                                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="6dp"
+                                    android:layout_weight="1"
+                                    android:hint="No. Cédula"
+                                    app:boxStrokeColor="@color/primary">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etPersonaAtiendeCedula"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:inputType="number"
+                                        android:textColor="@color/text_primary" />
+                                </com.google.android.material.textfield.TextInputLayout>
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    android:id="@+id/tilPersonaAtiendeTelefono"
+                                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="6dp"
+                                    android:layout_weight="1"
+                                    android:hint="Teléfono contacto *"
+                                    app:boxStrokeColor="@color/primary"
+                                    app:startIconDrawable="@drawable/phone"
+                                    app:startIconTint="@color/primary">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etPersonaAtiendeTelefono"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:inputType="phone"
+                                        android:textColor="@color/text_primary" />
+                                </com.google.android.material.textfield.TextInputLayout>
+                            </LinearLayout>
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/tilBarrioRescate"
+                                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="14dp"
+                                android:hint="Barrio del rescate *"
+                                app:boxStrokeColor="@color/primary">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etBarrioRescate"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="textCapWords"
+                                    android:textColor="@color/text_primary" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <!-- Testigos del Rescate / Retiro -->
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:layout_marginBottom="4dp"
+                                android:fontFamily="@font/nunito_bold"
+                                android:text="Testigo 1 (Certifica traslado / entrega) *"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp" />
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/tilTestigo1Nombre"
+                                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="12dp"
+                                android:hint="Nombre completo del Testigo 1 *"
+                                app:boxStrokeColor="@color/primary">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etTestigo1Nombre"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="textCapWords"
+                                    android:textColor="@color/text_primary" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:baselineAligned="false"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="12dp">
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    android:id="@+id/tilTestigo1Cedula"
+                                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="6dp"
+                                    android:layout_weight="1"
+                                    android:hint="Cédula Testigo 1 *"
+                                    app:boxStrokeColor="@color/primary">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etTestigo1Cedula"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:inputType="number"
+                                        android:textColor="@color/text_primary" />
+                                </com.google.android.material.textfield.TextInputLayout>
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    android:id="@+id/tilTestigo1Telefono"
+                                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="6dp"
+                                    android:layout_weight="1"
+                                    android:hint="Teléfono Testigo 1"
+                                    app:boxStrokeColor="@color/primary"
+                                    app:startIconDrawable="@drawable/phone"
+                                    app:startIconTint="@color/primary">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etTestigo1Telefono"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:inputType="phone"
+                                        android:textColor="@color/text_primary" />
+                                </com.google.android.material.textfield.TextInputLayout>
+                            </LinearLayout>
+
+                            <!-- Testigo 2 (Opcional) -->
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:layout_marginBottom="4dp"
+                                android:fontFamily="@font/nunito_bold"
+                                android:text="Testigo 2 (Opcional según formato Popayán)"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp" />
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/tilTestigo2Nombre"
+                                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="12dp"
+                                android:hint="Nombre completo del Testigo 2 (opcional)"
+                                app:boxStrokeColor="@color/primary">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etTestigo2Nombre"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:inputType="textCapWords"
+                                    android:textColor="@color/text_primary" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:baselineAligned="false"
+                                android:orientation="horizontal"
+                                android:layout_marginBottom="14dp">
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    android:id="@+id/tilTestigo2Cedula"
+                                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="6dp"
+                                    android:layout_weight="1"
+                                    android:hint="Cédula Testigo 2"
+                                    app:boxStrokeColor="@color/primary">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etTestigo2Cedula"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:inputType="number"
+                                        android:textColor="@color/text_primary" />
+                                </com.google.android.material.textfield.TextInputLayout>
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    android:id="@+id/tilTestigo2Telefono"
+                                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginStart="6dp"
+                                    android:layout_weight="1"
+                                    android:hint="Teléfono Testigo 2"
+                                    app:boxStrokeColor="@color/primary">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etTestigo2Telefono"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:inputType="phone"
+                                        android:textColor="@color/text_primary" />
+                                </com.google.android.material.textfield.TextInputLayout>
+                            </LinearLayout>
+
+                            <!-- ============================================== -->
+                            <!-- EVALUACIÓN CLÍNICA POR SISTEMAS (19 SWITCHES) -->
+                            <!-- ============================================== -->
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:layout_marginBottom="2dp"
+                                android:fontFamily="@font/nunito_bold"
+                                android:text="Evaluación de rescate por sistemas"
+                                android:textColor="@color/text_primary"
+                                android:textSize="15sp" />
+
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="10dp"
+                                android:fontFamily="@font/nunito"
+                                android:text="Marque SÍ únicamente si constata la anomalía o síntoma en campo (F-GS-C01-03-33)"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+
+                            <!-- 1. RESPIRATORIO -->
+                            <com.google.android.material.card.MaterialCardView
+                                style="?attr/materialCardViewOutlinedStyle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="10dp"
+                                app:cardBackgroundColor="@color/white"
+                                app:cardCornerRadius="14dp"
+                                app:strokeColor="@color/card_stroke"
+                                app:strokeWidth="1dp">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical"
+                                    android:padding="12dp">
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginBottom="6dp"
+                                        android:fontFamily="@font/nunito_bold"
+                                        android:text="1. Sistema Respiratorio"
+                                        android:textColor="@color/primary"
+                                        android:textSize="14sp" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Presenta moco"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoRespiratorioMoco"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swRespiratorioMoco"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Se le dificulta respirar"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoRespiratorioDificultad"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swRespiratorioDificultad"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Tos"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoRespiratorioTos"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swRespiratorioTos"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Lagaña o lagrimeo"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoRespiratorioLaganeo"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swRespiratorioLaganeo"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <!-- 2. DIGESTIVO -->
+                            <com.google.android.material.card.MaterialCardView
+                                style="?attr/materialCardViewOutlinedStyle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="10dp"
+                                app:cardBackgroundColor="@color/white"
+                                app:cardCornerRadius="14dp"
+                                app:strokeColor="@color/card_stroke"
+                                app:strokeWidth="1dp">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical"
+                                    android:padding="12dp">
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginBottom="6dp"
+                                        android:fontFamily="@font/nunito_bold"
+                                        android:text="2. Sistema Digestivo"
+                                        android:textColor="@color/primary"
+                                        android:textSize="14sp" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Presenta vómito"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoDigestivoVomito"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swDigestivoVomito"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Presenta diarrea"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoDigestivoDiarrea"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swDigestivoDiarrea"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Lo encuentra flaco o desnutrido"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoDigestivoDesnutrido"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swDigestivoDesnutrido"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Deshidratado"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoDigestivoDeshidratado"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swDigestivoDeshidratado"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <!-- 3. MÚSCULO ESQUELÉTICO -->
+                            <com.google.android.material.card.MaterialCardView
+                                style="?attr/materialCardViewOutlinedStyle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="10dp"
+                                app:cardBackgroundColor="@color/white"
+                                app:cardCornerRadius="14dp"
+                                app:strokeColor="@color/card_stroke"
+                                app:strokeWidth="1dp">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical"
+                                    android:padding="12dp">
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginBottom="6dp"
+                                        android:fontFamily="@font/nunito_bold"
+                                        android:text="3. Sistema Músculo Esquelético"
+                                        android:textColor="@color/primary"
+                                        android:textSize="14sp" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Caída de las patas de atrás"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoMusculoCaidaPatas"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swMusculoCaidaPatas"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Cojo"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoMusculoCojo"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swMusculoCojo"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Presenta herida abierta"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoMusculoHeridaAbierta"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swMusculoHeridaAbierta"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Observa moscos o gusanos"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoMusculoGusanos"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swMusculoGusanos"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Postrado"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoMusculoPostrado"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swMusculoPostrado"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <!-- 4. DERMATOLÓGICO -->
+                            <com.google.android.material.card.MaterialCardView
+                                style="?attr/materialCardViewOutlinedStyle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="10dp"
+                                app:cardBackgroundColor="@color/white"
+                                app:cardCornerRadius="14dp"
+                                app:strokeColor="@color/card_stroke"
+                                app:strokeWidth="1dp">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical"
+                                    android:padding="12dp">
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginBottom="6dp"
+                                        android:fontFamily="@font/nunito_bold"
+                                        android:text="4. Sistema Dermatológico"
+                                        android:textColor="@color/primary"
+                                        android:textSize="14sp" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Presenta peladuras"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoDermatoPeladuras"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swDermatoPeladuras"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Heridas con sangre"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoDermatoHeridasSangre"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swDermatoHeridasSangre"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Pulgas o garrapatas"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoDermatoPulgas"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swDermatoPulgas"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <!-- 5. GENITOURINARIO -->
+                            <com.google.android.material.card.MaterialCardView
+                                style="?attr/materialCardViewOutlinedStyle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="12dp"
+                                app:cardBackgroundColor="@color/white"
+                                app:cardCornerRadius="14dp"
+                                app:strokeColor="@color/card_stroke"
+                                app:strokeWidth="1dp">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical"
+                                    android:padding="12dp">
+
+                                    <TextView
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginBottom="6dp"
+                                        android:fontFamily="@font/nunito_bold"
+                                        android:text="5. Sistema Genitourinario"
+                                        android:textColor="@color/primary"
+                                        android:textSize="14sp" />
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Presenta masa o secreción (vagina/pene)"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoGenitoMasaSecrecion"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swGenitoMasaSecrecion"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Se encuentra gestante"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoGenitoGestante"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swGenitoGestante"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingVertical="4dp">
+                                <TextView
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Se encuentra en celo"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="13sp" />
+                                <TextView
+                                    android:id="@+id/tvEstadoGenitoCelo"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginEnd="8dp"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="NO"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+                                <com.google.android.material.materialswitch.MaterialSwitch
+                                    android:id="@+id/swGenitoCelo"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:checked="false" />
+                            </LinearLayout>
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+
+                            <!-- Observaciones del Rescate -->
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="6dp"
+                                android:fontFamily="@font/nunito_bold"
+                                android:text="Observaciones y justificación del rescate"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp" />
+
+                            <com.google.android.material.textfield.TextInputLayout
+                                android:id="@+id/tilObservacionesRescate"
+                                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="14dp"
+                                android:hint="Observaciones y detalles del traslado *"
+                                app:boxStrokeColor="@color/primary">
+
+                                <com.google.android.material.textfield.TextInputEditText
+                                    android:id="@+id/etObservacionesRescate"
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="top|start"
+                                    android:inputType="textMultiLine"
+                                    android:minLines="3"
+                                    android:textColor="@color/text_primary" />
+                            </com.google.android.material.textfield.TextInputLayout>
+
+                            <!-- Recepción en CBA (Pág 2 Formato Popayán) -->
+                            <TextView
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="4dp"
+                                android:layout_marginBottom="6dp"
+                                android:fontFamily="@font/nunito_bold"
+                                android:text="Recepción en CBA / Clínica (Pág. 2 Popayán)"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp" />
+
+                            <com.google.android.material.card.MaterialCardView
+                                style="?attr/materialCardViewOutlinedStyle"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:layout_marginBottom="14dp"
+                                app:cardBackgroundColor="@color/white"
+                                app:cardCornerRadius="14dp"
+                                app:strokeColor="@color/card_stroke"
+                                app:strokeWidth="1dp">
+
+                                <LinearLayout
+                                    android:layout_width="match_parent"
+                                    android:layout_height="wrap_content"
+                                    android:orientation="vertical"
+                                    android:padding="14dp">
+
+                                    <com.google.android.material.textfield.TextInputLayout
+                                        android:id="@+id/tilVeterinarioReceptor"
+                                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginBottom="12dp"
+                                        android:hint="Médico Veterinario que recibe al paciente"
+                                        app:boxStrokeColor="@color/primary"
+                                        app:startIconDrawable="@drawable/user"
+                                        app:startIconTint="@color/primary">
+
+                                        <com.google.android.material.textfield.TextInputEditText
+                                            android:id="@+id/etVeterinarioReceptor"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content"
+                                            android:inputType="textCapWords"
+                                            android:textColor="@color/text_primary" />
+                                    </com.google.android.material.textfield.TextInputLayout>
+
+                                    <LinearLayout
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:baselineAligned="false"
+                                        android:orientation="horizontal"
+                                        android:layout_marginBottom="12dp">
+
+                                        <com.google.android.material.textfield.TextInputLayout
+                                            android:id="@+id/tilFechaRecepcion"
+                                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                            android:layout_width="0dp"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginEnd="6dp"
+                                            android:layout_weight="1"
+                                            android:hint="Fecha recepción">
+
+                                            <com.google.android.material.textfield.TextInputEditText
+                                                android:id="@+id/etFechaRecepcion"
+                                                android:layout_width="match_parent"
+                                                android:layout_height="wrap_content"
+                                                android:textColor="@color/text_primary" />
+                                        </com.google.android.material.textfield.TextInputLayout>
+
+                                        <com.google.android.material.textfield.TextInputLayout
+                                            android:id="@+id/tilHoraRecepcion"
+                                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                            android:layout_width="0dp"
+                                            android:layout_height="wrap_content"
+                                            android:layout_marginStart="6dp"
+                                            android:layout_weight="1"
+                                            android:hint="Hora recepción">
+
+                                            <com.google.android.material.textfield.TextInputEditText
+                                                android:id="@+id/etHoraRecepcion"
+                                                android:layout_width="match_parent"
+                                                android:layout_height="wrap_content"
+                                                android:textColor="@color/text_primary" />
+                                        </com.google.android.material.textfield.TextInputLayout>
+                                    </LinearLayout>
+
+                                    <com.google.android.material.textfield.TextInputLayout
+                                        android:id="@+id/tilObservacionesRecepcion"
+                                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:hint="Observaciones de recepción / canil"
+                                        app:boxStrokeColor="@color/primary">
+
+                                        <com.google.android.material.textfield.TextInputEditText
+                                            android:id="@+id/etObservacionesRecepcion"
+                                            android:layout_width="match_parent"
+                                            android:layout_height="wrap_content"
+                                            android:gravity="top|start"
+                                            android:inputType="textMultiLine"
+                                            android:minLines="2"
+                                            android:textColor="@color/text_primary" />
+                                    </com.google.android.material.textfield.TextInputLayout>
+                                </LinearLayout>
+                            </com.google.android.material.card.MaterialCardView>
+
+                        </LinearLayout>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+<!-- Notificación y Cierre -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -2154,122 +2531,6 @@
                             android:background="#F8FAFC" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
-
-                <!-- ==================================================== -->
-                <!-- RECEPCIÓN CLÍNICA / CBA (Pág 2 Formato Popayán)      -->
-                <!-- ==================================================== -->
-                <LinearLayout
-                    android:id="@+id/layoutRecepcionVeterinaria"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:visibility="gone">
-
-                    <TextView
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
-                        android:layout_marginBottom="8dp"
-                        android:fontFamily="@font/nunito_bold"
-                        android:text="Recepción clínica (Pág. 2 Formato Popayán)"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp" />
-
-                    <com.google.android.material.card.MaterialCardView
-                        style="?attr/materialCardViewOutlinedStyle"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginBottom="14dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:cardCornerRadius="14dp"
-                        app:strokeColor="@color/card_stroke"
-                        app:strokeWidth="1dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="14dp">
-
-                            <com.google.android.material.textfield.TextInputLayout
-                                android:id="@+id/tilVeterinarioReceptor"
-                                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:layout_marginBottom="12dp"
-                                android:hint="Médico Veterinario que recibe al paciente"
-                                app:boxStrokeColor="@color/primary"
-                                app:startIconDrawable="@drawable/user"
-                                app:startIconTint="@color/primary">
-
-                                <com.google.android.material.textfield.TextInputEditText
-                                    android:id="@+id/etVeterinarioReceptor"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:inputType="textCapWords"
-                                    android:textColor="@color/text_primary" />
-                            </com.google.android.material.textfield.TextInputLayout>
-
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:baselineAligned="false"
-                                android:orientation="horizontal"
-                                android:layout_marginBottom="12dp">
-
-                                <com.google.android.material.textfield.TextInputLayout
-                                    android:id="@+id/tilFechaRecepcion"
-                                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginEnd="6dp"
-                                    android:layout_weight="1"
-                                    android:hint="Fecha recepción">
-
-                                    <com.google.android.material.textfield.TextInputEditText
-                                        android:id="@+id/etFechaRecepcion"
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        android:textColor="@color/text_primary" />
-                                </com.google.android.material.textfield.TextInputLayout>
-
-                                <com.google.android.material.textfield.TextInputLayout
-                                    android:id="@+id/tilHoraRecepcion"
-                                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                                    android:layout_width="0dp"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginStart="6dp"
-                                    android:layout_weight="1"
-                                    android:hint="Hora recepción">
-
-                                    <com.google.android.material.textfield.TextInputEditText
-                                        android:id="@+id/etHoraRecepcion"
-                                        android:layout_width="match_parent"
-                                        android:layout_height="wrap_content"
-                                        android:textColor="@color/text_primary" />
-                                </com.google.android.material.textfield.TextInputLayout>
-                            </LinearLayout>
-
-                            <com.google.android.material.textfield.TextInputLayout
-                                android:id="@+id/tilObservacionesRecepcion"
-                                style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:hint="Observaciones de recepción"
-                                app:boxStrokeColor="@color/primary">
-
-                                <com.google.android.material.textfield.TextInputEditText
-                                    android:id="@+id/etObservacionesRecepcion"
-                                    android:layout_width="match_parent"
-                                    android:layout_height="wrap_content"
-                                    android:gravity="top|start"
-                                    android:inputType="textMultiLine"
-                                    android:minLines="2"
-                                    android:textColor="@color/text_primary" />
-                            </com.google.android.material.textfield.TextInputLayout>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
 
                 <!-- Cierre del caso / Petición -->
                 <TextView

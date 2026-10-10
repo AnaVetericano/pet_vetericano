@@ -11,9 +11,12 @@ import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.bumptech.glide.Glide
 import com.example.petvetericano.databinding.ActivityDetallePeticionBinding
 import com.example.petvetericano.models.PeticionListResponse
@@ -86,7 +89,7 @@ class DetallePeticion : AppCompatActivity() {
             Toast.makeText(this, "Error: ID de petición no válido", Toast.LENGTH_SHORT).show()
         }
 
-        // 🔄 CONFIGURACIÓN PARA ACTUALIZAR ESTADO DEL CASO (Desde botón o desde el badge)
+        // CONFIGURACIÓN PARA ACTUALIZAR ESTADO DEL CASO (Desde botón o desde el badge)
         val abrirActualizarEstado = {
             val intent = Intent(this, UpdateStatusActivity::class.java).apply {
                 putExtra("PETICION_ID", peticionId)
@@ -99,7 +102,7 @@ class DetallePeticion : AppCompatActivity() {
         binding.btnActualizarEstado.setOnClickListener { abrirActualizarEstado() }
         binding.tvBadgeEstado.setOnClickListener { abrirActualizarEstado() }
 
-        // 🛠️ CONFIGURACIÓN DEL BOTÓN CORREGIR DIRECCIÓN CON ALERTA DE CONFIRMACIÓN
+        // CONFIGURACIÓN DEL BOTÓN CORREGIR DIRECCIÓN CON ALERTA DE CONFIRMACIÓN
         binding.btnCorregirDireccion.setOnClickListener {
             AlertDialog.Builder(this)
                 .setTitle("Corregir dirección")
@@ -118,13 +121,7 @@ class DetallePeticion : AppCompatActivity() {
                 .show()
         }
 
-        binding.btnAtender.setOnClickListener {
-            val intent = Intent(this, ActaAtencionActivity::class.java).apply {
-                putExtra("PETICION_ID", peticionId)
-                putExtra("DIRECCION_ACTUAL", direccionActual)
-            }
-            actaLauncher.launch(intent)
-        }
+        // Nota: La acción y apariencia de binding.btnAtender se configuran dinámicamente en bindData() según el estado del acta
 
         binding.btnVerRuta.setOnClickListener {
             if (direccionActual.isNotEmpty()) {
@@ -185,7 +182,7 @@ class DetallePeticion : AppCompatActivity() {
         binding.tvObservaciones.text = peticion.descripcion?.trim()?.takeIf { it.isNotEmpty() } ?: "Sin observaciones registradas."
         binding.tvUbicacionTexto.text = peticion.ubicacion_direccion?.trim()?.takeIf { it.isNotEmpty() } ?: "Ubicación no registrada"
 
-        // 🖼️ GESTIÓN Y CARGA DE LA FOTO DESDE LA BASE DE DATOS
+        // GESTIÓN Y CARGA DE LA FOTO DESDE LA BASE DE DATOS
         val fotoUrl = peticion.foto
         if (!fotoUrl.isNullOrBlank()) {
             binding.cardFotoEvidencia.visibility = View.VISIBLE
@@ -201,6 +198,45 @@ class DetallePeticion : AppCompatActivity() {
                 .into(binding.ivPeticionFoto)
         } else {
             binding.cardFotoEvidencia.visibility = View.GONE
+        }
+
+        // CONTROL DE ACTA ÚNICA: Validar si la petición ya fue atendida
+        val stLower = estadoActual.lowercase()
+        val tieneActa = peticion.tiene_acta == true ||
+            stLower.contains("tratamiento") ||
+            stLower.contains("observación") ||
+            stLower.contains("observacion") ||
+            stLower.contains("alta") ||
+            stLower.contains("atendida") ||
+            stLower.contains("resuelta") ||
+            stLower.contains("fallecido") ||
+            stLower.contains("transferido")
+
+        if (tieneActa) {
+            binding.btnAtender.text = "Atención registrada"
+            binding.btnAtender.setIconResource(R.drawable.ic_check)
+            binding.btnAtender.iconGravity = MaterialButton.ICON_GRAVITY_TEXT_START
+            binding.btnAtender.iconPadding = (8 * resources.displayMetrics.density).toInt()
+            binding.btnAtender.iconTint = ContextCompat.getColorStateList(this, R.color.white)
+            binding.btnAtender.setBackgroundColor(Color.parseColor("#059669"))
+            binding.btnAtender.setOnClickListener {
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("Petición ya atendida")
+                    .setMessage("Esta petición ya fue atendida en campo y cuenta con un Acta de Seres Sintientes registrada.\n\nPara garantizar la trazabilidad legal y evitar duplicados, cada petición admite una única acta de atención.")
+                    .setPositiveButton("Aceptar", null)
+                    .show()
+            }
+        } else {
+            binding.btnAtender.text = "Atender"
+            binding.btnAtender.icon = null
+            binding.btnAtender.setBackgroundColor(Color.parseColor("#4141A5"))
+            binding.btnAtender.setOnClickListener {
+                val intent = Intent(this, ActaAtencionActivity::class.java).apply {
+                    putExtra("PETICION_ID", peticionId)
+                    putExtra("DIRECCION_ACTUAL", direccionActual)
+                }
+                actaLauncher.launch(intent)
+            }
         }
     }
 

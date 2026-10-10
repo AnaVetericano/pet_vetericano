@@ -28,6 +28,7 @@ import com.example.petvetericano.models.SeguimientoPeticionVisitaRequest
 import com.example.petvetericano.network.RetrofitClient
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -92,6 +93,7 @@ class ActaAtencionActivity : AppCompatActivity() {
         setupChecklistSwitches()
         setupAutoScrollOnFocus()
         updateStepper()
+        verificarSiPeticionYaAtendida()
 
         // Agregar por defecto al menos un formulario de paciente al iniciar
         agregarFormularioAnimal()
@@ -367,7 +369,7 @@ class ActaAtencionActivity : AppCompatActivity() {
         val dirPrevia = intent.getStringExtra("DIRECCION_ACTUAL")
         if (!dirPrevia.isNullOrBlank()) {
             binding.etLugarAtencion.setText(dirPrevia)
-            binding.tvLugarAtencionInfo.text = "📍 $dirPrevia (Reportada en petición)"
+            binding.tvLugarAtencionInfo.text = "$dirPrevia (Reportada en petición)"
             binding.tvLugarAtencionStatus.text = "Asignada"
             binding.tvLugarAtencionStatus.setTextColor(ContextCompat.getColor(this, R.color.primary))
         }
@@ -436,8 +438,8 @@ class ActaAtencionActivity : AppCompatActivity() {
         val aplicarDireccion = { dir: String ->
             runOnUiThread {
                 binding.etLugarAtencion.setText(dir)
-                binding.tvLugarAtencionInfo.text = "📍 $dir"
-                binding.tvLugarAtencionStatus.text = "✓ Guardada"
+                binding.tvLugarAtencionInfo.text = dir
+                binding.tvLugarAtencionStatus.text = "Guardada"
                 binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#047857"))
                 Toast.makeText(this, "Ubicación fijada correctamente", Toast.LENGTH_SHORT).show()
             }
@@ -1281,7 +1283,11 @@ class ActaAtencionActivity : AppCompatActivity() {
                 if (primerClave != null) {
                     val valor = json.optJSONArray(primerClave)?.optString(0)
                         ?: json.optString(primerClave)
-                    "Error ($primerClave): $valor"
+                    if (primerClave.equals("error", ignoreCase = true) || primerClave.equals("detail", ignoreCase = true)) {
+                        valor
+                    } else {
+                        "Error ($primerClave): $valor"
+                    }
                 } else {
                     "Error al guardar ($code)"
                 }
@@ -1290,6 +1296,45 @@ class ActaAtencionActivity : AppCompatActivity() {
             }
         } catch (_: Exception) {
             "Error en la solicitud ($code): $errorBody"
+        }
+    }
+
+    private fun verificarSiPeticionYaAtendida() {
+        if (peticionId == -1) return
+        val prefs = SharedPreferencesManager(this)
+        val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
+        if (token.isEmpty()) return
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val response = RetrofitClient.apiService.listarPeticiones("Bearer $token")
+                if (response.isSuccessful) {
+                    val peticion = response.body()?.firstOrNull { it.id_peticion == peticionId }
+                    val estado = peticion?.estado.orEmpty().lowercase()
+                    val yaAtendida = peticion?.tiene_acta == true ||
+                        estado.contains("tratamiento") ||
+                        estado.contains("observación") ||
+                        estado.contains("observacion") ||
+                        estado.contains("alta") ||
+                        estado.contains("atendida") ||
+                        estado.contains("resuelta")
+
+                    if (yaAtendida) {
+                        withContext(Dispatchers.Main) {
+                            MaterialAlertDialogBuilder(this@ActaAtencionActivity)
+                                .setTitle("Petición ya atendida")
+                                .setMessage("Esta petición ya cuenta con un Acta de Seres Sintientes registrada.\n\nEl sistema no permite crear actas adicionales para el mismo caso para proteger la trazabilidad médica.")
+                                .setCancelable(false)
+                                .setPositiveButton("Regresar") { _, _ ->
+                                    finish()
+                                }
+                                .show()
+                        }
+                    }
+                }
+            } catch (_: Exception) {
+                // Si ocurre error de red, la validación estricta del backend protegerá el registro
+            }
         }
     }
 

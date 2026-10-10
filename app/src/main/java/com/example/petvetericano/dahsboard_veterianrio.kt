@@ -136,7 +136,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
 
                         configurarGrafico(asignadas, atendidas, reasignadas, total)
 
-                        val listaParaRv = petitions.take(5).map { pet ->
+                        val listaParaRv = petitions.map { pet ->
                             val estadoStr = pet.estado?.lowercase() ?: ""
                             val tipo = when {
                                 estadoStr.contains("urgente") -> TipoEstado.URGENTE

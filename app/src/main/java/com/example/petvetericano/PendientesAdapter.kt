@@ -22,11 +22,12 @@ class PendientesAdapter(
 
             val context = binding.root.context
 
-            // Asignar colores según el estado (Urgente, Proceso, Asignada)
+            // Asignar colores según el estado (Urgente, Proceso, Asignada, Transferida)
             val (bgColor, textColor) = when (peticion.tipoEstado) {
                 TipoEstado.URGENTE -> Pair(R.color.badge_urgente_bg, R.color.badge_urgente_text)
                 TipoEstado.EN_PROCESO -> Pair(R.color.badge_proceso_bg, R.color.badge_proceso_text)
                 TipoEstado.ASIGNADA -> Pair(R.color.badge_asignada_bg, R.color.badge_asignada_text)
+                TipoEstado.TRANSFERIDA -> Pair(R.color.badge_transferido_bg, R.color.badge_transferido_text)
             }
 
             // Aplicar colores

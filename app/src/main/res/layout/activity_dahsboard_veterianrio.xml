@@ -74,13 +74,14 @@
                         android:textStyle="bold" />
                 </LinearLayout>
 
-                <!-- Tarjeta del Gráfico -->
+                <!-- Tarjeta del Gráfico Material Design 3 -->
                 <com.google.android.material.card.MaterialCardView
+                    style="?attr/materialCardViewFilledStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="0dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="1dp"
                     app:cardBackgroundColor="@color/white"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
@@ -89,7 +90,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="18dp">
 
                         <TextView
                             android:id="@+id/tvTituloDatosMensuales"
@@ -116,7 +117,7 @@
                                 android:layout_height="match_parent"
                                 android:layout_weight="1.2" />
 
-                            <!-- Leyenda del Gráfico -->
+                            <!-- Leyenda del Gráfico M3 (4 Categorías Clínicas) -->
                             <LinearLayout
                                 android:layout_width="0dp"
                                 android:layout_height="wrap_content"
@@ -128,10 +129,10 @@
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:fontFamily="@font/nunito"
+                                    android:fontFamily="@font/nunito_bold"
                                     android:text="● Asignadas"
                                     android:textColor="@color/grafico_asignadas"
-                                    android:textSize="12sp"/>
+                                    android:textSize="11sp"/>
                                 <TextView
                                     android:id="@+id/tvGraficoAsignadas"
                                     android:layout_width="wrap_content"
@@ -140,16 +141,34 @@
                                     android:text="0"
                                     android:textColor="@color/text_primary"
                                     android:textStyle="bold"
-                                    android:layout_marginBottom="8dp"/>
+                                    android:layout_marginBottom="4dp"/>
+
+                                <!-- En tratamiento / proceso -->
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="● En tratamiento"
+                                    android:textColor="@color/grafico_en_tratamiento"
+                                    android:textSize="11sp"/>
+                                <TextView
+                                    android:id="@+id/tvGraficoReasignadas"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="0"
+                                    android:textColor="@color/text_primary"
+                                    android:textStyle="bold"
+                                    android:layout_marginBottom="4dp"/>
 
                                 <!-- Atendidas -->
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:fontFamily="@font/nunito"
+                                    android:fontFamily="@font/nunito_bold"
                                     android:text="● Atendidas"
                                     android:textColor="@color/grafico_atendidas"
-                                    android:textSize="12sp"/>
+                                    android:textSize="11sp"/>
                                 <TextView
                                     android:id="@+id/tvGraficoAtendidas"
                                     android:layout_width="wrap_content"
@@ -158,18 +177,18 @@
                                     android:text="0"
                                     android:textColor="@color/text_primary"
                                     android:textStyle="bold"
-                                    android:layout_marginBottom="8dp"/>
+                                    android:layout_marginBottom="4dp"/>
 
-                                <!-- Reasignadas -->
+                                <!-- Transferidas a otro centro -->
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="● Reasignadas"
-                                    android:textColor="@color/grafico_reasignadas"
-                                    android:textSize="12sp"/>
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="● Transferidas"
+                                    android:textColor="@color/grafico_transferidas"
+                                    android:textSize="11sp"/>
                                 <TextView
-                                    android:id="@+id/tvGraficoReasignadas"
+                                    android:id="@+id/tvGraficoTransferidas"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito"
@@ -181,133 +200,222 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
-                <!-- Tarjetas de Conteo Pequeñas -->
+                <!-- Tarjetas de Conteo 2x2 M3 (Asignadas, En tratamiento, Atendidas, Transferidas) -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
+                    <!-- Fila 1: Asignadas y En tratamiento -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginEnd="8dp"
-                        android:layout_weight="1"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="0dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:strokeColor="@color/card_stroke"
-                        app:strokeWidth="1dp">
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/nunito"
-                                android:text="Peticiones asignadas"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="12sp"/>
-                            <TextView
-                                android:id="@+id/tvPeticionesAsignadas"
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:fontFamily="@font/nunito_display"
-                                android:text="0"
-                                android:textColor="@color/primary"
-                                android:textSize="26sp"
-                                android:textStyle="bold"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
+                        android:orientation="horizontal">
 
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="8dp"
-                        android:layout_weight="1"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="0dp"
-                        app:cardBackgroundColor="@color/white"
-                        app:strokeColor="@color/card_stroke"
-                        app:strokeWidth="1dp">
-                        <LinearLayout
-                            android:layout_width="match_parent"
+                        <!-- 1. Asignadas -->
+                        <com.google.android.material.card.MaterialCardView
+                            style="?attr/materialCardViewFilledStyle"
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:orientation="vertical"
-                            android:padding="16dp">
-                            <TextView
-                                android:layout_width="wrap_content"
+                            android:layout_marginEnd="6dp"
+                            android:layout_weight="1"
+                            app:cardCornerRadius="14dp"
+                            app:cardElevation="1dp"
+                            app:cardBackgroundColor="@color/white"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp">
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/nunito"
-                                android:text="Conteo de atención"
-                                android:textColor="@color/text_secondary"
-                                android:textSize="12sp"/>
-                            <TextView
-                                android:id="@+id/tvConteoAtencion"
-                                android:layout_width="wrap_content"
+                                android:orientation="vertical"
+                                android:padding="12dp">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Peticiones asignadas"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="11sp"/>
+                                <TextView
+                                    android:id="@+id/tvPeticionesAsignadas"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:fontFamily="@font/nunito_display"
+                                    android:text="0"
+                                    android:textColor="@color/primary"
+                                    android:textSize="22sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- 2. En tratamiento -->
+                        <com.google.android.material.card.MaterialCardView
+                            style="?attr/materialCardViewFilledStyle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            app:cardCornerRadius="14dp"
+                            app:cardElevation="1dp"
+                            app:cardBackgroundColor="@color/white"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp">
+                            <LinearLayout
+                                android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:fontFamily="@font/nunito_display"
-                                android:text="0"
-                                android:textColor="@color/primary"
-                                android:textSize="26sp"
-                                android:textStyle="bold"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
+                                android:orientation="vertical"
+                                android:padding="12dp">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="En tratamiento"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="11sp"/>
+                                <TextView
+                                    android:id="@+id/tvPeticionesEnTratamiento"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:fontFamily="@font/nunito_display"
+                                    android:text="0"
+                                    android:textColor="@color/secondary_dark"
+                                    android:textSize="22sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+                    </LinearLayout>
+
+                    <!-- Fila 2: Atendidas y Transferidas -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:orientation="horizontal">
+
+                        <!-- 3. Atendidas -->
+                        <com.google.android.material.card.MaterialCardView
+                            style="?attr/materialCardViewFilledStyle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginEnd="6dp"
+                            android:layout_weight="1"
+                            app:cardCornerRadius="14dp"
+                            app:cardElevation="1dp"
+                            app:cardBackgroundColor="@color/white"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp">
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:padding="12dp">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Atendidas"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="11sp"/>
+                                <TextView
+                                    android:id="@+id/tvConteoAtencion"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:fontFamily="@font/nunito_display"
+                                    android:text="0"
+                                    android:textColor="@color/success_dark"
+                                    android:textSize="22sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+
+                        <!-- 4. Transferidas a otro centro -->
+                        <com.google.android.material.card.MaterialCardView
+                            style="?attr/materialCardViewFilledStyle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="6dp"
+                            android:layout_weight="1"
+                            app:cardCornerRadius="14dp"
+                            app:cardElevation="1dp"
+                            app:cardBackgroundColor="@color/white"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp">
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:padding="12dp">
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Transferidas"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="11sp"/>
+                                <TextView
+                                    android:id="@+id/tvPeticionesTransferidas"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="2dp"
+                                    android:fontFamily="@font/nunito_display"
+                                    android:text="0"
+                                    android:textColor="@color/grafico_transferidas"
+                                    android:textSize="22sp"
+                                    android:textStyle="bold"/>
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
+                    </LinearLayout>
                 </LinearLayout>
 
-                <!-- 4 Botones de Acción Horizontal (Peticiones, Historias, Inventario, Perfil) -->
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="16dp"
-                    android:orientation="horizontal">
-
-                    <!-- 1. Peticiones (Activo en morado) -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/btnPeticiones"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="4dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardBackgroundColor="@color/primary"
-                        app:cardElevation="2dp"
-                        app:cardCornerRadius="12dp">
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="72dp"
-                            android:gravity="center"
-                            android:orientation="vertical"
-                            android:padding="8dp">
-                            <ImageView
-                                android:layout_width="22dp"
-                                android:layout_height="22dp"
-                                android:src="@drawable/paper_on_paper"
-                                app:tint="@color/white" />
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginTop="4dp"
-                                android:fontFamily="@font/nunito"
-                                android:text="Peticiones"
-                                android:textColor="@color/white"
-                                android:textStyle="bold"
-                                android:textSize="11sp"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-                </LinearLayout>
-
-                <!-- Tarjeta de Pendientes de Atención (RecyclerView) -->
+                <!-- Botón de Acción Principal Material Design 3 -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnPeticiones"
+                    style="?attr/materialCardViewFilledStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:layout_marginBottom="20dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/primary"
+                    app:cardElevation="2dp"
                     app:cardCornerRadius="16dp"
-                    app:cardElevation="0dp"
+                    app:strokeColor="@color/white"
+                    app:strokeWidth="0dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="52dp"
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="16dp">
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/paper_on_paper"
+                            app:tint="@color/white" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:fontFamily="@font/nunito_bold"
+                            android:text="Ver todas las Peticiones"
+                            android:textColor="@color/white"
+                            android:textSize="14sp"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- TARJETA 1: PENDIENTES DE ATENCIÓN ACTIVA (M3) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardPendientes"
+                    style="?attr/materialCardViewFilledStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="1dp"
                     app:cardBackgroundColor="@color/white"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
@@ -320,7 +428,9 @@
                         <RelativeLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:padding="16dp">
+                            android:paddingHorizontal="18dp"
+                            android:paddingTop="16dp"
+                            android:paddingBottom="12dp">
                             <TextView
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
@@ -336,17 +446,75 @@
                                 android:layout_alignParentEnd="true"
                                 android:background="@drawable/bg_rounded_badge"
                                 android:backgroundTint="@color/badge_urgente_bg"
-                                android:fontFamily="@font/nunito"
-                                android:paddingHorizontal="8dp"
-                                android:paddingVertical="2dp"
+                                android:fontFamily="@font/nunito_bold"
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="3dp"
                                 android:text="0 urgentes"
                                 android:textColor="@color/badge_urgente_text"
-                                android:textSize="12sp"/>
+                                android:textSize="11sp"/>
                         </RelativeLayout>
 
-                        <!-- RecyclerView para la lista -->
+                        <!-- RecyclerView para peticiones activas -->
                         <androidx.recyclerview.widget.RecyclerView
                             android:id="@+id/rvPendientes"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:nestedScrollingEnabled="false"
+                            app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <!-- TARJETA 2: CASOS TRANSFERIDOS A OTRO CENTRO (SECCIÓN SEPARADA M3) -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardTransferidas"
+                    style="?attr/materialCardViewFilledStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:layout_marginBottom="20dp"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="1dp"
+                    app:cardBackgroundColor="@color/white"
+                    app:strokeColor="@color/card_stroke"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical">
+
+                        <RelativeLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:paddingHorizontal="18dp"
+                            android:paddingTop="16dp"
+                            android:paddingBottom="12dp">
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/nunito_display"
+                                android:text="Transferidos a otro centro"
+                                android:textColor="@color/grafico_transferidas"
+                                android:textSize="15sp"
+                                android:textStyle="bold"/>
+                            <TextView
+                                android:id="@+id/tvCantidadTransferidas"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_alignParentEnd="true"
+                                android:background="@drawable/bg_rounded_badge"
+                                android:backgroundTint="@color/badge_transferido_bg"
+                                android:fontFamily="@font/nunito_bold"
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="3dp"
+                                android:text="0 transferidos"
+                                android:textColor="@color/badge_transferido_text"
+                                android:textSize="11sp"/>
+                        </RelativeLayout>
+
+                        <!-- RecyclerView para peticiones transferidas -->
+                        <androidx.recyclerview.widget.RecyclerView
+                            android:id="@+id/rvTransferidas"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:nestedScrollingEnabled="false"

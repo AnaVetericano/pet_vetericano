@@ -42,9 +42,11 @@
     <!-- ======================================================= -->
 
     <!-- Colores del Gráfico Mensual (Usando tu paleta Vetericano) -->
-    <color name="grafico_asignadas">#4141A5</color>      <!-- Usa tu primary -->
-    <color name="grafico_atendidas">#F1B800</color>      <!-- Usa tu secondary -->
-    <color name="grafico_reasignadas">#170B3D</color>    <!-- Usa tu primary_dark -->
+    <color name="grafico_asignadas">#4141A5</color>          <!-- Azul primary: Peticiones asignadas -->
+    <color name="grafico_en_tratamiento">#F1B800</color>     <!-- Amarillo secondary: En tratamiento / proceso -->
+    <color name="grafico_atendidas">#10B981</color>          <!-- Verde success: Peticiones atendidas / cerradas -->
+    <color name="grafico_transferidas">#6D28D9</color>       <!-- Morado transferido: Transferidas a otro centro -->
+    <color name="grafico_reasignadas">#F1B800</color>        <!-- Compatibilidad: En tratamiento -->
 
     <!-- Colores para Badges de estado en el RecyclerView -->
     <color name="badge_urgente_bg">#FEE2E2</color>       <!-- Fondo rojo claro -->

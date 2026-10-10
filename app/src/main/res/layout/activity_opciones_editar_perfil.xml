@@ -103,6 +103,18 @@
                 </com.google.android.material.card.MaterialCardView>
             </FrameLayout>
 
+            <!-- NOMBRE DEL USUARIO ACTUAL -->
+            <TextView
+                android:id="@+id/tvProfileUserName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="6dp"
+                android:fontFamily="@font/nunito_bold"
+                android:textColor="@color/text_primary"
+                android:textSize="20sp"
+                tools:text="Froshiiiiii Iuri" />
+
             <!-- ROL Y BADGE INSTITUCIONAL -->
             <TextView
                 android:id="@+id/tvRolBadge"

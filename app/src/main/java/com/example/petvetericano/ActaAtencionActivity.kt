@@ -1737,7 +1737,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                                 peticionId,
                                 com.example.petvetericano.models.ActualizarEstadoRequest(
                                     estado = estadoCierre,
-                                    observacion = "Acta de atención en campo registrada con radicado $radicado (ID Acta: #$idSeg)"
+                                    observacion = null // Se envía null para evitar que el endpoint de estado cree una fila huérfana duplicada en seguimiento_peticiones_visita
                                 )
                             )
                         } catch (_: Exception) {

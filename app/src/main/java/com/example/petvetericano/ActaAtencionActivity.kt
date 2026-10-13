@@ -40,13 +40,18 @@ import java.util.Date
 import java.util.Locale
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.media.MediaMetadataRetriever
+import java.io.FileOutputStream
 import android.net.Uri
 import android.widget.ImageView
 import androidx.core.content.FileProvider
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
+import com.bumptech.glide.Glide
 import com.example.petvetericano.databinding.ItemActaMediaAdjuntoBinding
 import java.io.File
 import kotlin.coroutines.resume
@@ -84,15 +89,17 @@ class ActaAtencionActivity : AppCompatActivity() {
     // Evidencia Multimedia (Fotos y Videos para Cloudinary)
     private val selectedMediaList = mutableListOf<MediaAdjunto>()
     private var tempCameraUri: Uri? = null
+    private var tempCameraFile: File? = null
     private var pendingMediaEsVideo: Boolean = false
 
     private val takePhotoLauncher = registerForActivityResult(
         ActivityResultContracts.TakePicture()
     ) { success ->
         if (success && tempCameraUri != null) {
+            tempCameraFile?.let { optimizarImagen(it) }
             selectedMediaList.add(MediaAdjunto(tempCameraUri!!, esVideo = false, "Foto de campo"))
             actualizarVistaMultimedia()
-            Toast.makeText(this, "Foto capturada correctamente 📷", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Foto capturada y optimizada 📷", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -100,9 +107,12 @@ class ActaAtencionActivity : AppCompatActivity() {
         ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
-            selectedMediaList.add(MediaAdjunto(it, esVideo = false, "Foto seleccionada"))
-            actualizarVistaMultimedia()
-            Toast.makeText(this, "Foto adjunta al acta 📷", Toast.LENGTH_SHORT).show()
+            val localUri = copiarUriALocal(it, esVideo = false)
+            if (localUri != null) {
+                selectedMediaList.add(MediaAdjunto(localUri, esVideo = false, "Foto seleccionada"))
+                actualizarVistaMultimedia()
+                Toast.makeText(this, "Foto adjunta al acta 📷", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -110,9 +120,19 @@ class ActaAtencionActivity : AppCompatActivity() {
         ActivityResultContracts.CaptureVideo()
     ) { success ->
         if (success && tempCameraUri != null) {
-            selectedMediaList.add(MediaAdjunto(tempCameraUri!!, esVideo = true, "Video de campo"))
-            actualizarVistaMultimedia()
-            Toast.makeText(this, "Video grabado correctamente 🎥", Toast.LENGTH_SHORT).show()
+            if (tempCameraFile != null && tempCameraFile!!.length() > 10L * 1024 * 1024) {
+                val sizeMb = tempCameraFile!!.length() / (1024 * 1024)
+                tempCameraFile!!.delete()
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("Video excede el límite")
+                    .setMessage("El video grabado pesa ${sizeMb} MB y supera el límite de 10 MB permitido.\n\nPor favor graba un video más breve (máx. 20-30 segundos).")
+                    .setPositiveButton("Aceptar", null)
+                    .show()
+            } else {
+                selectedMediaList.add(MediaAdjunto(tempCameraUri!!, esVideo = true, "Video de campo"))
+                actualizarVistaMultimedia()
+                Toast.makeText(this, "Video grabado correctamente 🎥", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -120,9 +140,12 @@ class ActaAtencionActivity : AppCompatActivity() {
         ActivityResultContracts.GetContent()
     ) { uri ->
         uri?.let {
-            selectedMediaList.add(MediaAdjunto(it, esVideo = true, "Video seleccionado"))
-            actualizarVistaMultimedia()
-            Toast.makeText(this, "Video adjunto al acta 🎥", Toast.LENGTH_SHORT).show()
+            val localUri = copiarUriALocal(it, esVideo = true)
+            if (localUri != null) {
+                selectedMediaList.add(MediaAdjunto(localUri, esVideo = true, "Video seleccionado"))
+                actualizarVistaMultimedia()
+                Toast.makeText(this, "Video adjunto al acta 🎥", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
@@ -201,11 +224,34 @@ class ActaAtencionActivity : AppCompatActivity() {
         initCloudinary()
         setupEvidenciaMultimedia()
         cargarCatalogosBackend()
+        if (savedInstanceState != null) {
+            currentStep = savedInstanceState.getInt("KEY_CURRENT_STEP", 1)
+            tempCameraUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                savedInstanceState.getParcelable("KEY_TEMP_CAMERA_URI", Uri::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                savedInstanceState.getParcelable("KEY_TEMP_CAMERA_URI")
+            }
+            val savedFilePath = savedInstanceState.getString("KEY_TEMP_CAMERA_FILE")
+            if (!savedFilePath.isNullOrEmpty()) {
+                tempCameraFile = File(savedFilePath)
+            }
+            val urisList = savedInstanceState.getStringArrayList("KEY_MEDIA_URIS")
+            val isVideoList = savedInstanceState.getBooleanArray("KEY_MEDIA_IS_VIDEO")
+            if (urisList != null && isVideoList != null && urisList.size == isVideoList.size) {
+                selectedMediaList.clear()
+                for (i in urisList.indices) {
+                    selectedMediaList.add(MediaAdjunto(Uri.parse(urisList[i]), isVideoList[i], "Adjunto"))
+                }
+            }
+            actualizarVistaMultimedia()
+        } else {
+            // Agregar por defecto al menos un formulario de paciente al iniciar por primera vez
+            agregarFormularioAnimal()
+        }
+
         updateStepper()
         verificarSiPeticionYaAtendida()
-
-        // Agregar por defecto al menos un formulario de paciente al iniciar
-        agregarFormularioAnimal()
 
         binding.btnAddAnimal.setOnClickListener {
             agregarFormularioAnimal()
@@ -250,6 +296,17 @@ class ActaAtencionActivity : AppCompatActivity() {
                 updateStepper()
             }
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putInt("KEY_CURRENT_STEP", currentStep)
+        tempCameraUri?.let { outState.putParcelable("KEY_TEMP_CAMERA_URI", it) }
+        tempCameraFile?.let { outState.putString("KEY_TEMP_CAMERA_FILE", it.absolutePath) }
+        val urisList = ArrayList(selectedMediaList.map { it.uri.toString() })
+        val isVideoList = ArrayList(selectedMediaList.map { it.esVideo })
+        outState.putStringArrayList("KEY_MEDIA_URIS", urisList)
+        outState.putBooleanArray("KEY_MEDIA_IS_VIDEO", isVideoList.toBooleanArray())
     }
 
     private fun setupToolbar() {
@@ -1780,14 +1837,14 @@ class ActaAtencionActivity : AppCompatActivity() {
                         }
                     }
 
-                    if (falloSubidaAlguna && urlsFotos.isEmpty() && urlsVideos.isEmpty()) {
+                    if (falloSubidaAlguna) {
                         withContext(Dispatchers.Main) {
                             setLoadingState(false)
-                            Toast.makeText(
-                                this@ActaAtencionActivity,
-                                "No se pudieron subir las evidencias multimedia. Verifique su conexión.",
-                                Toast.LENGTH_LONG
-                            ).show()
+                            MaterialAlertDialogBuilder(this@ActaAtencionActivity)
+                                .setTitle("Error al subir evidencias")
+                                .setMessage("Uno o más archivos multimedia no se pudieron subir a la nube. Por favor verifica tu conexión a internet y asegúrate de que los videos no superen 10 MB.")
+                                .setPositiveButton("Aceptar", null)
+                                .show()
                         }
                         return@launch
                     }
@@ -1843,8 +1900,8 @@ class ActaAtencionActivity : AppCompatActivity() {
                     firmaNotificador = firmaNotificador,
                     firmaNotificado = firmaNotificado,
                     observacion = observacion,
-                    fotos = if (urlsFotos.isNotEmpty()) urlsFotos else null,
-                    videos = if (urlsVideos.isNotEmpty()) urlsVideos else null
+                    fotos = urlsFotos,
+                    videos = urlsVideos
                 )
 
                 // 1. Enviar el Acta completa de atención en campo (POST /api/peticiones/seguimiento/crear/)
@@ -2034,7 +2091,9 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     private fun lanzarCapturaFoto() {
         try {
-            val file = File(cacheDir, "acta_foto_${System.currentTimeMillis()}.jpg")
+            val file = File(filesDir, "acta_foto_${System.currentTimeMillis()}.jpg")
+            file.parentFile?.mkdirs()
+            file.createNewFile()
             tempCameraUri = FileProvider.getUriForFile(
                 this,
                 "${applicationContext.packageName}.fileprovider",
@@ -2048,7 +2107,9 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     private fun lanzarGrabacionVideo() {
         try {
-            val file = File(cacheDir, "acta_video_${System.currentTimeMillis()}.mp4")
+            val file = File(filesDir, "acta_video_${System.currentTimeMillis()}.mp4")
+            file.parentFile?.mkdirs()
+            file.createNewFile()
             tempCameraUri = FileProvider.getUriForFile(
                 this,
                 "${applicationContext.packageName}.fileprovider",
@@ -2060,15 +2121,24 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
     }
 
-    private fun obtenerMiniaturaVideo(uri: Uri): Bitmap? {
+    private fun copiarUriALocal(uri: Uri, esVideo: Boolean): Uri {
         return try {
-            val retriever = MediaMetadataRetriever()
-            retriever.setDataSource(this, uri)
-            val bitmap = retriever.frameAtTime
-            retriever.release()
-            bitmap
+            val extension = if (esVideo) ".mp4" else ".jpg"
+            val prefix = if (esVideo) "acta_video_" else "acta_foto_"
+            val localFile = File(filesDir, "${prefix}${System.currentTimeMillis()}${extension}")
+            localFile.parentFile?.mkdirs()
+            contentResolver.openInputStream(uri)?.use { input ->
+                localFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+            FileProvider.getUriForFile(
+                this,
+                "${applicationContext.packageName}.fileprovider",
+                localFile
+            )
         } catch (_: Exception) {
-            null
+            uri
         }
     }
 
@@ -2092,9 +2162,15 @@ class ActaAtencionActivity : AppCompatActivity() {
                 adjustViewBounds = true
                 maxHeight = (resources.displayMetrics.heightPixels * 0.7).toInt()
                 scaleType = ImageView.ScaleType.FIT_CENTER
-                setImageURI(item.uri)
                 setPadding(24, 24, 24, 24)
             }
+            Glide.with(this)
+                .load(item.uri)
+                .fitCenter()
+                .placeholder(R.drawable.baseline_pets_24)
+                .error(R.drawable.baseline_pets_24)
+                .into(imageView)
+
             MaterialAlertDialogBuilder(this)
                 .setTitle("Evidencia fotográfica")
                 .setView(imageView)
@@ -2142,15 +2218,21 @@ class ActaAtencionActivity : AppCompatActivity() {
                 val itemBinding = ItemActaMediaAdjuntoBinding.inflate(layoutInflater, binding.containerMediaThumbnails, false)
 
                 if (media.esVideo) {
-                    val thumb = obtenerMiniaturaVideo(media.uri)
-                    if (thumb != null) {
-                        itemBinding.ivMediaThumbnail.setImageBitmap(thumb)
-                    } else {
-                        itemBinding.ivMediaThumbnail.setImageResource(R.drawable.baseline_pets_24)
-                    }
+                    Glide.with(this@ActaAtencionActivity)
+                        .asBitmap()
+                        .load(media.uri)
+                        .centerCrop()
+                        .placeholder(R.drawable.baseline_pets_24)
+                        .error(R.drawable.baseline_pets_24)
+                        .into(itemBinding.ivMediaThumbnail)
                     itemBinding.layoutVideoOverlay.visibility = View.VISIBLE
                 } else {
-                    itemBinding.ivMediaThumbnail.setImageURI(media.uri)
+                    Glide.with(this@ActaAtencionActivity)
+                        .load(media.uri)
+                        .centerCrop()
+                        .placeholder(R.drawable.baseline_pets_24)
+                        .error(R.drawable.baseline_pets_24)
+                        .into(itemBinding.ivMediaThumbnail)
                     itemBinding.layoutVideoOverlay.visibility = View.GONE
                 }
 

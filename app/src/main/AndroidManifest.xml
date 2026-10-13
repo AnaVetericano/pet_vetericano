@@ -85,6 +85,8 @@
         <activity
             android:name=".reportar_peticionnn"
             android:exported="false"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".reporte_enviado"
@@ -121,6 +123,8 @@
         <activity
             android:name=".ActaAtencionActivity"
             android:exported="false"
+            android:screenOrientation="portrait"
+            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".CorregirDireccionActivity"

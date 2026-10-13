@@ -16,6 +16,7 @@ import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.addTextChangedListener
+import com.bumptech.glide.Glide
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
@@ -62,6 +63,15 @@ class reportar_peticionnn : AppCompatActivity() {
                 systemBars.bottom
             )
             insets
+        }
+
+        if (savedInstanceState != null) {
+            photoUri = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
+                savedInstanceState.getParcelable("SAVED_PHOTO_URI", Uri::class.java)
+            } else {
+                @Suppress("DEPRECATION")
+                savedInstanceState.getParcelable("SAVED_PHOTO_URI")
+            }
         }
 
         // Inicializamos la conexión con Cloudinary
@@ -132,6 +142,11 @@ class reportar_peticionnn : AppCompatActivity() {
             }
             actualizarVisualizacionMultimedia()
         }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        photoUri?.let { outState.putParcelable("SAVED_PHOTO_URI", it) }
     }
 
     // GUARDAR RUTAS DE MULTIMEDIA EN PREFERENCES
@@ -256,7 +271,11 @@ class reportar_peticionnn : AppCompatActivity() {
             binding.cardFoto1.visibility = View.VISIBLE
             binding.cardFoto2.visibility = View.GONE
 
-            binding.ivFoto1.setImageURI(selectedUris[0])
+            Glide.with(this)
+                .load(selectedUris[0])
+                .centerCrop()
+                .into(binding.ivFoto1)
+
             binding.btnSubirArchivo.text = "Tomar otra foto (1/2)"
             binding.btnSubirArchivo.isEnabled = true
         } else if (cantidad >= 2) {
@@ -264,8 +283,16 @@ class reportar_peticionnn : AppCompatActivity() {
             binding.cardFoto1.visibility = View.VISIBLE
             binding.cardFoto2.visibility = View.VISIBLE
 
-            binding.ivFoto1.setImageURI(selectedUris[0])
-            binding.ivFoto2.setImageURI(selectedUris[1])
+            Glide.with(this)
+                .load(selectedUris[0])
+                .centerCrop()
+                .into(binding.ivFoto1)
+
+            Glide.with(this)
+                .load(selectedUris[1])
+                .centerCrop()
+                .into(binding.ivFoto2)
+
             binding.btnSubirArchivo.text = "2 fotos seleccionadas"
             binding.btnSubirArchivo.isEnabled = false
         }

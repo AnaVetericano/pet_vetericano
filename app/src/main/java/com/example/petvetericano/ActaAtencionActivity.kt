@@ -38,6 +38,25 @@ import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import android.content.Intent
+import android.graphics.Bitmap
+import android.media.MediaMetadataRetriever
+import android.net.Uri
+import android.widget.ImageView
+import androidx.core.content.FileProvider
+import com.cloudinary.android.MediaManager
+import com.cloudinary.android.callback.ErrorInfo
+import com.cloudinary.android.callback.UploadCallback
+import com.example.petvetericano.databinding.ItemActaMediaAdjuntoBinding
+import java.io.File
+import kotlin.coroutines.resume
+import kotlinx.coroutines.suspendCancellableCoroutine
+
+data class MediaAdjunto(
+    val uri: Uri,
+    val esVideo: Boolean,
+    val nombre: String = ""
+)
 
 class ActaAtencionActivity : AppCompatActivity() {
 
@@ -59,6 +78,65 @@ class ActaAtencionActivity : AppCompatActivity() {
             Toast.makeText(this, "Permiso de ubicación denegado. Se requiere para fijar el punto en campo.", Toast.LENGTH_SHORT).show()
             binding.tvLugarAtencionStatus.text = "Sin permiso"
             binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#B91C1C"))
+        }
+    }
+
+    // Evidencia Multimedia (Fotos y Videos para Cloudinary)
+    private val selectedMediaList = mutableListOf<MediaAdjunto>()
+    private var tempCameraUri: Uri? = null
+    private var pendingMediaEsVideo: Boolean = false
+
+    private val takePhotoLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempCameraUri != null) {
+            selectedMediaList.add(MediaAdjunto(tempCameraUri!!, esVideo = false, "Foto de campo"))
+            actualizarVistaMultimedia()
+            Toast.makeText(this, "Foto capturada correctamente 📷", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private val pickPhotoLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            selectedMediaList.add(MediaAdjunto(it, esVideo = false, "Foto seleccionada"))
+            actualizarVistaMultimedia()
+            Toast.makeText(this, "Foto adjunta al acta 📷", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private val recordVideoLauncher = registerForActivityResult(
+        ActivityResultContracts.CaptureVideo()
+    ) { success ->
+        if (success && tempCameraUri != null) {
+            selectedMediaList.add(MediaAdjunto(tempCameraUri!!, esVideo = true, "Video de campo"))
+            actualizarVistaMultimedia()
+            Toast.makeText(this, "Video grabado correctamente 🎥", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private val pickVideoLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            selectedMediaList.add(MediaAdjunto(it, esVideo = true, "Video seleccionado"))
+            actualizarVistaMultimedia()
+            Toast.makeText(this, "Video adjunto al acta 🎥", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private val cameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            if (pendingMediaEsVideo) {
+                lanzarGrabacionVideo()
+            } else {
+                lanzarCapturaFoto()
+            }
+        } else {
+            Toast.makeText(this, "Se requiere permiso de cámara para capturar fotos o videos", Toast.LENGTH_SHORT).show()
         }
     }
 
@@ -120,6 +198,8 @@ class ActaAtencionActivity : AppCompatActivity() {
         setupAutoScrollOnFocus()
         setupAceleradoresCampo()
         setupSeccionExamenesMultiples()
+        initCloudinary()
+        setupEvidenciaMultimedia()
         cargarCatalogosBackend()
         updateStepper()
         verificarSiPeticionYaAtendida()
@@ -1660,56 +1740,8 @@ class ActaAtencionActivity : AppCompatActivity() {
             }
         }
 
-        val request = SeguimientoPeticionVisitaRequest(
-            idPeticion = peticionId,
-            idVeterinario = idVeterinario,
-            numeroRadicado = radicado,
-            fechaAtencion = fechaAtencion,
-            propietarioNombre = binding.etPropietarioNombre.text.toString().trim(),
-            propietarioCedula = binding.etPropietarioCedula.text.toString().trim(),
-            propietarioTelefono = binding.etPropietarioTelefono.text.toString().trim(),
-            propietarioEmail = emailPropietario,
-            propietarioBarrio = binding.etPropietarioBarrio.text.toString().trim(),
-            propietarioDireccion = binding.etPropietarioDireccion.text.toString().trim(),
-            quienReporta = quienReporta,
-            quienReportaOtro = quienReportaOtro,
-            solicitudAtencionPor = binding.etSolicitudAtencion.text.toString().trim(),
-            lugarAtencion = lugarAtencion,
-            nombrePaciente = nombrePaciente,
-            pacienteEspecie = pacienteEspecie,
-            pacienteSexo = pacienteSexo,
-            pacienteColor = pacienteColor,
-            pacienteRaza = pacienteRaza,
-            pacienteEdad = pacienteEdad,
-            pesoPaciente = pesoPaciente,
-            esterilizacionPaciente = esterilizacionPaciente,
-            descripcionPaciente = descripcionPaciente,
-            animales = listaAnimales,
-            nroAnimalesAtendidos = listaAnimales.size,
-            anamnesisDescripcionQueja = anamnesisFinal,
-            tratamientoRealizado = binding.etTratamiento.text.toString().trim(),
-            desparasitacion = desparasitacion,
-            pruebasComplementarias = pruebaFinal,
-            resultadoPruebas = resultadoPruebas,
-            compromisos = compromisosFinal,
-            fundamentoLegal = fundamentoLegalFinal,
-            plazoDiasCumplimiento = plazoDias,
-            nombreFuncionario = funcionarioNombre,
-            funcionarioCargo = funcionarioCargo,
-            funcionarios = listaFuncionarios,
-            notificadoNombre = notificadoNombre,
-            notificacionesIdentificacion = notificadoId,
-            fechaNotificacion = if (notificadoNombre != null) fechaAtencion else null,
-            notificadorNombre = funcionarioNombre,
-            notificadorIdentificacion = notificadorIdentificacion,
-            notificadorCargo = funcionarioCargo,
-            firmaNotificador = firmaNotificador,
-            firmaNotificado = firmaNotificado,
-            observacion = observacion
-        )
-
         // Estado de carga UI
-        setLoadingState(true)
+        setLoadingState(true, "Iniciando registro del acta...")
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
@@ -1722,6 +1754,98 @@ class ActaAtencionActivity : AppCompatActivity() {
                     }
                     return@launch
                 }
+
+                // Subida de evidencias multimedia (fotos y videos) a Cloudinary
+                val urlsFotos = mutableListOf<String>()
+                val urlsVideos = mutableListOf<String>()
+                var falloSubidaAlguna = false
+
+                if (selectedMediaList.isNotEmpty()) {
+                    val totalMedia = selectedMediaList.size
+                    withContext(Dispatchers.Main) {
+                        setLoadingState(true, "Subiendo evidencias a Cloudinary (0/$totalMedia)...")
+                    }
+
+                    for ((idx, media) in selectedMediaList.withIndex()) {
+                        val numActual = idx + 1
+                        val secureUrl = subirACloudinary(media, numActual, totalMedia)
+                        if (secureUrl != null) {
+                            if (media.esVideo) {
+                                urlsVideos.add(secureUrl)
+                            } else {
+                                urlsFotos.add(secureUrl)
+                            }
+                        } else {
+                            falloSubidaAlguna = true
+                        }
+                    }
+
+                    if (falloSubidaAlguna && urlsFotos.isEmpty() && urlsVideos.isEmpty()) {
+                        withContext(Dispatchers.Main) {
+                            setLoadingState(false)
+                            Toast.makeText(
+                                this@ActaAtencionActivity,
+                                "No se pudieron subir las evidencias multimedia. Verifique su conexión.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                        return@launch
+                    }
+                }
+
+                withContext(Dispatchers.Main) {
+                    binding.tvLoadingMensaje.text = "Registrando acta en el sistema..."
+                }
+
+                val request = SeguimientoPeticionVisitaRequest(
+                    idPeticion = peticionId,
+                    idVeterinario = idVeterinario,
+                    numeroRadicado = radicado,
+                    fechaAtencion = fechaAtencion,
+                    propietarioNombre = binding.etPropietarioNombre.text.toString().trim(),
+                    propietarioCedula = binding.etPropietarioCedula.text.toString().trim(),
+                    propietarioTelefono = binding.etPropietarioTelefono.text.toString().trim(),
+                    propietarioEmail = emailPropietario,
+                    propietarioBarrio = binding.etPropietarioBarrio.text.toString().trim(),
+                    propietarioDireccion = binding.etPropietarioDireccion.text.toString().trim(),
+                    quienReporta = quienReporta,
+                    quienReportaOtro = quienReportaOtro,
+                    solicitudAtencionPor = binding.etSolicitudAtencion.text.toString().trim(),
+                    lugarAtencion = lugarAtencion,
+                    nombrePaciente = nombrePaciente,
+                    pacienteEspecie = pacienteEspecie,
+                    pacienteSexo = pacienteSexo,
+                    pacienteColor = pacienteColor,
+                    pacienteRaza = pacienteRaza,
+                    pacienteEdad = pacienteEdad,
+                    pesoPaciente = pesoPaciente,
+                    esterilizacionPaciente = esterilizacionPaciente,
+                    descripcionPaciente = descripcionPaciente,
+                    animales = listaAnimales,
+                    nroAnimalesAtendidos = listaAnimales.size,
+                    anamnesisDescripcionQueja = anamnesisFinal,
+                    tratamientoRealizado = binding.etTratamiento.text.toString().trim(),
+                    desparasitacion = desparasitacion,
+                    pruebasComplementarias = pruebaFinal,
+                    resultadoPruebas = resultadoPruebas,
+                    compromisos = compromisosFinal,
+                    fundamentoLegal = fundamentoLegalFinal,
+                    plazoDiasCumplimiento = plazoDias,
+                    nombreFuncionario = funcionarioNombre,
+                    funcionarioCargo = funcionarioCargo,
+                    funcionarios = listaFuncionarios,
+                    notificadoNombre = notificadoNombre,
+                    notificacionesIdentificacion = notificadoId,
+                    fechaNotificacion = if (notificadoNombre != null) fechaAtencion else null,
+                    notificadorNombre = funcionarioNombre,
+                    notificadorIdentificacion = notificadorIdentificacion,
+                    notificadorCargo = funcionarioCargo,
+                    firmaNotificador = firmaNotificador,
+                    firmaNotificado = firmaNotificado,
+                    observacion = observacion,
+                    fotos = if (urlsFotos.isNotEmpty()) urlsFotos else null,
+                    videos = if (urlsVideos.isNotEmpty()) urlsVideos else null
+                )
 
                 // 1. Enviar el Acta completa de atención en campo (POST /api/peticiones/seguimiento/crear/)
                 val response = RetrofitClient.apiService.crearSeguimientoPeticionVisita("Bearer $token", request)
@@ -1841,9 +1965,247 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
     }
 
-    private fun setLoadingState(isLoading: Boolean) {
+    private fun setLoadingState(isLoading: Boolean, mensaje: String = "Registrando acta en el sistema...") {
         binding.loadingOverlay.visibility = if (isLoading) View.VISIBLE else View.GONE
+        binding.tvLoadingMensaje.text = mensaje
         binding.btnSiguiente.isEnabled = !isLoading
         binding.btnAnterior.isEnabled = !isLoading
     }
+
+    // ========================================================
+    // GESTIÓN DE EVIDENCIA MULTIMEDIA (CLOUDINARY)
+    // ========================================================
+    private fun initCloudinary() {
+        val config = HashMap<String, String>()
+        config["cloud_name"] = "aefeig5y"
+        try {
+            MediaManager.init(this, config)
+        } catch (_: Exception) {
+            // MediaManager ya fue inicializado previamente en la app
+        }
+    }
+
+    private fun setupEvidenciaMultimedia() {
+        binding.btnAdjuntarFoto.setOnClickListener {
+            mostrarDialogoOpcionFoto()
+        }
+
+        binding.btnAdjuntarVideo.setOnClickListener {
+            mostrarDialogoOpcionVideo()
+        }
+    }
+
+    private fun mostrarDialogoOpcionFoto() {
+        val opciones = arrayOf("Tomar foto con cámara 📷", "Seleccionar de la galería 🖼️")
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Adjuntar foto de evidencia")
+            .setItems(opciones) { _, which ->
+                when (which) {
+                    0 -> verificarPermisoYLanzar(esVideo = false)
+                    1 -> pickPhotoLauncher.launch("image/*")
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun mostrarDialogoOpcionVideo() {
+        val opciones = arrayOf("Grabar video con cámara 🎥", "Seleccionar de la galería 📁")
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Adjuntar video de evidencia")
+            .setItems(opciones) { _, which ->
+                when (which) {
+                    0 -> verificarPermisoYLanzar(esVideo = true)
+                    1 -> pickVideoLauncher.launch("video/*")
+                }
+            }
+            .setNegativeButton("Cancelar", null)
+            .show()
+    }
+
+    private fun verificarPermisoYLanzar(esVideo: Boolean) {
+        pendingMediaEsVideo = esVideo
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            if (esVideo) lanzarGrabacionVideo() else lanzarCapturaFoto()
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    private fun lanzarCapturaFoto() {
+        try {
+            val file = File(cacheDir, "acta_foto_${System.currentTimeMillis()}.jpg")
+            tempCameraUri = FileProvider.getUriForFile(
+                this,
+                "${applicationContext.packageName}.fileprovider",
+                file
+            )
+            takePhotoLauncher.launch(tempCameraUri!!)
+        } catch (e: Exception) {
+            Toast.makeText(this, "No se pudo iniciar la cámara: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun lanzarGrabacionVideo() {
+        try {
+            val file = File(cacheDir, "acta_video_${System.currentTimeMillis()}.mp4")
+            tempCameraUri = FileProvider.getUriForFile(
+                this,
+                "${applicationContext.packageName}.fileprovider",
+                file
+            )
+            recordVideoLauncher.launch(tempCameraUri!!)
+        } catch (e: Exception) {
+            Toast.makeText(this, "No se pudo iniciar la cámara para video: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun obtenerMiniaturaVideo(uri: Uri): Bitmap? {
+        return try {
+            val retriever = MediaMetadataRetriever()
+            retriever.setDataSource(this, uri)
+            val bitmap = retriever.frameAtTime
+            retriever.release()
+            bitmap
+        } catch (_: Exception) {
+            null
+        }
+    }
+
+    private fun mostrarPrevisualizacionMedia(item: MediaAdjunto) {
+        if (item.esVideo) {
+            try {
+                val intent = Intent(Intent.ACTION_VIEW).apply {
+                    setDataAndType(item.uri, "video/*")
+                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                }
+                startActivity(intent)
+            } catch (_: Exception) {
+                Toast.makeText(this, "No se encontró un reproductor de video compatible", Toast.LENGTH_SHORT).show()
+            }
+        } else {
+            val imageView = ImageView(this).apply {
+                layoutParams = android.view.ViewGroup.LayoutParams(
+                    android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+                    android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+                )
+                adjustViewBounds = true
+                maxHeight = (resources.displayMetrics.heightPixels * 0.7).toInt()
+                scaleType = ImageView.ScaleType.FIT_CENTER
+                setImageURI(item.uri)
+                setPadding(24, 24, 24, 24)
+            }
+            MaterialAlertDialogBuilder(this)
+                .setTitle("Evidencia fotográfica")
+                .setView(imageView)
+                .setPositiveButton("Cerrar", null)
+                .show()
+        }
+    }
+
+    private fun actualizarVistaMultimedia() {
+        val total = selectedMediaList.size
+        val fotosCount = selectedMediaList.count { !it.esVideo }
+        val videosCount = selectedMediaList.count { it.esVideo }
+
+        if (total == 0) {
+            binding.scrollMediaAdjuntos.visibility = View.GONE
+            binding.tvConteoMedia.visibility = View.GONE
+            binding.cardResumenMultimediaPaso3.visibility = View.GONE
+            binding.containerMediaThumbnails.removeAllViews()
+        } else {
+            binding.scrollMediaAdjuntos.visibility = View.VISIBLE
+            binding.tvConteoMedia.visibility = View.VISIBLE
+            binding.tvConteoMedia.text = buildString {
+                append("✓ ")
+                if (fotosCount > 0) append("$fotosCount foto(s) ")
+                if (fotosCount > 0 && videosCount > 0) append("y ")
+                if (videosCount > 0) append("$videosCount video(s) ")
+                append("adjunto(s) • Toca para previsualizar")
+            }
+
+            // Resumen de evidencias visible en Paso 3
+            binding.cardResumenMultimediaPaso3.visibility = View.VISIBLE
+            binding.tvResumenMediaPaso3.text = buildString {
+                append("Evidencias adjuntas: ")
+                if (fotosCount > 0) append("$fotosCount foto(s) ")
+                if (fotosCount > 0 && videosCount > 0) append("• ")
+                if (videosCount > 0) append("$videosCount video(s)")
+            }
+            binding.btnVerMediaDesdePaso3.setOnClickListener {
+                currentStep = 2
+                updateStepper()
+            }
+
+            binding.containerMediaThumbnails.removeAllViews()
+            for (media in selectedMediaList) {
+                val itemBinding = ItemActaMediaAdjuntoBinding.inflate(layoutInflater, binding.containerMediaThumbnails, false)
+
+                if (media.esVideo) {
+                    val thumb = obtenerMiniaturaVideo(media.uri)
+                    if (thumb != null) {
+                        itemBinding.ivMediaThumbnail.setImageBitmap(thumb)
+                    } else {
+                        itemBinding.ivMediaThumbnail.setImageResource(R.drawable.baseline_pets_24)
+                    }
+                    itemBinding.layoutVideoOverlay.visibility = View.VISIBLE
+                } else {
+                    itemBinding.ivMediaThumbnail.setImageURI(media.uri)
+                    itemBinding.layoutVideoOverlay.visibility = View.GONE
+                }
+
+                itemBinding.cardMediaThumbnail.setOnClickListener {
+                    mostrarPrevisualizacionMedia(media)
+                }
+
+                itemBinding.btnEliminarMedia.setOnClickListener {
+                    selectedMediaList.remove(media)
+                    actualizarVistaMultimedia()
+                }
+
+                binding.containerMediaThumbnails.addView(itemBinding.root)
+            }
+        }
+    }
+
+    private suspend fun subirACloudinary(media: MediaAdjunto, index: Int, total: Int): String? =
+        suspendCancellableCoroutine { cont ->
+            runOnUiThread {
+                binding.tvLoadingMensaje.text = "Subiendo archivo $index de $total a la nube..."
+            }
+            try {
+                val requestId = MediaManager.get()
+                    .upload(media.uri)
+                    .unsigned("preset_android")
+                    .callback(object : UploadCallback {
+                        override fun onStart(requestId: String?) {}
+
+                        override fun onProgress(requestId: String?, bytes: Long, totalBytes: Long) {}
+
+                        override fun onSuccess(requestId: String?, resultData: Map<*, *>?) {
+                            val url = resultData?.get("secure_url") as? String
+                            if (cont.isActive) {
+                                cont.resume(url)
+                            }
+                        }
+
+                        override fun onError(requestId: String?, error: ErrorInfo?) {
+                            if (cont.isActive) {
+                                cont.resume(null)
+                            }
+                        }
+
+                        override fun onReschedule(requestId: String?, error: ErrorInfo?) {}
+                    })
+                    .dispatch()
+
+                cont.invokeOnCancellation {
+                    try {
+                        MediaManager.get().cancelRequest(requestId)
+                    } catch (_: Exception) {}
+                }
+            } catch (e: Exception) {
+                if (cont.isActive) cont.resume(null)
+            }
+        }
 }

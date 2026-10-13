@@ -1,5 +1,6 @@
 package com.example.petvetericano
 
+import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.TextView
 import com.example.petvetericano.databinding.ActivityActaAtencionBinding
@@ -76,6 +77,14 @@ val ActivityActaAtencionBinding.chipTratamientoMedicacion: MaterialButton get() 
 val ActivityActaAtencionBinding.chipTratamientoTraslado: MaterialButton get() = layoutPaso2.chipTratamientoTraslado
 val ActivityActaAtencionBinding.tilTratamiento: TextInputLayout get() = layoutPaso2.tilTratamiento
 val ActivityActaAtencionBinding.etTratamiento: TextInputEditText get() = layoutPaso2.etTratamiento
+val ActivityActaAtencionBinding.cardEvidenciaMultimedia: MaterialCardView get() = layoutPaso2.cardEvidenciaMultimedia
+val ActivityActaAtencionBinding.tvSubtituloMedia: TextView get() = layoutPaso2.tvSubtituloMedia
+val ActivityActaAtencionBinding.layoutBotonesAccionMedia: LinearLayout get() = layoutPaso2.layoutBotonesAccionMedia
+val ActivityActaAtencionBinding.btnAdjuntarFoto: MaterialButton get() = layoutPaso2.btnAdjuntarFoto
+val ActivityActaAtencionBinding.btnAdjuntarVideo: MaterialButton get() = layoutPaso2.btnAdjuntarVideo
+val ActivityActaAtencionBinding.scrollMediaAdjuntos: HorizontalScrollView get() = layoutPaso2.scrollMediaAdjuntos
+val ActivityActaAtencionBinding.containerMediaThumbnails: LinearLayout get() = layoutPaso2.containerMediaThumbnails
+val ActivityActaAtencionBinding.tvConteoMedia: TextView get() = layoutPaso2.tvConteoMedia
 
 // ==========================================
 // PASO 3 (layoutPaso3)
@@ -218,6 +227,11 @@ val ActivityActaAtencionBinding.signatureNotificador: SignatureView get() = layo
 val ActivityActaAtencionBinding.tvFirma2Titulo: TextView get() = layoutPaso3.tvFirma2Titulo
 val ActivityActaAtencionBinding.btnClearSignatureNotificado: MaterialButton get() = layoutPaso3.btnClearSignatureNotificado
 val ActivityActaAtencionBinding.signatureNotificado: SignatureView get() = layoutPaso3.signatureNotificado
+
+// Resumen Multimedia Paso 3
+val ActivityActaAtencionBinding.cardResumenMultimediaPaso3: MaterialCardView get() = layoutPaso3.cardResumenMultimediaPaso3
+val ActivityActaAtencionBinding.tvResumenMediaPaso3: TextView get() = layoutPaso3.tvResumenMediaPaso3
+val ActivityActaAtencionBinding.btnVerMediaDesdePaso3: TextView get() = layoutPaso3.btnVerMediaDesdePaso3
 
 // Cierre
 val ActivityActaAtencionBinding.tilEstadoCierre: TextInputLayout get() = layoutPaso3.tilEstadoCierre

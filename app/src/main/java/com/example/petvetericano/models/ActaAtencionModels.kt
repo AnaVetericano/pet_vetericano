@@ -151,7 +151,14 @@ data class SeguimientoPeticionVisitaRequest(
     val firmaNotificado: String? = null,
 
     @SerializedName("observacion")
-    val observacion: String? = null
+    val observacion: String? = null,
+
+    // Evidencia multimedia (fotos y videos en Cloudinary)
+    @SerializedName("fotos")
+    val fotos: List<String>? = null,
+
+    @SerializedName("videos")
+    val videos: List<String>? = null
 )
 
 data class LugarAtencionActa(

@@ -40,8 +40,12 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         // Sin el contexto, SharedPreferences no tendría permisos para acceder a la carpeta de almacenamiento de la app.
         prefs = SharedPreferencesManager(this)
 
-        // Extraemos los valores previamente guardados y los seteamos en los EditText.
-        // Si omites esto, el usuario verá los campos en blanco cada vez que entre a la pantalla, perdiendo la experiencia de edición.
+        // Extraemos los valores previamente guardados y los seteamos en el encabezado y EditText.
+        val nombre = prefs.getUserName()
+        val apellido = prefs.getUserLastName()
+        val nombreCompleto = if (apellido.isNotEmpty()) "$nombre $apellido" else nombre
+        binding.tvProfileUserName.text = nombreCompleto.ifEmpty { "Veterinario" }
+
         binding.etName.setText(prefs.getUserName())
         binding.etEmail.setText(prefs.getUserEmail())
         binding.etPhone.setText(prefs.getUserPhone())
@@ -60,30 +64,55 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
         // Acción de clic para guardar la información ingresada.
         binding.btnSave.setOnClickListener {
-            // .text obtiene el contenido escrito. .toString() lo convierte a cadena de texto.
-            // .trim() elimina los espacios en blanco accidentales al inicio o al final del texto.
-            // Si no usas .trim(), un espacio en blanco al final de un correo ("correo@gmail.com ") generaría un error de validación cuando intentes autenticar al usuario más adelante.
             val newName = binding.etName.text.toString().trim()
             val newEmail = binding.etEmail.text.toString().trim()
             val newPhone = binding.etPhone.text.toString().trim()
 
             // Validación de seguridad. El operador || (OR) comprueba si el nombre O el correo están vacíos.
-            // .isEmpty() es más eficiente que evaluar si el string es igual a "".
             if (newName.isEmpty() || newEmail.isEmpty()) {
-                // Toast.makeText crea un mensaje emergente nativo. Toast.LENGTH_SHORT indica que durará poco tiempo en pantalla.
                 Toast.makeText(this, "Completa los campos obligatorios", Toast.LENGTH_SHORT).show()
-                // return@setOnClickListener aborta la ejecución de este bloque de clic de forma inmediata.
-                // Si no incluyes esto, el código seguiría su curso e intentaría guardar datos vacíos, sobrescribiendo información válida.
                 return@setOnClickListener
             }
 
             // Llamamos a la función del gestor para persistir los datos limpios y validados.
             prefs.saveUserData(newName, newEmail, newPhone)
+            val apellidoActual = prefs.getUserLastName()
+            binding.tvProfileUserName.text = if (apellidoActual.isNotEmpty()) "$newName $apellidoActual" else newName
 
             Toast.makeText(this, "Perfil actualizado con éxito", Toast.LENGTH_SHORT).show()
 
             // Finaliza la actividad para regresar al usuario a su menú de manera automática tras un guardado exitoso.
             finish()
         }
+
+        // Acción de clic para cerrar sesión del veterinario
+        binding.btnLogout.setOnClickListener {
+            mostrarConfirmacionCerrarSesion()
+        }
+    }
+
+    private fun mostrarConfirmacionCerrarSesion() {
+        com.google.android.material.dialog.MaterialAlertDialogBuilder(this)
+            .setTitle("¿Cerrar sesión?")
+            .setMessage("Se cerrará la sesión actual de médico veterinario. Tendrás que ingresar tus credenciales nuevamente para acceder al sistema.")
+            .setNegativeButton("Cancelar") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton("Cerrar sesión") { dialog, _ ->
+                dialog.dismiss()
+                cerrarSesion()
+            }
+            .show()
+    }
+
+    private fun cerrarSesion() {
+        prefs.clearSession()
+        com.example.petvetericano.network.RetrofitClient.authToken = null
+
+        val intent = android.content.Intent(this, inicio_sesion::class.java).apply {
+            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        finish()
     }
 }

@@ -316,21 +316,22 @@
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
 
-                <!-- Solicitud de atención por -->
+                <!-- Solicitud de atención por (Sugerencias Popayán + Texto libre) -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilSolicitudAtencion"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
                     android:hint="Solicitud de atención por *"
                     app:boxStrokeColor="@color/primary">
 
-                    <com.google.android.material.textfield.TextInputEditText
+                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
                         android:id="@+id/etSolicitudAtencion"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:inputType="textCapWords"
+                        android:completionThreshold="1"
                         android:textColor="@color/text_primary" />
                 </com.google.android.material.textfield.TextInputLayout>
 
@@ -381,15 +382,38 @@
                     android:orientation="vertical"
                     android:visibility="visible">
 
-                    <TextView
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:layout_marginTop="8dp"
-                        android:layout_marginBottom="8dp"
-                        android:fontFamily="@font/nunito_bold"
-                        android:text="Propietario / Tutor / Responsable en campo"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp" />
+                        android:layout_marginBottom="8dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/nunito_bold"
+                            android:text="Propietario o responsable"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipSinPropietario"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:text="En calle (Sin tutor)"
+                            android:textSize="11sp"
+                            android:textColor="@color/primary"
+                            app:icon="@drawable/baseline_pets_24"
+                            app:iconSize="13dp"
+                            app:iconTint="@color/primary"
+                            app:cornerRadius="8dp"
+                            app:strokeColor="@color/primary"
+                            app:strokeWidth="1dp" />
+                    </LinearLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilPropietarioNombre"
@@ -771,7 +795,7 @@
 
                                 <com.google.android.material.textfield.TextInputLayout
                                     android:id="@+id/tilMucosas"
-                                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                                     android:layout_width="0dp"
                                     android:layout_height="wrap_content"
                                     android:layout_marginStart="6dp"
@@ -779,11 +803,12 @@
                                     android:hint="Mucosas / TLLC"
                                     app:boxStrokeColor="@color/primary">
 
-                                    <com.google.android.material.textfield.TextInputEditText
+                                    <com.google.android.material.textfield.MaterialAutoCompleteTextView
                                         android:id="@+id/etMucosas"
                                         android:layout_width="match_parent"
                                         android:layout_height="wrap_content"
                                         android:inputType="textCapWords"
+                                        android:completionThreshold="1"
                                         android:textColor="@color/text_primary" />
                                 </com.google.android.material.textfield.TextInputLayout>
                             </LinearLayout>
@@ -791,15 +816,69 @@
                     </com.google.android.material.card.MaterialCardView>
 
                     <!-- Sección: Anamnesis / Queja -->
-                    <TextView
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:layout_marginTop="8dp"
-                        android:layout_marginBottom="8dp"
-                        android:fontFamily="@font/nunito_bold"
-                        android:text="Anamnesis y queja"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp" />
+                        android:layout_marginBottom="4dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/nunito_bold"
+                            android:text="Anamnesis y queja *"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <!-- Chips de redacción rápida para Anamnesis -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipAnamnesisCalle"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:text="+ En calle vulnerable"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary"
+                            app:cornerRadius="8dp"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp"
+                            android:layout_marginEnd="6dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipAnamnesisHerido"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:text="+ Herida / Dolor"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary"
+                            app:cornerRadius="8dp"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp"
+                            android:layout_marginEnd="6dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipAnamnesisDesnutrido"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:text="+ Desnutrido"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary"
+                            app:cornerRadius="8dp"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp" />
+                    </LinearLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilAnamnesis"
@@ -821,15 +900,69 @@
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Sección: Atención y Tratamiento -->
-                    <TextView
+                    <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
                         android:layout_marginTop="8dp"
-                        android:layout_marginBottom="8dp"
-                        android:fontFamily="@font/nunito_bold"
-                        android:text="Atención y tratamiento"
-                        android:textColor="@color/text_primary"
-                        android:textSize="16sp" />
+                        android:layout_marginBottom="4dp">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/nunito_bold"
+                            android:text="Atención y tratamiento *"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp" />
+                    </LinearLayout>
+
+                    <!-- Chips de redacción rápida para Tratamiento -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="8dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipTratamientoCuracion"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:text="+ Curación de heridas"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary"
+                            app:cornerRadius="8dp"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp"
+                            android:layout_marginEnd="6dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipTratamientoMedicacion"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:text="+ Antibiótico / AINE"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary"
+                            app:cornerRadius="8dp"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp"
+                            android:layout_marginEnd="6dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipTratamientoTraslado"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:text="+ Traslado a CBA"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary"
+                            app:cornerRadius="8dp"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp" />
+                    </LinearLayout>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilTratamiento"
@@ -962,6 +1095,52 @@
                             android:textColor="@color/text_primary" />
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- Resultado de pruebas con chips de selección rápida -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="6dp">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipResultadoNegativo"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:text="Negativo"
+                            android:textSize="11sp"
+                            android:textColor="@color/primary"
+                            app:cornerRadius="8dp"
+                            app:strokeColor="@color/primary"
+                            app:strokeWidth="1dp"
+                            android:layout_marginEnd="6dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipResultadoPositivo"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:text="Positivo"
+                            android:textSize="11sp"
+                            android:textColor="@color/error"
+                            app:cornerRadius="8dp"
+                            app:strokeColor="@color/error"
+                            app:strokeWidth="1dp"
+                            android:layout_marginEnd="6dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipResultadoPendiente"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="32dp"
+                            android:text="Pendiente"
+                            android:textSize="11sp"
+                            android:textColor="@color/text_secondary"
+                            app:cornerRadius="8dp"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp" />
+                    </LinearLayout>
+
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilResultadoPruebas"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
@@ -979,15 +1158,135 @@
                             android:textColor="@color/text_primary" />
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- Botón para incorporar examen a la lista del acta -->
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAgregarExamenLista"
+                        style="?attr/materialButtonOutlinedStyle"
+                        android:layout_width="match_parent"
+                        android:layout_height="46dp"
+                        android:layout_marginBottom="14dp"
+                        android:text="+ Añadir examen al acta"
+                        android:textColor="@color/primary"
+                        android:textSize="13sp"
+                        app:cornerRadius="12dp"
+                        app:icon="@drawable/ic_add"
+                        app:iconTint="@color/primary"
+                        app:strokeColor="@color/primary"
+                        app:strokeWidth="1.5dp" />
+
+                    <!-- Contenedor dinámico de exámenes clínicos agregados -->
+                    <LinearLayout
+                        android:id="@+id/layoutExamenesAgregados"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical"
+                        android:layout_marginBottom="16dp"
+                        android:visibility="gone">
+
+                        <TextView
+                            android:id="@+id/tvExamenesAgregadosTitulo"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/nunito_bold"
+                            android:text="Exámenes clínicos registrados:"
+                            android:textColor="@color/text_primary"
+                            android:textSize="13sp"
+                            android:layout_marginBottom="8dp" />
+
+                        <LinearLayout
+                            android:id="@+id/containerExamenesAgregados"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:orientation="vertical" />
+                    </LinearLayout>
+
                     <!-- Compromiso Legal y Plazo -->
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="8dp"
+                        android:layout_marginBottom="6dp"
                         android:fontFamily="@font/nunito_bold"
                         android:text="Compromisos y Fundamento Legal"
                         android:textColor="@color/text_primary"
                         android:textSize="16sp" />
+
+                    <!-- Chips de compromisos oficiales rápidos (Formato F-GS-F-03-08) -->
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:scrollbars="none"
+                        android:layout_marginBottom="8dp">
+
+                        <LinearLayout
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:orientation="horizontal">
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/chipCompromisoAgua"
+                                style="?attr/materialButtonOutlinedStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="32dp"
+                                android:text="+ Agua y comida limpia"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_secondary"
+                                app:cornerRadius="8dp"
+                                app:strokeColor="@color/card_stroke"
+                                app:strokeWidth="1dp"
+                                android:layout_marginEnd="6dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/chipCompromisoTecho"
+                                style="?attr/materialButtonOutlinedStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="32dp"
+                                android:text="+ Espacio techado"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_secondary"
+                                app:cornerRadius="8dp"
+                                app:strokeColor="@color/card_stroke"
+                                app:strokeWidth="1dp"
+                                android:layout_marginEnd="6dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/chipCompromisoVacunas"
+                                style="?attr/materialButtonOutlinedStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="32dp"
+                                android:text="+ Vacunas y desparasitación"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_secondary"
+                                app:cornerRadius="8dp"
+                                app:strokeColor="@color/card_stroke"
+                                app:strokeWidth="1dp"
+                                android:layout_marginEnd="6dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/chipCompromisoVeterinario"
+                                style="?attr/materialButtonOutlinedStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="32dp"
+                                android:text="+ Control médico veterinario"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_secondary"
+                                app:cornerRadius="8dp"
+                                app:strokeColor="@color/card_stroke"
+                                app:strokeWidth="1dp"
+                                android:layout_marginEnd="6dp" />
+
+                            <com.google.android.material.button.MaterialButton
+                                android:id="@+id/chipCompromisoEsterilizacion"
+                                style="?attr/materialButtonOutlinedStyle"
+                                android:layout_width="wrap_content"
+                                android:layout_height="32dp"
+                                android:text="+ Esterilización CBA"
+                                android:textSize="11sp"
+                                android:textColor="@color/text_secondary"
+                                app:cornerRadius="8dp"
+                                app:strokeColor="@color/card_stroke"
+                                app:strokeWidth="1dp" />
+                        </LinearLayout>
+                    </HorizontalScrollView>
 
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilCompromisos"
@@ -1008,12 +1307,13 @@
                             android:textColor="@color/text_primary" />
                     </com.google.android.material.textfield.TextInputLayout>
 
+                    <!-- Fila: Fundamento legal y Plazo en días (con Stepper y Chips) -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:baselineAligned="false"
                         android:orientation="horizontal"
-                        android:layout_marginBottom="12dp">
+                        android:layout_marginBottom="8dp">
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:id="@+id/tilFundamentoLegal"
@@ -1021,7 +1321,7 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginEnd="6dp"
-                            android:layout_weight="1.2"
+                            android:layout_weight="1.1"
                             android:hint="Fundamento legal"
                             app:boxStrokeColor="@color/primary">
 
@@ -1033,24 +1333,151 @@
                                 android:textColor="@color/text_primary" />
                         </com.google.android.material.textfield.TextInputLayout>
 
-                        <com.google.android.material.textfield.TextInputLayout
-                            android:id="@+id/tilPlazoDias"
-                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        <!-- Stepper contador para Plazo de días -->
+                        <LinearLayout
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
-                            android:layout_weight="0.8"
-                            android:hint="Plazo (días)"
-                            app:boxStrokeColor="@color/primary"
-                            app:suffixText="días">
+                            android:layout_weight="1.1"
+                            android:orientation="vertical">
 
-                            <com.google.android.material.textfield.TextInputEditText
-                                android:id="@+id/etPlazoDias"
+                            <LinearLayout
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
-                                android:inputType="number"
-                                android:textColor="@color/text_primary" />
-                        </com.google.android.material.textfield.TextInputLayout>
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal">
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnPlazoMenos"
+                                    style="?attr/materialButtonOutlinedStyle"
+                                    android:layout_width="38dp"
+                                    android:layout_height="48dp"
+                                    android:insetLeft="0dp"
+                                    android:insetTop="0dp"
+                                    android:insetRight="0dp"
+                                    android:insetBottom="0dp"
+                                    android:padding="0dp"
+                                    app:icon="@drawable/ic_remove"
+                                    app:iconGravity="textStart"
+                                    app:iconSize="18dp"
+                                    app:iconTint="@color/primary"
+                                    app:cornerRadius="10dp"
+                                    app:strokeColor="@color/primary"
+                                    app:strokeWidth="1.5dp" />
+
+                                <com.google.android.material.textfield.TextInputLayout
+                                    android:id="@+id/tilPlazoDias"
+                                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                                    android:layout_width="0dp"
+                                    android:layout_height="wrap_content"
+                                    android:layout_weight="1"
+                                    android:layout_marginHorizontal="4dp"
+                                    android:hint="Plazo"
+                                    app:boxStrokeColor="@color/primary"
+                                    app:suffixText="d">
+
+                                    <com.google.android.material.textfield.TextInputEditText
+                                        android:id="@+id/etPlazoDias"
+                                        android:layout_width="match_parent"
+                                        android:layout_height="wrap_content"
+                                        android:gravity="center"
+                                        android:text="5"
+                                        android:inputType="number"
+                                        android:textColor="@color/text_primary" />
+                                </com.google.android.material.textfield.TextInputLayout>
+
+                                <com.google.android.material.button.MaterialButton
+                                    android:id="@+id/btnPlazoMas"
+                                    style="?attr/materialButtonOutlinedStyle"
+                                    android:layout_width="38dp"
+                                    android:layout_height="48dp"
+                                    android:insetLeft="0dp"
+                                    android:insetTop="0dp"
+                                    android:insetRight="0dp"
+                                    android:insetBottom="0dp"
+                                    android:padding="0dp"
+                                    app:icon="@drawable/ic_add"
+                                    app:iconGravity="textStart"
+                                    app:iconSize="18dp"
+                                    app:iconTint="@color/primary"
+                                    app:cornerRadius="10dp"
+                                    app:strokeColor="@color/primary"
+                                    app:strokeWidth="1.5dp" />
+                            </LinearLayout>
+                        </LinearLayout>
+                    </LinearLayout>
+
+                    <!-- Chips de plazos frecuentes -->
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:layout_marginBottom="12dp"
+                        android:gravity="end">
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipPlazo3"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="28dp"
+                            android:text="3 d"
+                            android:textSize="10sp"
+                            android:textColor="@color/text_secondary"
+                            app:cornerRadius="6dp"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp"
+                            android:layout_marginEnd="4dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipPlazo5"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="28dp"
+                            android:text="5 d"
+                            android:textSize="10sp"
+                            android:textColor="@color/text_secondary"
+                            app:cornerRadius="6dp"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp"
+                            android:layout_marginEnd="4dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipPlazo8"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="28dp"
+                            android:text="8 d"
+                            android:textSize="10sp"
+                            android:textColor="@color/text_secondary"
+                            app:cornerRadius="6dp"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp"
+                            android:layout_marginEnd="4dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipPlazo15"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="28dp"
+                            android:text="15 d"
+                            android:textSize="10sp"
+                            android:textColor="@color/text_secondary"
+                            app:cornerRadius="6dp"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp"
+                            android:layout_marginEnd="4dp" />
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/chipPlazo30"
+                            style="?attr/materialButtonOutlinedStyle"
+                            android:layout_width="wrap_content"
+                            android:layout_height="28dp"
+                            android:text="30 d"
+                            android:textSize="10sp"
+                            android:textColor="@color/text_secondary"
+                            app:cornerRadius="6dp"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp" />
                     </LinearLayout>
                 </LinearLayout>
 

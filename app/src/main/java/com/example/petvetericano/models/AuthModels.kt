@@ -28,7 +28,7 @@ data class ActualizarEstadoResponse(
 )
 
 enum class TipoEstado {
-    URGENTE, EN_PROCESO, ASIGNADA
+    URGENTE, EN_PROCESO, ASIGNADA, TRANSFERIDA
 }
 
 data class LoginResponse(

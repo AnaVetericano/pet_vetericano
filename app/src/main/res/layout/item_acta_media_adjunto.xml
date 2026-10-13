@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="96dp"
+    android:layout_height="96dp"
+    android:layout_marginEnd="10dp"
+    android:clipChildren="false">
+
+    <!-- Tarjeta del Thumbnail de la foto o video -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardMediaThumbnail"
+        style="?attr/materialCardViewOutlinedStyle"
+        android:layout_width="88dp"
+        android:layout_height="88dp"
+        android:layout_gravity="bottom|start"
+        app:cardBackgroundColor="@color/bg_screen"
+        app:cardCornerRadius="14dp"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/card_stroke"
+        app:strokeWidth="1dp">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <!-- Imagen / Fotograma del video -->
+            <ImageView
+                android:id="@+id/ivMediaThumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:contentDescription="Miniatura de evidencia"
+                android:scaleType="centerCrop" />
+
+            <!-- Capa superpuesta para videos (Ícono Play y Etiqueta) -->
+            <FrameLayout
+                android:id="@+id/layoutVideoOverlay"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="#40000000"
+                android:visibility="gone">
+
+                <!-- Ícono central Play -->
+                <ImageView
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/circle_blue"
+                    android:backgroundTint="#B3170B3D"
+                    android:padding="6dp"
+                    android:src="@drawable/ic_play_arrow"
+                    app:tint="@color/white" />
+
+                <!-- Badge VIDEO inferior -->
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_gravity="bottom|center_horizontal"
+                    android:layout_marginBottom="4dp"
+                    android:background="@drawable/circle_gray"
+                    android:backgroundTint="#CC000000"
+                    android:fontFamily="@font/nunito_bold"
+                    android:paddingHorizontal="6dp"
+                    android:paddingVertical="1dp"
+                    android:text="VIDEO"
+                    android:textColor="@color/white"
+                    android:textSize="8sp" />
+            </FrameLayout>
+
+        </FrameLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Botón discreto flotante para eliminar (Top-End) -->
+    <ImageView
+        android:id="@+id/btnEliminarMedia"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:layout_gravity="top|end"
+        android:background="@drawable/circle_blue"
+        android:backgroundTint="#EF4444"
+        android:contentDescription="Eliminar archivo"
+        android:elevation="4dp"
+        android:padding="4dp"
+        android:src="@drawable/ic_close_circle"
+        app:tint="@color/white" />
+
+</FrameLayout>

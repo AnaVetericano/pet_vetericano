@@ -28,7 +28,7 @@ data class ActualizarEstadoResponse(
 )
 
 enum class TipoEstado {
-    URGENTE, EN_PROCESO, ASIGNADA
+    URGENTE, EN_PROCESO, ASIGNADA, TRANSFERIDA
 }
 
 data class LoginResponse(
@@ -103,7 +103,9 @@ data class UsuarioPerfilResponse(
     val email: String,
     val nombre: String,
     val apellido: String?,
-    val identificacion: String?
+    val identificacion: String?,
+    val telefono: String? = null,
+    @SerializedName("matricula_profesional") val matriculaProfesional: String? = null
 )
 
 // --- Peticiones / Reportes ---
@@ -124,7 +126,9 @@ data class ActualizarPerfilRequest(
     val nombre: String,
     val apellido: String,
     val email: String,
-    val telefono: String
+    val telefono: String,
+    @SerializedName("identificacion") val identificacion: String? = null,
+    @SerializedName("matricula_profesional") val matriculaProfesional: String? = null
 )
 
 data class TipoPeticionModel(

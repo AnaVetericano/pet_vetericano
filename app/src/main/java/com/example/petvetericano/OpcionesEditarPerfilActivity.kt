@@ -1,89 +1,255 @@
 package com.example.petvetericano
 
+import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.doOnTextChanged
+import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityOpcionesEditarPerfilBinding
-
+import com.example.petvetericano.models.ActualizarPerfilRequest
+import com.example.petvetericano.network.RetrofitClient
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.launch
+import java.io.File
+import java.io.FileOutputStream
 
 class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
-    // Declaración de la variable binding usando inicialización tardía (lateinit).
-    // ActivityOpcionesEditarPerfilBinding es una clase autogenerada por Android Studio que mapea tu XML.
-    // Si no usamos lateinit, Kotlin nos obligaría a inicializarla aquí mismo con un valor nulo, complicando el código con chequeos de nulos.
-    // Si no usas ViewBinding en absoluto, tendrías que usar findViewById repetidamente, lo cual es más lento y propenso a crasheos.
+    companion object {
+        const val TITULO_PROFESIONAL_FIJO = "Médico Veterinario Zootecnista"
+        private const val MENSAJE_RECOMENDACION_MATRICULA =
+            "Recomendado: Ingresa tu matrícula profesional para validar actas"
+    }
 
     private lateinit var binding: ActivityOpcionesEditarPerfilBinding
-
-    // Declaración del gestor que maneja la memoria local.
     private lateinit var prefs: SharedPreferencesManager
 
-    // registerForActivityResult es la forma moderna de pedirle un resultado a otra aplicación (la galería).
-    // ActivityResultContracts.GetContent() le indica al sistema que queremos obtener un contenido (archivo).
-    // La variable 'uri' representa la ruta interna del archivo en el teléfono.
-    // Usamos 'uri?.let' para asegurar que si el usuario abre la galería pero presiona atrás sin elegir nada (uri es null), el código dentro de las llaves no se ejecute. Si no usamos esto, la app se cerraría forzosamente al intentar cargar una imagen vacía.
+    // Selector para cambiar foto de perfil desde la galería
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let { binding.ivEditProfile.setImageURI(it) }
+        uri?.let { guardarYMostrarImagen(it) }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        // layoutInflater toma tu archivo XML y lo infla (lo convierte en objetos visuales reales en la memoria RAM).
         binding = ActivityOpcionesEditarPerfilBinding.inflate(layoutInflater)
-
-        // setContentView proyecta esa vista ya construida en la pantalla del dispositivo.
         setContentView(binding.root)
 
-        // Instanciamos la clase gestora pasándole 'this' (el contexto actual de la actividad).
-        // Sin el contexto, SharedPreferences no tendría permisos para acceder a la carpeta de almacenamiento de la app.
         prefs = SharedPreferencesManager(this)
 
-        // Extraemos los valores previamente guardados y los seteamos en los EditText.
-        // Si omites esto, el usuario verá los campos en blanco cada vez que entre a la pantalla, perdiendo la experiencia de edición.
-        binding.etName.setText(prefs.getUserName())
-        binding.etEmail.setText(prefs.getUserEmail())
-        binding.etPhone.setText(prefs.getUserPhone())
+        setupListeners()
+        cargarDatosPerfil()
+        sincronizarConApi()
 
-        // Acción de clic para el botón de regreso.
+        // Acción de clic para el botón de regreso
         binding.btnBack.setOnClickListener {
-            // finish() destruye esta pantalla, la saca de la pila de memoria y revela la pantalla que estaba detrás.
             finish()
         }
 
-        // Acción de clic para el botón de la cámara.
+        // Acción de clic para cambiar foto de perfil
         binding.btnChangePhoto.setOnClickListener {
-            // .launch("image/*") ejecuta el contrato definido arriba. "image/*" es un filtro MIME que restringe el selector de archivos para que solo muestre imágenes, bloqueando PDFs o videos.
             pickImageLauncher.launch("image/*")
         }
 
-        // Acción de clic para guardar la información ingresada.
+        // Acción de clic para guardar la información ingresada
         binding.btnSave.setOnClickListener {
-            // .text obtiene el contenido escrito. .toString() lo convierte a cadena de texto.
-            // .trim() elimina los espacios en blanco accidentales al inicio o al final del texto.
-            // Si no usas .trim(), un espacio en blanco al final de un correo ("correo@gmail.com ") generaría un error de validación cuando intentes autenticar al usuario más adelante.
-            val newName = binding.etName.text.toString().trim()
-            val newEmail = binding.etEmail.text.toString().trim()
-            val newPhone = binding.etPhone.text.toString().trim()
-
-            // Validación de seguridad. El operador || (OR) comprueba si el nombre O el correo están vacíos.
-            // .isEmpty() es más eficiente que evaluar si el string es igual a "".
-            if (newName.isEmpty() || newEmail.isEmpty()) {
-                // Toast.makeText crea un mensaje emergente nativo. Toast.LENGTH_SHORT indica que durará poco tiempo en pantalla.
-                Toast.makeText(this, "Completa los campos obligatorios", Toast.LENGTH_SHORT).show()
-                // return@setOnClickListener aborta la ejecución de este bloque de clic de forma inmediata.
-                // Si no incluyes esto, el código seguiría su curso e intentaría guardar datos vacíos, sobrescribiendo información válida.
-                return@setOnClickListener
-            }
-
-            // Llamamos a la función del gestor para persistir los datos limpios y validados.
-            prefs.saveUserData(newName, newEmail, newPhone)
-
-            Toast.makeText(this, "Perfil actualizado con éxito", Toast.LENGTH_SHORT).show()
-
-            // Finaliza la actividad para regresar al usuario a su menú de manera automática tras un guardado exitoso.
-            finish()
+            guardarDatosPerfil()
         }
+
+        // Acción de clic para cerrar sesión del veterinario
+        binding.btnLogout.setOnClickListener {
+            mostrarConfirmacionCerrarSesion()
+        }
+    }
+
+    private fun setupListeners() {
+        // Mensaje dinámico: recomienda ingresar la matrícula y se oculta automáticamente cuando se escribe
+        binding.etMatriculaProfesional.doOnTextChanged { text, _, _, _ ->
+            if (text.isNullOrBlank()) {
+                binding.tilMatriculaProfesional.helperText = MENSAJE_RECOMENDACION_MATRICULA
+            } else {
+                binding.tilMatriculaProfesional.helperText = null
+            }
+        }
+    }
+
+    private fun cargarDatosPerfil() {
+        val nombre = prefs.getUserName()
+        val email = prefs.getUserEmail()
+        val phone = prefs.getUserPhone()
+        val identificacion = prefs.getUserIdentification()
+        val matricula = prefs.getUserMatriculaProfesional()
+
+        actualizarEncabezadoUsuario()
+
+        binding.etName.setText(nombre)
+        binding.etEmail.setText(email)
+        binding.etPhone.setText(phone)
+        binding.etIdentificacion.setText(identificacion)
+        binding.etMatriculaProfesional.setText(matricula)
+
+        // Estado inicial del mensaje de recomendación para la matrícula
+        if (matricula.isNotBlank()) {
+            binding.tilMatriculaProfesional.helperText = null
+        } else {
+            binding.tilMatriculaProfesional.helperText = MENSAJE_RECOMENDACION_MATRICULA
+        }
+
+        // Badge oficial superior
+        binding.tvRolBadge.text = TITULO_PROFESIONAL_FIJO
+
+        // Cargar foto de perfil persistida si existe
+        val rutaFoto = prefs.getProfileImagePath().trim()
+        if (rutaFoto.isNotEmpty()) {
+            val archivo = File(rutaFoto)
+            if (archivo.exists()) {
+                binding.ivEditProfile.setImageURI(Uri.fromFile(archivo))
+            } else {
+                binding.ivEditProfile.setImageResource(R.drawable.smithimg)
+            }
+        } else {
+            binding.ivEditProfile.setImageResource(R.drawable.smithimg)
+        }
+    }
+
+    private fun actualizarEncabezadoUsuario() {
+        val nombre = prefs.getUserName().trim()
+        val apellido = prefs.getUserLastName().trim()
+        val nombreCompleto = if (apellido.isNotEmpty() && !nombre.contains(apellido)) "$nombre $apellido" else nombre
+        binding.tvProfileUserName.text = nombreCompleto.ifEmpty { "Médico Veterinario" }
+    }
+
+    private fun guardarYMostrarImagen(uri: Uri) {
+        try {
+            val archivoDestino = File(filesDir, "profile_picture.jpg")
+            contentResolver.openInputStream(uri)?.use { input ->
+                FileOutputStream(archivoDestino).use { output ->
+                    input.copyTo(output)
+                }
+            }
+            prefs.saveProfileImagePath(archivoDestino.absolutePath)
+            binding.ivEditProfile.setImageURI(Uri.fromFile(archivoDestino))
+            Toast.makeText(this, "Foto de perfil actualizada", Toast.LENGTH_SHORT).show()
+        } catch (e: Exception) {
+            binding.ivEditProfile.setImageURI(uri)
+        }
+    }
+
+    private fun guardarDatosPerfil() {
+        val newName = binding.etName.text.toString().trim()
+        val newEmail = binding.etEmail.text.toString().trim()
+        val newPhone = binding.etPhone.text.toString().trim()
+        val newIdentificacion = binding.etIdentificacion.text.toString().trim()
+        val newMatricula = binding.etMatriculaProfesional.text.toString().trim()
+
+        if (newName.isEmpty() || newEmail.isEmpty()) {
+            Toast.makeText(this, "Completa los campos obligatorios (Nombre y Correo)", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // 1. Persistir de inmediato en memoria local (SharedPreferencesManager)
+        prefs.saveUserData(newName, newEmail, newPhone)
+        prefs.saveUserIdentification(newIdentificacion)
+        prefs.saveUserMatriculaProfesional(newMatricula)
+
+        actualizarEncabezadoUsuario()
+        binding.tvRolBadge.text = TITULO_PROFESIONAL_FIJO
+
+        // 2. Sincronizar asíncronamente con el Backend / API
+        val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
+        if (token.isNotEmpty()) {
+            RetrofitClient.authToken = token
+            lifecycleScope.launch {
+                try {
+                    val request = ActualizarPerfilRequest(
+                        nombre = newName,
+                        apellido = prefs.getUserLastName(),
+                        email = newEmail,
+                        telefono = newPhone,
+                        identificacion = newIdentificacion.ifEmpty { null },
+                        matriculaProfesional = newMatricula.ifEmpty { null }
+                    )
+                    RetrofitClient.apiService.actualizarPerfil(request)
+                } catch (e: Exception) {
+                    Log.e("OpcionesPerfil", "Error sincronizando con API: ${e.message}")
+                }
+            }
+        }
+
+        Toast.makeText(this, "Perfil profesional actualizado con éxito", Toast.LENGTH_SHORT).show()
+        finish()
+    }
+
+    private fun sincronizarConApi() {
+        val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
+        if (token.isEmpty()) return
+
+        RetrofitClient.authToken = token
+        lifecycleScope.launch {
+            try {
+                val respuesta = RetrofitClient.apiService.obtenerPerfil()
+                if (respuesta.isSuccessful) {
+                    val perfil = respuesta.body() ?: return@launch
+
+                    if (binding.etName.text.isNullOrEmpty() && !perfil.nombre.isNullOrEmpty()) {
+                        binding.etName.setText(perfil.nombre)
+                        prefs.saveUserData(perfil.nombre, prefs.getUserEmail(), prefs.getUserPhone())
+                    }
+                    if (!perfil.apellido.isNullOrEmpty()) {
+                        prefs.saveUserLastName(perfil.apellido)
+                    }
+                    if (binding.etEmail.text.isNullOrEmpty() && !perfil.email.isNullOrEmpty()) {
+                        binding.etEmail.setText(perfil.email)
+                        prefs.saveUserData(prefs.getUserName(), perfil.email, prefs.getUserPhone())
+                    }
+                    if (binding.etPhone.text.isNullOrEmpty() && !perfil.telefono.isNullOrEmpty()) {
+                        binding.etPhone.setText(perfil.telefono)
+                        prefs.saveUserData(prefs.getUserName(), prefs.getUserEmail(), perfil.telefono)
+                    }
+                    if (binding.etIdentificacion.text.isNullOrEmpty() && !perfil.identificacion.isNullOrEmpty()) {
+                        binding.etIdentificacion.setText(perfil.identificacion)
+                        prefs.saveUserIdentification(perfil.identificacion)
+                    }
+                    if (binding.etMatriculaProfesional.text.isNullOrEmpty() && !perfil.matriculaProfesional.isNullOrEmpty()) {
+                        binding.etMatriculaProfesional.setText(perfil.matriculaProfesional)
+                        prefs.saveUserMatriculaProfesional(perfil.matriculaProfesional)
+                        binding.tilMatriculaProfesional.helperText = null
+                    }
+
+                    binding.tvRolBadge.text = TITULO_PROFESIONAL_FIJO
+                    actualizarEncabezadoUsuario()
+                }
+            } catch (e: Exception) {
+                Log.d("OpcionesPerfil", "No se pudo sincronizar perfil remoto: ${e.message}")
+            }
+        }
+    }
+
+    private fun mostrarConfirmacionCerrarSesion() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("¿Cerrar sesión?")
+            .setMessage("Se cerrará la sesión actual de médico veterinario. Tendrás que ingresar tus credenciales nuevamente para acceder al sistema.")
+            .setNegativeButton("Cancelar") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .setPositiveButton("Cerrar sesión") { dialog, _ ->
+                dialog.dismiss()
+                cerrarSesion()
+            }
+            .show()
+    }
+
+    private fun cerrarSesion() {
+        prefs.clearSession()
+        RetrofitClient.authToken = null
+
+        val intent = android.content.Intent(this, inicio_sesion::class.java).apply {
+            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+        }
+        startActivity(intent)
+        finish()
     }
 }

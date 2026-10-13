@@ -111,15 +111,19 @@ class dahsboard_veterianrio : AppCompatActivity() {
 
                         val asignadas = petitions.count {
                             val st = it.estado?.lowercase() ?: ""
-                            st.contains("asignad") || st.contains("evaluaci") || st.contains("urgente")
+                            st.contains("asignad") || st.contains("evaluaci") || st.contains("urgente") || st.contains("pendiente") || st.contains("borrador")
+                        }
+                        val enTratamiento = petitions.count {
+                            val st = it.estado?.lowercase() ?: ""
+                            (st.contains("proceso") || st.contains("tratamiento") || st.contains("observaci") || st.contains("seguimiento") || st.contains("reasignad")) && !st.contains("transferid")
                         }
                         val atendidas = petitions.count {
                             val st = it.estado?.lowercase() ?: ""
-                            st.contains("atendida") || st.contains("finaliz") || st.contains("alta") || st.contains("fallecid")
+                            st.contains("atendida") || st.contains("finaliz") || st.contains("alta") || st.contains("fallecid") || st.contains("resuelt")
                         }
-                        val reasignadas = petitions.count {
+                        val transferidas = petitions.count {
                             val st = it.estado?.lowercase() ?: ""
-                            st.contains("reasignad") || st.contains("proceso") || st.contains("tratamiento") || st.contains("observaci")
+                            st.contains("transferid")
                         }
                         val urgentes = petitions.count {
                             val st = it.estado?.lowercase() ?: ""
@@ -128,15 +132,26 @@ class dahsboard_veterianrio : AppCompatActivity() {
                         val total = petitions.size
 
                         binding.tvGraficoAsignadas.text = asignadas.toString()
+                        binding.tvGraficoReasignadas.text = enTratamiento.toString()
                         binding.tvGraficoAtendidas.text = atendidas.toString()
-                        binding.tvGraficoReasignadas.text = reasignadas.toString()
+                        binding.tvGraficoTransferidas.text = transferidas.toString()
+
                         binding.tvPeticionesAsignadas.text = asignadas.toString()
+                        binding.tvPeticionesEnTratamiento.text = enTratamiento.toString()
                         binding.tvConteoAtencion.text = atendidas.toString()
+                        binding.tvPeticionesTransferidas.text = transferidas.toString()
+
                         binding.tvCantidadUrgentes.text = "$urgentes urgentes"
 
-                        configurarGrafico(asignadas, atendidas, reasignadas, total)
+                        configurarGrafico(asignadas, enTratamiento, atendidas, transferidas, total)
 
-                        val listaParaRv = petitions.take(5).map { pet ->
+                        // 1. Peticiones activas locales (no transferidas ni cerradas)
+                        val activas = petitions.filter {
+                            val st = it.estado?.lowercase() ?: ""
+                            !st.contains("transferid") && !st.contains("alta") && !st.contains("fallecid") && !st.contains("finaliz")
+                        }
+
+                        val listaParaRvActivas = activas.take(5).map { pet ->
                             val estadoStr = pet.estado?.lowercase() ?: ""
                             val tipo = when {
                                 estadoStr.contains("urgente") -> TipoEstado.URGENTE
@@ -152,13 +167,45 @@ class dahsboard_veterianrio : AppCompatActivity() {
                             )
                         }
 
-                        binding.rvPendientes.adapter = PendientesAdapter(listaParaRv) { item ->
+                        binding.rvPendientes.adapter = PendientesAdapter(listaParaRvActivas) { item ->
                             if (item.id_peticion > 0) {
                                 val intent = Intent(this@dahsboard_veterianrio, DetallePeticion::class.java).apply {
                                     putExtra("PETICION_ID", item.id_peticion)
                                 }
                                 startActivity(intent)
                             }
+                        }
+
+                        // 2. Peticiones transferidas a otro centro (sección separada)
+                        val listaTransferidasRaw = petitions.filter {
+                            val st = it.estado?.lowercase() ?: ""
+                            st.contains("transferid")
+                        }
+
+                        if (listaTransferidasRaw.isNotEmpty()) {
+                            binding.cardTransferidas.visibility = android.view.View.VISIBLE
+                            binding.tvCantidadTransferidas.text = "${listaTransferidasRaw.size} transferido(s)"
+
+                            val listaTransferidasRv = listaTransferidasRaw.take(5).map { pet ->
+                                PeticionPendiente(
+                                    id_peticion = pet.id_peticion,
+                                    titulo = pet.tipo ?: "Desconocido",
+                                    paciente = "${pet.numero_radicado ?: ""} — ${pet.ubicacion_direccion ?: "Sin dirección"}",
+                                    estado = pet.estado ?: "Transferido a otro centro",
+                                    tipoEstado = TipoEstado.TRANSFERIDA
+                                )
+                            }
+
+                            binding.rvTransferidas.adapter = PendientesAdapter(listaTransferidasRv) { item ->
+                                if (item.id_peticion > 0) {
+                                    val intent = Intent(this@dahsboard_veterianrio, DetallePeticion::class.java).apply {
+                                        putExtra("PETICION_ID", item.id_peticion)
+                                    }
+                                    startActivity(intent)
+                                }
+                            }
+                        } else {
+                            binding.cardTransferidas.visibility = android.view.View.GONE
                         }
                     } else {
                         Toast.makeText(this@dahsboard_veterianrio, "Error al cargar dashboard", Toast.LENGTH_SHORT).show()
@@ -173,24 +220,36 @@ class dahsboard_veterianrio : AppCompatActivity() {
         }
     }
 
-    private fun configurarGrafico(asignadas: Int, atendidas: Int, reasignadas: Int, total: Int) {
+    private fun configurarGrafico(asignadas: Int, enTratamiento: Int, atendidas: Int, transferidas: Int, total: Int) {
         val pieChart = binding.pieChart
 
         val entries = ArrayList<PieEntry>()
-        if (asignadas > 0) entries.add(PieEntry(asignadas.toFloat(), ""))
-        if (atendidas > 0) entries.add(PieEntry(atendidas.toFloat(), ""))
-        if (reasignadas > 0) entries.add(PieEntry(reasignadas.toFloat(), ""))
+        val colores = ArrayList<Int>()
+
+        if (asignadas > 0) {
+            entries.add(PieEntry(asignadas.toFloat(), ""))
+            colores.add(Color.parseColor("#4141A5")) // primary (azul)
+        }
+        if (enTratamiento > 0) {
+            entries.add(PieEntry(enTratamiento.toFloat(), ""))
+            colores.add(Color.parseColor("#F1B800")) // secondary / en tratamiento (amarillo)
+        }
+        if (atendidas > 0) {
+            entries.add(PieEntry(atendidas.toFloat(), ""))
+            colores.add(Color.parseColor("#10B981")) // success / atendidas (verde)
+        }
+        if (transferidas > 0) {
+            entries.add(PieEntry(transferidas.toFloat(), ""))
+            colores.add(Color.parseColor("#6D28D9")) // morado transferido
+        }
 
         if (entries.isEmpty()) {
             entries.add(PieEntry(1f, ""))
+            colores.add(Color.parseColor("#E2E8F0"))
         }
 
         val dataSet = PieDataSet(entries, "")
-        dataSet.colors = listOf(
-            Color.parseColor("#4141A5"),
-            Color.parseColor("#F1B800"),
-            Color.parseColor("#170B3D")
-        )
+        dataSet.colors = colores
         dataSet.setDrawValues(false)
 
         val data = PieData(dataSet)

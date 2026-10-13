@@ -26,7 +26,7 @@ class PetitionsListActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityPetitionsListBinding
     private var todasLasPeticiones: List<Petition> = emptyList()
-    private var estadoFiltroActual: String = "pendientes" // pendientes, proceso, atendidas
+    private var estadoFiltroActual: String = "todas" // todas, pendientes, proceso, atendidas
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -103,6 +103,12 @@ class PetitionsListActivity : AppCompatActivity() {
     }
 
     private fun setupTabs() {
+        binding.tabTodas.setOnClickListener {
+            estadoFiltroActual = "todas"
+            actualizarEstiloTabs(binding.tabTodas)
+            aplicarFiltros()
+        }
+
         binding.tabPendientes.setOnClickListener {
             estadoFiltroActual = "pendientes"
             actualizarEstiloTabs(binding.tabPendientes)
@@ -123,7 +129,7 @@ class PetitionsListActivity : AppCompatActivity() {
     }
 
     private fun actualizarEstiloTabs(tabActiva: TextView) {
-        val tabs = listOf(binding.tabPendientes, binding.tabEnProceso, binding.tabAtendidas)
+        val tabs = listOf(binding.tabTodas, binding.tabPendientes, binding.tabEnProceso, binding.tabAtendidas)
         val colorActivo = ContextCompat.getColor(this, R.color.blue)
         val colorInactivo = ContextCompat.getColor(this, R.color.text_muted)
 
@@ -138,22 +144,28 @@ class PetitionsListActivity : AppCompatActivity() {
         }
     }
 
+    private fun normalizar(texto: String?): String {
+        if (texto == null) return ""
+        return java.text.Normalizer.normalize(texto.lowercase(), java.text.Normalizer.Form.NFD)
+            .replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
+            .trim()
+    }
+
     private fun aplicarFiltros() {
-        val query = binding.etBuscarPeticion.text.toString().trim().lowercase()
+        val query = normalizar(binding.etBuscarPeticion.text.toString())
 
         val filtradas = todasLasPeticiones.filter { peticion ->
+            val st = normalizar(peticion.status)
             val coincideEstado = when (estadoFiltroActual) {
+                "todas" -> true
                 "pendientes" -> {
-                    val st = peticion.status.lowercase()
-                    st.contains("urgente") || st.contains("pendiente") || st.contains("asignada") || st.contains("evaluación")
+                    st.contains("urgent") || st.contains("pendient") || st.contains("asignad") || st.contains("evaluac")
                 }
                 "proceso" -> {
-                    val st = peticion.status.lowercase()
-                    st.contains("proceso") || st.contains("tratamiento") || st.contains("observación")
+                    st.contains("proces") || st.contains("tratamient") || st.contains("observac")
                 }
                 "atendidas" -> {
-                    val st = peticion.status.lowercase()
-                    st.contains("atendida") || st.contains("alta") || st.contains("finalizada") || st.contains("resuelta") || st.contains("fallecido")
+                    st.contains("atendid") || st.contains("alta") || st.contains("finaliz") || st.contains("resuelt") || st.contains("fallecid")
                 }
                 else -> true
             }
@@ -161,10 +173,10 @@ class PetitionsListActivity : AppCompatActivity() {
             val coincideQuery = if (query.isEmpty()) {
                 true
             } else {
-                peticion.code.lowercase().contains(query) ||
-                peticion.title.lowercase().contains(query) ||
-                peticion.location.lowercase().contains(query) ||
-                peticion.status.lowercase().contains(query)
+                normalizar(peticion.code).contains(query) ||
+                normalizar(peticion.title).contains(query) ||
+                normalizar(peticion.location).contains(query) ||
+                st.contains(query)
             }
 
             coincideEstado && coincideQuery

@@ -3,13 +3,14 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:paddingHorizontal="16dp"
-    android:paddingVertical="12dp">
+    android:background="?attr/selectableItemBackground"
+    android:paddingHorizontal="18dp"
+    android:paddingVertical="14dp">
 
     <View
         android:id="@+id/vwIndicadorColor"
-        android:layout_width="8dp"
-        android:layout_height="8dp"
+        android:layout_width="10dp"
+        android:layout_height="10dp"
         android:background="@drawable/baseline_circle_24"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,9 +22,9 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
+        android:fontFamily="@font/nunito_bold"
         android:textColor="@color/text_primary"
-        android:textSize="14sp"
-        android:textStyle="bold"
+        android:textSize="13sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toStartOf="@id/tvEstadoBadge"
         app:layout_constraintStart_toEndOf="@id/vwIndicadorColor"
@@ -33,10 +34,11 @@
         android:id="@+id/tvEstadoBadge"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:background="@drawable/bg_rounded_badge"
+        android:fontFamily="@font/nunito_bold"
         android:paddingHorizontal="10dp"
         android:paddingVertical="4dp"
-        android:textSize="12sp"
-        android:textStyle="bold"
+        android:textSize="11sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -44,8 +46,8 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="12dp"
-        android:background="#F0F0F0"
+        android:layout_marginTop="14dp"
+        android:background="@color/divider"
         app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

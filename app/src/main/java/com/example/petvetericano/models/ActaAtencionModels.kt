@@ -155,10 +155,10 @@ data class SeguimientoPeticionVisitaRequest(
 
     // Evidencia multimedia (fotos y videos en Cloudinary)
     @SerializedName("fotos")
-    val fotos: List<String>? = null,
+    val fotos: List<String> = emptyList(),
 
     @SerializedName("videos")
-    val videos: List<String>? = null
+    val videos: List<String> = emptyList()
 )
 
 data class LugarAtencionActa(

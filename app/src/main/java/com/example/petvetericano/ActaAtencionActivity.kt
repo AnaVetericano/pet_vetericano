@@ -196,7 +196,8 @@ class ActaAtencionActivity : AppCompatActivity() {
             "Médico Veterinario"
         }
         binding.etFuncionarioNombre.setText(nombreCompleto)
-        binding.etFuncionarioCargo.setText("Médico Veterinario")
+        val tituloGuardado = prefs.getUserTituloProfesional().trim()
+        binding.etFuncionarioCargo.setText(tituloGuardado.ifEmpty { "Médico Veterinario" })
 
         val identificacion = prefs.getUserIdentification()
         if (identificacion.isNotEmpty()) {

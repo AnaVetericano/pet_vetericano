@@ -24,12 +24,18 @@ class SharedPreferencesManager(context: Context) {
 
     // Guardar Identificación / Cédula
     fun saveUserIdentification(identification: String) {
-        if (identification.isNotEmpty()) {
-            prefs.edit().putString("USER_IDENTIFICATION", identification).apply()
-        }
+        prefs.edit().putString("USER_IDENTIFICATION", identification).apply()
     }
 
+    // Guardar Matrícula Profesional (COMVEZCOL)
+    fun saveUserMatriculaProfesional(matricula: String) {
+        prefs.edit().putString("USER_MATRICULA_PROFESIONAL", matricula).apply()
+    }
+
+    // Título profesional fijo oficial del médico veterinario
+    fun getUserTituloProfesional(): String = "Médico Veterinario Zootecnista"
     fun getUserIdentification(): String = prefs.getString("USER_IDENTIFICATION", "") ?: ""
+    fun getUserMatriculaProfesional(): String = prefs.getString("USER_MATRICULA_PROFESIONAL", "") ?: ""
     fun getUserLastName(): String = prefs.getString("USER_LASTNAME", "") ?: ""
     fun getUserName(): String = prefs.getString("USER_NAME", "") ?: ""
     fun getUserEmail(): String = prefs.getString("USER_EMAIL", "") ?: ""

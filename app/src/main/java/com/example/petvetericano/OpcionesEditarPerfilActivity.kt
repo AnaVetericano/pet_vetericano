@@ -78,6 +78,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
     private fun cargarDatosPerfil() {
         val nombre = prefs.getUserName()
+        val apellido = prefs.getUserLastName()
         val email = prefs.getUserEmail()
         val phone = prefs.getUserPhone()
         val identificacion = prefs.getUserIdentification()
@@ -86,6 +87,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         actualizarEncabezadoUsuario()
 
         binding.etName.setText(nombre)
+        binding.etLastName.setText(apellido)
         binding.etEmail.setText(email)
         binding.etPhone.setText(phone)
         binding.etIdentificacion.setText(identificacion)
@@ -140,6 +142,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
     private fun guardarDatosPerfil() {
         val newName = binding.etName.text.toString().trim()
+        val newLastName = binding.etLastName.text.toString().trim()
         val newEmail = binding.etEmail.text.toString().trim()
         val newPhone = binding.etPhone.text.toString().trim()
         val newIdentificacion = binding.etIdentificacion.text.toString().trim()
@@ -152,6 +155,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
         // 1. Persistir de inmediato en memoria local (SharedPreferencesManager)
         prefs.saveUserData(newName, newEmail, newPhone)
+        prefs.saveUserLastName(newLastName)
         prefs.saveUserIdentification(newIdentificacion)
         prefs.saveUserMatriculaProfesional(newMatricula)
 
@@ -174,7 +178,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
             try {
                 val request = ActualizarPerfilRequest(
                     nombre = newName,
-                    apellido = prefs.getUserLastName(),
+                    apellido = newLastName,
                     email = newEmail,
                     telefono = newPhone,
                     identificacion = newIdentificacion.ifEmpty { null },
@@ -182,6 +186,13 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                 )
                 val response = RetrofitClient.apiService.actualizarPerfil(request)
                 if (response.isSuccessful) {
+                    val body = response.body()
+                    if (body != null) {
+                        if (!body.nombre.isNullOrEmpty()) prefs.saveUserData(body.nombre, body.email, body.telefono ?: newPhone)
+                        if (!body.apellido.isNullOrEmpty()) prefs.saveUserLastName(body.apellido)
+                        if (!body.identificacion.isNullOrEmpty()) prefs.saveUserIdentification(body.identificacion)
+                        if (!body.matriculaProfesional.isNullOrEmpty()) prefs.saveUserMatriculaProfesional(body.matriculaProfesional)
+                    }
                     Toast.makeText(this@OpcionesEditarPerfilActivity, "Perfil profesional actualizado con éxito", Toast.LENGTH_SHORT).show()
                     finish()
                 } else {
@@ -210,18 +221,19 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                 if (respuesta.isSuccessful) {
                     val perfil = respuesta.body() ?: return@launch
 
-                    if (binding.etName.text.isNullOrEmpty() && !perfil.nombre.isNullOrEmpty()) {
+                    if (!perfil.nombre.isNullOrEmpty()) {
                         binding.etName.setText(perfil.nombre)
                         prefs.saveUserData(perfil.nombre, prefs.getUserEmail(), prefs.getUserPhone())
                     }
                     if (!perfil.apellido.isNullOrEmpty()) {
+                        binding.etLastName.setText(perfil.apellido)
                         prefs.saveUserLastName(perfil.apellido)
                     }
-                    if (binding.etEmail.text.isNullOrEmpty() && !perfil.email.isNullOrEmpty()) {
+                    if (!perfil.email.isNullOrEmpty()) {
                         binding.etEmail.setText(perfil.email)
                         prefs.saveUserData(prefs.getUserName(), perfil.email, prefs.getUserPhone())
                     }
-                    if (binding.etPhone.text.isNullOrEmpty() && !perfil.telefono.isNullOrEmpty()) {
+                    if (!perfil.telefono.isNullOrEmpty()) {
                         binding.etPhone.setText(perfil.telefono)
                         prefs.saveUserData(prefs.getUserName(), prefs.getUserEmail(), perfil.telefono)
                     }

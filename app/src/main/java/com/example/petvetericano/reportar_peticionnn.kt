@@ -20,8 +20,13 @@ import com.bumptech.glide.Glide
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
 import com.example.petvetericano.databinding.ActivityReportarPeticionnnBinding
 import java.io.File
+import java.io.FileOutputStream
 
 class reportar_peticionnn : AppCompatActivity() {
 
@@ -43,6 +48,7 @@ class reportar_peticionnn : AppCompatActivity() {
 
     // URI de la foto que tomaremos con la cámara
     private var photoUri: Uri? = null
+    private var photoFile: File? = null
 
     // camara
     private lateinit var cameraLauncher: ActivityResultLauncher<Uri>
@@ -72,6 +78,10 @@ class reportar_peticionnn : AppCompatActivity() {
                 @Suppress("DEPRECATION")
                 savedInstanceState.getParcelable("SAVED_PHOTO_URI")
             }
+            val savedPath = savedInstanceState.getString("SAVED_PHOTO_FILE")
+            if (!savedPath.isNullOrEmpty()) {
+                photoFile = File(savedPath)
+            }
         }
 
         // Inicializamos la conexión con Cloudinary
@@ -83,12 +93,13 @@ class reportar_peticionnn : AppCompatActivity() {
                 ActivityResultContracts.TakePicture()
             ) { success ->
                 if (success && photoUri != null) {
+                    photoFile?.let { optimizarImagen(it) }
                     selectedUris.add(photoUri!!)
                     actualizarVisualizacionMultimedia()
                     guardarMultimediaEnPrefs() // Guardar en caché al instante
                     Toast.makeText(
                         this,
-                        "Foto tomada correctamente 📷",
+                        "Foto tomada y optimizada 📷",
                         Toast.LENGTH_SHORT
                     ).show()
                 } else {
@@ -147,6 +158,7 @@ class reportar_peticionnn : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         photoUri?.let { outState.putParcelable("SAVED_PHOTO_URI", it) }
+        photoFile?.let { outState.putString("SAVED_PHOTO_FILE", it.absolutePath) }
     }
 
     // GUARDAR RUTAS DE MULTIMEDIA EN PREFERENCES
@@ -238,6 +250,7 @@ class reportar_peticionnn : AppCompatActivity() {
     private fun tomarFoto() {
         try {
             val archivoFoto = File(filesDir, "foto_reporte_${System.currentTimeMillis()}.jpg")
+            photoFile = archivoFoto
 
             photoUri = FileProvider.getUriForFile(
                 this,
@@ -253,6 +266,72 @@ class reportar_peticionnn : AppCompatActivity() {
                 "Error al abrir la cámara",
                 Toast.LENGTH_SHORT
             ).show()
+        }
+    }
+
+    private fun optimizarImagen(archivo: File): File {
+        return try {
+            if (!archivo.exists() || archivo.length() == 0L) return archivo
+
+            val boundsOptions = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            BitmapFactory.decodeFile(archivo.absolutePath, boundsOptions)
+
+            val maxDimension = 1920
+            var sampleSize = 1
+            if (boundsOptions.outHeight > maxDimension || boundsOptions.outWidth > maxDimension) {
+                val halfHeight = boundsOptions.outHeight / 2
+                val halfWidth = boundsOptions.outWidth / 2
+                while ((halfHeight / sampleSize) >= maxDimension || (halfWidth / sampleSize) >= maxDimension) {
+                    sampleSize *= 2
+                }
+            }
+
+            val decodeOptions = BitmapFactory.Options().apply {
+                inSampleSize = sampleSize
+                inPreferredConfig = Bitmap.Config.ARGB_8888
+            }
+            val rawBitmap = BitmapFactory.decodeFile(archivo.absolutePath, decodeOptions) ?: return archivo
+
+            val orientacionExif = try {
+                val exif = ExifInterface(archivo.absolutePath)
+                exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+            } catch (_: Exception) {
+                ExifInterface.ORIENTATION_NORMAL
+            }
+
+            val matrix = Matrix()
+            when (orientacionExif) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+                ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+                ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+                ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.postScale(-1f, 1f)
+                ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.postScale(1f, -1f)
+            }
+
+            val finalBitmap = if (!matrix.isIdentity) {
+                val rotado = Bitmap.createBitmap(rawBitmap, 0, 0, rawBitmap.width, rawBitmap.height, matrix, true)
+                if (rotado != rawBitmap) rawBitmap.recycle()
+                rotado
+            } else {
+                rawBitmap
+            }
+
+            val tempFile = File(filesDir, "opt_${System.currentTimeMillis()}_${archivo.name}")
+            FileOutputStream(tempFile).use { out ->
+                finalBitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
+            }
+            finalBitmap.recycle()
+
+            if (tempFile.exists() && tempFile.length() > 0) {
+                tempFile.copyTo(archivo, overwrite = true)
+                tempFile.delete()
+            }
+            archivo
+        } catch (e: Exception) {
+            e.printStackTrace()
+            archivo
         }
     }
 

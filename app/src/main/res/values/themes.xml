@@ -36,4 +36,19 @@
     <style name="TextAppearance.Vetericano.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
         <item name="android:fontFamily">@font/nunito_bold</item>
     </style>
+
+    <!-- ===== Estilo Material 3 para BottomSheetDialog ===== -->
+    <style name="ThemeOverlay.Vetericano.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.Vetericano.BottomSheet</item>
+    </style>
+
+    <style name="Widget.Vetericano.BottomSheet" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@color/white</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Vetericano.BottomSheet</item>
+    </style>
+
+    <style name="ShapeAppearance.Vetericano.BottomSheet" parent="ShapeAppearance.Material3.Corner.None">
+        <item name="cornerSizeTopLeft">28dp</item>
+        <item name="cornerSizeTopRight">28dp</item>
+    </style>
 </resources>

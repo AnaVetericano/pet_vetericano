@@ -41,22 +41,21 @@ class dahsboard_veterianrio : AppCompatActivity() {
 
         // Configurar el gesto de recargar (Swipe to Refresh)
         binding.swipeRefreshLayout.setOnRefreshListener {
+            actualizarDatosUsuario()
             fetchDashboardData()
+            sincronizarPerfilUsuario()
         }
 
-        // Cargar nombre e iniciales del veterinario desde SharedPreferences
-        val prefs = SharedPreferencesManager(this)
-        val nombre = prefs.getUserName()
-        val apellido = prefs.getUserLastName()
-        val nombreCompleto = if (apellido.isNotEmpty()) "$nombre $apellido" else nombre
-        binding.tvNombreUsuario.text = nombreCompleto.ifEmpty { "Veterinario" }
+        // Cargar nombre e iniciales del veterinario inmediatamente
+        actualizarDatosUsuario()
 
-        val iniciales = buildString {
-            if (nombre.isNotEmpty()) append(nombre.first().uppercaseChar())
-            if (apellido.isNotEmpty()) append(apellido.first().uppercaseChar())
-            else if (nombre.length > 1) append(nombre[1].uppercaseChar())
+        // Avatar y nombre clicables para acceder a opciones de editar perfil
+        binding.tvInicialesAvatar.setOnClickListener {
+            startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
         }
-        binding.tvInicialesAvatar.text = iniciales.ifEmpty { "V" }
+        binding.tvNombreUsuario.setOnClickListener {
+            startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
+        }
 
         // Botones de navegación de acciones
         binding.btnPeticiones.setOnClickListener {
@@ -81,12 +80,75 @@ class dahsboard_veterianrio : AppCompatActivity() {
         // Mostrar animación de carga inicial
         binding.swipeRefreshLayout.isRefreshing = true
         fetchDashboardData()
+        sincronizarPerfilUsuario()
     }
 
     override fun onResume() {
         super.onResume()
-        // Cuando vuelve de otra pantalla también actualiza por si hubo cambios
+        // Cuando vuelve de editar perfil o de otra pantalla actualiza inmediatamente el nombre
+        actualizarDatosUsuario()
         fetchDashboardData()
+        sincronizarPerfilUsuario()
+    }
+
+    private fun actualizarDatosUsuario() {
+        val prefs = SharedPreferencesManager(this)
+        val nombre = prefs.getUserName().trim()
+        val apellido = prefs.getUserLastName().trim()
+        val nombreCompleto = if (apellido.isNotEmpty() && !nombre.contains(apellido)) "$nombre $apellido" else nombre
+        binding.tvNombreUsuario.text = nombreCompleto.ifEmpty { "Veterinario" }
+
+        val iniciales = buildString {
+            if (nombre.isNotEmpty()) append(nombre.first().uppercaseChar())
+            if (apellido.isNotEmpty()) append(apellido.first().uppercaseChar())
+            else if (nombre.length > 1) append(nombre[1].uppercaseChar())
+        }
+        binding.tvInicialesAvatar.text = iniciales.ifEmpty { "V" }
+    }
+
+    private fun sincronizarPerfilUsuario() {
+        val prefs = SharedPreferencesManager(this)
+        val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
+        if (token.isEmpty()) return
+
+        RetrofitClient.authToken = token
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val response = RetrofitClient.apiService.obtenerPerfil()
+                if (response.isSuccessful && response.body() != null) {
+                    val perfil = response.body()!!
+                    val nuevoNombre = perfil.nombre?.trim() ?: ""
+                    val nuevoApellido = perfil.apellido?.trim() ?: ""
+                    val nuevoEmail = perfil.email?.trim() ?: ""
+                    val nuevoTelefono = perfil.telefono?.trim() ?: ""
+                    val nuevaIdentificacion = perfil.identificacion?.trim() ?: ""
+                    val nuevaMatricula = perfil.matriculaProfesional?.trim() ?: ""
+
+                    if (nuevoNombre.isNotEmpty()) {
+                        prefs.saveUserData(
+                            nuevoNombre,
+                            nuevoEmail.ifEmpty { prefs.getUserEmail() },
+                            nuevoTelefono.ifEmpty { prefs.getUserPhone() }
+                        )
+                    }
+                    if (nuevoApellido.isNotEmpty()) {
+                        prefs.saveUserLastName(nuevoApellido)
+                    }
+                    if (nuevaIdentificacion.isNotEmpty()) {
+                        prefs.saveUserIdentification(nuevaIdentificacion)
+                    }
+                    if (nuevaMatricula.isNotEmpty()) {
+                        prefs.saveUserMatriculaProfesional(nuevaMatricula)
+                    }
+
+                    withContext(Dispatchers.Main) {
+                        actualizarDatosUsuario()
+                    }
+                }
+            } catch (e: Exception) {
+                // Silencioso: fallback a SharedPreferences
+            }
+        }
     }
 
     private fun fetchDashboardData() {

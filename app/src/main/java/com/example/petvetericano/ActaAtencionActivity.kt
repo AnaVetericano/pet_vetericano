@@ -2044,40 +2044,75 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     private fun setupEvidenciaMultimedia() {
         binding.btnAdjuntarFoto.setOnClickListener {
-            mostrarDialogoOpcionFoto()
+            mostrarBottomSheetEvidencia(esVideo = false)
         }
 
         binding.btnAdjuntarVideo.setOnClickListener {
-            mostrarDialogoOpcionVideo()
+            mostrarBottomSheetEvidencia(esVideo = true)
         }
     }
 
-    private fun mostrarDialogoOpcionFoto() {
-        val opciones = arrayOf("Tomar foto con cámara 📷", "Seleccionar de la galería 🖼️")
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Adjuntar foto de evidencia")
-            .setItems(opciones) { _, which ->
-                when (which) {
-                    0 -> verificarPermisoYLanzar(esVideo = false)
-                    1 -> pickPhotoLauncher.launch("image/*")
-                }
-            }
-            .setNegativeButton("Cancelar", null)
-            .show()
-    }
+    private fun mostrarBottomSheetEvidencia(esVideo: Boolean) {
+        val bottomSheet = com.google.android.material.bottomsheet.BottomSheetDialog(
+            this,
+            R.style.ThemeOverlay_Vetericano_BottomSheetDialog
+        )
+        val sheetBinding = com.example.petvetericano.databinding.BottomSheetAdjuntarEvidenciaBinding.inflate(layoutInflater)
+        bottomSheet.setContentView(sheetBinding.root)
 
-    private fun mostrarDialogoOpcionVideo() {
-        val opciones = arrayOf("Grabar video con cámara 🎥", "Seleccionar de la galería 📁")
-        MaterialAlertDialogBuilder(this)
-            .setTitle("Adjuntar video de evidencia")
-            .setItems(opciones) { _, which ->
-                when (which) {
-                    0 -> verificarPermisoYLanzar(esVideo = true)
-                    1 -> pickVideoLauncher.launch("video/*")
-                }
+        if (esVideo) {
+            sheetBinding.ivSheetHeaderIcon.setImageResource(R.drawable.ic_videocam)
+            sheetBinding.tvSheetTitulo.text = "Adjuntar evidencia en video"
+            sheetBinding.tvSheetSubtitulo.text = "Selecciona el origen para documentar en video"
+
+            sheetBinding.ivIconCamara.setImageResource(R.drawable.ic_videocam)
+            sheetBinding.tvTituloCamara.text = "Grabar video en campo"
+            sheetBinding.tvSubtituloCamara.text = "Graba directamente con la cámara del dispositivo"
+
+            sheetBinding.ivIconGaleria.setImageResource(R.drawable.ic_videocam)
+            sheetBinding.tvTituloGaleria.text = "Elegir video de la galería"
+            sheetBinding.tvSubtituloGaleria.text = "Seleccionar archivo de video guardado"
+
+            sheetBinding.tvSheetInfoNota.text = "Almacenamiento en la nube: Graba clips breves de hasta 20-30 seg (máx. 10 MB)."
+        } else {
+            sheetBinding.ivSheetHeaderIcon.setImageResource(R.drawable.camera)
+            sheetBinding.tvSheetTitulo.text = "Adjuntar evidencia fotográfica"
+            sheetBinding.tvSheetSubtitulo.text = "Selecciona el origen para documentar el hallazgo clínico"
+
+            sheetBinding.ivIconCamara.setImageResource(R.drawable.camera)
+            sheetBinding.tvTituloCamara.text = "Tomar foto con la cámara"
+            sheetBinding.tvSubtituloCamara.text = "Captura en tiempo real durante la atención en campo"
+
+            sheetBinding.ivIconGaleria.setImageResource(R.drawable.ic_photo_library)
+            sheetBinding.tvTituloGaleria.text = "Elegir de la galería"
+            sheetBinding.tvSubtituloGaleria.text = "Seleccionar imagen guardada en tu teléfono"
+
+            sheetBinding.tvSheetInfoNota.text = "Optimización inteligente: Las fotos se procesan en Full HD para una subida ágil y segura."
+        }
+
+        sheetBinding.cardOpcionCamara.setOnClickListener {
+            bottomSheet.dismiss()
+            verificarPermisoYLanzar(esVideo = esVideo)
+        }
+
+        sheetBinding.cardOpcionGaleria.setOnClickListener {
+            bottomSheet.dismiss()
+            if (esVideo) {
+                pickVideoLauncher.launch("video/*")
+            } else {
+                pickPhotoLauncher.launch("image/*")
             }
-            .setNegativeButton("Cancelar", null)
-            .show()
+        }
+
+        sheetBinding.btnCerrarSheet.setOnClickListener {
+            bottomSheet.dismiss()
+        }
+
+        sheetBinding.btnCancelarSheet.setOnClickListener {
+            bottomSheet.dismiss()
+        }
+
+        bottomSheet.show()
     }
 
     private fun verificarPermisoYLanzar(esVideo: Boolean) {
@@ -2094,6 +2129,7 @@ class ActaAtencionActivity : AppCompatActivity() {
             val file = File(filesDir, "acta_foto_${System.currentTimeMillis()}.jpg")
             file.parentFile?.mkdirs()
             file.createNewFile()
+            tempCameraFile = file
             tempCameraUri = FileProvider.getUriForFile(
                 this,
                 "${applicationContext.packageName}.fileprovider",
@@ -2110,6 +2146,7 @@ class ActaAtencionActivity : AppCompatActivity() {
             val file = File(filesDir, "acta_video_${System.currentTimeMillis()}.mp4")
             file.parentFile?.mkdirs()
             file.createNewFile()
+            tempCameraFile = file
             tempCameraUri = FileProvider.getUriForFile(
                 this,
                 "${applicationContext.packageName}.fileprovider",
@@ -2121,7 +2158,7 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
     }
 
-    private fun copiarUriALocal(uri: Uri, esVideo: Boolean): Uri {
+    private fun copiarUriALocal(uri: Uri, esVideo: Boolean): Uri? {
         return try {
             val extension = if (esVideo) ".mp4" else ".jpg"
             val prefix = if (esVideo) "acta_video_" else "acta_foto_"
@@ -2132,6 +2169,24 @@ class ActaAtencionActivity : AppCompatActivity() {
                     input.copyTo(output)
                 }
             }
+
+            if (!esVideo) {
+                optimizarImagen(localFile)
+            } else {
+                if (localFile.length() > 10L * 1024 * 1024) {
+                    val sizeMb = localFile.length() / (1024 * 1024)
+                    localFile.delete()
+                    runOnUiThread {
+                        MaterialAlertDialogBuilder(this)
+                            .setTitle("Video demasiado pesado")
+                            .setMessage("El video seleccionado pesa ${sizeMb} MB y supera el límite de 10 MB permitido para almacenamiento en la nube.\n\nPor favor selecciona un video más corto o graba un clip breve.")
+                            .setPositiveButton("Aceptar", null)
+                            .show()
+                    }
+                    return null
+                }
+            }
+
             FileProvider.getUriForFile(
                 this,
                 "${applicationContext.packageName}.fileprovider",
@@ -2139,6 +2194,76 @@ class ActaAtencionActivity : AppCompatActivity() {
             )
         } catch (_: Exception) {
             uri
+        }
+    }
+
+    private fun optimizarImagen(archivo: File): File {
+        return try {
+            if (!archivo.exists() || archivo.length() == 0L) return archivo
+
+            // 1. Obtener dimensiones originales sin decodificar bitmap en memoria
+            val boundsOptions = BitmapFactory.Options().apply {
+                inJustDecodeBounds = true
+            }
+            BitmapFactory.decodeFile(archivo.absolutePath, boundsOptions)
+
+            val maxDimension = 1920
+            var sampleSize = 1
+            if (boundsOptions.outHeight > maxDimension || boundsOptions.outWidth > maxDimension) {
+                val halfHeight = boundsOptions.outHeight / 2
+                val halfWidth = boundsOptions.outWidth / 2
+                while ((halfHeight / sampleSize) >= maxDimension || (halfWidth / sampleSize) >= maxDimension) {
+                    sampleSize *= 2
+                }
+            }
+
+            // 2. Decodificar la imagen muestreada eficientemente
+            val decodeOptions = BitmapFactory.Options().apply {
+                inSampleSize = sampleSize
+                inPreferredConfig = Bitmap.Config.ARGB_8888
+            }
+            val rawBitmap = BitmapFactory.decodeFile(archivo.absolutePath, decodeOptions) ?: return archivo
+
+            // 3. Ajustar orientación EXIF si la cámara rotó la foto
+            val orientacionExif = try {
+                val exif = ExifInterface(archivo.absolutePath)
+                exif.getAttributeInt(ExifInterface.TAG_ORIENTATION, ExifInterface.ORIENTATION_NORMAL)
+            } catch (_: Exception) {
+                ExifInterface.ORIENTATION_NORMAL
+            }
+
+            val matrix = Matrix()
+            when (orientacionExif) {
+                ExifInterface.ORIENTATION_ROTATE_90 -> matrix.postRotate(90f)
+                ExifInterface.ORIENTATION_ROTATE_180 -> matrix.postRotate(180f)
+                ExifInterface.ORIENTATION_ROTATE_270 -> matrix.postRotate(270f)
+                ExifInterface.ORIENTATION_FLIP_HORIZONTAL -> matrix.postScale(-1f, 1f)
+                ExifInterface.ORIENTATION_FLIP_VERTICAL -> matrix.postScale(1f, -1f)
+            }
+
+            val finalBitmap = if (!matrix.isIdentity) {
+                val rotado = Bitmap.createBitmap(rawBitmap, 0, 0, rawBitmap.width, rawBitmap.height, matrix, true)
+                if (rotado != rawBitmap) rawBitmap.recycle()
+                rotado
+            } else {
+                rawBitmap
+            }
+
+            // 4. Guardar archivo comprimido como JPEG al 85%
+            val tempFile = File(filesDir, "opt_${System.currentTimeMillis()}_${archivo.name}")
+            FileOutputStream(tempFile).use { out ->
+                finalBitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
+            }
+            finalBitmap.recycle()
+
+            if (tempFile.exists() && tempFile.length() > 0) {
+                tempFile.copyTo(archivo, overwrite = true)
+                tempFile.delete()
+            }
+            archivo
+        } catch (e: Exception) {
+            e.printStackTrace()
+            archivo
         }
     }
 

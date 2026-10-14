@@ -158,29 +158,45 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         actualizarEncabezadoUsuario()
         binding.tvRolBadge.text = TITULO_PROFESIONAL_FIJO
 
-        // 2. Sincronizar asíncronamente con el Backend / API
+        // 2. Sincronizar con el Backend / API
         val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
-        if (token.isNotEmpty()) {
-            RetrofitClient.authToken = token
-            lifecycleScope.launch {
-                try {
-                    val request = ActualizarPerfilRequest(
-                        nombre = newName,
-                        apellido = prefs.getUserLastName(),
-                        email = newEmail,
-                        telefono = newPhone,
-                        identificacion = newIdentificacion.ifEmpty { null },
-                        matriculaProfesional = newMatricula.ifEmpty { null }
-                    )
-                    RetrofitClient.apiService.actualizarPerfil(request)
-                } catch (e: Exception) {
-                    Log.e("OpcionesPerfil", "Error sincronizando con API: ${e.message}")
-                }
-            }
+        if (token.isEmpty()) {
+            Toast.makeText(this, "Perfil guardado localmente", Toast.LENGTH_SHORT).show()
+            finish()
+            return
         }
 
-        Toast.makeText(this, "Perfil profesional actualizado con éxito", Toast.LENGTH_SHORT).show()
-        finish()
+        binding.btnSave.isEnabled = false
+        binding.btnSave.text = "Guardando..."
+        RetrofitClient.authToken = token
+
+        lifecycleScope.launch {
+            try {
+                val request = ActualizarPerfilRequest(
+                    nombre = newName,
+                    apellido = prefs.getUserLastName(),
+                    email = newEmail,
+                    telefono = newPhone,
+                    identificacion = newIdentificacion.ifEmpty { null },
+                    matriculaProfesional = newMatricula.ifEmpty { null }
+                )
+                val response = RetrofitClient.apiService.actualizarPerfil(request)
+                if (response.isSuccessful) {
+                    Toast.makeText(this@OpcionesEditarPerfilActivity, "Perfil profesional actualizado con éxito", Toast.LENGTH_SHORT).show()
+                    finish()
+                } else {
+                    val errorMsg = response.errorBody()?.string() ?: ""
+                    Log.e("OpcionesPerfil", "Error API ${response.code()}: $errorMsg")
+                    Toast.makeText(this@OpcionesEditarPerfilActivity, "Error al sincronizar con el servidor (${response.code()})", Toast.LENGTH_LONG).show()
+                    binding.btnSave.isEnabled = true
+                    binding.btnSave.text = "Guardar Cambios"
+                }
+            } catch (e: Exception) {
+                Log.e("OpcionesPerfil", "Error sincronizando con API: ${e.message}", e)
+                Toast.makeText(this@OpcionesEditarPerfilActivity, "Guardado localmente (sin conexión al servidor)", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }
     }
 
     private fun sincronizarConApi() {
@@ -209,11 +225,11 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                         binding.etPhone.setText(perfil.telefono)
                         prefs.saveUserData(prefs.getUserName(), prefs.getUserEmail(), perfil.telefono)
                     }
-                    if (binding.etIdentificacion.text.isNullOrEmpty() && !perfil.identificacion.isNullOrEmpty()) {
+                    if (!perfil.identificacion.isNullOrEmpty()) {
                         binding.etIdentificacion.setText(perfil.identificacion)
                         prefs.saveUserIdentification(perfil.identificacion)
                     }
-                    if (binding.etMatriculaProfesional.text.isNullOrEmpty() && !perfil.matriculaProfesional.isNullOrEmpty()) {
+                    if (!perfil.matriculaProfesional.isNullOrEmpty()) {
                         binding.etMatriculaProfesional.setText(perfil.matriculaProfesional)
                         prefs.saveUserMatriculaProfesional(perfil.matriculaProfesional)
                         binding.tilMatriculaProfesional.helperText = null

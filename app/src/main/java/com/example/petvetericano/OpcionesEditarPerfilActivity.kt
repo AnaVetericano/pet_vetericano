@@ -78,6 +78,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
     private fun cargarDatosPerfil() {
         val nombre = prefs.getUserName()
+        val apellido = prefs.getUserLastName()
         val email = prefs.getUserEmail()
         val phone = prefs.getUserPhone()
         val identificacion = prefs.getUserIdentification()
@@ -86,6 +87,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         actualizarEncabezadoUsuario()
 
         binding.etName.setText(nombre)
+        binding.etLastName.setText(apellido)
         binding.etEmail.setText(email)
         binding.etPhone.setText(phone)
         binding.etIdentificacion.setText(identificacion)
@@ -140,6 +142,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
     private fun guardarDatosPerfil() {
         val newName = binding.etName.text.toString().trim()
+        val newLastName = binding.etLastName.text.toString().trim()
         val newEmail = binding.etEmail.text.toString().trim()
         val newPhone = binding.etPhone.text.toString().trim()
         val newIdentificacion = binding.etIdentificacion.text.toString().trim()
@@ -152,35 +155,59 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
         // 1. Persistir de inmediato en memoria local (SharedPreferencesManager)
         prefs.saveUserData(newName, newEmail, newPhone)
+        prefs.saveUserLastName(newLastName)
         prefs.saveUserIdentification(newIdentificacion)
         prefs.saveUserMatriculaProfesional(newMatricula)
 
         actualizarEncabezadoUsuario()
         binding.tvRolBadge.text = TITULO_PROFESIONAL_FIJO
 
-        // 2. Sincronizar asíncronamente con el Backend / API
+        // 2. Sincronizar con el Backend / API
         val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
-        if (token.isNotEmpty()) {
-            RetrofitClient.authToken = token
-            lifecycleScope.launch {
-                try {
-                    val request = ActualizarPerfilRequest(
-                        nombre = newName,
-                        apellido = prefs.getUserLastName(),
-                        email = newEmail,
-                        telefono = newPhone,
-                        identificacion = newIdentificacion.ifEmpty { null },
-                        matriculaProfesional = newMatricula.ifEmpty { null }
-                    )
-                    RetrofitClient.apiService.actualizarPerfil(request)
-                } catch (e: Exception) {
-                    Log.e("OpcionesPerfil", "Error sincronizando con API: ${e.message}")
-                }
-            }
+        if (token.isEmpty()) {
+            Toast.makeText(this, "Perfil guardado localmente", Toast.LENGTH_SHORT).show()
+            finish()
+            return
         }
 
-        Toast.makeText(this, "Perfil profesional actualizado con éxito", Toast.LENGTH_SHORT).show()
-        finish()
+        binding.btnSave.isEnabled = false
+        binding.btnSave.text = "Guardando..."
+        RetrofitClient.authToken = token
+
+        lifecycleScope.launch {
+            try {
+                val request = ActualizarPerfilRequest(
+                    nombre = newName,
+                    apellido = newLastName,
+                    email = newEmail,
+                    telefono = newPhone,
+                    identificacion = newIdentificacion.ifEmpty { null },
+                    matriculaProfesional = newMatricula.ifEmpty { null }
+                )
+                val response = RetrofitClient.apiService.actualizarPerfil(request)
+                if (response.isSuccessful) {
+                    val body = response.body()
+                    if (body != null) {
+                        if (!body.nombre.isNullOrEmpty()) prefs.saveUserData(body.nombre, body.email, body.telefono ?: newPhone)
+                        if (!body.apellido.isNullOrEmpty()) prefs.saveUserLastName(body.apellido)
+                        if (!body.identificacion.isNullOrEmpty()) prefs.saveUserIdentification(body.identificacion)
+                        if (!body.matriculaProfesional.isNullOrEmpty()) prefs.saveUserMatriculaProfesional(body.matriculaProfesional)
+                    }
+                    Toast.makeText(this@OpcionesEditarPerfilActivity, "Perfil profesional actualizado con éxito", Toast.LENGTH_SHORT).show()
+                    finish()
+                } else {
+                    val errorMsg = response.errorBody()?.string() ?: ""
+                    Log.e("OpcionesPerfil", "Error API ${response.code()}: $errorMsg")
+                    Toast.makeText(this@OpcionesEditarPerfilActivity, "Error al sincronizar con el servidor (${response.code()})", Toast.LENGTH_LONG).show()
+                    binding.btnSave.isEnabled = true
+                    binding.btnSave.text = "Guardar Cambios"
+                }
+            } catch (e: Exception) {
+                Log.e("OpcionesPerfil", "Error sincronizando con API: ${e.message}", e)
+                Toast.makeText(this@OpcionesEditarPerfilActivity, "Guardado localmente (sin conexión al servidor)", Toast.LENGTH_SHORT).show()
+                finish()
+            }
+        }
     }
 
     private fun sincronizarConApi() {
@@ -194,26 +221,27 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                 if (respuesta.isSuccessful) {
                     val perfil = respuesta.body() ?: return@launch
 
-                    if (binding.etName.text.isNullOrEmpty() && !perfil.nombre.isNullOrEmpty()) {
+                    if (!perfil.nombre.isNullOrEmpty()) {
                         binding.etName.setText(perfil.nombre)
                         prefs.saveUserData(perfil.nombre, prefs.getUserEmail(), prefs.getUserPhone())
                     }
                     if (!perfil.apellido.isNullOrEmpty()) {
+                        binding.etLastName.setText(perfil.apellido)
                         prefs.saveUserLastName(perfil.apellido)
                     }
-                    if (binding.etEmail.text.isNullOrEmpty() && !perfil.email.isNullOrEmpty()) {
+                    if (!perfil.email.isNullOrEmpty()) {
                         binding.etEmail.setText(perfil.email)
                         prefs.saveUserData(prefs.getUserName(), perfil.email, prefs.getUserPhone())
                     }
-                    if (binding.etPhone.text.isNullOrEmpty() && !perfil.telefono.isNullOrEmpty()) {
+                    if (!perfil.telefono.isNullOrEmpty()) {
                         binding.etPhone.setText(perfil.telefono)
                         prefs.saveUserData(prefs.getUserName(), prefs.getUserEmail(), perfil.telefono)
                     }
-                    if (binding.etIdentificacion.text.isNullOrEmpty() && !perfil.identificacion.isNullOrEmpty()) {
+                    if (!perfil.identificacion.isNullOrEmpty()) {
                         binding.etIdentificacion.setText(perfil.identificacion)
                         prefs.saveUserIdentification(perfil.identificacion)
                     }
-                    if (binding.etMatriculaProfesional.text.isNullOrEmpty() && !perfil.matriculaProfesional.isNullOrEmpty()) {
+                    if (!perfil.matriculaProfesional.isNullOrEmpty()) {
                         binding.etMatriculaProfesional.setText(perfil.matriculaProfesional)
                         prefs.saveUserMatriculaProfesional(perfil.matriculaProfesional)
                         binding.tilMatriculaProfesional.helperText = null

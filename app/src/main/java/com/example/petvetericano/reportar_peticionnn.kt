@@ -2,16 +2,21 @@ package com.example.petvetericano
 
 import android.Manifest
 import android.content.Intent
-import android.content.pm.PackageManager  //p.concedido
-import android.media.MediaMetadataRetriever
+import android.content.pm.PackageManager
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Matrix
+import android.media.ExifInterface
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.view.View
+import android.widget.ImageView
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.result.ActivityResultLauncher
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -20,13 +25,18 @@ import com.bumptech.glide.Glide
 import com.cloudinary.android.MediaManager
 import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
-import android.graphics.Matrix
-import android.media.ExifInterface
 import com.example.petvetericano.databinding.ActivityReportarPeticionnnBinding
+import com.example.petvetericano.databinding.BottomSheetAdjuntarEvidenciaBinding
+import com.google.android.material.bottomsheet.BottomSheetDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.File
 import java.io.FileOutputStream
+
+data class EvidenciaItem(
+    val uri: Uri,
+    val esVideo: Boolean,
+    val localFile: File? = null
+)
 
 class reportar_peticionnn : AppCompatActivity() {
 
@@ -35,23 +45,108 @@ class reportar_peticionnn : AppCompatActivity() {
     // Nombres para la libreta offline (SharedPreferences)
     private val PREFS_NAME = "ReporteOfflineMultimedia"
     private val KEY_BORRADOR = "borrador_descripcion"
-    private val KEY_PATHS = "borrador_paths"
-    private val KEY_IS_VIDEO = "borrador_is_video"
+    private val KEY_PATHS = "borrador_paths_v2"
+    private val KEY_IS_VIDEO = "borrador_is_video_v2"
 
     // Datos de Cloudinary
     private val CLOUD_NAME = "aefeig5y"
     private val UPLOAD_PRESET = "preset_android"
 
-    // Guardamos las fotos/videos seleccionados
-    private val selectedUris = mutableListOf<Uri>()
-    private var isVideoSelected = false
+    // Evidencias multimedia seleccionadas (hasta 2)
+    private val selectedMediaList = mutableListOf<EvidenciaItem>()
 
-    // URI de la foto que tomaremos con la cámara
-    private var photoUri: Uri? = null
-    private var photoFile: File? = null
+    // Archivo y URI temporal para captura de cámara
+    private var tempCameraFile: File? = null
+    private var tempCameraUri: Uri? = null
+    private var pendingMediaEsVideo: Boolean = false
 
-    // camara
-    private lateinit var cameraLauncher: ActivityResultLauncher<Uri>
+    // Launchers de actividad para foto y video
+    private val takePhotoLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        if (success && tempCameraUri != null) {
+            tempCameraFile?.let { optimizarImagen(it) }
+            selectedMediaList.add(EvidenciaItem(tempCameraUri!!, esVideo = false, localFile = tempCameraFile))
+            actualizarVisualizacionMultimedia()
+            guardarMultimediaEnPrefs()
+            Toast.makeText(this, "Foto capturada y optimizada 📷", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private val pickPhotoLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            val localUri = copiarUriALocal(it, esVideo = false)
+            if (localUri != null) {
+                val file = File(localUri.path ?: "")
+                selectedMediaList.add(EvidenciaItem(localUri, esVideo = false, localFile = file))
+                actualizarVisualizacionMultimedia()
+                guardarMultimediaEnPrefs()
+                Toast.makeText(this, "Foto seleccionada 📷", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private val recordVideoLauncher = registerForActivityResult(
+        ActivityResultContracts.CaptureVideo()
+    ) { success ->
+        if (success && tempCameraUri != null) {
+            if (tempCameraFile != null && tempCameraFile!!.length() > 10L * 1024 * 1024) {
+                val sizeMb = tempCameraFile!!.length() / (1024 * 1024)
+                tempCameraFile!!.delete()
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("Video excede el límite")
+                    .setMessage("El video grabado pesa ${sizeMb} MB y supera el límite de 10 MB permitido.\n\nPor favor graba un video más breve (máx. 20-30 segundos).")
+                    .setPositiveButton("Aceptar", null)
+                    .show()
+            } else {
+                selectedMediaList.add(EvidenciaItem(tempCameraUri!!, esVideo = true, localFile = tempCameraFile))
+                actualizarVisualizacionMultimedia()
+                guardarMultimediaEnPrefs()
+                Toast.makeText(this, "Video grabado correctamente 🎥", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private val pickVideoLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            val localUri = copiarUriALocal(it, esVideo = true)
+            if (localUri != null) {
+                val file = File(localUri.path ?: "")
+                if (file.exists() && file.length() > 10L * 1024 * 1024) {
+                    val sizeMb = file.length() / (1024 * 1024)
+                    file.delete()
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle("Video demasiado pesado")
+                        .setMessage("El video seleccionado pesa ${sizeMb} MB y supera el límite de 10 MB permitido.\n\nPor favor selecciona un video más corto o graba un clip breve.")
+                        .setPositiveButton("Aceptar", null)
+                        .show()
+                } else {
+                    selectedMediaList.add(EvidenciaItem(localUri, esVideo = true, localFile = file))
+                    actualizarVisualizacionMultimedia()
+                    guardarMultimediaEnPrefs()
+                    Toast.makeText(this, "Video seleccionado 🎥", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    private val cameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            if (pendingMediaEsVideo) {
+                lanzarGrabacionVideo()
+            } else {
+                lanzarCapturaFoto()
+            }
+        } else {
+            Toast.makeText(this, "Permiso de cámara requerido para capturar evidencias", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -71,51 +166,34 @@ class reportar_peticionnn : AppCompatActivity() {
             insets
         }
 
+        // Recuperar estado en caso de recreación
         if (savedInstanceState != null) {
-            photoUri = if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.TIRAMISU) {
-                savedInstanceState.getParcelable("SAVED_PHOTO_URI", Uri::class.java)
+            tempCameraUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                savedInstanceState.getParcelable("SAVED_CAMERA_URI", Uri::class.java)
             } else {
                 @Suppress("DEPRECATION")
-                savedInstanceState.getParcelable("SAVED_PHOTO_URI")
+                savedInstanceState.getParcelable("SAVED_CAMERA_URI")
             }
-            val savedPath = savedInstanceState.getString("SAVED_PHOTO_FILE")
+            val savedPath = savedInstanceState.getString("SAVED_CAMERA_FILE")
             if (!savedPath.isNullOrEmpty()) {
-                photoFile = File(savedPath)
+                tempCameraFile = File(savedPath)
+            }
+            pendingMediaEsVideo = savedInstanceState.getBoolean("PENDING_MEDIA_IS_VIDEO", false)
+
+            val urisList = savedInstanceState.getStringArrayList("SAVED_MEDIA_URIS")
+            val isVideoList = savedInstanceState.getBooleanArray("SAVED_MEDIA_IS_VIDEO")
+            if (urisList != null && isVideoList != null && urisList.size == isVideoList.size) {
+                selectedMediaList.clear()
+                for (i in urisList.indices) {
+                    selectedMediaList.add(EvidenciaItem(Uri.parse(urisList[i]), isVideoList[i]))
+                }
             }
         }
 
-        // Inicializamos la conexión con Cloudinary
         initCloudinary()
-
-        // RESULTADO DE LA CÁMARA
-        cameraLauncher =
-            registerForActivityResult(
-                ActivityResultContracts.TakePicture()
-            ) { success ->
-                if (success && photoUri != null) {
-                    photoFile?.let { optimizarImagen(it) }
-                    selectedUris.add(photoUri!!)
-                    actualizarVisualizacionMultimedia()
-                    guardarMultimediaEnPrefs() // Guardar en caché al instante
-                    Toast.makeText(
-                        this,
-                        "Foto tomada y optimizada 📷",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                } else {
-                    Toast.makeText(
-                        this,
-                        "No se pudo tomar la foto",
-                        Toast.LENGTH_SHORT
-                    ).show()
-                }
-            }
-
         setupUI()
 
-
-        // recuperammos descripcion
-
+        // Recuperar texto de descripción
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         val descripcionDelIntent = intent.getStringExtra("DESCRIPCION")
         val textoGuardado = prefs.getString(KEY_BORRADOR, "")
@@ -127,7 +205,7 @@ class reportar_peticionnn : AppCompatActivity() {
             binding.etDescripcion.setText(textoGuardado)
         }
 
-        // Guardar texto al instante mientras el usuario escribe
+        // Guardar descripción en borrador en tiempo real
         binding.etDescripcion.addTextChangedListener { text ->
             getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
                 .edit()
@@ -135,97 +213,100 @@ class reportar_peticionnn : AppCompatActivity() {
                 .apply()
         }
 
-        // Recuperar fotos o videos guardados previamente
-        isVideoSelected = prefs.getBoolean(KEY_IS_VIDEO, false)
-        val pathsSet = prefs.getStringSet(KEY_PATHS, emptySet())
-        if (!pathsSet.isNullOrEmpty()) {
-            selectedUris.clear()
-            for (path in pathsSet) {
-                val file = File(path)
-                if (file.exists()) {
-                    val uri = FileProvider.getUriForFile(
-                        this,
-                        "${applicationContext.packageName}.fileprovider",
-                        file
-                    )
-                    selectedUris.add(uri)
+        // Si no venía de savedInstanceState, recuperar borrador local persistente de multimedia
+        if (savedInstanceState == null) {
+            val pathsStr = prefs.getString(KEY_PATHS, "") ?: ""
+            val isVideoStr = prefs.getString(KEY_IS_VIDEO, "") ?: ""
+            if (pathsStr.isNotEmpty()) {
+                val paths = pathsStr.split(";")
+                val isVideos = isVideoStr.split(";")
+                selectedMediaList.clear()
+                for (i in paths.indices) {
+                    val file = File(paths[i])
+                    if (file.exists()) {
+                        val uri = FileProvider.getUriForFile(
+                            this,
+                            "${applicationContext.packageName}.fileprovider",
+                            file
+                        )
+                        val esVideo = if (i < isVideos.size) isVideos[i] == "1" else false
+                        selectedMediaList.add(EvidenciaItem(uri, esVideo, file))
+                    }
                 }
             }
-            actualizarVisualizacionMultimedia()
         }
+
+        actualizarVisualizacionMultimedia()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        photoUri?.let { outState.putParcelable("SAVED_PHOTO_URI", it) }
-        photoFile?.let { outState.putString("SAVED_PHOTO_FILE", it.absolutePath) }
+        tempCameraUri?.let { outState.putParcelable("SAVED_CAMERA_URI", it) }
+        tempCameraFile?.let { outState.putString("SAVED_CAMERA_FILE", it.absolutePath) }
+        outState.putBoolean("PENDING_MEDIA_IS_VIDEO", pendingMediaEsVideo)
+
+        val urisList = ArrayList(selectedMediaList.map { it.uri.toString() })
+        val isVideoList = selectedMediaList.map { it.esVideo }.toBooleanArray()
+        outState.putStringArrayList("SAVED_MEDIA_URIS", urisList)
+        outState.putBooleanArray("SAVED_MEDIA_IS_VIDEO", isVideoList)
     }
 
-    // GUARDAR RUTAS DE MULTIMEDIA EN PREFERENCES
     private fun guardarMultimediaEnPrefs() {
         val prefs = getSharedPreferences(PREFS_NAME, MODE_PRIVATE)
         val editor = prefs.edit()
-        editor.putBoolean(KEY_IS_VIDEO, isVideoSelected)
+        val paths = mutableListOf<String>()
+        val isVideo = mutableListOf<String>()
 
-        val pathsSet = mutableSetOf<String>()
-        for (uri in selectedUris) {
-            uri.path?.let {
-                val file = File(filesDir, File(it).name)
-                if (file.exists()) {
-                    pathsSet.add(file.absolutePath)
-                }
+        for (item in selectedMediaList) {
+            val path = item.localFile?.absolutePath ?: (item.uri.path?.let { File(filesDir, File(it).name).absolutePath } ?: "")
+            if (path.isNotEmpty() && File(path).exists()) {
+                paths.add(path)
+                isVideo.add(if (item.esVideo) "1" else "0")
             }
         }
-        editor.putStringSet(KEY_PATHS, pathsSet)
+        editor.putString(KEY_PATHS, paths.joinToString(";"))
+        editor.putString(KEY_IS_VIDEO, isVideo.joinToString(";"))
         editor.apply()
     }
 
-    // INICIALIZAR CLOUDINARY
     private fun initCloudinary() {
         val config = HashMap<String, String>()
         config["cloud_name"] = CLOUD_NAME
         try {
             MediaManager.init(this, config)
-        } catch (e: Exception) {
-            e.printStackTrace()
+        } catch (_: Exception) {
+            // MediaManager ya inicializado
         }
     }
 
-    // CONFIGURACIÓN DE BOTONES
     private fun setupUI() {
         binding.btndev.setOnClickListener {
             finish()
         }
 
-        binding.btnSubirArchivo.setOnClickListener {
-            if (selectedUris.size >= 2) {
-                Toast.makeText(
-                    this,
-                    "Solo puedes tomar máximo 2 fotos",
-                    Toast.LENGTH_SHORT
-                ).show()
-            } else {
-                abrirCamara()
-            }
+        binding.btnAdjuntarFoto.setOnClickListener {
+            mostrarBottomSheetEvidencia(esVideo = false)
         }
 
-        // Botón para eliminar la primera foto
+        binding.btnAdjuntarVideo.setOnClickListener {
+            mostrarBottomSheetEvidencia(esVideo = true)
+        }
+
         binding.btnEliminar1.setOnClickListener {
-            if (selectedUris.isNotEmpty()) {
-                selectedUris.removeAt(0)
+            if (selectedMediaList.isNotEmpty()) {
+                selectedMediaList.removeAt(0)
                 guardarMultimediaEnPrefs()
                 actualizarVisualizacionMultimedia()
-                Toast.makeText(this, "Foto eliminada", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Evidencia eliminada", Toast.LENGTH_SHORT).show()
             }
         }
 
-        // Botón para eliminar la segunda foto
         binding.btnEliminar2.setOnClickListener {
-            if (selectedUris.size > 1) {
-                selectedUris.removeAt(1)
+            if (selectedMediaList.size > 1) {
+                selectedMediaList.removeAt(1)
                 guardarMultimediaEnPrefs()
                 actualizarVisualizacionMultimedia()
-                Toast.makeText(this, "Foto eliminada", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Evidencia eliminada", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -234,38 +315,139 @@ class reportar_peticionnn : AppCompatActivity() {
         }
     }
 
-    // ABRIR CÁMARA
-    private fun abrirCamara() {
-        if (checkSelfPermission(Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
-            tomarFoto()
+    private fun mostrarBottomSheetEvidencia(esVideo: Boolean) {
+        if (selectedMediaList.size >= 2) {
+            Toast.makeText(this, "Solo puedes adjuntar máximo 2 evidencias", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val bottomSheet = BottomSheetDialog(
+            this,
+            R.style.ThemeOverlay_Vetericano_BottomSheetDialog
+        )
+        val sheetBinding = BottomSheetAdjuntarEvidenciaBinding.inflate(layoutInflater)
+        bottomSheet.setContentView(sheetBinding.root)
+
+        if (esVideo) {
+            sheetBinding.ivSheetHeaderIcon.setImageResource(R.drawable.ic_videocam)
+            sheetBinding.tvSheetTitulo.text = "Adjuntar evidencia en video"
+            sheetBinding.tvSheetSubtitulo.text = "Selecciona el origen para documentar en video"
+
+            sheetBinding.ivIconCamara.setImageResource(R.drawable.ic_videocam)
+            sheetBinding.tvTituloCamara.text = "Grabar video en campo"
+            sheetBinding.tvSubtituloCamara.text = "Graba directamente con la cámara del dispositivo"
+
+            sheetBinding.ivIconGaleria.setImageResource(R.drawable.ic_videocam)
+            sheetBinding.tvTituloGaleria.text = "Elegir video de la galería"
+            sheetBinding.tvSubtituloGaleria.text = "Seleccionar archivo de video guardado"
+
+            sheetBinding.tvSheetInfoNota.text = "Almacenamiento en la nube: Graba clips breves de hasta 20-30 seg (máx. 10 MB)."
         } else {
-            requestPermissions(
-                arrayOf(Manifest.permission.CAMERA),
-                101
-            )
+            sheetBinding.ivSheetHeaderIcon.setImageResource(R.drawable.camera)
+            sheetBinding.tvSheetTitulo.text = "Adjuntar evidencia fotográfica"
+            sheetBinding.tvSheetSubtitulo.text = "Selecciona el origen para documentar el caso"
+
+            sheetBinding.ivIconCamara.setImageResource(R.drawable.camera)
+            sheetBinding.tvTituloCamara.text = "Tomar foto con la cámara"
+            sheetBinding.tvSubtituloCamara.text = "Captura en tiempo real con la cámara"
+
+            sheetBinding.ivIconGaleria.setImageResource(R.drawable.ic_photo_library)
+            sheetBinding.tvTituloGaleria.text = "Elegir de la galería"
+            sheetBinding.tvSubtituloGaleria.text = "Seleccionar imagen guardada en tu teléfono"
+
+            sheetBinding.tvSheetInfoNota.text = "Optimización inteligente: Las fotos se procesan en Full HD para una subida ágil y segura."
+        }
+
+        sheetBinding.cardOpcionCamara.setOnClickListener {
+            bottomSheet.dismiss()
+            verificarPermisoYLanzar(esVideo = esVideo)
+        }
+
+        sheetBinding.cardOpcionGaleria.setOnClickListener {
+            bottomSheet.dismiss()
+            if (esVideo) {
+                pickVideoLauncher.launch("video/*")
+            } else {
+                pickPhotoLauncher.launch("image/*")
+            }
+        }
+
+        sheetBinding.btnCerrarSheet.setOnClickListener {
+            bottomSheet.dismiss()
+        }
+
+        sheetBinding.btnCancelarSheet.setOnClickListener {
+            bottomSheet.dismiss()
+        }
+
+        bottomSheet.show()
+    }
+
+    private fun verificarPermisoYLanzar(esVideo: Boolean) {
+        pendingMediaEsVideo = esVideo
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            if (esVideo) lanzarGrabacionVideo() else lanzarCapturaFoto()
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
         }
     }
 
-    // CREAR ARCHIVO PERMANENTE Y TOMAR FOTO
-    private fun tomarFoto() {
+    private fun lanzarCapturaFoto() {
         try {
-            val archivoFoto = File(filesDir, "foto_reporte_${System.currentTimeMillis()}.jpg")
-            photoFile = archivoFoto
-
-            photoUri = FileProvider.getUriForFile(
+            val file = File(filesDir, "reporte_foto_${System.currentTimeMillis()}.jpg")
+            file.parentFile?.mkdirs()
+            file.createNewFile()
+            tempCameraFile = file
+            tempCameraUri = FileProvider.getUriForFile(
                 this,
                 "${applicationContext.packageName}.fileprovider",
-                archivoFoto
+                file
             )
+            takePhotoLauncher.launch(tempCameraUri!!)
+        } catch (e: Exception) {
+            Toast.makeText(this, "No se pudo iniciar la cámara: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
 
-            cameraLauncher.launch(photoUri!!)
+    private fun lanzarGrabacionVideo() {
+        try {
+            val file = File(filesDir, "reporte_video_${System.currentTimeMillis()}.mp4")
+            file.parentFile?.mkdirs()
+            file.createNewFile()
+            tempCameraFile = file
+            tempCameraUri = FileProvider.getUriForFile(
+                this,
+                "${applicationContext.packageName}.fileprovider",
+                file
+            )
+            recordVideoLauncher.launch(tempCameraUri!!)
+        } catch (e: Exception) {
+            Toast.makeText(this, "No se pudo iniciar la cámara para video: ${e.message}", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun copiarUriALocal(uri: Uri, esVideo: Boolean): Uri? {
+        return try {
+            val extension = if (esVideo) ".mp4" else ".jpg"
+            val prefix = if (esVideo) "reporte_video_" else "reporte_foto_"
+            val localFile = File(filesDir, "${prefix}${System.currentTimeMillis()}${extension}")
+            localFile.parentFile?.mkdirs()
+            contentResolver.openInputStream(uri)?.use { input ->
+                localFile.outputStream().use { output ->
+                    input.copyTo(output)
+                }
+            }
+            if (!esVideo) {
+                optimizarImagen(localFile)
+            }
+            FileProvider.getUriForFile(
+                this,
+                "${applicationContext.packageName}.fileprovider",
+                localFile
+            )
         } catch (e: Exception) {
             e.printStackTrace()
-            Toast.makeText(
-                this,
-                "Error al abrir la cámara",
-                Toast.LENGTH_SHORT
-            ).show()
+            null
         }
     }
 
@@ -335,49 +517,101 @@ class reportar_peticionnn : AppCompatActivity() {
         }
     }
 
-    // ACTUALIZAR LA VISTA DE LAS MINIATURAS Y TEXTOS
     private fun actualizarVisualizacionMultimedia() {
-        val cantidad = selectedUris.size
+        val cantidad = selectedMediaList.size
 
-        if (cantidad == 0) {
-            binding.layoutFotoCargada.visibility = View.GONE
-            binding.cardFoto1.visibility = View.GONE
-            binding.cardFoto2.visibility = View.GONE
-            binding.btnSubirArchivo.text = "Subir archivo"
-            binding.btnSubirArchivo.isEnabled = true
-        } else if (cantidad == 1) {
-            binding.layoutFotoCargada.visibility = View.VISIBLE
-            binding.cardFoto1.visibility = View.VISIBLE
-            binding.cardFoto2.visibility = View.GONE
+        when (cantidad) {
+            0 -> {
+                binding.layoutFotoCargada.visibility = View.GONE
+                binding.cardFoto1.visibility = View.GONE
+                binding.cardFoto2.visibility = View.GONE
+                binding.tvContadorEvidencias.text = "Puedes adjuntar hasta 2 evidencias (fotos o video corto)"
+                binding.btnAdjuntarFoto.isEnabled = true
+                binding.btnAdjuntarVideo.isEnabled = true
+                binding.btnAdjuntarFoto.alpha = 1.0f
+                binding.btnAdjuntarVideo.alpha = 1.0f
+            }
+            1 -> {
+                binding.layoutFotoCargada.visibility = View.VISIBLE
+                binding.cardFoto1.visibility = View.VISIBLE
+                binding.cardFoto2.visibility = View.GONE
 
-            Glide.with(this)
-                .load(selectedUris[0])
-                .centerCrop()
-                .into(binding.ivFoto1)
+                val item = selectedMediaList[0]
+                val desc = if (item.esVideo) "1 video adjunto" else "1 foto adjunta"
+                binding.tvContadorEvidencias.text = "$desc (puedes agregar 1 evidencia más)"
+                binding.btnAdjuntarFoto.isEnabled = true
+                binding.btnAdjuntarVideo.isEnabled = true
+                binding.btnAdjuntarFoto.alpha = 1.0f
+                binding.btnAdjuntarVideo.alpha = 1.0f
 
-            binding.btnSubirArchivo.text = "Tomar otra foto (1/2)"
-            binding.btnSubirArchivo.isEnabled = true
-        } else if (cantidad >= 2) {
-            binding.layoutFotoCargada.visibility = View.VISIBLE
-            binding.cardFoto1.visibility = View.VISIBLE
-            binding.cardFoto2.visibility = View.VISIBLE
+                mostrarMediaEnCard(item, binding.ivFoto1, binding.layoutVideoOverlay1, binding.cardFoto1)
+            }
+            else -> {
+                binding.layoutFotoCargada.visibility = View.VISIBLE
+                binding.cardFoto1.visibility = View.VISIBLE
+                binding.cardFoto2.visibility = View.VISIBLE
 
-            Glide.with(this)
-                .load(selectedUris[0])
-                .centerCrop()
-                .into(binding.ivFoto1)
+                val fotos = selectedMediaList.count { !it.esVideo }
+                val videos = selectedMediaList.count { it.esVideo }
+                val desc = when {
+                    fotos == 2 -> "2 fotos adjuntas"
+                    videos == 2 -> "2 videos adjuntos"
+                    else -> "1 foto y 1 video adjuntos"
+                }
+                binding.tvContadorEvidencias.text = "$desc (límite máximo alcanzado)"
+                binding.btnAdjuntarFoto.isEnabled = false
+                binding.btnAdjuntarVideo.isEnabled = false
+                binding.btnAdjuntarFoto.alpha = 0.5f
+                binding.btnAdjuntarVideo.alpha = 0.5f
 
-            Glide.with(this)
-                .load(selectedUris[1])
-                .centerCrop()
-                .into(binding.ivFoto2)
-
-            binding.btnSubirArchivo.text = "2 fotos seleccionadas"
-            binding.btnSubirArchivo.isEnabled = false
+                mostrarMediaEnCard(selectedMediaList[0], binding.ivFoto1, binding.layoutVideoOverlay1, binding.cardFoto1)
+                mostrarMediaEnCard(selectedMediaList[1], binding.ivFoto2, binding.layoutVideoOverlay2, binding.cardFoto2)
+            }
         }
     }
 
-    // VALIDAR Y CONTINUAR (CON SUBIDA A CLOUDINARY)
+    private fun mostrarMediaEnCard(
+        media: EvidenciaItem,
+        imageView: ImageView,
+        videoOverlay: View,
+        cardView: View
+    ) {
+        if (media.esVideo) {
+            Glide.with(this)
+                .asBitmap()
+                .load(media.uri)
+                .centerCrop()
+                .placeholder(R.drawable.baseline_pets_24)
+                .error(R.drawable.baseline_pets_24)
+                .into(imageView)
+            videoOverlay.visibility = View.VISIBLE
+            cardView.setOnClickListener {
+                reproducirVideo(media.uri)
+            }
+        } else {
+            Glide.with(this)
+                .load(media.uri)
+                .centerCrop()
+                .placeholder(R.drawable.baseline_pets_24)
+                .error(R.drawable.baseline_pets_24)
+                .into(imageView)
+            videoOverlay.visibility = View.GONE
+            cardView.setOnClickListener(null)
+        }
+    }
+
+    private fun reproducirVideo(uri: Uri) {
+        try {
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "video/*")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(intent)
+        } catch (_: Exception) {
+            Toast.makeText(this, "No se encontró un reproductor de video compatible", Toast.LENGTH_SHORT).show()
+        }
+    }
+
     private fun validarYContinuar() {
         val descripcion = binding.etDescripcion.text.toString().trim()
 
@@ -392,14 +626,13 @@ class reportar_peticionnn : AppCompatActivity() {
         val longitud = intent.getDoubleExtra("LONGITUD", 0.0)
         val tipoReporte = intent.getStringExtra("TIPO_REPORTE")
 
-        if (selectedUris.isNotEmpty()) {
+        if (selectedMediaList.isNotEmpty()) {
             subirArchivosYContinuar(descripcion, latitud, longitud, tipoReporte)
         } else {
             navegarAConfirmar(descripcion, latitud, longitud, tipoReporte, arrayListOf())
         }
     }
 
-    // SUBIR ARCHIVOS A CLOUDINARY Y CAMBIAR DE ACTIVIDAD
     private fun subirArchivosYContinuar(
         descripcion: String,
         latitud: Double,
@@ -408,14 +641,15 @@ class reportar_peticionnn : AppCompatActivity() {
     ) {
         val urlsSubidas = mutableListOf<String>()
         var subidasCompletadas = 0
-        val totalArchivos = selectedUris.size
+        val totalArchivos = selectedMediaList.size
 
         binding.btnContinue.isEnabled = false
-        Toast.makeText(this, "Subiendo...", Toast.LENGTH_SHORT).show()
+        binding.btnContinue.text = "Subiendo evidencias..."
+        Toast.makeText(this, "Subiendo evidencias a la nube...", Toast.LENGTH_SHORT).show()
 
-        for (uri in selectedUris) {
+        for (item in selectedMediaList) {
             MediaManager.get()
-                .upload(uri)
+                .upload(item.uri)
                 .unsigned(UPLOAD_PRESET)
                 .callback(object : UploadCallback {
                     override fun onStart(requestId: String?) {}
@@ -432,6 +666,7 @@ class reportar_peticionnn : AppCompatActivity() {
 
                         if (subidasCompletadas == totalArchivos) {
                             binding.btnContinue.isEnabled = true
+                            binding.btnContinue.text = "Continuar"
                             navegarAConfirmar(
                                 descripcion,
                                 latitud,
@@ -444,6 +679,7 @@ class reportar_peticionnn : AppCompatActivity() {
 
                     override fun onError(requestId: String?, error: ErrorInfo?) {
                         binding.btnContinue.isEnabled = true
+                        binding.btnContinue.text = "Continuar"
                         Toast.makeText(
                             applicationContext,
                             "Error al subir: ${error?.description}",
@@ -465,8 +701,6 @@ class reportar_peticionnn : AppCompatActivity() {
         urlsArchivos: ArrayList<String>
     ) {
         val referencia = intent.getStringExtra("PUNTO_REFERENCIA")
-
-        // 1. RECUPERAMOS el ID que venía viajando desde la primera pantalla
         val idTipoRecibido = intent.getIntExtra("ID_TIPO_SELECCIONADO", 1)
 
         val intent = Intent(this, confirmar_reporte::class.java).apply {
@@ -476,8 +710,6 @@ class reportar_peticionnn : AppCompatActivity() {
             putExtra("LATITUD", latitud)
             putExtra("LONGITUD", longitud)
             putExtra("PUNTO_REFERENCIA", referencia)
-
-            // 2. LO VOLVEMOS A ADJUNTAR para que no se pierda hacia confirmar_reporte
             putExtra("ID_TIPO_SELECCIONADO", idTipoRecibido)
         }
         startActivity(intent)

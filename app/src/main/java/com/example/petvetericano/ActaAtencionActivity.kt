@@ -334,11 +334,43 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
         binding.etFuncionarioNombre.setText(nombreCompleto)
         val tituloGuardado = prefs.getUserTituloProfesional().trim()
-        binding.etFuncionarioCargo.setText(tituloGuardado.ifEmpty { "Médico Veterinario" })
+        binding.etFuncionarioCargo.setText(tituloGuardado.ifEmpty { "Médico Veterinario Zootecnista" })
 
-        val identificacion = prefs.getUserIdentification()
+        val identificacion = prefs.getUserIdentification().trim()
         if (identificacion.isNotEmpty()) {
             binding.etFuncionarioIdentificacion.setText(identificacion)
+        }
+
+        val matriculaGuardada = prefs.getUserMatriculaProfesional().trim()
+        if (matriculaGuardada.isNotEmpty()) {
+            binding.etFuncionarioMatricula.setText(matriculaGuardada)
+        }
+
+        // Detalle oficial dinámico del veterinario al pie de su firma
+        val actualizarPieFirma = {
+            val nom = binding.etFuncionarioNombre.text.toString().trim().ifEmpty { "Médico Veterinario" }
+            val car = binding.etFuncionarioCargo.text.toString().trim().ifEmpty { "Médico Veterinario Zootecnista" }
+            val mat = binding.etFuncionarioMatricula.text.toString().trim()
+            val cc = binding.etFuncionarioIdentificacion.text.toString().trim()
+
+            val pie = buildString {
+                append(nom)
+                if (cc.isNotEmpty()) append(" • C.C. $cc")
+                append("\n$car")
+                if (mat.isNotEmpty()) append(" • M.P. $mat")
+            }
+            binding.tvFirma1DetalleProfesional.text = pie
+        }
+        actualizarPieFirma()
+
+        binding.etFuncionarioNombre.addTextChangedListener { actualizarPieFirma() }
+        binding.etFuncionarioCargo.addTextChangedListener { actualizarPieFirma() }
+        binding.etFuncionarioIdentificacion.addTextChangedListener { actualizarPieFirma() }
+        binding.etFuncionarioMatricula.addTextChangedListener {
+            actualizarPieFirma()
+            if (!it.isNullOrBlank()) {
+                binding.tilFuncionarioMatricula.error = null
+            }
         }
 
         // Datos por defecto para recepción en rescate
@@ -475,13 +507,15 @@ class ActaAtencionActivity : AppCompatActivity() {
     private fun actualizarObservacionRescatePorCausal(causal: String) {
         val primerAnimal = animalBindingsList.firstOrNull()
         val nombrePaciente = primerAnimal?.etPacienteNombreCard?.text?.toString()?.trim()?.ifEmpty { "Paciente" } ?: "Paciente"
-        val especie = primerAnimal?.autoCompleteEspecieCard?.text?.toString()?.trim() ?: "Canino"
+        val especieRaw = primerAnimal?.autoCompleteEspecieCard?.text?.toString()?.trim()
+        val especie = if (especieRaw.isNullOrEmpty() || especieRaw.equals("Seleccionar", ignoreCase = true)) null else especieRaw
         val solicitud = binding.etSolicitudAtencion.text.toString().trim()
         val anamnesis = binding.etAnamnesis.text.toString().trim()
 
         val textoGenerado = buildString {
             if (causal.isNotEmpty()) appendLine("Causal: $causal.")
-            appendLine("Se efectúa rescate y retiro preventivo de $nombrePaciente ($especie) para su traslado inmediato al Centro de Bienestar Animal (CBA).")
+            val descAnimal = if (especie != null) "$nombrePaciente ($especie)" else nombrePaciente
+            appendLine("Se efectúa rescate y retiro preventivo de $descAnimal para su traslado inmediato al Centro de Bienestar Animal (CBA).")
             if (solicitud.isNotEmpty()) appendLine("Motivo de reporte: $solicitud.")
             if (anamnesis.isNotEmpty()) appendLine("Estado clínico inicial: $anamnesis.")
         }.trim()
@@ -655,7 +689,6 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     private fun setupAutoScrollOnFocus() {
         val camposCriticos = listOf(
-            binding.etTemperatura,
             binding.etFrecuenciaCardiaca,
             binding.etFrecuenciaRespiratoria,
             binding.etMucosas,
@@ -663,6 +696,7 @@ class ActaAtencionActivity : AppCompatActivity() {
             binding.etTratamiento,
             binding.etCompromisos,
             binding.etObservaciones,
+            binding.etFuncionarioMatricula,
             binding.etNotificadoNombre,
             binding.etNotificadoIdentificacion,
             binding.etObservacionesRescate,
@@ -683,7 +717,7 @@ class ActaAtencionActivity : AppCompatActivity() {
     }
 
     private fun setupDropdowns() {
-        val quienReportaOpciones = arrayOf("Propietario", "Comunidad", "Policia", "Fundacion", "Otro")
+        val quienReportaOpciones = arrayOf("Seleccionar", "Propietario", "Comunidad", "Policia", "Fundacion", "Otro")
         val adapterReporta = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, quienReportaOpciones)
         binding.autoCompleteQuienReporta.setAdapter(adapterReporta)
         binding.autoCompleteQuienReporta.setText(quienReportaOpciones[0], false)
@@ -697,11 +731,19 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
 
         binding.autoCompleteQuienReporta.setOnItemClickListener { _, _, position, _ ->
-            actualizarVisibilidadQuienReporta(quienReportaOpciones[position])
+            val seleccion = quienReportaOpciones[position]
+            if (!seleccion.equals("Seleccionar", ignoreCase = true)) {
+                binding.tilQuienReporta.error = null
+            }
+            actualizarVisibilidadQuienReporta(seleccion)
         }
 
         binding.autoCompleteQuienReporta.addTextChangedListener {
-            actualizarVisibilidadQuienReporta(binding.autoCompleteQuienReporta.text.toString().trim())
+            val actual = binding.autoCompleteQuienReporta.text.toString().trim()
+            if (actual.isNotEmpty() && !actual.equals("Seleccionar", ignoreCase = true)) {
+                binding.tilQuienReporta.error = null
+            }
+            actualizarVisibilidadQuienReporta(actual)
         }
 
         // Dropdown Paso 3: Selector de pruebas rápidas / complementarias (Sincronizado con backend)
@@ -892,7 +934,9 @@ class ActaAtencionActivity : AppCompatActivity() {
                 for (itemBinding in animalBindingsList) {
                     actualizarOpcionesEspecies(itemBinding)
                     val especieActual = itemBinding.autoCompleteEspecieCard.text.toString().trim()
-                    actualizarOpcionesRazas(itemBinding, especieActual)
+                    if (especieActual.isNotEmpty() && !especieActual.equals("Seleccionar", ignoreCase = true)) {
+                        actualizarOpcionesRazas(itemBinding, especieActual)
+                    }
                 }
             }
         }
@@ -912,10 +956,17 @@ class ActaAtencionActivity : AppCompatActivity() {
         itemBinding.autoCompleteEspecieCard.setAdapter(adapterEspecie)
 
         val actual = itemBinding.autoCompleteEspecieCard.text.toString().trim()
-        if (actual.isEmpty() || !listaNombres.contains(actual)) {
-            val predeterminado = listaNombres.firstOrNull { it.contains("Canino", ignoreCase = true) }
-                ?: listaNombres.firstOrNull() ?: "Canino"
-            itemBinding.autoCompleteEspecieCard.setText(predeterminado, false)
+        if (actual.isEmpty() || actual.equals("Seleccionar", ignoreCase = true) || !listaNombres.contains(actual)) {
+            itemBinding.autoCompleteEspecieCard.setText("Seleccionar", false)
+            itemBinding.tilPacienteRaza.isEnabled = false
+            itemBinding.autoCompleteRazaCard.isEnabled = false
+            itemBinding.autoCompleteRazaCard.setText("", false)
+            itemBinding.tilPacienteRaza.helperText = "Seleccione primero la especie"
+        } else {
+            itemBinding.tilPacienteRaza.isEnabled = true
+            itemBinding.autoCompleteRazaCard.isEnabled = true
+            itemBinding.tilPacienteRaza.helperText = null
+            actualizarOpcionesRazas(itemBinding, actual)
         }
     }
 
@@ -924,6 +975,15 @@ class ActaAtencionActivity : AppCompatActivity() {
      * consumiendo estrictamente las razas registradas en el backend/web.
      */
     private fun actualizarOpcionesRazas(itemBinding: ItemAnimalFormularioBinding, especie: String) {
+        if (especie.isEmpty() || especie.equals("Seleccionar", ignoreCase = true)) {
+            itemBinding.autoCompleteRazaCard.setAdapter(null)
+            itemBinding.autoCompleteRazaCard.setText("", false)
+            itemBinding.tilPacienteRaza.isEnabled = false
+            itemBinding.autoCompleteRazaCard.isEnabled = false
+            itemBinding.tilPacienteRaza.helperText = "Seleccione primero la especie"
+            return
+        }
+
         val razasEspecie = mutableListOf<String>()
 
         // 1. Filtrar razas que correspondan a la especie seleccionada
@@ -941,7 +1001,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         // 2. Si no hay razas en la BD para esta especie, proveer opción de contingencia respetuosa
         if (razasEspecie.isEmpty()) {
-            val offlineList = catalogoRazasOffline[especie] ?: listOf("Mestizo / Criollo")
+            val offlineList = catalogoRazasOffline[especie] ?: listOf("Mestizo / Criollo", "Otra raza")
             razasEspecie.addAll(offlineList)
         }
 
@@ -953,11 +1013,9 @@ class ActaAtencionActivity : AppCompatActivity() {
         val adapterRazas = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, razasEspecie)
         itemBinding.autoCompleteRazaCard.setAdapter(adapterRazas)
 
-        // Si el campo está vacío o la raza actual no coincide con la nueva especie, sugerir la primera válida
         val valorActual = itemBinding.autoCompleteRazaCard.text.toString().trim()
-        if (valorActual.isEmpty() || !razasEspecie.contains(valorActual)) {
-            val razaSugerida = razasEspecie.firstOrNull { it.contains("Mestizo", ignoreCase = true) } ?: razasEspecie.first()
-            itemBinding.autoCompleteRazaCard.setText(razaSugerida, false)
+        if (valorActual.isEmpty() || valorActual.equals("Seleccionar", ignoreCase = true) || !razasEspecie.contains(valorActual)) {
+            itemBinding.autoCompleteRazaCard.setText("Seleccionar", false)
         }
     }
 
@@ -969,14 +1027,27 @@ class ActaAtencionActivity : AppCompatActivity() {
         val numeroAnimal = animalBindingsList.size + 1
         itemBinding.tvAnimalNumero.text = "Paciente #$numeroAnimal"
 
-        // 1. Selector de Especies asistido por catálogo web
+        // 1. Selector de Especies asistido por catálogo web (por defecto "Seleccionar")
         actualizarOpcionesEspecies(itemBinding)
 
-        // 2. Selector de Sexo
-        val sexos = arrayOf("Macho", "Hembra", "Desconocido")
+        // 2. Selector de Sexo (por defecto "Seleccionar", obligatorio)
+        val sexos = arrayOf("Seleccionar", "Macho", "Hembra", "Desconocido")
         val adapterSexo = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, sexos)
         itemBinding.autoCompleteSexoCard.setAdapter(adapterSexo)
         itemBinding.autoCompleteSexoCard.setText(sexos[0], false)
+
+        itemBinding.autoCompleteSexoCard.setOnItemClickListener { _, _, position, _ ->
+            val sel = sexos.getOrNull(position).orEmpty()
+            if (sel.isNotEmpty() && !sel.equals("Seleccionar", ignoreCase = true)) {
+                itemBinding.tilPacienteSexo.error = null
+            }
+        }
+        itemBinding.autoCompleteSexoCard.addTextChangedListener {
+            val sel = it?.toString().orEmpty().trim()
+            if (sel.isNotEmpty() && !sel.equals("Seleccionar", ignoreCase = true)) {
+                itemBinding.tilPacienteSexo.error = null
+            }
+        }
 
         // 3. Selector de Estado Reproductivo (Esterilizado)
         val esterilizadoOpciones = arrayOf("Si", "No", "No se sabe")
@@ -984,24 +1055,68 @@ class ActaAtencionActivity : AppCompatActivity() {
         itemBinding.autoCompleteEsterilizadoCard.setAdapter(adapterEsterilizado)
         itemBinding.autoCompleteEsterilizadoCard.setText(esterilizadoOpciones[1], false)
 
-        // 4. Selector de Color con catálogo frecuente
+        // 4. Selector de Color con catálogo frecuente (obligatorio)
         val adapterColor = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, coloresFrecuentes)
         itemBinding.autoCompleteColorCard.setAdapter(adapterColor)
 
-        // 5. Catálogo de Razas dinámicas reactivas a la especie del backend
-        val especieInicial = itemBinding.autoCompleteEspecieCard.text.toString().trim()
-        actualizarOpcionesRazas(itemBinding, especieInicial)
+        itemBinding.autoCompleteColorCard.setOnItemClickListener { _, _, _, _ ->
+            itemBinding.tilPacienteColor.error = null
+        }
+        itemBinding.autoCompleteColorCard.addTextChangedListener {
+            val col = it?.toString().orEmpty().trim()
+            if (col.isNotEmpty() && !col.equals("Seleccionar", ignoreCase = true)) {
+                itemBinding.tilPacienteColor.error = null
+            }
+        }
+
+        // 5. Catálogo de Razas dinámicas reactivas a la especie del backend (inicia deshabilitado hasta elegir especie)
+        itemBinding.tilPacienteRaza.isEnabled = false
+        itemBinding.autoCompleteRazaCard.isEnabled = false
+        itemBinding.tilPacienteRaza.helperText = "Seleccione primero la especie"
+        itemBinding.autoCompleteRazaCard.setText("", false)
 
         itemBinding.autoCompleteEspecieCard.setOnItemClickListener { _, _, position, _ ->
             val especieSeleccionada = itemBinding.autoCompleteEspecieCard.adapter?.getItem(position)?.toString() ?: ""
-            if (especieSeleccionada.isNotEmpty()) {
+            if (especieSeleccionada.isNotEmpty() && !especieSeleccionada.equals("Seleccionar", ignoreCase = true)) {
+                itemBinding.tilPacienteEspecie.error = null
+                itemBinding.tilPacienteRaza.isEnabled = true
+                itemBinding.autoCompleteRazaCard.isEnabled = true
+                itemBinding.tilPacienteRaza.helperText = null
                 actualizarOpcionesRazas(itemBinding, especieSeleccionada)
+                itemBinding.autoCompleteRazaCard.setText("Seleccionar", false)
+            } else {
+                itemBinding.tilPacienteRaza.isEnabled = false
+                itemBinding.autoCompleteRazaCard.isEnabled = false
+                itemBinding.autoCompleteRazaCard.setText("", false)
+                itemBinding.tilPacienteRaza.helperText = "Seleccione primero la especie"
             }
         }
         itemBinding.autoCompleteEspecieCard.addTextChangedListener {
             val especieActual = it?.toString().orEmpty().trim()
-            if (especieActual.isNotEmpty()) {
+            if (especieActual.isNotEmpty() && !especieActual.equals("Seleccionar", ignoreCase = true)) {
+                itemBinding.tilPacienteEspecie.error = null
+                itemBinding.tilPacienteRaza.isEnabled = true
+                itemBinding.autoCompleteRazaCard.isEnabled = true
+                itemBinding.tilPacienteRaza.helperText = null
                 actualizarOpcionesRazas(itemBinding, especieActual)
+            } else {
+                itemBinding.tilPacienteRaza.isEnabled = false
+                itemBinding.autoCompleteRazaCard.isEnabled = false
+                itemBinding.autoCompleteRazaCard.setText("", false)
+                itemBinding.tilPacienteRaza.helperText = "Seleccione primero la especie"
+            }
+        }
+
+        itemBinding.autoCompleteRazaCard.setOnItemClickListener { _, _, position, _ ->
+            val razaSeleccionada = itemBinding.autoCompleteRazaCard.adapter?.getItem(position)?.toString() ?: ""
+            if (razaSeleccionada.isNotEmpty() && !razaSeleccionada.equals("Seleccionar", ignoreCase = true)) {
+                itemBinding.tilPacienteRaza.error = null
+            }
+        }
+        itemBinding.autoCompleteRazaCard.addTextChangedListener {
+            val razaActual = it?.toString().orEmpty().trim()
+            if (razaActual.isNotEmpty() && !razaActual.equals("Seleccionar", ignoreCase = true)) {
+                itemBinding.tilPacienteRaza.error = null
             }
         }
 
@@ -1080,7 +1195,8 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         // 8. Chip rápido para animal en condición de calle / comunitario
         itemBinding.chipSinNombre.setOnClickListener {
-            val especie = itemBinding.autoCompleteEspecieCard.text.toString().trim().ifEmpty { "Paciente" }
+            val especieRaw = itemBinding.autoCompleteEspecieCard.text.toString().trim()
+            val especie = if (especieRaw.isEmpty() || especieRaw.equals("Seleccionar", ignoreCase = true)) "Paciente" else especieRaw
             itemBinding.etPacienteNombreCard.setText("Comunitario ($especie)")
         }
 
@@ -1107,6 +1223,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                 binding.etPropietarioDireccion.setText(lugar)
             }
             binding.autoCompleteQuienReporta.setText("Comunidad", false)
+            binding.tilQuienReporta.error = null
             binding.tilQuienReportaOtro.visibility = View.GONE
             Toast.makeText(this, "Datos de reporte comunitario cargados", Toast.LENGTH_SHORT).show()
         }
@@ -1286,16 +1403,22 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
 
         val quienReporta = binding.autoCompleteQuienReporta.text.toString().trim()
-        if (quienReporta.equals("Otro", ignoreCase = true)) {
-            val quienOtro = binding.etQuienReportaOtro.text.toString().trim()
-            if (quienOtro.isEmpty()) {
-                binding.tilQuienReportaOtro.error = "Especifique quién reporta"
-                valido = false
+        if (quienReporta.isEmpty() || quienReporta.equals("Seleccionar", ignoreCase = true)) {
+            binding.tilQuienReporta.error = "Seleccione quién reporta el caso *"
+            valido = false
+        } else {
+            binding.tilQuienReporta.error = null
+            if (quienReporta.equals("Otro", ignoreCase = true)) {
+                val quienOtro = binding.etQuienReportaOtro.text.toString().trim()
+                if (quienOtro.isEmpty()) {
+                    binding.tilQuienReportaOtro.error = "Especifique quién reporta *"
+                    valido = false
+                } else {
+                    binding.tilQuienReportaOtro.error = null
+                }
             } else {
                 binding.tilQuienReportaOtro.error = null
             }
-        } else {
-            binding.tilQuienReportaOtro.error = null
         }
 
         val lugarAtencion = binding.etLugarAtencion.text.toString().trim()
@@ -1370,6 +1493,38 @@ class ActaAtencionActivity : AppCompatActivity() {
             } else {
                 itemBinding.tilPacienteNombre.error = null
             }
+
+            val especie = itemBinding.autoCompleteEspecieCard.text.toString().trim()
+            if (especie.isEmpty() || especie.equals("Seleccionar", ignoreCase = true)) {
+                itemBinding.tilPacienteEspecie.error = "Seleccione la especie obligatoria"
+                valido = false
+            } else {
+                itemBinding.tilPacienteEspecie.error = null
+            }
+
+            val raza = itemBinding.autoCompleteRazaCard.text.toString().trim()
+            if (raza.isEmpty() || raza.equals("Seleccionar", ignoreCase = true)) {
+                itemBinding.tilPacienteRaza.error = "Seleccione la raza obligatoria"
+                valido = false
+            } else {
+                itemBinding.tilPacienteRaza.error = null
+            }
+
+            val sexo = itemBinding.autoCompleteSexoCard.text.toString().trim()
+            if (sexo.isEmpty() || sexo.equals("Seleccionar", ignoreCase = true)) {
+                itemBinding.tilPacienteSexo.error = "Seleccione el sexo obligatorio *"
+                valido = false
+            } else {
+                itemBinding.tilPacienteSexo.error = null
+            }
+
+            val color = itemBinding.autoCompleteColorCard.text.toString().trim()
+            if (color.isEmpty() || color.equals("Seleccionar", ignoreCase = true)) {
+                itemBinding.tilPacienteColor.error = "Ingrese o seleccione el color obligatorio *"
+                valido = false
+            } else {
+                itemBinding.tilPacienteColor.error = null
+            }
         }
 
         val anamnesis = binding.etAnamnesis.text.toString().trim()
@@ -1434,6 +1589,14 @@ class ActaAtencionActivity : AppCompatActivity() {
             valido = false
         } else {
             binding.tilFuncionarioCargo.error = null
+        }
+
+        val funcionarioMatricula = binding.etFuncionarioMatricula.text.toString().trim()
+        if (funcionarioMatricula.isEmpty()) {
+            binding.tilFuncionarioMatricula.error = "Matrícula profesional requerida *"
+            valido = false
+        } else {
+            binding.tilFuncionarioMatricula.error = null
         }
 
         // Si el módulo de rescate está activo, validar campos obligatorios del rescate
@@ -1528,10 +1691,14 @@ class ActaAtencionActivity : AppCompatActivity() {
         val listaAnimales = mutableListOf<AnimalRapidoRequest>()
         for (itemBinding in animalBindingsList) {
             val nombre = itemBinding.etPacienteNombreCard.text.toString().trim().ifEmpty { "Sin nombre" }
-            val especie = itemBinding.autoCompleteEspecieCard.text.toString().trim()
-            val raza = itemBinding.autoCompleteRazaCard.text.toString().trim().ifEmpty { "Mestizo" }
-            val sexo = itemBinding.autoCompleteSexoCard.text.toString().trim()
-            val color = itemBinding.autoCompleteColorCard.text.toString().trim()
+            val especieRaw = itemBinding.autoCompleteEspecieCard.text.toString().trim()
+            val especie = if (especieRaw.equals("Seleccionar", ignoreCase = true)) "" else especieRaw
+            val razaRaw = itemBinding.autoCompleteRazaCard.text.toString().trim()
+            val raza = if (razaRaw.equals("Seleccionar", ignoreCase = true)) "" else razaRaw.ifEmpty { "Mestizo" }
+            val sexoRaw = itemBinding.autoCompleteSexoCard.text.toString().trim()
+            val sexo = if (sexoRaw.equals("Seleccionar", ignoreCase = true)) null else sexoRaw.ifEmpty { null }
+            val colorRaw = itemBinding.autoCompleteColorCard.text.toString().trim()
+            val color = if (colorRaw.equals("Seleccionar", ignoreCase = true)) "" else colorRaw
             val edad = itemBinding.etPacienteEdadCard.text.toString().trim()
             val peso = itemBinding.etPacientePesoCard.text.toString().trim().toDoubleOrNull()
             val descExtra = itemBinding.etPacienteDescripcionCard.text.toString().trim()
@@ -1550,22 +1717,24 @@ class ActaAtencionActivity : AppCompatActivity() {
 
             val idRazaEncontrada = razaObj?.idRaza
 
-            val caracteristicasDetalle = buildString {
-                append("Especie: $especie. ")
-                append("Raza: $raza. ")
-                if (edad.isNotEmpty()) append("Edad: $edad. ")
-                if (descExtra.isNotEmpty()) append("Notas: $descExtra")
-            }.trim()
+            // Limpieza: no concatenar especie, raza ni edad en caracteristicas/descripcion_paciente.
+            // Se envían estrictamente como atributos dedicados e independientes.
+            val notasLimpias = descExtra.ifEmpty { null }
 
             listaAnimales.add(
                 AnimalRapidoRequest(
                     nombre = nombre,
+                    especie = especie.ifEmpty { null },
+                    nombreEspecie = especie.ifEmpty { null },
+                    raza = raza.ifEmpty { null },
+                    nombreRaza = raza.ifEmpty { null },
                     idRaza = idRazaEncontrada,
                     sexo = sexo,
                     color = color.ifEmpty { null },
                     peso = peso,
+                    edad = edad.ifEmpty { null },
                     esterilizado = esterilizado,
-                    caracteristicas = caracteristicasDetalle
+                    caracteristicas = notasLimpias
                 )
             )
         }
@@ -1573,10 +1742,14 @@ class ActaAtencionActivity : AppCompatActivity() {
         // Datos del paciente principal (Modo A en Django y columnas directas en SeguimientoPeticionesVisita)
         val primerAnimalBinding = animalBindingsList.firstOrNull()
         val nombrePaciente = primerAnimalBinding?.etPacienteNombreCard?.text?.toString()?.trim()?.ifEmpty { null }
-        val pacienteEspecie = primerAnimalBinding?.autoCompleteEspecieCard?.text?.toString()?.trim()?.ifEmpty { null }
-        val pacienteSexo = primerAnimalBinding?.autoCompleteSexoCard?.text?.toString()?.trim()?.ifEmpty { null }
-        val pacienteColor = primerAnimalBinding?.autoCompleteColorCard?.text?.toString()?.trim()?.ifEmpty { null }
-        val pacienteRaza = primerAnimalBinding?.autoCompleteRazaCard?.text?.toString()?.trim()?.ifEmpty { null }
+        val especiePrimerRaw = primerAnimalBinding?.autoCompleteEspecieCard?.text?.toString()?.trim()
+        val pacienteEspecie = if (especiePrimerRaw.isNullOrEmpty() || especiePrimerRaw.equals("Seleccionar", ignoreCase = true)) null else especiePrimerRaw
+        val sexoPrimerRaw = primerAnimalBinding?.autoCompleteSexoCard?.text?.toString()?.trim()
+        val pacienteSexo = if (sexoPrimerRaw.isNullOrEmpty() || sexoPrimerRaw.equals("Seleccionar", ignoreCase = true)) null else sexoPrimerRaw
+        val colorPrimerRaw = primerAnimalBinding?.autoCompleteColorCard?.text?.toString()?.trim()
+        val pacienteColor = if (colorPrimerRaw.isNullOrEmpty() || colorPrimerRaw.equals("Seleccionar", ignoreCase = true)) null else colorPrimerRaw
+        val razaPrimerRaw = primerAnimalBinding?.autoCompleteRazaCard?.text?.toString()?.trim()
+        val pacienteRaza = if (razaPrimerRaw.isNullOrEmpty() || razaPrimerRaw.equals("Seleccionar", ignoreCase = true)) null else razaPrimerRaw
         val pacienteEdad = primerAnimalBinding?.etPacienteEdadCard?.text?.toString()?.trim()?.ifEmpty { null }
         val pesoPaciente = primerAnimalBinding?.etPacientePesoCard?.text?.toString()?.trim()?.toDoubleOrNull()
         val esterilizadoStr = primerAnimalBinding?.autoCompleteEsterilizadoCard?.text?.toString()?.trim()
@@ -1594,14 +1767,26 @@ class ActaAtencionActivity : AppCompatActivity() {
         )
 
         val funcionarioNombre = binding.etFuncionarioNombre.text.toString().trim().ifEmpty { "Médico Veterinario" }
-        val funcionarioCargo = binding.etFuncionarioCargo.text.toString().trim().ifEmpty { "Médico Veterinario" }
+        val funcionarioCargoBase = binding.etFuncionarioCargo.text.toString().trim().ifEmpty { "Médico Veterinario Zootecnista" }
+        val funcionarioMatricula = binding.etFuncionarioMatricula.text.toString().trim().ifEmpty { null }
         val notificadorIdentificacion = binding.etFuncionarioIdentificacion.text.toString().trim().ifEmpty { null }
+
+        val funcionarioCargo = if (!funcionarioMatricula.isNullOrEmpty() && !funcionarioCargoBase.contains("M.P.", ignoreCase = true)) {
+            "$funcionarioCargoBase (M.P. $funcionarioMatricula)"
+        } else {
+            funcionarioCargoBase
+        }
+
+        funcionarioMatricula?.let { prefs.saveUserMatriculaProfesional(it) }
 
         val listaFuncionarios = listOf(
             FuncionarioActaRequest(
                 idUsuario = idVeterinario,
                 nombre = funcionarioNombre,
                 cargo = funcionarioCargo,
+                documentoIdentidad = notificadorIdentificacion,
+                matriculaProfesional = funcionarioMatricula,
+                tarjetaProfesional = funcionarioMatricula,
                 esExterno = false,
                 esPrincipal = true
             )
@@ -1626,14 +1811,12 @@ class ActaAtencionActivity : AppCompatActivity() {
         val firmaNotificado = binding.signatureNotificado.toBase64()
         val desparasitacion = binding.swDesparasitacion.isChecked
 
-        // Recopilación de constantes vitales del Paso 2
-        val temp = binding.etTemperatura.text.toString().trim()
+        // Recopilación de constantes vitales del Paso 2 (sin temperatura)
         val fc = binding.etFrecuenciaCardiaca.text.toString().trim()
         val fr = binding.etFrecuenciaRespiratoria.text.toString().trim()
         val mucosas = binding.etMucosas.text.toString().trim()
 
         val signosVitales = buildString {
-            if (temp.isNotEmpty()) append("Temp: ${temp}°C. ")
             if (fc.isNotEmpty()) append("FC: ${fc} lpm. ")
             if (fr.isNotEmpty()) append("FR: ${fr} rpm. ")
             if (mucosas.isNotEmpty()) append("Mucosas: $mucosas. ")
@@ -1897,6 +2080,9 @@ class ActaAtencionActivity : AppCompatActivity() {
                     notificadorNombre = funcionarioNombre,
                     notificadorIdentificacion = notificadorIdentificacion,
                     notificadorCargo = funcionarioCargo,
+                    notificadorMatricula = funcionarioMatricula,
+                    matriculaProfesional = funcionarioMatricula,
+                    tarjetaProfesional = funcionarioMatricula,
                     firmaNotificador = firmaNotificador,
                     firmaNotificado = firmaNotificado,
                     observacion = observacion,

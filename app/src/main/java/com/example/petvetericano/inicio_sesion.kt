@@ -80,6 +80,7 @@ class inicio_sesion : AppCompatActivity() {
                         prefs.saveUserLastName(datos.apellido ?: "")
                         prefs.saveAccessToken(datos.tokens.access)
                         prefs.saveUserId(datos.idUsuario)
+                        prefs.saveUserRole(datos.idRol)
 
                         val intent = if (datos.idRol == ROL_VETERINARIO) {
                             Intent(this@inicio_sesion, dahsboard_veterianrio::class.java)

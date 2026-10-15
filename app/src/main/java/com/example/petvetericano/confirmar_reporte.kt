@@ -167,6 +167,16 @@ class confirmar_reporte : AppCompatActivity() {
     private fun obtenerCantidadFotos() {
         urlsArchivos = intent.getStringArrayListExtra("URLS_ARCHIVOS")
         val cantidad = urlsArchivos?.size ?: 0
-        binding.numfoto.text = if (cantidad == 1) "1 foto" else "$cantidad fotos"
+        if (cantidad == 0) {
+            binding.numfoto.text = "Sin evidencias"
+        } else {
+            val hayVideo = urlsArchivos?.any { it.contains(".mp4") || it.contains("/video/") } == true
+            binding.numfoto.text = when {
+                cantidad == 1 && hayVideo -> "1 video"
+                cantidad == 1 && !hayVideo -> "1 foto"
+                cantidad == 2 && hayVideo -> "1 foto y 1 video"
+                else -> "$cantidad evidencias"
+            }
+        }
     }
 }

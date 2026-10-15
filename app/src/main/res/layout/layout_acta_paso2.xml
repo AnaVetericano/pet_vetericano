@@ -93,7 +93,7 @@
                     android:textColor="@color/text_secondary"
                     android:textSize="13sp" />
 
-                <!-- Fila 1: Temperatura y Frecuencia Cardíaca -->
+                <!-- Fila: Frecuencia Cardíaca y Frecuencia Respiratoria -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -102,30 +102,11 @@
                     android:layout_marginBottom="10dp">
 
                     <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilTemperatura"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="6dp"
-                        android:layout_weight="1"
-                        android:hint="Temperatura"
-                        app:boxStrokeColor="@color/primary"
-                        app:suffixText="°C">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etTemperatura"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="numberDecimal"
-                            android:textColor="@color/text_primary" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilFrecuenciaCardiaca"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
+                        android:layout_marginEnd="6dp"
                         android:layout_weight="1"
                         android:hint="Frec. Cardíaca"
                         app:boxStrokeColor="@color/primary"
@@ -138,26 +119,26 @@
                             android:inputType="number"
                             android:textColor="@color/text_primary" />
                     </com.google.android.material.textfield.TextInputLayout>
-                </LinearLayout>
 
-                <!-- Fila 2: Frecuencia Respiratoria -->
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilFrecuenciaRespiratoria"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="10dp"
-                    android:hint="Frecuencia respiratoria"
-                    app:boxStrokeColor="@color/primary"
-                    app:suffixText="rpm">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etFrecuenciaRespiratoria"
-                        android:layout_width="match_parent"
+                    <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilFrecuenciaRespiratoria"
+                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:inputType="number"
-                        android:textColor="@color/text_primary" />
-                </com.google.android.material.textfield.TextInputLayout>
+                        android:layout_marginStart="6dp"
+                        android:layout_weight="1"
+                        android:hint="Frec. Respiratoria"
+                        app:boxStrokeColor="@color/primary"
+                        app:suffixText="rpm">
+
+                        <com.google.android.material.textfield.TextInputEditText
+                            android:id="@+id/etFrecuenciaRespiratoria"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:inputType="number"
+                            android:textColor="@color/text_primary" />
+                    </com.google.android.material.textfield.TextInputLayout>
+                </LinearLayout>
 
                 <!-- Fila 3: Mucosas / TLLC (Ancho completo para evitar truncamiento) -->
                 <com.google.android.material.textfield.TextInputLayout

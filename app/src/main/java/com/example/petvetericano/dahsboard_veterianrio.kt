@@ -3,9 +3,11 @@ package com.example.petvetericano
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
@@ -203,30 +205,71 @@ class dahsboard_veterianrio : AppCompatActivity() {
                         binding.tvConteoAtencion.text = atendidas.toString()
                         binding.tvPeticionesTransferidas.text = transferidas.toString()
 
-                        binding.tvCantidadUrgentes.text = "$urgentes urgentes"
-
                         configurarGrafico(asignadas, enTratamiento, atendidas, transferidas, total)
 
-                        // 1. Peticiones activas locales (no transferidas ni cerradas)
-                        val activas = petitions.filter {
-                            val st = it.estado?.lowercase() ?: ""
-                            !st.contains("transferid") && !st.contains("alta") && !st.contains("fallecid") && !st.contains("finaliz")
+                        // 1. Filtrar ÚNICAMENTE las peticiones PENDIENTES (excluir las ya trabajadas o con acta)
+                        val pendientes = petitions.filter { pet ->
+                            val st = pet.estado?.lowercase() ?: ""
+                            val yaTrabajada = (pet.tiene_acta == true) ||
+                                (pet.id_seguimiento != null && pet.id_seguimiento > 0) ||
+                                st.contains("tratamient") ||
+                                st.contains("observaci") ||
+                                st.contains("atendid") ||
+                                st.contains("finaliz") ||
+                                st.contains("alta") ||
+                                st.contains("fallecid") ||
+                                st.contains("resuelt") ||
+                                st.contains("cerrad") ||
+                                st.contains("transferid") ||
+                                st.contains("proceso") ||
+                                st.contains("seguimiento")
+                            !yaTrabajada
                         }
 
-                        val listaParaRvActivas = activas.take(5).map { pet ->
+                        // Ordenar: urgentes primero
+                        val pendientesOrdenadas = pendientes.sortedByDescending { pet ->
+                            val st = pet.estado?.lowercase() ?: ""
+                            val pr = pet.prioridad?.lowercase() ?: ""
+                            st.contains("urgent") || pr.contains("urgent")
+                        }
+
+                        val urgentesPendientes = pendientes.count {
+                            val st = it.estado?.lowercase() ?: ""
+                            val pr = it.prioridad?.lowercase() ?: ""
+                            st.contains("urgent") || pr.contains("urgent")
+                        }
+
+                        if (urgentesPendientes > 0) {
+                            binding.tvCantidadUrgentes.text = "$urgentesPendientes urgentes"
+                            binding.tvCantidadUrgentes.backgroundTintList = ContextCompat.getColorStateList(this@dahsboard_veterianrio, R.color.badge_urgente_bg)
+                            binding.tvCantidadUrgentes.setTextColor(ContextCompat.getColor(this@dahsboard_veterianrio, R.color.badge_urgente_text))
+                        } else {
+                            binding.tvCantidadUrgentes.text = "${pendientes.size} pendientes"
+                            binding.tvCantidadUrgentes.backgroundTintList = ContextCompat.getColorStateList(this@dahsboard_veterianrio, R.color.badge_asignada_bg)
+                            binding.tvCantidadUrgentes.setTextColor(ContextCompat.getColor(this@dahsboard_veterianrio, R.color.badge_asignada_text))
+                        }
+
+                        val listaParaRvActivas = pendientesOrdenadas.map { pet ->
                             val estadoStr = pet.estado?.lowercase() ?: ""
-                            val tipo = when {
-                                estadoStr.contains("urgente") -> TipoEstado.URGENTE
-                                estadoStr.contains("proceso") || estadoStr.contains("tratamiento") || estadoStr.contains("observaci") -> TipoEstado.EN_PROCESO
-                                else -> TipoEstado.ASIGNADA
-                            }
+                            val prioridadStr = pet.prioridad?.lowercase() ?: ""
+                            val esUrgente = estadoStr.contains("urgent") || prioridadStr.contains("urgent")
+                            val tipo = if (esUrgente) TipoEstado.URGENTE else TipoEstado.ASIGNADA
+
                             PeticionPendiente(
                                 id_peticion = pet.id_peticion,
                                 titulo = pet.tipo ?: "Desconocido",
                                 paciente = "${pet.numero_radicado ?: ""} — ${pet.ubicacion_direccion ?: "Sin dirección"}",
-                                estado = pet.estado ?: "Asignada",
+                                estado = if (esUrgente && !estadoStr.contains("urgent")) "Urgente (${pet.estado ?: "Asignada"})" else (pet.estado ?: "Asignada"),
                                 tipoEstado = tipo
                             )
+                        }
+
+                        if (listaParaRvActivas.isEmpty()) {
+                            binding.rvPendientes.visibility = View.GONE
+                            binding.layoutEmptyPendientes.visibility = View.VISIBLE
+                        } else {
+                            binding.rvPendientes.visibility = View.VISIBLE
+                            binding.layoutEmptyPendientes.visibility = View.GONE
                         }
 
                         binding.rvPendientes.adapter = PendientesAdapter(listaParaRvActivas) { item ->

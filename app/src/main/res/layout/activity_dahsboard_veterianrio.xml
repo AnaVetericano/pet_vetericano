@@ -461,6 +461,43 @@
                             android:layout_height="wrap_content"
                             android:nestedScrollingEnabled="false"
                             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager" />
+
+                        <!-- Estado vacío cuando no hay peticiones pendientes -->
+                        <LinearLayout
+                            android:id="@+id/layoutEmptyPendientes"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center"
+                            android:orientation="vertical"
+                            android:paddingHorizontal="24dp"
+                            android:paddingVertical="24dp"
+                            android:visibility="gone">
+
+                            <ImageView
+                                android:layout_width="38dp"
+                                android:layout_height="38dp"
+                                android:src="@drawable/ic_check"
+                                app:tint="@color/success" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="8dp"
+                                android:fontFamily="@font/nunito_bold"
+                                android:text="¡Sin peticiones pendientes!"
+                                android:textColor="@color/text_primary"
+                                android:textSize="14sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="@font/nunito"
+                                android:gravity="center"
+                                android:text="Todas las atenciones asignadas ya han sido trabajadas."
+                                android:textColor="@color/text_secondary"
+                                android:textSize="11.5sp" />
+                        </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 

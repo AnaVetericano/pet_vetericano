@@ -22,6 +22,7 @@ import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityActaAtencionBinding
 import com.example.petvetericano.databinding.ItemAnimalFormularioBinding
 import com.example.petvetericano.databinding.ItemExamenAgregadoBinding
+import com.example.petvetericano.models.AnimalCardState
 import com.example.petvetericano.models.AnimalRapidoRequest
 import com.example.petvetericano.models.ExamenSeleccionadoActa
 import com.example.petvetericano.models.FuncionarioActaRequest
@@ -212,20 +213,26 @@ class ActaAtencionActivity : AppCompatActivity() {
         peticionId = intent.getIntExtra("PETICION_ID", -1)
 
         setupToolbar()
-        setupUI()
-        setupDropdowns()
+        setupUI(savedInstanceState)
+        setupDropdowns(savedInstanceState)
         setupLugarAtencion()
-        setupDesparasitacionSwitch()
-        setupModuloRescate()
-        setupChecklistSwitches()
+        setupDesparasitacionSwitch(savedInstanceState)
+        setupModuloRescate(savedInstanceState)
+        setupChecklistSwitches(savedInstanceState)
         setupAutoScrollOnFocus()
         setupAceleradoresCampo()
         setupSeccionExamenesMultiples()
         initCloudinary()
         setupEvidenciaMultimedia()
         cargarCatalogosBackend()
+
         if (savedInstanceState != null) {
             currentStep = savedInstanceState.getInt("KEY_CURRENT_STEP", 1)
+            peticionId = savedInstanceState.getInt("KEY_PETICION_ID", peticionId)
+            latitudVisita = savedInstanceState.getDouble("KEY_LATITUD_VISITA", latitudVisita)
+            longitudVisita = savedInstanceState.getDouble("KEY_LONGITUD_VISITA", longitudVisita)
+            pendingMediaEsVideo = savedInstanceState.getBoolean("KEY_PENDING_MEDIA_ES_VIDEO", false)
+
             tempCameraUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 savedInstanceState.getParcelable("KEY_TEMP_CAMERA_URI", Uri::class.java)
             } else {
@@ -245,6 +252,37 @@ class ActaAtencionActivity : AppCompatActivity() {
                 }
             }
             actualizarVistaMultimedia()
+
+            // Restaurar lista de exámenes clínicos complementarios
+            @Suppress("UNCHECKED_CAST", "DEPRECATION")
+            val examenesGuardados = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                savedInstanceState.getSerializable("KEY_EXAMENES_AGREGADOS", ArrayList::class.java) as? ArrayList<ExamenSeleccionadoActa>
+            } else {
+                savedInstanceState.getSerializable("KEY_EXAMENES_AGREGADOS") as? ArrayList<ExamenSeleccionadoActa>
+            }
+            if (!examenesGuardados.isNullOrEmpty()) {
+                examenesAgregadosList.clear()
+                examenesAgregadosList.addAll(examenesGuardados)
+                renderizarExamenesAgregados()
+            }
+
+            // Restaurar todos los formularios de pacientes diligenciados en el Paso 2
+            @Suppress("UNCHECKED_CAST", "DEPRECATION")
+            val savedAnimalStates = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                savedInstanceState.getSerializable("KEY_ANIMAL_STATES", ArrayList::class.java) as? ArrayList<AnimalCardState>
+            } else {
+                savedInstanceState.getSerializable("KEY_ANIMAL_STATES") as? ArrayList<AnimalCardState>
+            }
+
+            binding.containerAnimales.removeAllViews()
+            animalBindingsList.clear()
+            if (!savedAnimalStates.isNullOrEmpty()) {
+                for (state in savedAnimalStates) {
+                    agregarFormularioAnimal(state)
+                }
+            } else {
+                agregarFormularioAnimal()
+            }
         } else {
             // Agregar por defecto al menos un formulario de paciente al iniciar por primera vez
             agregarFormularioAnimal()
@@ -301,12 +339,46 @@ class ActaAtencionActivity : AppCompatActivity() {
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
         outState.putInt("KEY_CURRENT_STEP", currentStep)
+        outState.putInt("KEY_PETICION_ID", peticionId)
+        outState.putDouble("KEY_LATITUD_VISITA", latitudVisita)
+        outState.putDouble("KEY_LONGITUD_VISITA", longitudVisita)
+        outState.putBoolean("KEY_PENDING_MEDIA_ES_VIDEO", pendingMediaEsVideo)
+
         tempCameraUri?.let { outState.putParcelable("KEY_TEMP_CAMERA_URI", it) }
         tempCameraFile?.let { outState.putString("KEY_TEMP_CAMERA_FILE", it.absolutePath) }
         val urisList = ArrayList(selectedMediaList.map { it.uri.toString() })
         val isVideoList = ArrayList(selectedMediaList.map { it.esVideo })
         outState.putStringArrayList("KEY_MEDIA_URIS", urisList)
         outState.putBooleanArray("KEY_MEDIA_IS_VIDEO", isVideoList.toBooleanArray())
+
+        // 1. Guardar estado completo de todas las tarjetas dinámicas de pacientes
+        val animalStates = ArrayList<AnimalCardState>()
+        for (itemBinding in animalBindingsList) {
+            animalStates.add(
+                AnimalCardState(
+                    nombre = itemBinding.etPacienteNombreCard.text?.toString() ?: "",
+                    especie = itemBinding.autoCompleteEspecieCard.text?.toString() ?: "",
+                    raza = itemBinding.autoCompleteRazaCard.text?.toString() ?: "",
+                    sexo = itemBinding.autoCompleteSexoCard.text?.toString() ?: "",
+                    color = itemBinding.autoCompleteColorCard.text?.toString() ?: "",
+                    edadNumero = itemBinding.etEdadNumero.text?.toString() ?: "1",
+                    edadUnidad = itemBinding.autoCompleteEdadUnidad.text?.toString() ?: "Años",
+                    edadTexto = itemBinding.etPacienteEdadCard.text?.toString() ?: "",
+                    peso = itemBinding.etPacientePesoCard.text?.toString() ?: "",
+                    esterilizado = itemBinding.autoCompleteEsterilizadoCard.text?.toString() ?: "No",
+                    descripcion = itemBinding.etPacienteDescripcionCard.text?.toString() ?: ""
+                )
+            )
+        }
+        outState.putSerializable("KEY_ANIMAL_STATES", animalStates)
+
+        // 2. Guardar lista de exámenes clínicos complementarios agregados (Paso 3)
+        outState.putSerializable("KEY_EXAMENES_AGREGADOS", ArrayList(examenesAgregadosList))
+    }
+
+    override fun onRestoreInstanceState(savedInstanceState: Bundle) {
+        super.onRestoreInstanceState(savedInstanceState)
+        sincronizarLabelsSwitches()
     }
 
     private fun setupToolbar() {
@@ -315,14 +387,18 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupUI() {
+    private fun setupUI(savedInstanceState: Bundle? = null) {
         val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val currentDate = sdf.format(Date())
-        binding.etFechaAtencion.setText(currentDate)
+        if (binding.etFechaAtencion.text.isNullOrEmpty()) {
+            binding.etFechaAtencion.setText(currentDate)
+        }
 
-        val year = SimpleDateFormat("yyyy", Locale.getDefault()).format(Date())
-        val randomSuffix = (100..999).random()
-        binding.etRadicado.setText("RAD-VIS-$year-$randomSuffix")
+        if (savedInstanceState == null || binding.etRadicado.text.isNullOrEmpty()) {
+            val year = SimpleDateFormat("yyyy", Locale.getDefault()).format(Date())
+            val randomSuffix = (100..999).random()
+            binding.etRadicado.setText("RAD-VIS-$year-$randomSuffix")
+        }
 
         val prefs = SharedPreferencesManager(this)
         val nombreGuardado = prefs.getUserName().trim()
@@ -388,7 +464,7 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupModuloRescate() {
+    private fun setupModuloRescate(savedInstanceState: Bundle? = null) {
         val motivosRescate = arrayOf(
             "Por salud crítica / Urgencia médica",
             "Por maltrato animal / Aprehensión preventiva",
@@ -398,19 +474,23 @@ class ActaAtencionActivity : AppCompatActivity() {
         )
         val adapterMotivo = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, motivosRescate)
         binding.autoCompleteMotivoRescate.setAdapter(adapterMotivo)
-        binding.autoCompleteMotivoRescate.setText(motivosRescate[0], false)
+        if (savedInstanceState == null || binding.autoCompleteMotivoRescate.text.isNullOrEmpty()) {
+            binding.autoCompleteMotivoRescate.setText(motivosRescate[0], false)
+        }
 
         binding.autoCompleteMotivoRescate.setOnItemClickListener { _, _, position, _ ->
             val causalSeleccionada = motivosRescate[position]
             actualizarObservacionRescatePorCausal(causalSeleccionada)
         }
 
-        // Estado inicial: Rescate inactivo por defecto
-        binding.swRequiereRescate.isChecked = false
-        binding.cardBadgeRescateActivo.visibility = View.GONE
-        binding.layoutModuloRescateIntegrado.visibility = View.GONE
-        binding.tvEstadoRequiereRescate.text = "No requerido (atención normal)"
-        binding.tvEstadoRequiereRescate.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
+        // Estado inicial: Rescate inactivo por defecto solo si no hay estado restaurado
+        if (savedInstanceState == null) {
+            binding.swRequiereRescate.isChecked = false
+            binding.cardBadgeRescateActivo.visibility = View.GONE
+            binding.layoutModuloRescateIntegrado.visibility = View.GONE
+            binding.tvEstadoRequiereRescate.text = "No requerido (atención normal)"
+            binding.tvEstadoRequiereRescate.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
+        }
 
         binding.swRequiereRescate.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
@@ -523,7 +603,7 @@ class ActaAtencionActivity : AppCompatActivity() {
         binding.etObservacionesRescate.setText(textoGenerado)
     }
 
-    private fun setupChecklistSwitches() {
+    private fun setupChecklistSwitches(savedInstanceState: Bundle? = null) {
         val switchLabelPairs = listOf(
             binding.swRespiratorioMoco to binding.tvEstadoRespiratorioMoco,
             binding.swRespiratorioDificultad to binding.tvEstadoRespiratorioDificultad,
@@ -549,11 +629,15 @@ class ActaAtencionActivity : AppCompatActivity() {
         val colorPrimario = ContextCompat.getColor(this, R.color.primary)
         val colorSecundario = ContextCompat.getColor(this, R.color.text_secondary)
 
-        for ((switch, label) in switchLabelPairs) {
-            switch.isChecked = false
-            label.text = "NO"
-            label.setTextColor(colorSecundario)
+        if (savedInstanceState == null) {
+            for ((switch, label) in switchLabelPairs) {
+                switch.isChecked = false
+                label.text = "NO"
+                label.setTextColor(colorSecundario)
+            }
+        }
 
+        for ((switch, label) in switchLabelPairs) {
             switch.setOnCheckedChangeListener { _, isChecked ->
                 if (isChecked) {
                     label.text = "SÍ"
@@ -563,6 +647,63 @@ class ActaAtencionActivity : AppCompatActivity() {
                     label.setTextColor(colorSecundario)
                 }
             }
+        }
+    }
+
+    private fun sincronizarLabelsSwitches() {
+        val colorPrimario = ContextCompat.getColor(this, R.color.primary)
+        val colorSecundario = ContextCompat.getColor(this, R.color.text_secondary)
+
+        val switchLabelPairs = listOf(
+            binding.swRespiratorioMoco to binding.tvEstadoRespiratorioMoco,
+            binding.swRespiratorioDificultad to binding.tvEstadoRespiratorioDificultad,
+            binding.swRespiratorioTos to binding.tvEstadoRespiratorioTos,
+            binding.swRespiratorioLaganeo to binding.tvEstadoRespiratorioLaganeo,
+            binding.swDigestivoVomito to binding.tvEstadoDigestivoVomito,
+            binding.swDigestivoDiarrea to binding.tvEstadoDigestivoDiarrea,
+            binding.swDigestivoDesnutrido to binding.tvEstadoDigestivoDesnutrido,
+            binding.swDigestivoDeshidratado to binding.tvEstadoDigestivoDeshidratado,
+            binding.swMusculoCaidaPatas to binding.tvEstadoMusculoCaidaPatas,
+            binding.swMusculoCojo to binding.tvEstadoMusculoCojo,
+            binding.swMusculoHeridaAbierta to binding.tvEstadoMusculoHeridaAbierta,
+            binding.swMusculoGusanos to binding.tvEstadoMusculoGusanos,
+            binding.swMusculoPostrado to binding.tvEstadoMusculoPostrado,
+            binding.swDermatoPeladuras to binding.tvEstadoDermatoPeladuras,
+            binding.swDermatoHeridasSangre to binding.tvEstadoDermatoHeridasSangre,
+            binding.swDermatoPulgas to binding.tvEstadoDermatoPulgas,
+            binding.swGenitoMasaSecrecion to binding.tvEstadoGenitoMasaSecrecion,
+            binding.swGenitoGestante to binding.tvEstadoGenitoGestante,
+            binding.swGenitoCelo to binding.tvEstadoGenitoCelo
+        )
+
+        for ((switch, label) in switchLabelPairs) {
+            if (switch.isChecked) {
+                label.text = "SÍ"
+                label.setTextColor(colorPrimario)
+            } else {
+                label.text = "NO"
+                label.setTextColor(colorSecundario)
+            }
+        }
+
+        if (binding.swDesparasitacion.isChecked) {
+            binding.tvEstadoDesparasitacion.text = "Sí aplicada"
+            binding.tvEstadoDesparasitacion.setTextColor(colorPrimario)
+        } else {
+            binding.tvEstadoDesparasitacion.text = "No aplicada"
+            binding.tvEstadoDesparasitacion.setTextColor(colorSecundario)
+        }
+
+        if (binding.swRequiereRescate.isChecked) {
+            binding.cardBadgeRescateActivo.visibility = View.VISIBLE
+            binding.layoutModuloRescateIntegrado.visibility = View.VISIBLE
+            binding.tvEstadoRequiereRescate.text = "Rescate y traslado activo"
+            binding.tvEstadoRequiereRescate.setTextColor(colorPrimario)
+        } else {
+            binding.cardBadgeRescateActivo.visibility = View.GONE
+            binding.layoutModuloRescateIntegrado.visibility = View.GONE
+            binding.tvEstadoRequiereRescate.text = "No requerido (atención normal)"
+            binding.tvEstadoRequiereRescate.setTextColor(colorSecundario)
         }
     }
 
@@ -671,10 +812,12 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupDesparasitacionSwitch() {
-        binding.swDesparasitacion.isChecked = false
-        binding.tvEstadoDesparasitacion.text = "No aplicada"
-        binding.tvEstadoDesparasitacion.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
+    private fun setupDesparasitacionSwitch(savedInstanceState: Bundle? = null) {
+        if (savedInstanceState == null) {
+            binding.swDesparasitacion.isChecked = false
+            binding.tvEstadoDesparasitacion.text = "No aplicada"
+            binding.tvEstadoDesparasitacion.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
+        }
 
         binding.swDesparasitacion.setOnCheckedChangeListener { _, isChecked ->
             if (isChecked) {
@@ -716,11 +859,13 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
     }
 
-    private fun setupDropdowns() {
+    private fun setupDropdowns(savedInstanceState: Bundle? = null) {
         val quienReportaOpciones = arrayOf("Seleccionar", "Propietario", "Comunidad", "Policia", "Fundacion", "Otro")
         val adapterReporta = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, quienReportaOpciones)
         binding.autoCompleteQuienReporta.setAdapter(adapterReporta)
-        binding.autoCompleteQuienReporta.setText(quienReportaOpciones[0], false)
+        if (savedInstanceState == null || binding.autoCompleteQuienReporta.text.isNullOrEmpty()) {
+            binding.autoCompleteQuienReporta.setText(quienReportaOpciones[0], false)
+        }
 
         val actualizarVisibilidadQuienReporta = { seleccion: String ->
             if (seleccion.equals("Otro", ignoreCase = true)) {
@@ -753,7 +898,9 @@ class ActaAtencionActivity : AppCompatActivity() {
         val estadosCierre = arrayOf("En tratamiento", "En observación", "Alta médica")
         val adapterCierre = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, estadosCierre)
         binding.autoCompleteEstadoCierre.setAdapter(adapterCierre)
-        binding.autoCompleteEstadoCierre.setText(estadosCierre[0], false)
+        if (savedInstanceState == null || binding.autoCompleteEstadoCierre.text.isNullOrEmpty()) {
+            binding.autoCompleteEstadoCierre.setText(estadosCierre[0], false)
+        }
     }
 
     /**
@@ -932,10 +1079,12 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                 // Actualizar especies y razas de cada formulario de animal instanciado
                 for (itemBinding in animalBindingsList) {
-                    actualizarOpcionesEspecies(itemBinding)
                     val especieActual = itemBinding.autoCompleteEspecieCard.text.toString().trim()
+                    val razaActual = itemBinding.autoCompleteRazaCard.text.toString().trim()
+                    actualizarOpcionesEspecies(itemBinding)
                     if (especieActual.isNotEmpty() && !especieActual.equals("Seleccionar", ignoreCase = true)) {
-                        actualizarOpcionesRazas(itemBinding, especieActual)
+                        itemBinding.autoCompleteEspecieCard.setText(especieActual, false)
+                        actualizarOpcionesRazas(itemBinding, especieActual, razaActual)
                     }
                 }
             }
@@ -956,7 +1105,7 @@ class ActaAtencionActivity : AppCompatActivity() {
         itemBinding.autoCompleteEspecieCard.setAdapter(adapterEspecie)
 
         val actual = itemBinding.autoCompleteEspecieCard.text.toString().trim()
-        if (actual.isEmpty() || actual.equals("Seleccionar", ignoreCase = true) || !listaNombres.contains(actual)) {
+        if (actual.isEmpty() || actual.equals("Seleccionar", ignoreCase = true)) {
             itemBinding.autoCompleteEspecieCard.setText("Seleccionar", false)
             itemBinding.tilPacienteRaza.isEnabled = false
             itemBinding.autoCompleteRazaCard.isEnabled = false
@@ -974,7 +1123,11 @@ class ActaAtencionActivity : AppCompatActivity() {
      * Actualiza el listado de razas seleccionables para un paciente según su especie,
      * consumiendo estrictamente las razas registradas en el backend/web.
      */
-    private fun actualizarOpcionesRazas(itemBinding: ItemAnimalFormularioBinding, especie: String) {
+    private fun actualizarOpcionesRazas(
+        itemBinding: ItemAnimalFormularioBinding,
+        especie: String,
+        razaSugerida: String? = null
+    ) {
         if (especie.isEmpty() || especie.equals("Seleccionar", ignoreCase = true)) {
             itemBinding.autoCompleteRazaCard.setAdapter(null)
             itemBinding.autoCompleteRazaCard.setText("", false)
@@ -1010,19 +1163,26 @@ class ActaAtencionActivity : AppCompatActivity() {
             razasEspecie.add(0, "Mestizo / Criollo")
         }
 
+        val valorActual = (razaSugerida ?: itemBinding.autoCompleteRazaCard.text.toString()).trim()
+        if (valorActual.isNotEmpty() && !valorActual.equals("Seleccionar", ignoreCase = true) && !razasEspecie.contains(valorActual)) {
+            razasEspecie.add(valorActual)
+        }
+
         val adapterRazas = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, razasEspecie)
         itemBinding.autoCompleteRazaCard.setAdapter(adapterRazas)
 
-        val valorActual = itemBinding.autoCompleteRazaCard.text.toString().trim()
-        if (valorActual.isEmpty() || valorActual.equals("Seleccionar", ignoreCase = true) || !razasEspecie.contains(valorActual)) {
+        if (valorActual.isEmpty() || valorActual.equals("Seleccionar", ignoreCase = true)) {
             itemBinding.autoCompleteRazaCard.setText("Seleccionar", false)
+        } else {
+            itemBinding.autoCompleteRazaCard.setText(valorActual, false)
         }
     }
 
     /**
-     * Agrega dinámicamente un formulario con View Binding para un paciente/animal con aceleradores M3
+     * Agrega dinámicamente un formulario con View Binding para un paciente/animal con aceleradores M3.
+     * Permite recibir un [initialState] para restaurar fielmente todos los datos tras captura multimedia o recreación.
      */
-    private fun agregarFormularioAnimal() {
+    private fun agregarFormularioAnimal(initialState: AnimalCardState? = null) {
         val itemBinding = ItemAnimalFormularioBinding.inflate(layoutInflater, binding.containerAnimales, false)
         val numeroAnimal = animalBindingsList.size + 1
         itemBinding.tvAnimalNumero.text = "Paciente #$numeroAnimal"
@@ -1205,6 +1365,44 @@ class ActaAtencionActivity : AppCompatActivity() {
             binding.containerAnimales.removeView(itemBinding.root)
             animalBindingsList.remove(itemBinding)
             actualizarNumeracionYBotonesEliminar()
+        }
+
+        // Si tenemos un estado previo a restaurar (ej. tras tomar foto, grabar video o recreación)
+        if (initialState != null) {
+            if (initialState.nombre.isNotEmpty()) {
+                itemBinding.etPacienteNombreCard.setText(initialState.nombre)
+            }
+            if (initialState.especie.isNotEmpty() && !initialState.especie.equals("Seleccionar", ignoreCase = true)) {
+                itemBinding.autoCompleteEspecieCard.setText(initialState.especie, false)
+                itemBinding.tilPacienteRaza.isEnabled = true
+                itemBinding.autoCompleteRazaCard.isEnabled = true
+                itemBinding.tilPacienteRaza.helperText = null
+                actualizarOpcionesRazas(itemBinding, initialState.especie, initialState.raza)
+            }
+            if (initialState.sexo.isNotEmpty()) {
+                itemBinding.autoCompleteSexoCard.setText(initialState.sexo, false)
+            }
+            if (initialState.color.isNotEmpty()) {
+                itemBinding.autoCompleteColorCard.setText(initialState.color, false)
+            }
+            if (initialState.edadNumero.isNotEmpty()) {
+                itemBinding.etEdadNumero.setText(initialState.edadNumero)
+            }
+            if (initialState.edadUnidad.isNotEmpty()) {
+                itemBinding.autoCompleteEdadUnidad.setText(initialState.edadUnidad, false)
+            }
+            if (initialState.edadTexto.isNotEmpty()) {
+                itemBinding.etPacienteEdadCard.setText(initialState.edadTexto)
+            }
+            if (initialState.peso.isNotEmpty()) {
+                itemBinding.etPacientePesoCard.setText(initialState.peso)
+            }
+            if (initialState.esterilizado.isNotEmpty()) {
+                itemBinding.autoCompleteEsterilizadoCard.setText(initialState.esterilizado, false)
+            }
+            if (initialState.descripcion.isNotEmpty()) {
+                itemBinding.etPacienteDescripcionCard.setText(initialState.descripcion)
+            }
         }
 
         binding.containerAnimales.addView(itemBinding.root)

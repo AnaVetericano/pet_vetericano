@@ -1,6 +1,7 @@
 package com.example.petvetericano.models
 
 import com.google.gson.annotations.SerializedName
+import java.io.Serializable
 
 /**
  * Modelos de datos para el Acta de Atención en Campo (Seguimiento Peticiones Visita).
@@ -351,7 +352,26 @@ data class ExamenSeleccionadoActa(
     val idExamenCatalogo: Int? = null,
     val nombreExamen: String,
     var resultado: String
-)
+) : Serializable
+
+/**
+ * Estado serializable para preservar y restaurar íntegramente
+ * los datos diligenciados en las tarjetas dinámicas de pacientes
+ * ante recreación de la actividad (cámara de fotos, grabación de video o rotación).
+ */
+data class AnimalCardState(
+    val nombre: String = "",
+    val especie: String = "",
+    val raza: String = "",
+    val sexo: String = "",
+    val color: String = "",
+    val edadNumero: String = "1",
+    val edadUnidad: String = "Años",
+    val edadTexto: String = "",
+    val peso: String = "",
+    val esterilizado: String = "No",
+    val descripcion: String = ""
+) : Serializable
 
 // ==========================================
 // MODELOS PARA PASO 2: PACIENTES Y CLÍNICA

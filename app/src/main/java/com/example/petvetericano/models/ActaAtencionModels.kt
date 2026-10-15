@@ -143,6 +143,15 @@ data class SeguimientoPeticionVisitaRequest(
     @SerializedName("notificador_cargo")
     val notificadorCargo: String? = null,
 
+    @SerializedName("notificador_matricula")
+    val notificadorMatricula: String? = null,
+
+    @SerializedName("matricula_profesional")
+    val matriculaProfesional: String? = null,
+
+    @SerializedName("tarjeta_profesional")
+    val tarjetaProfesional: String? = null,
+
     // Firmas Digitales
     @SerializedName("firma_notificador")
     val firmaNotificador: String? = null,
@@ -179,6 +188,18 @@ data class AnimalRapidoRequest(
     @SerializedName("nombre")
     val nombre: String = "Sin nombre",
 
+    @SerializedName("especie")
+    val especie: String? = null,
+
+    @SerializedName("nombre_especie")
+    val nombreEspecie: String? = null,
+
+    @SerializedName("raza")
+    val raza: String? = null,
+
+    @SerializedName("nombre_raza")
+    val nombreRaza: String? = null,
+
     @SerializedName("id_raza")
     val idRaza: Int? = null,
 
@@ -190,6 +211,9 @@ data class AnimalRapidoRequest(
 
     @SerializedName("peso")
     val peso: Double? = null,
+
+    @SerializedName("edad")
+    val edad: String? = null,
 
     @SerializedName("esterilizado")
     val esterilizado: Boolean = false,
@@ -221,7 +245,13 @@ data class FuncionarioActaRequest(
     val institucion: String? = null,
 
     @SerializedName("documento_identidad")
-    val documentoIdentidad: String? = null
+    val documentoIdentidad: String? = null,
+
+    @SerializedName("matricula_profesional")
+    val matriculaProfesional: String? = null,
+
+    @SerializedName("tarjeta_profesional")
+    val tarjetaProfesional: String? = null
 )
 
 data class FuncionarioItemResponse(

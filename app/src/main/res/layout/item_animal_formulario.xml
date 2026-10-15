@@ -177,8 +177,7 @@
                     android:id="@+id/autoCompleteRazaCard"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:inputType="textCapWords"
-                    android:completionThreshold="1"
+                    android:inputType="none"
                     android:textColor="@color/text_primary" />
             </com.google.android.material.textfield.TextInputLayout>
 

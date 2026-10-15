@@ -48,6 +48,13 @@ class SharedPreferencesManager(context: Context) {
 
     fun getUserId(): Int = prefs.getInt("ID_USUARIO", -1)
 
+    // Rol de Usuario (1 = Ciudadano/Peticionario, 3 = Veterinario)
+    fun saveUserRole(roleId: Int) {
+        prefs.edit().putInt("USER_ROLE", roleId).apply()
+    }
+
+    fun getUserRole(): Int = prefs.getInt("USER_ROLE", -1)
+
     // Foto de perfil
     fun saveProfileImagePath(path: String) {
         prefs.edit().putString("PROFILE_IMAGE_PATH", path).apply()

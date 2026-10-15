@@ -1949,6 +1949,26 @@
         </com.google.android.material.textfield.TextInputLayout>
     </LinearLayout>
 
+    <!-- Matrícula Profesional (COMVEZCOL) del Veterinario -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilFuncionarioMatricula"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="16dp"
+        android:hint="Matrícula Profesional (COMVEZCOL) *"
+        app:boxStrokeColor="@color/primary"
+        app:startIconDrawable="@drawable/id_card"
+        app:startIconTint="@color/primary">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etFuncionarioMatricula"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="textCapCharacters"
+            android:textColor="@color/text_primary" />
+    </com.google.android.material.textfield.TextInputLayout>
+
     <!-- ============================================== -->
     <!-- SECCIÓN: FIRMAS DIGITALES                      -->
     <!-- ============================================== -->
@@ -2017,6 +2037,18 @@
                 android:layout_width="match_parent"
                 android:layout_height="130dp"
                 android:background="#F8FAFC" />
+
+            <!-- Detalle oficial del funcionario bajo la firma -->
+            <TextView
+                android:id="@+id/tvFirma1DetalleProfesional"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:fontFamily="@font/nunito_bold"
+                android:gravity="center"
+                android:text="Médico Veterinario Zootecnista"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

@@ -182,7 +182,7 @@ class DetallePeticion : AppCompatActivity() {
         binding.tvObservaciones.text = peticion.descripcion?.trim()?.takeIf { it.isNotEmpty() } ?: "Sin observaciones registradas."
         binding.tvUbicacionTexto.text = peticion.ubicacion_direccion?.trim()?.takeIf { it.isNotEmpty() } ?: "Ubicación no registrada"
 
-        // GESTIÓN Y CARGA DE LA FOTO DESDE LA BASE DE DATOS
+        // GESTIÓN Y CARGA DE LA FOTO / VIDEO DESDE LA BASE DE DATOS
         val fotoUrl = peticion.foto
         if (!fotoUrl.isNullOrBlank()) {
             binding.cardFotoEvidencia.visibility = View.VISIBLE
@@ -193,9 +193,30 @@ class DetallePeticion : AppCompatActivity() {
                 "https://tu-servidor.com$fotoUrl"
             }
 
-            Glide.with(this)
-                .load(urlFinal)
-                .into(binding.ivPeticionFoto)
+            val esVideo = urlFinal.contains(".mp4", ignoreCase = true) || urlFinal.contains("/video/", ignoreCase = true)
+            if (esVideo) {
+                Glide.with(this)
+                    .asBitmap()
+                    .load(urlFinal)
+                    .centerCrop()
+                    .into(binding.ivPeticionFoto)
+
+                binding.cardFotoEvidencia.setOnClickListener {
+                    try {
+                        val videoIntent = Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(Uri.parse(urlFinal), "video/*")
+                        }
+                        startActivity(videoIntent)
+                    } catch (_: Exception) {
+                        Toast.makeText(this, "No se pudo reproducir el video", Toast.LENGTH_SHORT).show()
+                    }
+                }
+            } else {
+                Glide.with(this)
+                    .load(urlFinal)
+                    .into(binding.ivPeticionFoto)
+                binding.cardFotoEvidencia.setOnClickListener(null)
+            }
         } else {
             binding.cardFotoEvidencia.visibility = View.GONE
         }

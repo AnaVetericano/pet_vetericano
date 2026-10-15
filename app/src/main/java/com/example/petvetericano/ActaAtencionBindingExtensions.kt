@@ -59,8 +59,6 @@ val ActivityActaAtencionBinding.step2Layout: LinearLayout get() = layoutPaso2.ro
 val ActivityActaAtencionBinding.btnAddAnimal: MaterialButton get() = layoutPaso2.btnAddAnimal
 val ActivityActaAtencionBinding.containerAnimales: LinearLayout get() = layoutPaso2.containerAnimales
 val ActivityActaAtencionBinding.layoutClinicaSeresSintientes: LinearLayout get() = layoutPaso2.layoutClinicaSeresSintientes
-val ActivityActaAtencionBinding.tilTemperatura: TextInputLayout get() = layoutPaso2.tilTemperatura
-val ActivityActaAtencionBinding.etTemperatura: TextInputEditText get() = layoutPaso2.etTemperatura
 val ActivityActaAtencionBinding.tilFrecuenciaCardiaca: TextInputLayout get() = layoutPaso2.tilFrecuenciaCardiaca
 val ActivityActaAtencionBinding.etFrecuenciaCardiaca: TextInputEditText get() = layoutPaso2.etFrecuenciaCardiaca
 val ActivityActaAtencionBinding.tilFrecuenciaRespiratoria: TextInputLayout get() = layoutPaso2.tilFrecuenciaRespiratoria
@@ -218,12 +216,15 @@ val ActivityActaAtencionBinding.tilFuncionarioCargo: TextInputLayout get() = lay
 val ActivityActaAtencionBinding.etFuncionarioCargo: TextInputEditText get() = layoutPaso3.etFuncionarioCargo
 val ActivityActaAtencionBinding.tilFuncionarioIdentificacion: TextInputLayout get() = layoutPaso3.tilFuncionarioIdentificacion
 val ActivityActaAtencionBinding.etFuncionarioIdentificacion: TextInputEditText get() = layoutPaso3.etFuncionarioIdentificacion
+val ActivityActaAtencionBinding.tilFuncionarioMatricula: TextInputLayout get() = layoutPaso3.tilFuncionarioMatricula
+val ActivityActaAtencionBinding.etFuncionarioMatricula: TextInputEditText get() = layoutPaso3.etFuncionarioMatricula
 
 // Firmas
 val ActivityActaAtencionBinding.tvFirmasSeccionTitulo: TextView get() = layoutPaso3.tvFirmasSeccionTitulo
 val ActivityActaAtencionBinding.tvFirma1Titulo: TextView get() = layoutPaso3.tvFirma1Titulo
 val ActivityActaAtencionBinding.btnClearSignatureNotificador: MaterialButton get() = layoutPaso3.btnClearSignatureNotificador
 val ActivityActaAtencionBinding.signatureNotificador: SignatureView get() = layoutPaso3.signatureNotificador
+val ActivityActaAtencionBinding.tvFirma1DetalleProfesional: TextView get() = layoutPaso3.tvFirma1DetalleProfesional
 val ActivityActaAtencionBinding.tvFirma2Titulo: TextView get() = layoutPaso3.tvFirma2Titulo
 val ActivityActaAtencionBinding.btnClearSignatureNotificado: MaterialButton get() = layoutPaso3.btnClearSignatureNotificado
 val ActivityActaAtencionBinding.signatureNotificado: SignatureView get() = layoutPaso3.signatureNotificado

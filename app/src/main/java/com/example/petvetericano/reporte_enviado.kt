@@ -29,8 +29,18 @@ class reporte_enviado : AppCompatActivity() {
         }
 
         binding.regremen.setOnClickListener {
-            val intent = Intent(this, bienvenida::class.java)
+            val role = prefs.getUserRole()
+            val intent = if (role == inicio_sesion.ROL_VETERINARIO) {
+                Intent(this, dahsboard_veterianrio::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                }
+            } else {
+                Intent(this, bienvenida::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+                }
+            }
             startActivity(intent)
+            finish()
         }
     }
 

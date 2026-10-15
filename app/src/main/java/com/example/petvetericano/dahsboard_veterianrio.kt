@@ -64,10 +64,6 @@ class dahsboard_veterianrio : AppCompatActivity() {
             startActivity(Intent(this, PetitionsListActivity::class.java))
         }
 
-        binding.btnReportarPeticion.setOnClickListener {
-            startActivity(Intent(this, reportar_peticion::class.java))
-        }
-
         // Bottom Navigation
         binding.ivNavInicio.setOnClickListener {
             // Ya estamos en inicio, podemos hacer que suba el scroll al inicio

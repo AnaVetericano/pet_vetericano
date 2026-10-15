@@ -371,86 +371,41 @@
                     </LinearLayout>
                 </LinearLayout>
 
-                <!-- Botones de Acción Rápida Material Design 3 (Ver Peticiones y Reportar Caso) -->
-                <LinearLayout
+                <!-- Botón de Acción Principal Material Design 3 -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/btnPeticiones"
+                    style="?attr/materialCardViewFilledStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:orientation="horizontal">
-
-                    <!-- Botón Ver Peticiones -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/btnPeticiones"
-                        style="?attr/materialCardViewFilledStyle"
-                        android:layout_width="0dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/primary"
+                    app:cardElevation="2dp"
+                    app:cardCornerRadius="16dp"
+                    app:strokeColor="@color/white"
+                    app:strokeWidth="0dp">
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="52dp"
-                        android:layout_weight="1"
-                        android:layout_marginEnd="6dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardBackgroundColor="@color/primary"
-                        app:cardElevation="2dp"
-                        app:cardCornerRadius="16dp"
-                        app:strokeWidth="0dp">
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:gravity="center"
-                            android:orientation="horizontal"
-                            android:paddingHorizontal="10dp">
-                            <ImageView
-                                android:layout_width="18dp"
-                                android:layout_height="18dp"
-                                android:src="@drawable/paper_on_paper"
-                                app:tint="@color/white" />
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="8dp"
-                                android:fontFamily="@font/nunito_bold"
-                                android:text="Ver Peticiones"
-                                android:textColor="@color/white"
-                                android:textSize="13sp"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Botón Reportar Caso en Campo -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:id="@+id/btnReportarPeticion"
-                        style="?attr/materialCardViewFilledStyle"
-                        android:layout_width="0dp"
-                        android:layout_height="52dp"
-                        android:layout_weight="1"
-                        android:layout_marginStart="6dp"
-                        android:clickable="true"
-                        android:focusable="true"
-                        app:cardBackgroundColor="@color/secondary"
-                        app:cardElevation="2dp"
-                        app:cardCornerRadius="16dp"
-                        app:strokeWidth="0dp">
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:gravity="center"
-                            android:orientation="horizontal"
-                            android:paddingHorizontal="10dp">
-                            <ImageView
-                                android:layout_width="18dp"
-                                android:layout_height="18dp"
-                                android:src="@drawable/camera"
-                                app:tint="@color/darkblue" />
-                            <TextView
-                                android:layout_width="wrap_content"
-                                android:layout_height="wrap_content"
-                                android:layout_marginStart="8dp"
-                                android:fontFamily="@font/nunito_bold"
-                                android:text="Reportar Caso"
-                                android:textColor="@color/darkblue"
-                                android:textSize="13sp"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                </LinearLayout>
+                        android:gravity="center"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="16dp">
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/paper_on_paper"
+                            app:tint="@color/white" />
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="10dp"
+                            android:fontFamily="@font/nunito_bold"
+                            android:text="Ver todas las Peticiones"
+                            android:textColor="@color/white"
+                            android:textSize="14sp"/>
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
                 <!-- TARJETA 1: PENDIENTES DE ATENCIÓN ACTIVA (M3) -->
                 <com.google.android.material.card.MaterialCardView

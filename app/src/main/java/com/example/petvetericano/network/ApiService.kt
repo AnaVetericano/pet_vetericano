@@ -3,6 +3,7 @@ package com.example.petvetericano.network
 import com.example.petvetericano.models.ActualizarPerfilRequest
 import com.example.petvetericano.models.AdopcionAnimalResponse
 import com.example.petvetericano.models.DashboardResponse
+import com.example.petvetericano.models.IniciarPeticionResponse
 import com.example.petvetericano.models.LoginRequest
 import com.example.petvetericano.models.LoginResponse
 import com.example.petvetericano.models.TipoPeticionResponse
@@ -46,7 +47,7 @@ interface ApiService {
     suspend fun obtenerTiposPeticion(): Response<List<TipoPeticionResponse>>
 
     @POST("peticiones/iniciar/")
-    suspend fun enviarPeticion(@Body peticion: confirmarpeticion): Response<Any>
+    suspend fun enviarPeticion(@Body peticion: confirmarpeticion): Response<IniciarPeticionResponse>
 
     @PATCH("peticiones/{id}/estado/")
     suspend fun actualizarEstadoPeticion(

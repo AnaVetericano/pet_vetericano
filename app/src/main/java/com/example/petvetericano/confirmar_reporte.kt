@@ -70,6 +70,10 @@ class confirmar_reporte : AppCompatActivity() {
         // ==========================================
         // CAMBIAR PANTALLAS (Botones de edición)
         // ==========================================
+        binding.btndev.setOnClickListener {
+            finish()
+        }
+
         binding.ubicacionedit.setOnClickListener {
             startActivity(Intent(this, reportar_peticionn::class.java))
         }
@@ -111,7 +115,10 @@ class confirmar_reporte : AppCompatActivity() {
                     }
 
                     val prefsReportes = getSharedPreferences("MisReportesPrefs", MODE_PRIVATE)
-                    val idTipoFinal = prefsReportes.getInt("ID_TIPO_SELECCIONADO", 1)
+                    val idTipoFinal = intent.getIntExtra(
+                        "ID_TIPO_SELECCIONADO",
+                        prefsReportes.getInt("ID_TIPO_SELECCIONADO", 1)
+                    )
 
                     val responsableFinal = if (idUsuarioLogueado != -1) idUsuarioLogueado else 1
                     val urlFotoCloudinary = if (!urlsArchivos.isNullOrEmpty()) urlsArchivos!![0] else null
@@ -125,16 +132,43 @@ class confirmar_reporte : AppCompatActivity() {
                         direccion = lugar,
                         latitud = latitud,
                         longitud = longitud,
-                        foto = urlFotoCloudinary
+                        foto = urlFotoCloudinary,
+                        fotos = urlsArchivos
                     )
 
                     val response = RetrofitClient.apiService.enviarPeticion(nuevaPeticion)
 
                     if (response.isSuccessful) {
+                        val body = response.body()
+                        val idPeticionCreada = body?.id_peticion ?: -1
+                        var radicadoReal = body?.numero_radicado?.takeIf { it.isNotBlank() }
+                            ?: if (idPeticionCreada > 0) {
+                                String.format(Locale.US, "PET-2026-%05d", idPeticionCreada)
+                            } else {
+                                null
+                            }
+
+                        // Respaldo: si por alguna razón no vino en el body directo, consultar la última petición real en la BD
+                        if (radicadoReal.isNullOrBlank() && !tokenGuardado.isNullOrEmpty()) {
+                            try {
+                                val listResp = RetrofitClient.apiService.listarPeticiones("Bearer $tokenGuardado")
+                                if (listResp.isSuccessful) {
+                                    val ultima = listResp.body()?.firstOrNull()
+                                    if (ultima != null) {
+                                        radicadoReal = ultima.numero_radicado?.takeIf { it.isNotBlank() }
+                                            ?: String.format(Locale.US, "PET-2026-%05d", ultima.id_peticion)
+                                    }
+                                }
+                            } catch (_: Exception) {
+                            }
+                        }
+
                         withContext(Dispatchers.Main) {
                             Toast.makeText(this@confirmar_reporte, "Reporte enviado correctamente", Toast.LENGTH_SHORT).show()
 
                             val nuevoIntent = Intent(this@confirmar_reporte, reporte_enviado::class.java).apply {
+                                putExtra("ID_PETICION", idPeticionCreada)
+                                putExtra("NUMERO_RADICADO", radicadoReal)
                                 putExtra("TIPO_REPORTES", tipo)
                                 putExtra("LATITUD", latitud)
                                 putExtra("LONGITUD", longitud)

@@ -69,7 +69,8 @@ class PetitionsListActivity : AppCompatActivity() {
                         val listaOriginal = response.body()!!
                         todasLasPeticiones = listaOriginal.map {
                             Petition(
-                                code = it.numero_radicado ?: "#INC-2026-${it.id_peticion}",
+                                code = it.numero_radicado?.takeIf { rad -> rad.isNotBlank() }
+                                    ?: String.format(Locale.US, "PET-2026-%05d", it.id_peticion),
                                 title = it.tipo ?: "Desconocido",
                                 location = it.ubicacion_direccion ?: "No especificada",
                                 time = it.fecha ?: "",

@@ -850,9 +850,16 @@ class ActaAtencionActivity : AppCompatActivity() {
             campo.setOnFocusChangeListener { view, hasFocus ->
                 if (hasFocus) {
                     view.postDelayed({
-                        val rect = Rect()
-                        view.getDrawingRect(rect)
-                        binding.scrollForm.requestChildRectangleOnScreen(view, rect, false)
+                        if (view.isFocused) {
+                            val rect = Rect()
+                            view.getDrawingRect(rect)
+                            // Expandir ligeramente el rectángulo para incluir la etiqueta del TextInputLayout
+                            rect.top = (rect.top - 24).coerceAtLeast(0)
+                            rect.bottom += 24
+                            // Llamar requestRectangleOnScreen sobre la propia vista para que la jerarquía
+                            // acumule correctamente las coordenadas relativas al NestedScrollView
+                            view.requestRectangleOnScreen(rect, false)
+                        }
                     }, 280)
                 }
             }

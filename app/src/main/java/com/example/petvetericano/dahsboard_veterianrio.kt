@@ -22,6 +22,7 @@ import com.github.mikephil.charting.data.PieEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import java.util.Calendar
 
 class dahsboard_veterianrio : AppCompatActivity() {
     private lateinit var binding: ActivityDahsboardVeterianrioBinding
@@ -94,6 +95,14 @@ class dahsboard_veterianrio : AppCompatActivity() {
     }
 
     private fun actualizarDatosUsuario() {
+        val hora = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
+        val saludo = when (hora) {
+            in 5..11 -> "Buenos días,"
+            in 12..18 -> "Buenas tardes,"
+            else -> "Buenas noches,"
+        }
+        binding.tvSaludo.text = saludo
+
         val prefs = SharedPreferencesManager(this)
         val nombre = prefs.getUserName().trim()
         val apellido = prefs.getUserLastName().trim()

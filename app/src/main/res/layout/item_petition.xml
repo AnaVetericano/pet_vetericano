@@ -30,7 +30,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:fontFamily="@font/nunito_display"
-                android:text="#INC-2026-000123"
+                android:text="PET-2026-00001"
                 android:textColor="@color/blue"
                 android:textSize="12sp"
                 android:textStyle="bold"/>

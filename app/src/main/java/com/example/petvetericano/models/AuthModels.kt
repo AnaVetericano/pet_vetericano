@@ -118,7 +118,8 @@ data class confirmarpeticion(
     val direccion: String,
     val latitud: Double,
     val longitud: Double,
-    val foto : String?
+    val foto : String?,
+    val fotos: List<String>? = null
 )
 
 // Declaración única para actualizar perfil
@@ -149,10 +150,14 @@ data class IniciarPeticionRequest(
 )
 
 data class IniciarPeticionResponse(
-    val mensaje: String,
-    val id_peticion: Int,
-    val id_tipo: Int,
-    val datos: Any? = null
+    val mensaje: String?,
+    val id_peticion: Int?,
+    val numero_radicado: String? = null,
+    val id_tipo: Int? = null,
+    val id_ubicacion: Int? = null,
+    val foto: String? = null,
+    val fotos: List<String>? = null,
+    val total_fotos: Int? = null
 )
 
 // --- Otros Módulos ---

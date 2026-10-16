@@ -91,5 +91,8 @@ dependencies {
     //para que aparesca una petciion al instante
     implementation("androidx.swiperefreshlayout:swiperefreshlayout:1.1.0")
 
+    // ViewPager2 para el carrusel de eventos
+    implementation("androidx.viewpager2:viewpager2:1.1.0")
+
 
 }

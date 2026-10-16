@@ -73,7 +73,7 @@
             android:layout_height="match_parent"
             android:contentDescription="@string/img_perro"
             android:scaleType="centerCrop"
-            app:srcCompat="@drawable/gato2" />
+            app:srcCompat="@drawable/chan" />
     </com.google.android.material.card.MaterialCardView>
 
     <LinearLayout

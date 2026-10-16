@@ -96,7 +96,16 @@ class inicio_sesion : AppCompatActivity() {
                         startActivity(intent)
                     }
                 } else {
-                    Toast.makeText(this@inicio_sesion, "Correo o contraseña incorrectos", Toast.LENGTH_LONG).show()
+                    val errorRaw = respuesta.errorBody()?.string()
+                    val msgError = try {
+                        val json = org.json.JSONObject(errorRaw ?: "")
+                        json.optJSONArray("non_field_errors")?.optString(0)
+                            ?: json.optString("detail").takeIf { it.isNotEmpty() }
+                            ?: "Correo o contraseña incorrectos"
+                    } catch (_: Exception) {
+                        "Correo o contraseña incorrectos"
+                    }
+                    Toast.makeText(this@inicio_sesion, msgError, Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
                 Toast.makeText(this@inicio_sesion, "Error de conexión: ${e.message}", Toast.LENGTH_LONG).show()

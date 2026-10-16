@@ -113,17 +113,18 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="16dp">
+            android:minHeight="90dp"
+            android:padding="20dp">
 
             <ImageView
-                android:layout_width="42dp"
-                android:layout_height="42dp"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
                 android:src="@drawable/warning_icon" />
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
+                android:layout_marginStart="20dp"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
@@ -133,17 +134,17 @@
                     android:fontFamily="@font/nunito"
                     android:text="ANIMAL HERIDO O EN PELIGRO"
                     android:textColor="@color/text_primary"
-                    android:textSize="14sp"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="4dp"
                     android:fontFamily="@font/nunito"
                     android:text="Accidentes, atropellamientos o heridas graves"
                     android:textColor="@color/text_muted"
-                    android:textSize="12sp" />
+                    android:textSize="13sp" />
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
@@ -168,17 +169,18 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="16dp">
+            android:minHeight="90dp"
+            android:padding="20dp">
 
             <ImageView
-                android:layout_width="42dp"
-                android:layout_height="42dp"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
                 android:src="@drawable/warning_icon2" />
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
+                android:layout_marginStart="20dp"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
@@ -188,17 +190,17 @@
                     android:fontFamily="@font/nunito"
                     android:text="MALTRATO ANIMAL"
                     android:textColor="@color/text_primary"
-                    android:textSize="14sp"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="4dp"
                     android:fontFamily="@font/nunito"
                     android:text="Situaciones de abuso o violencia evidente"
                     android:textColor="@color/text_muted"
-                    android:textSize="12sp" />
+                    android:textSize="13sp" />
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
@@ -223,17 +225,18 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="16dp">
+            android:minHeight="90dp"
+            android:padding="20dp">
 
             <ImageView
-                android:layout_width="42dp"
-                android:layout_height="42dp"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
                 android:src="@drawable/warning_icon3" />
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
+                android:layout_marginStart="20dp"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
@@ -243,17 +246,17 @@
                     android:fontFamily="@font/nunito"
                     android:text="ANIMAL EN CONDICIÓN DE CALLE"
                     android:textColor="@color/text_primary"
-                    android:textSize="14sp"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="4dp"
                     android:fontFamily="@font/nunito"
                     android:text="Animales sin hogar, abandonados o desnutridos"
                     android:textColor="@color/text_muted"
-                    android:textSize="12sp" />
+                    android:textSize="13sp" />
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
@@ -278,17 +281,18 @@
             android:layout_height="wrap_content"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:padding="16dp">
+            android:minHeight="90dp"
+            android:padding="20dp">
 
             <ImageView
-                android:layout_width="42dp"
-                android:layout_height="42dp"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
                 android:src="@drawable/warning_icon4" />
 
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
+                android:layout_marginStart="20dp"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
@@ -298,34 +302,19 @@
                     android:fontFamily="@font/nunito"
                     android:text="OTROS"
                     android:textColor="@color/text_primary"
-                    android:textSize="14sp"
+                    android:textSize="16sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="2dp"
+                    android:layout_marginTop="4dp"
                     android:fontFamily="@font/nunito"
                     android:text="Otras solicitudes o requerimientos generales"
                     android:textColor="@color/text_muted"
-                    android:textSize="12sp" />
+                    android:textSize="13sp" />
             </LinearLayout>
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
-
-    <ImageView
-        android:id="@+id/ivPetsGroup"
-        android:layout_width="295dp"
-        android:layout_height="145dp"
-        android:layout_marginTop="8dp"
-        android:contentDescription="Mascotas"
-        android:scaleType="fitCenter"
-        android:src="@drawable/perroimg"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHorizontal_bias="0.647"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/cardOtros"
-        app:layout_constraintVertical_bias="1.0" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -119,10 +119,10 @@
                     android:id="@+id/txtVerDetalle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:contentDescription="Ver detalles del evento"
+                    android:contentDescription="Postularse al evento"
                     android:fontFamily="@font/nunito"
                     android:padding="4dp"
-                    android:text="Ver detalles"
+                    android:text="Postularse"
                     android:textColor="@color/blue"
                     android:textSize="14sp"
                     android:textStyle="bold" />

@@ -20,15 +20,39 @@
     <color name="primary_soft">#F4F5FF</color>
 
     <!-- Superficies, fondos y textos para diseño limpio y moderno -->
-    <color name="bg_screen">#F8FAFC</color> <!-- Reemplaza bg_pantalla -->
+    <color name="bg_screen">#F4F5F7</color>
     <color name="card_background">#FFFFFFFF</color>
     <color name="card_stroke">#E2E8F0</color>
     <color name="input_background">#F8FAFC</color>
     <color name="input_stroke">#CBD5E1</color>
-    <color name="text_primary">#0F172A</color> <!-- Reemplaza texto_principal -->
-    <color name="text_secondary">#475569</color> <!-- Reemplaza texto_secundario -->
+    <color name="text_primary">#0F172A</color>
+    <color name="text_secondary">#475569</color>
     <color name="text_muted">#94A3B8</color>
     <color name="divider">#E2E8F0</color>
+
+    <!-- Paleta Semántica Detallada (Radix UI Colors) -->
+    <!-- Alerta / Error (Tomato) -->
+    <color name="radix_tomato_solid">#E54D2E</color>
+    <color name="radix_tomato_bg">#FEEBE7</color>
+    <color name="radix_tomato_text">#D13415</color>
+    <color name="radix_tomato_border">#F5A898</color>
+
+    <!-- Confirmación / Éxito (Grass) -->
+    <color name="radix_grass_solid">#46A758</color>
+    <color name="radix_grass_bg">#E9F6E9</color>
+    <color name="radix_grass_text">#2A7E3B</color>
+    <color name="radix_grass_border">#94CE9A</color>
+
+    <!-- Advertencia (Amber) -->
+    <color name="radix_amber_solid">#FFC53D</color>
+    <color name="radix_amber_bg">#FFF7C2</color>
+    <color name="radix_amber_text">#AB6400</color>
+    <color name="radix_amber_border">#E9C162</color>
+
+    <!-- Chips y superficies neutras suaves -->
+    <color name="chip_bg_neutral">#F1F5F9</color>
+    <color name="chip_stroke_neutral">#E2E8F0</color>
+
 
     <!-- Estados funcionales -->
     <color name="success">#10B981</color>

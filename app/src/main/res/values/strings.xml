@@ -29,6 +29,10 @@
     <string name="ingresar_contrase_a">Ingresar contraseña</string>
     <string name="iniciar_sesi_n">Iniciar Sesión</string>
     <string name="no_tienes_cuenta_registrate">¿No tienes cuenta? REGISTRATE</string>
+    <string name="o_continua_con">o continúa con</string>
+    <string name="continuar_con_google">Continuar con Google</string>
+    <string name="registrarse_con_google">Registrarse con Google</string>
+    <string name="google_web_client_id" translatable="false"></string>
 
 
 </resources>

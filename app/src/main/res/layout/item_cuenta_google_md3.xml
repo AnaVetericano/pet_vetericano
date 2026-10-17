@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/cardItemCuentaGoogle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="10dp"
+    android:clickable="true"
+    android:focusable="true"
+    app:cardBackgroundColor="@color/input_background"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="0dp"
+    app:rippleColor="@color/primary_light"
+    app:strokeColor="@color/primary_light"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="12dp">
+
+        <!-- Avatar circular con inicial o ícono "+" -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardAvatarCuentaGoogle"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            app:cardBackgroundColor="@color/primary_soft"
+            app:cardCornerRadius="20dp"
+            app:cardElevation="0dp"
+            app:strokeWidth="0dp">
+
+            <TextView
+                android:id="@+id/tvAvatarInicialGoogle"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:fontFamily="@font/nunito_display"
+                android:gravity="center"
+                android:text="G"
+                android:textColor="@color/blue"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Textos de la cuenta (sin cortes feos de línea) -->
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvEmailItemGoogle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:fontFamily="@font/nunito"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:text="usuario@gmail.com"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvSubtituloItemGoogle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:fontFamily="@font/nunito"
+                android:maxLines="1"
+                android:singleLine="true"
+                android:text="Cuenta de Google"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <!-- RadioButton Material Design 3 -->
+        <com.google.android.material.radiobutton.MaterialRadioButton
+            android:id="@+id/rbSeleccionCuentaGoogle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:clickable="false"
+            android:focusable="false"
+            android:minWidth="0dp"
+            android:minHeight="0dp"
+            app:buttonTint="@color/blue" />
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

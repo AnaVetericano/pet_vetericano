@@ -271,13 +271,16 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
     }
 
     private fun cerrarSesion() {
-        prefs.clearSession()
-        RetrofitClient.authToken = null
+        lifecycleScope.launch {
+            GoogleAuthHelper.cerrarSesionGoogle(this@OpcionesEditarPerfilActivity)
+            prefs.clearSession()
+            RetrofitClient.authToken = null
 
-        val intent = android.content.Intent(this, inicio_sesion::class.java).apply {
-            flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+            val intent = android.content.Intent(this@OpcionesEditarPerfilActivity, inicio_sesion::class.java).apply {
+                flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            startActivity(intent)
+            finish()
         }
-        startActivity(intent)
-        finish()
     }
 }

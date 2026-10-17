@@ -28,10 +28,32 @@ class Registro : AppCompatActivity() {
             registrarUsuario()
         }
 
+        binding.btnGoogleSignUp.setOnClickListener {
+            registrarseConGoogle()
+        }
+
         binding.txtlogin.setOnClickListener {
             val intent = Intent(this, inicio_sesion::class.java)
             startActivity(intent)
             finish()
+        }
+    }
+
+    private fun registrarseConGoogle() {
+        lifecycleScope.launch {
+            GoogleAuthHelper.autenticarConGoogle(
+                activity = this@Registro,
+                esFlujoRegistro = true,
+                onEstadoCarga = { cargando ->
+                    binding.btnGoogleSignUp.isEnabled = !cargando
+                    binding.btnSignUp.isEnabled = !cargando
+                    binding.btnGoogleSignUp.text = if (cargando) {
+                        "Registrando con Google..."
+                    } else {
+                        getString(R.string.registrarse_con_google)
+                    }
+                }
+            )
         }
     }
 
@@ -111,19 +133,20 @@ class Registro : AppCompatActivity() {
                     prefs.saveUserData(name = nombre, email = email, phone = telefono)
                     prefs.saveUserLastName(apellido)
 
-                    Toast.makeText(this@Registro, "¡Registro exitoso!", Toast.LENGTH_SHORT).show()
-
                     val intent = Intent(this@Registro, inicio_sesion::class.java)
+                    intent.putExtra("REGISTRO_GOOGLE_MSG", "¡Registro exitoso! Inicia sesión para continuar.")
+                    intent.putExtra("EMAIL_REGISTRADO", email)
                     intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                     startActivity(intent)
+                    finish()
                 } else {
                     val errorBody = response.errorBody()?.string()
                     val mensajeError = parsearErrorDjango(errorBody)
-                    Toast.makeText(this@Registro, mensajeError, Toast.LENGTH_LONG).show()
+                    GoogleAuthHelper.mostrarMensajeMD3(this@Registro, mensajeError, esError = true)
                 }
 
             } catch (e: Exception) {
-                Toast.makeText(this@Registro, "Error de conexión: ${e.localizedMessage}", Toast.LENGTH_LONG).show()
+                GoogleAuthHelper.mostrarMensajeMD3(this@Registro, "Error de conexión con el servidor", esError = true)
             } finally {
                 binding.btnSignUp.isEnabled = true
             }

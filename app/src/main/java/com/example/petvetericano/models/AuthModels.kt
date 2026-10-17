@@ -8,6 +8,13 @@ data class LoginRequest(
     val password: String
 )
 
+data class GoogleLoginRequest(
+    @SerializedName("id_token") val idToken: String,
+    val email: String? = null,
+    val nombre: String? = null,
+    val apellido: String? = null
+)
+
 data class PeticionPendiente(
     val id_peticion: Int = 0,
     val titulo: String,
@@ -38,7 +45,9 @@ data class LoginResponse(
     @SerializedName("id_rol") val idRol: Int,
     val nombre: String?,
     val apellido: String?,
-    val tokens: TokenData
+    val tokens: TokenData,
+    @SerializedName("es_nuevo_usuario") val esNuevoUsuario: Boolean? = false,
+    val foto: String? = null
 )
 
 data class TokenData(

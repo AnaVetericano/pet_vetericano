@@ -6,6 +6,56 @@ import android.content.SharedPreferences
 class SharedPreferencesManager(context: Context) {
     private val prefs: SharedPreferences =
         context.getSharedPreferences("PetVetericanoPrefs", Context.MODE_PRIVATE)
+    private val googlePrefs: SharedPreferences =
+        context.getSharedPreferences("PetVetericanoGoogleAuthPrefs", Context.MODE_PRIVATE)
+
+    fun saveGoogleAccountPassword(email: String, password: String) {
+        if (email.isNotEmpty() && password.isNotEmpty()) {
+            val cleanEmail = email.lowercase().trim()
+            googlePrefs.edit().putString("GOOGLE_CRED_$cleanEmail", password).apply()
+            saveKnownGoogleAccount(cleanEmail)
+        }
+    }
+
+    fun getGoogleAccountPassword(email: String): String {
+        if (email.isEmpty()) return ""
+        return googlePrefs.getString("GOOGLE_CRED_${email.lowercase().trim()}", "") ?: ""
+    }
+
+    fun saveKnownGoogleAccount(email: String) {
+        val cleanEmail = email.lowercase().trim()
+        if (cleanEmail.isEmpty() || !cleanEmail.contains("@")) return
+        val actuales = googlePrefs.getStringSet("KNOWN_GOOGLE_ACCOUNTS", emptySet())?.toMutableSet()
+            ?: mutableSetOf()
+        actuales.add(cleanEmail)
+        googlePrefs.edit().putStringSet("KNOWN_GOOGLE_ACCOUNTS", actuales).apply()
+    }
+
+    fun getKnownGoogleAccounts(): List<String> {
+        val resultado = linkedSetOf<String>()
+
+        // 1. Cuentas registradas explícitamente en el conjunto
+        googlePrefs.getStringSet("KNOWN_GOOGLE_ACCOUNTS", emptySet())?.forEach { email ->
+            val clean = email.lowercase().trim()
+            if (clean.contains("@")) resultado.add(clean)
+        }
+
+        // 2. Cuentas que ya tienen credencial vinculada en googlePrefs
+        googlePrefs.all.keys.forEach { key ->
+            if (key.startsWith("GOOGLE_CRED_")) {
+                val clean = key.removePrefix("GOOGLE_CRED_").lowercase().trim()
+                if (clean.contains("@")) resultado.add(clean)
+            }
+        }
+
+        // 3. Último correo activo en sesión si existe
+        val currentEmail = getUserEmail().lowercase().trim()
+        if (currentEmail.contains("@")) {
+            resultado.add(currentEmail)
+        }
+
+        return resultado.toList()
+    }
 
     fun saveUserData(name: String, email: String, phone: String) {
         prefs.edit().apply {
@@ -13,6 +63,9 @@ class SharedPreferencesManager(context: Context) {
             if (email.isNotEmpty()) putString("USER_EMAIL", email)
             if (phone.isNotEmpty()) putString("USER_PHONE", phone)
             apply()
+        }
+        if (email.isNotEmpty()) {
+            saveKnownGoogleAccount(email)
         }
     }
 

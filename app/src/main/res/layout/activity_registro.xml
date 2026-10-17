@@ -293,7 +293,7 @@
             app:helperTextTextColor="@color/text_muted"
             app:hintTextColor="@color/blue"
             app:startIconDrawable="@drawable/lock_icon"
-            app:startIconTint="?attr/colorPrimary"
+            app:startIconTint="@color/blue"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/cardTelefono">
@@ -349,7 +349,6 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:layout_marginTop="16dp"
-            android:layout_marginBottom="16dp"
             android:fontFamily="@font/nunito"
             android:text="@string/btn_sign_login_register"
             android:textAllCaps="false"
@@ -359,10 +358,71 @@
             app:backgroundTint="@color/blue"
             app:cornerRadius="16dp"
             app:elevation="3dp"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/layoutLoginRedirect" />
+
+        <!-- Separador O continúa con -->
+        <LinearLayout
+            android:id="@+id/layoutDividerGoogleRegistro"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/btnSignUp">
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="@color/divider" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="12dp"
+                android:fontFamily="@font/nunito"
+                android:text="@string/o_continua_con"
+                android:textColor="@color/text_muted"
+                android:textSize="13sp" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="1dp"
+                android:layout_weight="1"
+                android:background="@color/divider" />
+        </LinearLayout>
+
+        <!-- Botón Registrarse con Google -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnGoogleSignUp"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginBottom="16dp"
+            android:fontFamily="@font/nunito"
+            android:text="@string/registrarse_con_google"
+            android:textAllCaps="false"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/white"
+            app:cornerRadius="16dp"
+            app:icon="@drawable/ic_google"
+            app:iconGravity="textStart"
+            app:iconPadding="12dp"
+            app:iconSize="22dp"
+            app:iconTint="@null"
+            app:strokeColor="@color/input_stroke"
+            app:strokeWidth="1.5dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/layoutDividerGoogleRegistro" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

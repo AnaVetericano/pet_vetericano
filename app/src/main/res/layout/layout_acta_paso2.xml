@@ -9,7 +9,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:visibility="gone">
+    android:visibility="gone"
+    tools:visibility="visible">
 
     <!-- Encabezado de la lista de animales -->
     <LinearLayout
@@ -32,13 +33,18 @@
             android:id="@+id/btnAddAnimal"
             style="?attr/materialButtonOutlinedStyle"
             android:layout_width="wrap_content"
-            android:layout_height="42dp"
+            android:layout_height="36dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:paddingHorizontal="12dp"
+            android:fontFamily="@font/nunito_bold"
             android:text="+ Añadir paciente"
+            android:textAllCaps="false"
             android:textColor="@color/primary"
             android:textSize="12sp"
-            app:cornerRadius="12dp"
+            app:cornerRadius="10dp"
             app:strokeColor="@color/primary"
-            app:strokeWidth="1.5dp" />
+            app:strokeWidth="1dp" />
     </LinearLayout>
 
     <!-- Contenedor dinámico de formularios por animal (ItemAnimalFormulario) -->
@@ -189,16 +195,18 @@
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="36dp"
+                    android:minHeight="32dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
+                    android:paddingVertical="3dp"
                     android:text="+ En calle vulnerable"
+                    android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
-                    app:strokeColor="@color/card_stroke"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
                     android:layout_marginEnd="6dp" />
 
@@ -207,16 +215,18 @@
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="36dp"
+                    android:minHeight="32dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
+                    android:paddingVertical="3dp"
                     android:text="+ Herida / Dolor"
+                    android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
-                    app:strokeColor="@color/card_stroke"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
                     android:layout_marginEnd="6dp" />
 
@@ -225,16 +235,18 @@
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="36dp"
+                    android:minHeight="32dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
+                    android:paddingVertical="3dp"
                     android:text="+ Desnutrido"
+                    android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
-                    app:strokeColor="@color/card_stroke"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp" />
             </LinearLayout>
         </HorizontalScrollView>
@@ -287,16 +299,18 @@
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="36dp"
+                    android:minHeight="32dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
+                    android:paddingVertical="3dp"
                     android:text="+ Curación de heridas"
+                    android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
-                    app:strokeColor="@color/card_stroke"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
                     android:layout_marginEnd="6dp" />
 
@@ -305,16 +319,18 @@
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="36dp"
+                    android:minHeight="32dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
+                    android:paddingVertical="3dp"
                     android:text="+ Antibiótico / AINE"
+                    android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
-                    app:strokeColor="@color/card_stroke"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
                     android:layout_marginEnd="6dp" />
 
@@ -323,16 +339,18 @@
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="36dp"
+                    android:minHeight="32dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
+                    android:paddingVertical="3dp"
                     android:text="+ Traslado a CBA"
+                    android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
-                    app:strokeColor="@color/card_stroke"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp" />
             </LinearLayout>
         </HorizontalScrollView>
@@ -441,9 +459,11 @@
                         android:id="@+id/btnAdjuntarFoto"
                         style="?attr/materialButtonOutlinedStyle"
                         android:layout_width="0dp"
-                        android:layout_height="42dp"
+                        android:layout_height="38dp"
                         android:layout_marginEnd="6dp"
                         android:layout_weight="1"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
                         android:fontFamily="@font/nunito_bold"
                         android:text="+ Foto"
                         android:textAllCaps="false"
@@ -452,18 +472,20 @@
                         app:cornerRadius="10dp"
                         app:icon="@drawable/camera"
                         app:iconGravity="textStart"
-                        app:iconSize="18dp"
+                        app:iconSize="16dp"
                         app:iconTint="@color/primary"
                         app:strokeColor="@color/primary"
-                        app:strokeWidth="1.2dp" />
+                        app:strokeWidth="1dp" />
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnAdjuntarVideo"
                         style="?attr/materialButtonOutlinedStyle"
                         android:layout_width="0dp"
-                        android:layout_height="42dp"
+                        android:layout_height="38dp"
                         android:layout_marginStart="6dp"
                         android:layout_weight="1"
+                        android:insetTop="0dp"
+                        android:insetBottom="0dp"
                         android:fontFamily="@font/nunito_bold"
                         android:text="+ Video"
                         android:textAllCaps="false"
@@ -472,10 +494,10 @@
                         app:cornerRadius="10dp"
                         app:icon="@drawable/ic_videocam"
                         app:iconGravity="textStart"
-                        app:iconSize="18dp"
+                        app:iconSize="16dp"
                         app:iconTint="@color/primary"
                         app:strokeColor="@color/primary"
-                        app:strokeWidth="1.2dp" />
+                        app:strokeWidth="1dp" />
                 </LinearLayout>
 
                 <!-- Contenedor scrollable con las miniaturas de las fotos/videos agregados -->

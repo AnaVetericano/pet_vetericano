@@ -47,20 +47,22 @@
                 android:id="@+id/btnEliminarAnimal"
                 style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:minHeight="36dp"
+                android:layout_height="32dp"
+                android:minHeight="32dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 android:paddingHorizontal="10dp"
-                android:paddingVertical="4dp"
+                android:paddingVertical="0dp"
                 android:text="Eliminar"
-                android:textColor="@color/error"
+                android:textAllCaps="false"
+                android:textColor="@color/radix_tomato_text"
                 android:textSize="12sp"
-                app:cornerRadius="10dp"
+                app:cornerRadius="8dp"
                 app:icon="@drawable/ic_delete"
                 app:iconSize="14dp"
-                app:iconTint="@color/error"
-                app:strokeColor="@color/error"
+                app:iconTint="@color/radix_tomato_text"
+                app:backgroundTint="@color/radix_tomato_bg"
+                app:strokeColor="@color/radix_tomato_border"
                 app:strokeWidth="1dp" />
         </LinearLayout>
 
@@ -97,16 +99,18 @@
                 style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:minHeight="34dp"
+                android:minHeight="32dp"
                 android:insetTop="0dp"
                 android:insetBottom="0dp"
                 android:paddingHorizontal="10dp"
-                android:paddingVertical="4dp"
+                android:paddingVertical="3dp"
                 android:text="+ Sin nombre (Callejero)"
+                android:textAllCaps="false"
                 android:textSize="11sp"
                 android:textColor="@color/text_secondary"
                 app:cornerRadius="8dp"
-                app:strokeColor="@color/card_stroke"
+                app:backgroundTint="@color/chip_bg_neutral"
+                app:strokeColor="@color/chip_stroke_neutral"
                 app:strokeWidth="1dp" />
         </LinearLayout>
 
@@ -238,8 +242,8 @@
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnEdadMenos"
                         style="?attr/materialButtonOutlinedStyle"
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
                         android:insetLeft="0dp"
                         android:insetTop="0dp"
                         android:insetRight="0dp"
@@ -247,17 +251,17 @@
                         android:padding="0dp"
                         app:icon="@drawable/ic_remove"
                         app:iconGravity="textStart"
-                        app:iconSize="18dp"
+                        app:iconSize="16dp"
                         app:iconTint="@color/primary"
-                        app:cornerRadius="10dp"
+                        app:cornerRadius="8dp"
                         app:strokeColor="@color/primary"
-                        app:strokeWidth="1.5dp" />
+                        app:strokeWidth="1dp" />
 
-                    <!-- Contador numérico central con ancho adecuado (74dp) para nunca cortarse -->
+                    <!-- Contador numérico central -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilEdadNumero"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                        android:layout_width="74dp"
+                        android:layout_width="60dp"
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="6dp"
                         app:boxStrokeColor="@color/primary">
@@ -277,8 +281,8 @@
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnEdadMas"
                         style="?attr/materialButtonOutlinedStyle"
-                        android:layout_width="44dp"
-                        android:layout_height="44dp"
+                        android:layout_width="36dp"
+                        android:layout_height="36dp"
                         android:insetLeft="0dp"
                         android:insetTop="0dp"
                         android:insetRight="0dp"
@@ -286,11 +290,11 @@
                         android:padding="0dp"
                         app:icon="@drawable/ic_add"
                         app:iconGravity="textStart"
-                        app:iconSize="18dp"
+                        app:iconSize="16dp"
                         app:iconTint="@color/primary"
-                        app:cornerRadius="10dp"
+                        app:cornerRadius="8dp"
                         app:strokeColor="@color/primary"
-                        app:strokeWidth="1.5dp" />
+                        app:strokeWidth="1dp" />
 
                     <!-- Selector de unidad de tiempo: Años / Meses / Semanas -->
                     <com.google.android.material.textfield.TextInputLayout
@@ -330,16 +334,18 @@
                             style="?attr/materialButtonOutlinedStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:minHeight="34dp"
+                            android:minHeight="32dp"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
                             android:paddingHorizontal="10dp"
-                            android:paddingVertical="4dp"
+                            android:paddingVertical="3dp"
                             android:text="Cachorro (6 m)"
+                            android:textAllCaps="false"
                             android:textSize="11sp"
                             android:textColor="@color/text_secondary"
                             app:cornerRadius="8dp"
-                            app:strokeColor="@color/card_stroke"
+                            app:backgroundTint="@color/chip_bg_neutral"
+                            app:strokeColor="@color/chip_stroke_neutral"
                             app:strokeWidth="1dp"
                             android:layout_marginEnd="6dp" />
 
@@ -348,16 +354,18 @@
                             style="?attr/materialButtonOutlinedStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:minHeight="34dp"
+                            android:minHeight="32dp"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
                             android:paddingHorizontal="10dp"
-                            android:paddingVertical="4dp"
+                            android:paddingVertical="3dp"
                             android:text="Adulto (2 a)"
+                            android:textAllCaps="false"
                             android:textSize="11sp"
                             android:textColor="@color/text_secondary"
                             app:cornerRadius="8dp"
-                            app:strokeColor="@color/card_stroke"
+                            app:backgroundTint="@color/chip_bg_neutral"
+                            app:strokeColor="@color/chip_stroke_neutral"
                             app:strokeWidth="1dp"
                             android:layout_marginEnd="6dp" />
 
@@ -366,16 +374,18 @@
                             style="?attr/materialButtonOutlinedStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:minHeight="34dp"
+                            android:minHeight="32dp"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
                             android:paddingHorizontal="10dp"
-                            android:paddingVertical="4dp"
+                            android:paddingVertical="3dp"
                             android:text="Senior (9 a)"
+                            android:textAllCaps="false"
                             android:textSize="11sp"
                             android:textColor="@color/text_secondary"
                             app:cornerRadius="8dp"
-                            app:strokeColor="@color/card_stroke"
+                            app:backgroundTint="@color/chip_bg_neutral"
+                            app:strokeColor="@color/chip_stroke_neutral"
                             app:strokeWidth="1dp" />
                     </LinearLayout>
                 </HorizontalScrollView>
@@ -430,38 +440,40 @@
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPesoMenos"
                 style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
                 android:insetLeft="0dp"
                 android:insetTop="0dp"
                 android:insetRight="0dp"
                 android:insetBottom="0dp"
                 android:padding="0dp"
                 android:layout_marginStart="8dp"
+                android:fontFamily="@font/nunito_bold"
                 android:text="-1"
                 android:textSize="12sp"
                 android:textColor="@color/primary"
-                app:cornerRadius="10dp"
+                app:cornerRadius="8dp"
                 app:strokeColor="@color/primary"
-                app:strokeWidth="1.5dp" />
+                app:strokeWidth="1dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnPesoMas"
                 style="?attr/materialButtonOutlinedStyle"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
+                android:layout_width="38dp"
+                android:layout_height="38dp"
                 android:insetLeft="0dp"
                 android:insetTop="0dp"
                 android:insetRight="0dp"
                 android:insetBottom="0dp"
                 android:padding="0dp"
                 android:layout_marginStart="6dp"
+                android:fontFamily="@font/nunito_bold"
                 android:text="+1"
                 android:textSize="12sp"
                 android:textColor="@color/primary"
-                app:cornerRadius="10dp"
+                app:cornerRadius="8dp"
                 app:strokeColor="@color/primary"
-                app:strokeWidth="1.5dp" />
+                app:strokeWidth="1dp" />
         </LinearLayout>
 
         <!-- Esterilizado (Material 3 Exposed Dropdown) -->

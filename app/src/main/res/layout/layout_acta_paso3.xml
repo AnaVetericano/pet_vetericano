@@ -9,7 +9,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:visibility="gone">
+    android:visibility="gone"
+    tools:visibility="visible">
 
     <!-- ============================================== -->
     <!-- PROCEDIMIENTOS Y COMPROMISOS (Seres Sintientes) -->
@@ -128,16 +129,18 @@
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="36dp"
+                    android:minHeight="32dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="12dp"
-                    android:paddingVertical="4dp"
+                    android:paddingVertical="3dp"
                     android:text="Negativo"
+                    android:textAllCaps="false"
                     android:textSize="11sp"
-                    android:textColor="@color/primary"
+                    android:textColor="@color/radix_grass_text"
                     app:cornerRadius="8dp"
-                    app:strokeColor="@color/primary"
+                    app:backgroundTint="@color/radix_grass_bg"
+                    app:strokeColor="@color/radix_grass_border"
                     app:strokeWidth="1dp"
                     android:layout_marginEnd="6dp" />
 
@@ -146,16 +149,18 @@
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="36dp"
+                    android:minHeight="32dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="12dp"
-                    android:paddingVertical="4dp"
+                    android:paddingVertical="3dp"
                     android:text="Positivo"
+                    android:textAllCaps="false"
                     android:textSize="11sp"
-                    android:textColor="@color/error"
+                    android:textColor="@color/radix_tomato_text"
                     app:cornerRadius="8dp"
-                    app:strokeColor="@color/error"
+                    app:backgroundTint="@color/radix_tomato_bg"
+                    app:strokeColor="@color/radix_tomato_border"
                     app:strokeWidth="1dp"
                     android:layout_marginEnd="6dp" />
 
@@ -164,16 +169,18 @@
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="36dp"
+                    android:minHeight="32dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="12dp"
-                    android:paddingVertical="4dp"
+                    android:paddingVertical="3dp"
                     android:text="Pendiente"
+                    android:textAllCaps="false"
                     android:textSize="11sp"
-                    android:textColor="@color/text_secondary"
+                    android:textColor="@color/radix_amber_text"
                     app:cornerRadius="8dp"
-                    app:strokeColor="@color/card_stroke"
+                    app:backgroundTint="@color/radix_amber_bg"
+                    app:strokeColor="@color/radix_amber_border"
                     app:strokeWidth="1dp" />
             </LinearLayout>
         </HorizontalScrollView>
@@ -200,16 +207,21 @@
             android:id="@+id/btnAgregarExamenLista"
             style="?attr/materialButtonOutlinedStyle"
             android:layout_width="match_parent"
-            android:layout_height="48dp"
+            android:layout_height="42dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
             android:layout_marginBottom="14dp"
+            android:fontFamily="@font/nunito_bold"
             android:text="+ Añadir examen al acta"
+            android:textAllCaps="false"
             android:textColor="@color/primary"
             android:textSize="13sp"
-            app:cornerRadius="12dp"
+            app:cornerRadius="10dp"
             app:icon="@drawable/ic_add"
             app:iconTint="@color/primary"
+            app:iconSize="18dp"
             app:strokeColor="@color/primary"
-            app:strokeWidth="1.5dp" />
+            app:strokeWidth="1dp" />
 
         <!-- Contenedor dinámico de exámenes clínicos agregados -->
         <LinearLayout
@@ -265,16 +277,18 @@
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="36dp"
+                    android:minHeight="32dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
+                    android:paddingVertical="3dp"
                     android:text="+ Agua y comida limpia"
+                    android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
-                    app:strokeColor="@color/card_stroke"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
                     android:layout_marginEnd="6dp" />
 
@@ -283,16 +297,18 @@
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="36dp"
+                    android:minHeight="32dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
+                    android:paddingVertical="3dp"
                     android:text="+ Espacio techado"
+                    android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
-                    app:strokeColor="@color/card_stroke"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
                     android:layout_marginEnd="6dp" />
 
@@ -301,16 +317,18 @@
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="36dp"
+                    android:minHeight="32dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
+                    android:paddingVertical="3dp"
                     android:text="+ Vacunación al día"
+                    android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
-                    app:strokeColor="@color/card_stroke"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
                     android:layout_marginEnd="6dp" />
 
@@ -319,16 +337,18 @@
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="36dp"
+                    android:minHeight="32dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
+                    android:paddingVertical="3dp"
                     android:text="+ Esterilización"
+                    android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
-                    app:strokeColor="@color/card_stroke"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
                     android:layout_marginEnd="6dp" />
 
@@ -337,16 +357,18 @@
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:minHeight="36dp"
+                    android:minHeight="32dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
-                    android:paddingVertical="4dp"
+                    android:paddingVertical="3dp"
                     android:text="+ Control veterinario"
+                    android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
-                    app:strokeColor="@color/card_stroke"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp" />
             </LinearLayout>
         </HorizontalScrollView>
@@ -414,8 +436,8 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnPlazoMenos"
                     style="?attr/materialButtonOutlinedStyle"
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:insetLeft="0dp"
                     android:insetTop="0dp"
                     android:insetRight="0dp"
@@ -423,18 +445,18 @@
                     android:padding="0dp"
                     app:icon="@drawable/ic_remove"
                     app:iconGravity="textStart"
-                    app:iconSize="18dp"
+                    app:iconSize="16dp"
                     app:iconTint="@color/primary"
-                    app:cornerRadius="10dp"
+                    app:cornerRadius="8dp"
                     app:strokeColor="@color/primary"
-                    app:strokeWidth="1.5dp" />
+                    app:strokeWidth="1dp" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilPlazoDias"
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    android:layout_width="74dp"
+                    android:layout_width="60dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginHorizontal="8dp"
+                    android:layout_marginHorizontal="6dp"
                     app:boxStrokeColor="@color/primary">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -451,8 +473,8 @@
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/btnPlazoMas"
                     style="?attr/materialButtonOutlinedStyle"
-                    android:layout_width="44dp"
-                    android:layout_height="44dp"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
                     android:insetLeft="0dp"
                     android:insetTop="0dp"
                     android:insetRight="0dp"
@@ -460,11 +482,11 @@
                     android:padding="0dp"
                     app:icon="@drawable/ic_add"
                     app:iconGravity="textStart"
-                    app:iconSize="18dp"
+                    app:iconSize="16dp"
                     app:iconTint="@color/primary"
-                    app:cornerRadius="10dp"
+                    app:cornerRadius="8dp"
                     app:strokeColor="@color/primary"
-                    app:strokeWidth="1.5dp" />
+                    app:strokeWidth="1dp" />
 
                 <!-- Chips de plazos rápidos (HorizontalScrollView) -->
                 <HorizontalScrollView
@@ -485,16 +507,18 @@
                             style="?attr/materialButtonOutlinedStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:minHeight="34dp"
+                            android:minHeight="32dp"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
                             android:paddingHorizontal="8dp"
-                            android:paddingVertical="2dp"
+                            android:paddingVertical="3dp"
                             android:text="3 d"
+                            android:textAllCaps="false"
                             android:textSize="11sp"
                             android:textColor="@color/text_secondary"
                             app:cornerRadius="8dp"
-                            app:strokeColor="@color/card_stroke"
+                            app:backgroundTint="@color/chip_bg_neutral"
+                            app:strokeColor="@color/chip_stroke_neutral"
                             app:strokeWidth="1dp"
                             android:layout_marginEnd="4dp" />
 
@@ -503,16 +527,18 @@
                             style="?attr/materialButtonOutlinedStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:minHeight="34dp"
+                            android:minHeight="32dp"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
                             android:paddingHorizontal="8dp"
-                            android:paddingVertical="2dp"
+                            android:paddingVertical="3dp"
                             android:text="5 d"
+                            android:textAllCaps="false"
                             android:textSize="11sp"
                             android:textColor="@color/text_secondary"
                             app:cornerRadius="8dp"
-                            app:strokeColor="@color/card_stroke"
+                            app:backgroundTint="@color/chip_bg_neutral"
+                            app:strokeColor="@color/chip_stroke_neutral"
                             app:strokeWidth="1dp"
                             android:layout_marginEnd="4dp" />
 
@@ -521,16 +547,18 @@
                             style="?attr/materialButtonOutlinedStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:minHeight="34dp"
+                            android:minHeight="32dp"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
                             android:paddingHorizontal="8dp"
-                            android:paddingVertical="2dp"
+                            android:paddingVertical="3dp"
                             android:text="8 d"
+                            android:textAllCaps="false"
                             android:textSize="11sp"
                             android:textColor="@color/text_secondary"
                             app:cornerRadius="8dp"
-                            app:strokeColor="@color/card_stroke"
+                            app:backgroundTint="@color/chip_bg_neutral"
+                            app:strokeColor="@color/chip_stroke_neutral"
                             app:strokeWidth="1dp"
                             android:layout_marginEnd="4dp" />
 
@@ -539,16 +567,18 @@
                             style="?attr/materialButtonOutlinedStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:minHeight="34dp"
+                            android:minHeight="32dp"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
                             android:paddingHorizontal="8dp"
-                            android:paddingVertical="2dp"
+                            android:paddingVertical="3dp"
                             android:text="15 d"
+                            android:textAllCaps="false"
                             android:textSize="11sp"
                             android:textColor="@color/text_secondary"
                             app:cornerRadius="8dp"
-                            app:strokeColor="@color/card_stroke"
+                            app:backgroundTint="@color/chip_bg_neutral"
+                            app:strokeColor="@color/chip_stroke_neutral"
                             app:strokeWidth="1dp"
                             android:layout_marginEnd="4dp" />
 
@@ -557,16 +587,18 @@
                             style="?attr/materialButtonOutlinedStyle"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:minHeight="34dp"
+                            android:minHeight="32dp"
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
                             android:paddingHorizontal="8dp"
-                            android:paddingVertical="2dp"
+                            android:paddingVertical="3dp"
                             android:text="30 d"
+                            android:textAllCaps="false"
                             android:textSize="11sp"
                             android:textColor="@color/text_secondary"
                             app:cornerRadius="8dp"
-                            app:strokeColor="@color/card_stroke"
+                            app:backgroundTint="@color/chip_bg_neutral"
+                            app:strokeColor="@color/chip_stroke_neutral"
                             app:strokeWidth="1dp" />
                     </LinearLayout>
                 </HorizontalScrollView>
@@ -586,14 +618,15 @@
         android:layout_marginBottom="16dp"
         app:cardBackgroundColor="@color/white"
         app:cardCornerRadius="16dp"
-        app:strokeColor="@color/primary"
-        app:strokeWidth="1.5dp">
+        app:cardElevation="0dp"
+        app:strokeColor="@color/card_stroke"
+        app:strokeWidth="1dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="16dp">
+            android:padding="12dp">
 
             <!-- Interruptor para Activar Rescate -->
             <LinearLayout
@@ -603,8 +636,8 @@
                 android:orientation="horizontal">
 
                 <ImageView
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
                     android:layout_marginEnd="10dp"
                     android:src="@drawable/baseline_pets_24"
                     app:tint="@color/primary" />
@@ -645,7 +678,7 @@
                 android:id="@+id/layoutModuloRescateIntegrado"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="14dp"
+                android:layout_marginTop="12dp"
                 android:orientation="vertical"
                 android:visibility="gone">
 
@@ -654,10 +687,11 @@
                     style="?attr/materialCardViewFilledStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginBottom="14dp"
-                    app:cardBackgroundColor="#F0FDF4"
+                    android:layout_marginBottom="12dp"
+                    app:cardBackgroundColor="@color/radix_grass_bg"
                     app:cardCornerRadius="12dp"
-                    app:strokeColor="#BBF7D0"
+                    app:cardElevation="0dp"
+                    app:strokeColor="@color/radix_grass_border"
                     app:strokeWidth="1dp">
 
                     <LinearLayout
@@ -671,7 +705,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/nunito_bold"
                             android:text="Formato Oficial de Rescate (Popayán F-GS-C01-03-33)"
-                            android:textColor="#166534"
+                            android:textColor="@color/radix_grass_text"
                             android:textSize="13sp" />
 
                         <TextView
@@ -681,14 +715,16 @@
                             android:layout_marginBottom="8dp"
                             android:fontFamily="@font/nunito"
                             android:text="El animal es retirado por salud crítica o maltrato. Pulse para precargar los datos ya digitados en la atención."
-                            android:textColor="#15803D"
+                            android:textColor="@color/radix_grass_text"
                             android:textSize="11sp" />
 
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnCargarDatosRescate"
                             style="?attr/materialButtonStyle"
                             android:layout_width="match_parent"
-                            android:layout_height="44dp"
+                            android:layout_height="40dp"
+                            android:insetTop="0dp"
+                            android:insetBottom="0dp"
                             android:fontFamily="@font/nunito_bold"
                             android:text="Sincronizar datos de la atención"
                             android:textAllCaps="false"
@@ -697,7 +733,7 @@
                             app:icon="@drawable/ic_sync"
                             app:iconGravity="textStart"
                             app:iconPadding="8dp"
-                            app:iconSize="18dp"
+                            app:iconSize="16dp"
                             app:iconTint="@color/white"
                             app:backgroundTint="@color/primary"
                             app:cornerRadius="10dp" />
@@ -1990,14 +2026,16 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="14dp"
         app:cardBackgroundColor="@color/white"
-        app:cardCornerRadius="16dp"
-        app:strokeColor="@color/card_stroke">
+        app:cardCornerRadius="14dp"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/card_stroke"
+        app:strokeWidth="1dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="14dp">
+            android:padding="12dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -2020,15 +2058,19 @@
                     android:id="@+id/btnClearSignatureNotificador"
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:minHeight="36dp"
+                    android:layout_height="28dp"
+                    android:minHeight="28dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="4dp"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="0dp"
                     android:text="Limpiar"
+                    android:textAllCaps="false"
                     android:textSize="11sp"
-                    app:cornerRadius="8dp"
+                    android:textColor="@color/text_secondary"
+                    app:cornerRadius="6dp"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp" />
             </LinearLayout>
 
@@ -2059,14 +2101,16 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         app:cardBackgroundColor="@color/white"
-        app:cardCornerRadius="16dp"
-        app:strokeColor="@color/card_stroke">
+        app:cardCornerRadius="14dp"
+        app:cardElevation="0dp"
+        app:strokeColor="@color/card_stroke"
+        app:strokeWidth="1dp">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:padding="14dp">
+            android:padding="12dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -2089,15 +2133,19 @@
                     android:id="@+id/btnClearSignatureNotificado"
                     style="?attr/materialButtonOutlinedStyle"
                     android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:minHeight="36dp"
+                    android:layout_height="28dp"
+                    android:minHeight="28dp"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-                    android:paddingHorizontal="12dp"
-                    android:paddingVertical="4dp"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="0dp"
                     android:text="Limpiar"
+                    android:textAllCaps="false"
                     android:textSize="11sp"
-                    app:cornerRadius="8dp"
+                    android:textColor="@color/text_secondary"
+                    app:cornerRadius="6dp"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp" />
             </LinearLayout>
 

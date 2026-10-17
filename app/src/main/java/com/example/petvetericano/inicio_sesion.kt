@@ -23,8 +23,24 @@ class inicio_sesion : AppCompatActivity() {
         binding = ActivityInicioSesionBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val emailRegistrado = intent.getStringExtra("EMAIL_REGISTRADO")
+        if (!emailRegistrado.isNullOrEmpty()) {
+            binding.editTextText.setText(emailRegistrado)
+        }
+
+        val mensajeRegistro = intent.getStringExtra("REGISTRO_GOOGLE_MSG")
+        if (!mensajeRegistro.isNullOrEmpty()) {
+            binding.root.post {
+                GoogleAuthHelper.mostrarMensajeMD3(this@inicio_sesion, mensajeRegistro, esError = false)
+            }
+        }
+
         binding.btnIniciarSesion.setOnClickListener {
             iniciarSesion()
+        }
+
+        binding.btnGoogleLogin.setOnClickListener {
+            iniciarSesionConGoogle()
         }
 
         binding.txtRegistrarse.setOnClickListener {
@@ -34,6 +50,24 @@ class inicio_sesion : AppCompatActivity() {
         binding.txtRecoverPassword.setOnClickListener {
             val dialogRecuperar = RecuperarContrasenia(this@inicio_sesion)
             dialogRecuperar.show()
+        }
+    }
+
+    private fun iniciarSesionConGoogle() {
+        lifecycleScope.launch {
+            GoogleAuthHelper.autenticarConGoogle(
+                activity = this@inicio_sesion,
+                esFlujoRegistro = false,
+                onEstadoCarga = { cargando ->
+                    binding.btnGoogleLogin.isEnabled = !cargando
+                    binding.btnIniciarSesion.isEnabled = !cargando
+                    binding.btnGoogleLogin.text = if (cargando) {
+                        "Conectando con Google..."
+                    } else {
+                        getString(R.string.continuar_con_google)
+                    }
+                }
+            )
         }
     }
 
@@ -105,10 +139,10 @@ class inicio_sesion : AppCompatActivity() {
                     } catch (_: Exception) {
                         "Correo o contraseña incorrectos"
                     }
-                    Toast.makeText(this@inicio_sesion, msgError, Toast.LENGTH_LONG).show()
+                    GoogleAuthHelper.mostrarMensajeMD3(this@inicio_sesion, msgError, esError = true)
                 }
             } catch (e: Exception) {
-                Toast.makeText(this@inicio_sesion, "Error de conexión: ${e.message}", Toast.LENGTH_LONG).show()
+                GoogleAuthHelper.mostrarMensajeMD3(this@inicio_sesion, "Error de conexión con el servidor", esError = true)
             }
         }
     }

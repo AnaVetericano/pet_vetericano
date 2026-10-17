@@ -4,6 +4,7 @@ import com.example.petvetericano.models.ActualizarPerfilRequest
 import com.example.petvetericano.models.AdopcionAnimalResponse
 import com.example.petvetericano.models.DashboardResponse
 import com.example.petvetericano.models.GenericResponse
+import com.example.petvetericano.models.GoogleLoginRequest
 import com.example.petvetericano.models.IniciarPeticionResponse
 import com.example.petvetericano.models.LoginRequest
 import com.example.petvetericano.models.LoginResponse
@@ -25,6 +26,9 @@ interface ApiService {
     // --- AUTENTICACION Y USUARIOS ---
     @POST("usuarios/login/")
     suspend fun login(@Body request: LoginRequest): Response<LoginResponse>
+
+    @POST("usuarios/google-login/")
+    suspend fun loginConGoogle(@Body request: GoogleLoginRequest): Response<LoginResponse>
 
     // MÉTODO RESTAURADO PARA EL REGISTRO
     @POST("usuarios/register/")

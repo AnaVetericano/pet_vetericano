@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -125,6 +126,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                 val sizeMb = tempCameraFile!!.length() / (1024 * 1024)
                 tempCameraFile!!.delete()
                 MaterialAlertDialogBuilder(this)
+                    .setIcon(R.drawable.warning_icon4)
                     .setTitle("Video excede el límite")
                     .setMessage("El video grabado pesa ${sizeMb} MB y supera el límite de 10 MB permitido.\n\nPor favor graba un video más breve (máx. 20-30 segundos).")
                     .setPositiveButton("Aceptar", null)
@@ -383,8 +385,28 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     private fun setupToolbar() {
         binding.topAppBar.setNavigationOnClickListener {
-            finish()
+            confirmarSalidaActa()
         }
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                confirmarSalidaActa()
+            }
+        })
+    }
+
+    private fun confirmarSalidaActa() {
+        MaterialAlertDialogBuilder(this)
+            .setIcon(R.drawable.warning_icon4)
+            .setTitle("¿Salir del acta de atención?")
+            .setMessage("Si sales ahora sin guardar, la información diligenciada de la atención en campo se perderá.")
+            .setPositiveButton("Salir") { dialog, _ ->
+                dialog.dismiss()
+                finish()
+            }
+            .setNegativeButton("Continuar editando") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun setupUI(savedInstanceState: Bundle? = null) {
@@ -1367,11 +1389,24 @@ class ActaAtencionActivity : AppCompatActivity() {
             itemBinding.etPacienteNombreCard.setText("Comunitario ($especie)")
         }
 
-        // 9. Eliminación de paciente de la lista
+        // 9. Eliminación de paciente de la lista con confirmación Material 3
         itemBinding.btnEliminarAnimal.setOnClickListener {
-            binding.containerAnimales.removeView(itemBinding.root)
-            animalBindingsList.remove(itemBinding)
-            actualizarNumeracionYBotonesEliminar()
+            val nombre = itemBinding.etPacienteNombreCard.text?.toString()?.trim().orEmpty()
+            val titulo = if (nombre.isNotEmpty()) "¿Eliminar paciente $nombre?" else "¿Eliminar este paciente?"
+            MaterialAlertDialogBuilder(this)
+                .setIcon(R.drawable.ic_delete)
+                .setTitle(titulo)
+                .setMessage("Se eliminarán los datos registrados de este paciente en el acta actual.")
+                .setPositiveButton("Eliminar") { dialog, _ ->
+                    dialog.dismiss()
+                    binding.containerAnimales.removeView(itemBinding.root)
+                    animalBindingsList.remove(itemBinding)
+                    actualizarNumeracionYBotonesEliminar()
+                }
+                .setNegativeButton("Cancelar") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
         }
 
         // Si tenemos un estado previo a restaurar (ej. tras tomar foto, grabar video o recreación)
@@ -1677,7 +1712,12 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
 
         if (!valido) {
-            Toast.makeText(this, "Por favor complete los campos obligatorios del Paso 1", Toast.LENGTH_SHORT).show()
+            MaterialAlertDialogBuilder(this)
+                .setIcon(R.drawable.warning_icon4)
+                .setTitle("Campos incompletos en Paso 1")
+                .setMessage("Por favor diligencie todos los campos obligatorios marcados antes de continuar al siguiente paso.")
+                .setPositiveButton("Revisar", null)
+                .show()
         }
         return valido
     }
@@ -1686,7 +1726,16 @@ class ActaAtencionActivity : AppCompatActivity() {
         var valido = true
 
         if (animalBindingsList.isEmpty()) {
-            Toast.makeText(this, "Debe agregar al menos un paciente/animal", Toast.LENGTH_SHORT).show()
+            MaterialAlertDialogBuilder(this)
+                .setIcon(R.drawable.baseline_pets_24)
+                .setTitle("Sin pacientes agregados")
+                .setMessage("Debe agregar al menos un paciente/animal para registrar la atención clínica.")
+                .setPositiveButton("Agregar paciente") { dialog, _ ->
+                    dialog.dismiss()
+                    agregarNuevoAnimalCard()
+                }
+                .setNegativeButton("Cerrar", null)
+                .show()
             return false
         }
 
@@ -1749,7 +1798,12 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
 
         if (!valido) {
-            Toast.makeText(this, "Complete los datos clínicos requeridos en el Paso 2", Toast.LENGTH_SHORT).show()
+            MaterialAlertDialogBuilder(this)
+                .setIcon(R.drawable.warning_icon4)
+                .setTitle("Datos clínicos incompletos")
+                .setMessage("Por favor complete los datos clínicos requeridos (diagnóstico, estado reproductivo y tratamiento) en el Paso 2.")
+                .setPositiveButton("Revisar", null)
+                .show()
         }
         return valido
     }
@@ -1864,7 +1918,12 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
 
         if (!valido) {
-            Toast.makeText(this, "Complete los campos obligatorios antes de finalizar", Toast.LENGTH_SHORT).show()
+            MaterialAlertDialogBuilder(this)
+                .setIcon(R.drawable.warning_icon4)
+                .setTitle("Paso 3 incompleto")
+                .setMessage("Por favor complete los campos requeridos (compromisos o datos de rescate) antes de registrar el acta.")
+                .setPositiveButton("Revisar", null)
+                .show()
         }
         return valido
     }
@@ -2229,9 +2288,10 @@ class ActaAtencionActivity : AppCompatActivity() {
                         withContext(Dispatchers.Main) {
                             setLoadingState(false)
                             MaterialAlertDialogBuilder(this@ActaAtencionActivity)
+                                .setIcon(R.drawable.warning_icon4)
                                 .setTitle("Error al subir evidencias")
                                 .setMessage("Uno o más archivos multimedia no se pudieron subir a la nube. Por favor verifica tu conexión a internet y asegúrate de que los videos no superen 10 MB.")
-                                .setPositiveButton("Aceptar", null)
+                                .setPositiveButton("Entendido", null)
                                 .show()
                         }
                         return@launch
@@ -2321,30 +2381,44 @@ class ActaAtencionActivity : AppCompatActivity() {
                     withContext(Dispatchers.Main) {
                         setLoadingState(false)
                         val mensajeExito = if (binding.swRequiereRescate.isChecked) {
-                            "Acta y Rescate CBA registrados exitosamente (ID #$idSeg) - Estado: $estadoCierre"
+                            "Acta y Rescate CBA registrados exitosamente (ID #$idSeg).\n\nEstado del caso: $estadoCierre"
                         } else {
-                            "Acta registrada exitosamente (ID #$idSeg) - Estado: $estadoCierre"
+                            "Acta registrada exitosamente (ID #$idSeg).\n\nEstado del caso: $estadoCierre"
                         }
-                        Toast.makeText(this@ActaAtencionActivity, mensajeExito, Toast.LENGTH_LONG).show()
-                        setResult(Activity.RESULT_OK)
-                        finish()
+                        MaterialAlertDialogBuilder(this@ActaAtencionActivity)
+                            .setIcon(R.drawable.ic_check)
+                            .setTitle("Atención registrada con éxito")
+                            .setMessage(mensajeExito)
+                            .setCancelable(false)
+                            .setPositiveButton("Finalizar") { dialog, _ ->
+                                dialog.dismiss()
+                                setResult(Activity.RESULT_OK)
+                                finish()
+                            }
+                            .show()
                     }
                 } else {
                     val errorStr = response.errorBody()?.string() ?: ""
                     val mensajeError = parsearErrorDjango(errorStr, response.code())
                     withContext(Dispatchers.Main) {
                         setLoadingState(false)
-                        Toast.makeText(this@ActaAtencionActivity, mensajeError, Toast.LENGTH_LONG).show()
+                        MaterialAlertDialogBuilder(this@ActaAtencionActivity)
+                            .setIcon(R.drawable.warning_icon4)
+                            .setTitle("No se pudo registrar el acta")
+                            .setMessage(mensajeError)
+                            .setPositiveButton("Entendido", null)
+                            .show()
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     setLoadingState(false)
-                    Toast.makeText(
-                        this@ActaAtencionActivity,
-                        "Error de conexión con el servidor: ${e.localizedMessage ?: e.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    MaterialAlertDialogBuilder(this@ActaAtencionActivity)
+                        .setIcon(R.drawable.warning_icon4)
+                        .setTitle("Error de conexión")
+                        .setMessage("No se pudo conectar con el servidor: ${e.localizedMessage ?: e.message}")
+                        .setPositiveButton("Entendido", null)
+                        .show()
                 }
             }
         }
@@ -2397,6 +2471,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                     if (yaAtendida) {
                         withContext(Dispatchers.Main) {
                             MaterialAlertDialogBuilder(this@ActaAtencionActivity)
+                                .setIcon(R.drawable.ic_info_circle)
                                 .setTitle("Petición ya atendida")
                                 .setMessage("Esta petición ya cuenta con un Acta de Seres Sintientes registrada.\n\nEl sistema no permite crear actas adicionales para el mismo caso para proteger la trazabilidad médica.")
                                 .setCancelable(false)
@@ -2569,6 +2644,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                     localFile.delete()
                     runOnUiThread {
                         MaterialAlertDialogBuilder(this)
+                            .setIcon(R.drawable.warning_icon4)
                             .setTitle("Video demasiado pesado")
                             .setMessage("El video seleccionado pesa ${sizeMb} MB y supera el límite de 10 MB permitido para almacenamiento en la nube.\n\nPor favor selecciona un video más corto o graba un clip breve.")
                             .setPositiveButton("Aceptar", null)

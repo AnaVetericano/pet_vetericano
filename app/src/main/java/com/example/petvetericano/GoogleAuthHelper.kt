@@ -154,7 +154,7 @@ object GoogleAuthHelper {
             }
         }
 
-        // 3. Usuario actual de Firebase si existe
+        // 3. Usuario actual de Firebase en este dispositivo si existe
         try {
             val firebaseEmail = FirebaseAuth.getInstance().currentUser?.email?.trim()?.lowercase(Locale.ROOT)
             if (!firebaseEmail.isNullOrEmpty() && firebaseEmail.contains("@")) {
@@ -163,16 +163,7 @@ object GoogleAuthHelper {
         } catch (_: Exception) {
         }
 
-        // 4. Asegurar que las cuentas de Google del dispositivo estén disponibles en el selector MD3
-        listOf(
-            "jdquintero@unicauca.edu.co",
-            "juandavidquintero1002@gmail.com",
-            "jdqa45766@gmail.com"
-        ).forEach { emailDispositivo ->
-            cuentas.add(emailDispositivo)
-        }
-
-        // Persistir todas las encontradas para futuras aperturas rápidas
+        // Persistir únicamente las cuentas detectadas en este dispositivo
         cuentas.forEach { prefs.saveKnownGoogleAccount(it) }
 
         return cuentas.toList()
@@ -230,7 +221,8 @@ object GoogleAuthHelper {
     }
 
     /**
-     * Muestra el diálogo "Seleccionar una cuenta" con diseño Material Design 3 de Pet Vetericano.
+     * Muestra el diálogo "Seleccionar una cuenta" con diseño Material Design 3 de Pet Vetericano,
+     * cargando únicamente las cuentas pertenecientes al dispositivo actual.
      */
     private suspend fun seleccionarCuentaGoogleMD3(activity: ComponentActivity): CredencialGoogleExtraida? {
         val emailSeleccionado = mostrarDialogoSelectorCuentaMD3(activity)
@@ -353,6 +345,11 @@ object GoogleAuthHelper {
                     rbAgregar,
                     agregarSeleccionado
                 )
+                btnImportarSistema.text = if (cuentasDisponibles.isEmpty()) {
+                    "Seleccionar cuenta de Google de mi teléfono"
+                } else {
+                    "Sincronizar otra cuenta del teléfono"
+                }
                 llContenedorNueva.visibility = if (agregarSeleccionado) View.VISIBLE else View.GONE
             }
 

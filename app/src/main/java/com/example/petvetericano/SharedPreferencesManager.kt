@@ -25,22 +25,27 @@ class SharedPreferencesManager(context: Context) {
     fun saveKnownGoogleAccount(email: String) {
         val cleanEmail = email.lowercase().trim()
         if (cleanEmail.isEmpty() || !cleanEmail.contains("@")) return
-        val actuales = googlePrefs.getStringSet("KNOWN_GOOGLE_ACCOUNTS", emptySet())?.toMutableSet()
+        val actuales = googlePrefs.getStringSet("DEVICE_GOOGLE_ACCOUNTS_V2", emptySet())?.toMutableSet()
             ?: mutableSetOf()
         actuales.add(cleanEmail)
-        googlePrefs.edit().putStringSet("KNOWN_GOOGLE_ACCOUNTS", actuales).apply()
+        googlePrefs.edit().putStringSet("DEVICE_GOOGLE_ACCOUNTS_V2", actuales).apply()
     }
 
     fun getKnownGoogleAccounts(): List<String> {
+        // Limpiar clave anterior si existía para evitar correos precargados de pruebas previas
+        if (googlePrefs.contains("KNOWN_GOOGLE_ACCOUNTS")) {
+            googlePrefs.edit().remove("KNOWN_GOOGLE_ACCOUNTS").apply()
+        }
+
         val resultado = linkedSetOf<String>()
 
-        // 1. Cuentas registradas explícitamente en el conjunto
-        googlePrefs.getStringSet("KNOWN_GOOGLE_ACCOUNTS", emptySet())?.forEach { email ->
+        // 1. Cuentas seleccionadas o agregadas por el usuario en este dispositivo
+        googlePrefs.getStringSet("DEVICE_GOOGLE_ACCOUNTS_V2", emptySet())?.forEach { email ->
             val clean = email.lowercase().trim()
             if (clean.contains("@")) resultado.add(clean)
         }
 
-        // 2. Cuentas que ya tienen credencial vinculada en googlePrefs
+        // 2. Cuentas que ya tienen credencial vinculada en este dispositivo
         googlePrefs.all.keys.forEach { key ->
             if (key.startsWith("GOOGLE_CRED_")) {
                 val clean = key.removePrefix("GOOGLE_CRED_").lowercase().trim()
@@ -48,7 +53,7 @@ class SharedPreferencesManager(context: Context) {
             }
         }
 
-        // 3. Último correo activo en sesión si existe
+        // 3. Último correo activo en sesión de este dispositivo si existe
         val currentEmail = getUserEmail().lowercase().trim()
         if (currentEmail.contains("@")) {
             resultado.add(currentEmail)

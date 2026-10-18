@@ -47,6 +47,7 @@ data class LoginResponse(
     val apellido: String?,
     val tokens: TokenData,
     @SerializedName("es_nuevo_usuario") val esNuevoUsuario: Boolean? = false,
+    @SerializedName("foto_perfil") val fotoPerfil: String? = null,
     val foto: String? = null
 )
 
@@ -88,6 +89,8 @@ data class DashboardResponse(
     val nombre: String,
     val apellido: String,
     val email: String,
+    val telefono: String? = null,
+    @SerializedName("foto_perfil") val fotoPerfil: String? = null,
     val nombre_rol: String
 )
 
@@ -114,7 +117,8 @@ data class UsuarioPerfilResponse(
     val apellido: String?,
     val identificacion: String?,
     val telefono: String? = null,
-    @SerializedName("matricula_profesional") val matriculaProfesional: String? = null
+    @SerializedName("matricula_profesional") val matriculaProfesional: String? = null,
+    @SerializedName("foto_perfil") val fotoPerfil: String? = null
 )
 
 // --- Peticiones / Reportes ---
@@ -138,7 +142,8 @@ data class ActualizarPerfilRequest(
     val email: String,
     val telefono: String,
     @SerializedName("identificacion") val identificacion: String? = null,
-    @SerializedName("matricula_profesional") val matriculaProfesional: String? = null
+    @SerializedName("matricula_profesional") val matriculaProfesional: String? = null,
+    @SerializedName("foto_perfil") val fotoPerfil: String? = null
 )
 
 data class TipoPeticionModel(

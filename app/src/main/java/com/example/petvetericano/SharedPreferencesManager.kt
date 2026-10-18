@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 
 class SharedPreferencesManager(context: Context) {
+    private val appContext: Context = context.applicationContext
     private val prefs: SharedPreferences =
         context.getSharedPreferences("PetVetericanoPrefs", Context.MODE_PRIVATE)
     private val googlePrefs: SharedPreferences =
@@ -113,12 +114,25 @@ class SharedPreferencesManager(context: Context) {
 
     fun getUserRole(): Int = prefs.getInt("USER_ROLE", -1)
 
-    // Foto de perfil
-    fun saveProfileImagePath(path: String) {
-        prefs.edit().putString("PROFILE_IMAGE_PATH", path).apply()
+    // Foto de perfil sincronizada con el Backend (URL de Cloudinary o Data URI)
+    fun saveProfileImagePath(path: String?) {
+        val clean = path?.trim() ?: ""
+        prefs.edit()
+            .remove("PROFILE_IMAGE_PATH")
+            .putString("PROFILE_IMAGE_URL", clean)
+            .apply()
     }
 
-    fun getProfileImagePath(): String = prefs.getString("PROFILE_IMAGE_PATH", "") ?: ""
+    fun getProfileImagePath(): String {
+        if (prefs.contains("PROFILE_IMAGE_PATH")) {
+            prefs.edit().remove("PROFILE_IMAGE_PATH").apply()
+            try {
+                val legacyFile = java.io.File(appContext.filesDir, "profile_picture.jpg")
+                if (legacyFile.exists()) legacyFile.delete()
+            } catch (_: Exception) { }
+        }
+        return prefs.getString("PROFILE_IMAGE_URL", "") ?: ""
+    }
 
     // Token JWT
     fun saveAccessToken(token: String) {
@@ -140,5 +154,9 @@ class SharedPreferencesManager(context: Context) {
     // Limpiar sesión completa
     fun clearSession() {
         prefs.edit().clear().apply()
+        try {
+            val legacyFile = java.io.File(appContext.filesDir, "profile_picture.jpg")
+            if (legacyFile.exists()) legacyFile.delete()
+        } catch (_: Exception) { }
     }
 }

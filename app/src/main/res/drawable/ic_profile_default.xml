@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="160dp"
+    android:height="160dp"
+    android:viewportWidth="160"
+    android:viewportHeight="160">
+
+    <!-- Fondo suave institucional -->
+    <path
+        android:fillColor="#EEF0FF"
+        android:pathData="M0,0h160v160h-160z" />
+
+    <!-- Círculo decorativo interior sutil -->
+    <path
+        android:fillColor="#DDE1FF"
+        android:pathData="M80,80m-68,0a68,68 0,1 1,136 0a68,68 0,1 1,-136 0" />
+
+    <!-- Cabeza del usuario -->
+    <path
+        android:fillColor="#4141A5"
+        android:pathData="M80,62m-24,0a24,24 0,1 1,48 0a24,24 0,1 1,-48 0" />
+
+    <!-- Hombros / torso del usuario -->
+    <path
+        android:fillColor="#4141A5"
+        android:pathData="M36,136c0,-22.09 19.7,-40 44,-40s44,17.91 44,40v12H36v-12z" />
+</vector>

@@ -56,7 +56,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:scaleType="centerCrop"
-                        android:src="@drawable/smithimg"
+                        android:src="@drawable/ic_profile_default"
                         app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full" />
                 </com.google.android.material.card.MaterialCardView>
 

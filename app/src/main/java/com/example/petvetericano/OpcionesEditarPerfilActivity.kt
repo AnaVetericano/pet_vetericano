@@ -4,6 +4,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.doOnTextChanged
@@ -12,9 +13,10 @@ import com.example.petvetericano.databinding.ActivityOpcionesEditarPerfilBinding
 import com.example.petvetericano.models.ActualizarPerfilRequest
 import com.example.petvetericano.network.RetrofitClient
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
+import kotlinx.coroutines.withContext
 
 class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
@@ -27,9 +29,13 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
     private lateinit var binding: ActivityOpcionesEditarPerfilBinding
     private lateinit var prefs: SharedPreferencesManager
 
-    // Selector para cambiar foto de perfil desde la galería
+    private var fotoOriginal: String = ""
+    private var fotoPendienteUri: Uri? = null
+    private var guardando: Boolean = false
+
+    // Selector para previsualizar foto de perfil desde la galería; se guarda al presionar "Guardar Cambios"
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let { guardarYMostrarImagen(it) }
+        uri?.let { previsualizarFotoSeleccionada(it) }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,9 +50,24 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         cargarDatosPerfil()
         sincronizarConApi()
 
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (fotoPendienteUri != null && !guardando) {
+                    mostrarConfirmacionSalirSinGuardar()
+                } else {
+                    isEnabled = false
+                    onBackPressedDispatcher.onBackPressed()
+                }
+            }
+        })
+
         // Acción de clic para el botón de regreso
         binding.btnBack.setOnClickListener {
-            finish()
+            if (fotoPendienteUri != null && !guardando) {
+                mostrarConfirmacionSalirSinGuardar()
+            } else {
+                finish()
+            }
         }
 
         // Acción de clic para cambiar foto de perfil
@@ -103,17 +124,13 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         // Badge oficial superior
         binding.tvRolBadge.text = TITULO_PROFESIONAL_FIJO
 
-        // Cargar foto de perfil persistida si existe
-        val rutaFoto = prefs.getProfileImagePath().trim()
-        if (rutaFoto.isNotEmpty()) {
-            val archivo = File(rutaFoto)
-            if (archivo.exists()) {
-                binding.ivEditProfile.setImageURI(Uri.fromFile(archivo))
-            } else {
-                binding.ivEditProfile.setImageResource(R.drawable.smithimg)
-            }
+        // Cargar foto de perfil desde servidor/caché o mostrar icono default (@drawable/ic_profile_default)
+        fotoOriginal = prefs.getProfileImagePath().trim()
+        val uriPendiente = fotoPendienteUri
+        if (uriPendiente != null) {
+            ProfilePhotoHelper.previsualizarUri(this, binding.ivEditProfile, uriPendiente)
         } else {
-            binding.ivEditProfile.setImageResource(R.drawable.smithimg)
+            ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivEditProfile, fotoOriginal)
         }
     }
 
@@ -124,20 +141,28 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         binding.tvProfileUserName.text = nombreCompleto.ifEmpty { "Médico Veterinario" }
     }
 
-    private fun guardarYMostrarImagen(uri: Uri) {
-        try {
-            val archivoDestino = File(filesDir, "profile_picture.jpg")
-            contentResolver.openInputStream(uri)?.use { input ->
-                FileOutputStream(archivoDestino).use { output ->
-                    input.copyTo(output)
-                }
+    private fun previsualizarFotoSeleccionada(uri: Uri) {
+        fotoPendienteUri = uri
+        ProfilePhotoHelper.previsualizarUri(this, binding.ivEditProfile, uri)
+        Snackbar.make(
+            binding.root,
+            "Vista previa lista. Presiona \"Guardar Cambios\" para confirmar.",
+            Snackbar.LENGTH_SHORT
+        ).show()
+    }
+
+    private fun mostrarConfirmacionSalirSinGuardar() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("¿Descartar cambios?")
+            .setMessage("Seleccionaste una nueva foto de perfil que aún no has guardado.")
+            .setNegativeButton("Seguir editando") { dialog, _ -> dialog.dismiss() }
+            .setPositiveButton("Descartar") { dialog, _ ->
+                dialog.dismiss()
+                fotoPendienteUri = null
+                ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivEditProfile, fotoOriginal)
+                finish()
             }
-            prefs.saveProfileImagePath(archivoDestino.absolutePath)
-            binding.ivEditProfile.setImageURI(Uri.fromFile(archivoDestino))
-            Toast.makeText(this, "Foto de perfil actualizada", Toast.LENGTH_SHORT).show()
-        } catch (e: Exception) {
-            binding.ivEditProfile.setImageURI(uri)
-        }
+            .show()
     }
 
     private fun guardarDatosPerfil() {
@@ -153,59 +178,86 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
             return
         }
 
-        // 1. Persistir de inmediato en memoria local (SharedPreferencesManager)
-        prefs.saveUserData(newName, newEmail, newPhone)
-        prefs.saveUserLastName(newLastName)
-        prefs.saveUserIdentification(newIdentificacion)
-        prefs.saveUserMatriculaProfesional(newMatricula)
-
-        actualizarEncabezadoUsuario()
-        binding.tvRolBadge.text = TITULO_PROFESIONAL_FIJO
-
-        // 2. Sincronizar con el Backend / API
         val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
         if (token.isEmpty()) {
-            Toast.makeText(this, "Perfil guardado localmente", Toast.LENGTH_SHORT).show()
-            finish()
+            Toast.makeText(this, "Sesión no válida. Inicia sesión nuevamente.", Toast.LENGTH_SHORT).show()
             return
         }
 
+        guardando = true
         binding.btnSave.isEnabled = false
         binding.btnSave.text = "Guardando..."
         RetrofitClient.authToken = token
 
         lifecycleScope.launch {
             try {
+                val uriParaSubir = fotoPendienteUri
+                val fotoBase64 = if (uriParaSubir != null) {
+                    withContext(Dispatchers.IO) {
+                        ProfilePhotoHelper.uriABase64DataUri(this@OpcionesEditarPerfilActivity, uriParaSubir)
+                    }
+                } else {
+                    null
+                }
+
+                if (uriParaSubir != null && fotoBase64 == null) {
+                    guardando = false
+                    binding.btnSave.isEnabled = true
+                    binding.btnSave.text = "Guardar Cambios"
+                    Toast.makeText(this@OpcionesEditarPerfilActivity, "No se pudo procesar la imagen seleccionada", Toast.LENGTH_SHORT).show()
+                    return@launch
+                }
+
                 val request = ActualizarPerfilRequest(
                     nombre = newName,
                     apellido = newLastName,
                     email = newEmail,
                     telefono = newPhone,
                     identificacion = newIdentificacion.ifEmpty { null },
-                    matriculaProfesional = newMatricula.ifEmpty { null }
+                    matriculaProfesional = newMatricula.ifEmpty { null },
+                    fotoPerfil = fotoBase64
                 )
                 val response = RetrofitClient.apiService.actualizarPerfil(request)
                 if (response.isSuccessful) {
                     val body = response.body()
-                    if (body != null) {
-                        if (!body.nombre.isNullOrEmpty()) prefs.saveUserData(body.nombre, body.email, body.telefono ?: newPhone)
-                        if (!body.apellido.isNullOrEmpty()) prefs.saveUserLastName(body.apellido)
-                        if (!body.identificacion.isNullOrEmpty()) prefs.saveUserIdentification(body.identificacion)
-                        if (!body.matriculaProfesional.isNullOrEmpty()) prefs.saveUserMatriculaProfesional(body.matriculaProfesional)
+                    prefs.saveUserData(
+                        body?.nombre?.takeIf { it.isNotBlank() } ?: newName,
+                        body?.email?.takeIf { it.isNotBlank() } ?: newEmail,
+                        body?.telefono ?: newPhone
+                    )
+                    prefs.saveUserLastName(body?.apellido ?: newLastName)
+                    prefs.saveUserIdentification(body?.identificacion ?: newIdentificacion)
+                    prefs.saveUserMatriculaProfesional(body?.matriculaProfesional ?: newMatricula)
+
+                    if (uriParaSubir != null || !body?.fotoPerfil.isNullOrEmpty()) {
+                        val nuevaFotoRemota = body?.fotoPerfil?.trim()?.takeIf { it.isNotEmpty() }
+                            ?: fotoBase64
+                            ?: fotoOriginal
+                        prefs.saveProfileImagePath(nuevaFotoRemota)
+                        fotoOriginal = nuevaFotoRemota
                     }
+
+                    fotoPendienteUri = null
+                    guardando = false
+                    actualizarEncabezadoUsuario()
+                    binding.tvRolBadge.text = TITULO_PROFESIONAL_FIJO
+
                     Toast.makeText(this@OpcionesEditarPerfilActivity, "Perfil profesional actualizado con éxito", Toast.LENGTH_SHORT).show()
                     finish()
                 } else {
                     val errorMsg = response.errorBody()?.string() ?: ""
                     Log.e("OpcionesPerfil", "Error API ${response.code()}: $errorMsg")
-                    Toast.makeText(this@OpcionesEditarPerfilActivity, "Error al sincronizar con el servidor (${response.code()})", Toast.LENGTH_LONG).show()
+                    guardando = false
                     binding.btnSave.isEnabled = true
                     binding.btnSave.text = "Guardar Cambios"
+                    Toast.makeText(this@OpcionesEditarPerfilActivity, "Error al sincronizar con el servidor (${response.code()})", Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
                 Log.e("OpcionesPerfil", "Error sincronizando con API: ${e.message}", e)
-                Toast.makeText(this@OpcionesEditarPerfilActivity, "Guardado localmente (sin conexión al servidor)", Toast.LENGTH_SHORT).show()
-                finish()
+                guardando = false
+                binding.btnSave.isEnabled = true
+                binding.btnSave.text = "Guardar Cambios"
+                Toast.makeText(this@OpcionesEditarPerfilActivity, "Sin conexión al servidor. Intenta nuevamente.", Toast.LENGTH_LONG).show()
             }
         }
     }
@@ -247,6 +299,17 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                         binding.tilMatriculaProfesional.helperText = null
                     }
 
+                    val fotoRemota = perfil.fotoPerfil?.trim() ?: ""
+                    prefs.saveProfileImagePath(fotoRemota)
+                    fotoOriginal = fotoRemota
+                    if (fotoPendienteUri == null) {
+                        ProfilePhotoHelper.cargarFotoPerfil(
+                            this@OpcionesEditarPerfilActivity,
+                            binding.ivEditProfile,
+                            fotoOriginal
+                        )
+                    }
+
                     binding.tvRolBadge.text = TITULO_PROFESIONAL_FIJO
                     actualizarEncabezadoUsuario()
                 }
@@ -257,17 +320,12 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
     }
 
     private fun mostrarConfirmacionCerrarSesion() {
-        MaterialAlertDialogBuilder(this)
-            .setTitle("¿Cerrar sesión?")
-            .setMessage("Se cerrará la sesión actual de médico veterinario. Tendrás que ingresar tus credenciales nuevamente para acceder al sistema.")
-            .setNegativeButton("Cancelar") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setPositiveButton("Cerrar sesión") { dialog, _ ->
-                dialog.dismiss()
-                cerrarSesion()
-            }
-            .show()
+        ProfilePhotoHelper.mostrarDialogoCerrarSesionMD3(
+            activity = this,
+            emailUsuario = prefs.getUserEmail(),
+            esVeterinario = true,
+            onConfirmarCerrarSesion = { cerrarSesion() }
+        )
     }
 
     private fun cerrarSesion() {
@@ -277,6 +335,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
             RetrofitClient.authToken = null
 
             val intent = android.content.Intent(this@OpcionesEditarPerfilActivity, inicio_sesion::class.java).apply {
+                putExtra("LOGOUT_MSG", "Sesión profesional cerrada correctamente. ¡Hasta pronto!")
                 flags = android.content.Intent.FLAG_ACTIVITY_NEW_TASK or android.content.Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
             startActivity(intent)

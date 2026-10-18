@@ -65,6 +65,11 @@ class dahsboard_veterianrio : AppCompatActivity() {
             startActivity(Intent(this, PetitionsListActivity::class.java))
         }
 
+        // Tarjeta de Maletín de Medicamentos
+        binding.cardMaletinMedicamentos.setOnClickListener {
+            startActivity(Intent(this, MaletinMedicamentosActivity::class.java))
+        }
+
         // Bottom Navigation
         binding.ivNavInicio.setOnClickListener {
             // Ya estamos en inicio, podemos hacer que suba el scroll al inicio
@@ -84,6 +89,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
         binding.swipeRefreshLayout.isRefreshing = true
         fetchDashboardData()
         sincronizarPerfilUsuario()
+        actualizarResumenMaletin()
     }
 
     override fun onResume() {
@@ -92,6 +98,13 @@ class dahsboard_veterianrio : AppCompatActivity() {
         actualizarDatosUsuario()
         fetchDashboardData()
         sincronizarPerfilUsuario()
+        actualizarResumenMaletin()
+    }
+
+    private fun actualizarResumenMaletin() {
+        val maletin = MaletinManager.getInstance(this)
+        binding.tvTotalMedicamentos.text = maletin.getTotalMedicamentosDisponibles().toString()
+        binding.tvEstadoMaletin.text = maletin.getEstadoStock()
     }
 
     private fun actualizarDatosUsuario() {
@@ -210,10 +223,8 @@ class dahsboard_veterianrio : AppCompatActivity() {
                         binding.tvGraficoAtendidas.text = atendidas.toString()
                         binding.tvGraficoTransferidas.text = transferidas.toString()
 
-                        binding.tvPeticionesAsignadas.text = asignadas.toString()
-                        binding.tvPeticionesEnTratamiento.text = enTratamiento.toString()
-                        binding.tvConteoAtencion.text = atendidas.toString()
-                        binding.tvPeticionesTransferidas.text = transferidas.toString()
+                        // Tarjeta de Maletín de Medicamentos (Listo para conectar cuando esté la API)
+                        // binding.tvTotalMedicamentos.text = totalMedicamentos.toString()
 
                         configurarGrafico(asignadas, enTratamiento, atendidas, transferidas, total)
 

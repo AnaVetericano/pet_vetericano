@@ -102,12 +102,13 @@ class DetallePeticion : AppCompatActivity() {
         binding.btnActualizarEstado.setOnClickListener { abrirActualizarEstado() }
         binding.tvBadgeEstado.setOnClickListener { abrirActualizarEstado() }
 
-        // CONFIGURACIÓN DEL BOTÓN CORREGIR DIRECCIÓN CON ALERTA DE CONFIRMACIÓN
+        // CONFIGURACIÓN DEL BOTÓN CORREGIR DIRECCIÓN CON ALERTA DE CONFIRMACIÓN (Material Design 3)
         binding.btnCorregirDireccion.setOnClickListener {
-            AlertDialog.Builder(this)
+            MaterialAlertDialogBuilder(this)
+                .setIcon(R.drawable.outline_add_location_alt_24)
                 .setTitle("Corregir dirección")
-                .setMessage("¿Desea corregir la dirección de esta petición utilizando el mapa?")
-                .setPositiveButton("Sí") { dialog, _ ->
+                .setMessage("¿Deseas abrir el mapa para corregir y actualizar la dirección geográfica de esta petición?")
+                .setPositiveButton("Sí, abrir mapa") { dialog, _ ->
                     dialog.dismiss()
                     val intent = Intent(this, CorregirDireccionActivity::class.java).apply {
                         putExtra("DIRECCION_ACTUAL", direccionActual)
@@ -242,6 +243,7 @@ class DetallePeticion : AppCompatActivity() {
             binding.btnAtender.setBackgroundColor(Color.parseColor("#059669"))
             binding.btnAtender.setOnClickListener {
                 MaterialAlertDialogBuilder(this)
+                    .setIcon(R.drawable.ic_info_circle)
                     .setTitle("Petición ya atendida")
                     .setMessage("Esta petición ya fue atendida en campo y cuenta con un Acta de Seres Sintientes registrada.\n\nPara garantizar la trazabilidad legal y evitar duplicados, cada petición admite una única acta de atención.")
                     .setPositiveButton("Aceptar", null)

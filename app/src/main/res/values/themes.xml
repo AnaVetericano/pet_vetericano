@@ -16,6 +16,10 @@
         <item name="textAppearanceBodyLarge">@style/TextAppearance.Vetericano.BodyLarge</item>
         <item name="textAppearanceBodyMedium">@style/TextAppearance.Vetericano.BodyMedium</item>
         <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Vetericano.HeadlineSmall</item>
+
+        <!-- Diálogos emergentes con diseño Material 3 -->
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Vetericano.MaterialAlertDialog</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.Vetericano.MaterialAlertDialog</item>
     </style>
 
     <style name="Theme.PetVetericano" parent="Base.Theme.PetVetericano" />
@@ -50,5 +54,60 @@
     <style name="ShapeAppearance.Vetericano.BottomSheet" parent="ShapeAppearance.Material3.Corner.None">
         <item name="cornerSizeTopLeft">28dp</item>
         <item name="cornerSizeTopRight">28dp</item>
+    </style>
+
+    <!-- ===== Estilo Material 3 para Alert Dialogs ===== -->
+    <style name="ThemeOverlay.Vetericano.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <!-- Fondo blanco limpio y superficie M3 -->
+        <item name="colorSurface">@color/white</item>
+        <item name="android:background">@color/white</item>
+
+        <!-- Forma M3 con esquinas redondeadas de 24dp -->
+        <item name="shapeAppearance">@style/ShapeAppearance.Vetericano.Dialog</item>
+
+        <!-- Tipografía de cabecera e icono -->
+        <item name="materialAlertDialogTitleTextStyle">@style/TextAppearance.Vetericano.Dialog.Title</item>
+        <item name="materialAlertDialogTitleIconStyle">@style/Widget.Vetericano.Dialog.Icon</item>
+
+        <!-- Tipografía de cuerpo del mensaje -->
+        <item name="materialAlertDialogBodyTextStyle">@style/TextAppearance.Vetericano.Dialog.Body</item>
+
+        <!-- Botones de Acción M3 -->
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.Vetericano.Dialog.Button.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.Vetericano.Dialog.Button.Negative</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Widget.Vetericano.Dialog.Button.Negative</item>
+    </style>
+
+    <style name="ShapeAppearance.Vetericano.Dialog" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerSize">24dp</item>
+    </style>
+
+    <style name="Widget.Vetericano.Dialog.Icon" parent="MaterialAlertDialog.Material3.Title.Icon">
+        <item name="tint">@color/primary</item>
+    </style>
+
+    <style name="TextAppearance.Vetericano.Dialog.Title" parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="TextAppearance.Vetericano.Dialog.Body" parent="MaterialAlertDialog.Material3.Body.Text">
+        <item name="android:fontFamily">@font/nunito</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineSpacingExtra">3dp</item>
+    </style>
+
+    <style name="Widget.Vetericano.Dialog.Button.Positive" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/primary</item>
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Widget.Vetericano.Dialog.Button.Negative" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="android:textSize">14sp</item>
     </style>
 </resources>

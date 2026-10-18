@@ -11,6 +11,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -20,11 +21,16 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityActaAtencionBinding
+import com.example.petvetericano.databinding.BottomSheetAplicarMedicamentoBinding
 import com.example.petvetericano.databinding.ItemAnimalFormularioBinding
 import com.example.petvetericano.databinding.ItemExamenAgregadoBinding
+import com.example.petvetericano.databinding.ItemMedicamentoAplicadoActaBinding
 import com.example.petvetericano.models.AnimalCardState
 import com.example.petvetericano.models.AnimalRapidoRequest
 import com.example.petvetericano.models.ExamenSeleccionadoActa
+import com.example.petvetericano.models.MedicamentoAplicadoActa
+import com.example.petvetericano.models.MedicamentoMaletin
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.example.petvetericano.models.FuncionarioActaRequest
 import com.example.petvetericano.models.LugarAtencionActa
 import com.example.petvetericano.models.SeguimientoPeticionVisitaRequest
@@ -125,6 +131,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                 val sizeMb = tempCameraFile!!.length() / (1024 * 1024)
                 tempCameraFile!!.delete()
                 MaterialAlertDialogBuilder(this)
+                    .setIcon(R.drawable.warning_icon4)
                     .setTitle("Video excede el límite")
                     .setMessage("El video grabado pesa ${sizeMb} MB y supera el límite de 10 MB permitido.\n\nPor favor graba un video más breve (máx. 20-30 segundos).")
                     .setPositiveButton("Aceptar", null)
@@ -166,6 +173,9 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     // Lista de ViewBindings dinámicos para cada tarjeta de animal
     private val animalBindingsList = mutableListOf<ItemAnimalFormularioBinding>()
+
+    // Lista de medicamentos suministrados y descontados del maletín en campo
+    private val medicamentosAplicadosList = mutableListOf<MedicamentoAplicadoActa>()
 
     // Catálogos sincronizados del backend
     private val listaEspeciesBackend = mutableListOf<com.example.petvetericano.models.EspecieItemResponse>()
@@ -222,6 +232,7 @@ class ActaAtencionActivity : AppCompatActivity() {
         setupAutoScrollOnFocus()
         setupAceleradoresCampo()
         setupSeccionExamenesMultiples()
+        setupModuloMaletinTratamiento()
         initCloudinary()
         setupEvidenciaMultimedia()
         cargarCatalogosBackend()
@@ -264,6 +275,19 @@ class ActaAtencionActivity : AppCompatActivity() {
                 examenesAgregadosList.clear()
                 examenesAgregadosList.addAll(examenesGuardados)
                 renderizarExamenesAgregados()
+            }
+
+            // Restaurar medicamentos suministrados desde el maletín en campo
+            @Suppress("UNCHECKED_CAST", "DEPRECATION")
+            val medsGuardados = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                savedInstanceState.getSerializable("KEY_MEDICAMENTOS_APLICADOS", ArrayList::class.java) as? ArrayList<MedicamentoAplicadoActa>
+            } else {
+                savedInstanceState.getSerializable("KEY_MEDICAMENTOS_APLICADOS") as? ArrayList<MedicamentoAplicadoActa>
+            }
+            if (!medsGuardados.isNullOrEmpty()) {
+                medicamentosAplicadosList.clear()
+                medicamentosAplicadosList.addAll(medsGuardados)
+                actualizarVistaMedicamentosAplicados()
             }
 
             // Restaurar todos los formularios de pacientes diligenciados en el Paso 2
@@ -374,6 +398,9 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         // 2. Guardar lista de exámenes clínicos complementarios agregados (Paso 3)
         outState.putSerializable("KEY_EXAMENES_AGREGADOS", ArrayList(examenesAgregadosList))
+
+        // 3. Guardar lista de medicamentos aplicados en campo
+        outState.putSerializable("KEY_MEDICAMENTOS_APLICADOS", ArrayList(medicamentosAplicadosList))
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -383,8 +410,28 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     private fun setupToolbar() {
         binding.topAppBar.setNavigationOnClickListener {
-            finish()
+            confirmarSalidaActa()
         }
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                confirmarSalidaActa()
+            }
+        })
+    }
+
+    private fun confirmarSalidaActa() {
+        MaterialAlertDialogBuilder(this)
+            .setIcon(R.drawable.warning_icon4)
+            .setTitle("¿Salir del acta de atención?")
+            .setMessage("Si sales ahora sin guardar, la información diligenciada de la atención en campo se perderá.")
+            .setPositiveButton("Salir") { dialog, _ ->
+                dialog.dismiss()
+                finish()
+            }
+            .setNegativeButton("Continuar editando") { dialog, _ ->
+                dialog.dismiss()
+            }
+            .show()
     }
 
     private fun setupUI(savedInstanceState: Bundle? = null) {
@@ -1367,11 +1414,24 @@ class ActaAtencionActivity : AppCompatActivity() {
             itemBinding.etPacienteNombreCard.setText("Comunitario ($especie)")
         }
 
-        // 9. Eliminación de paciente de la lista
+        // 9. Eliminación de paciente de la lista con confirmación Material 3
         itemBinding.btnEliminarAnimal.setOnClickListener {
-            binding.containerAnimales.removeView(itemBinding.root)
-            animalBindingsList.remove(itemBinding)
-            actualizarNumeracionYBotonesEliminar()
+            val nombre = itemBinding.etPacienteNombreCard.text?.toString()?.trim().orEmpty()
+            val titulo = if (nombre.isNotEmpty()) "¿Eliminar paciente $nombre?" else "¿Eliminar este paciente?"
+            MaterialAlertDialogBuilder(this)
+                .setIcon(R.drawable.ic_delete)
+                .setTitle(titulo)
+                .setMessage("Se eliminarán los datos registrados de este paciente en el acta actual.")
+                .setPositiveButton("Eliminar") { dialog, _ ->
+                    dialog.dismiss()
+                    binding.containerAnimales.removeView(itemBinding.root)
+                    animalBindingsList.remove(itemBinding)
+                    actualizarNumeracionYBotonesEliminar()
+                }
+                .setNegativeButton("Cancelar") { dialog, _ ->
+                    dialog.dismiss()
+                }
+                .show()
         }
 
         // Si tenemos un estado previo a restaurar (ej. tras tomar foto, grabar video o recreación)
@@ -1518,6 +1578,198 @@ class ActaAtencionActivity : AppCompatActivity() {
         binding.chipPlazo8.setOnClickListener { binding.etPlazoDias.setText("8") }
         binding.chipPlazo15.setOnClickListener { binding.etPlazoDias.setText("15") }
         binding.chipPlazo30.setOnClickListener { binding.etPlazoDias.setText("30") }
+    }
+
+    // =========================================================================
+    // MÓDULO MALETÍN DE MEDICAMENTOS: SUMINISTRO Y DESCUENTO EN CAMPO
+    // =========================================================================
+    private fun setupModuloMaletinTratamiento() {
+        binding.btnAplicarMedicamentoMaletin.setOnClickListener {
+            mostrarBottomSheetAplicarMedicamento()
+        }
+        actualizarVistaMedicamentosAplicados()
+    }
+
+    private fun mostrarBottomSheetAplicarMedicamento() {
+        val bottomSheet = BottomSheetDialog(this)
+        val sheetBinding = BottomSheetAplicarMedicamentoBinding.inflate(layoutInflater)
+        bottomSheet.setContentView(sheetBinding.root)
+
+        val maletinManager = MaletinManager.getInstance(this)
+        val medicamentosDisponibles = maletinManager.getMedicamentos().filter { it.cantidadDisponible > 0 }
+
+        if (medicamentosDisponibles.isEmpty()) {
+            Toast.makeText(this, "No hay medicamentos con existencias en tu maletín", Toast.LENGTH_LONG).show()
+            return
+        }
+
+        var medicamentoSeleccionado: MedicamentoMaletin? = null
+
+        // 1. Selector de medicamentos
+        val medNombres = medicamentosDisponibles.map { med ->
+            val displayStock = if (med.cantidadDisponible % 1.0 == 0.0) med.cantidadDisponible.toInt().toString() else med.cantidadDisponible.toString()
+            "${med.nombre} (Disp: $displayStock ${med.unidadMedida})"
+        }
+        val medAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, medNombres)
+        sheetBinding.autoCompleteMedicamento.setAdapter(medAdapter)
+
+        sheetBinding.autoCompleteMedicamento.setOnItemClickListener { _, _, position, _ ->
+            val med = medicamentosDisponibles[position]
+            medicamentoSeleccionado = med
+            sheetBinding.cardInfoMedicamento.visibility = View.VISIBLE
+            sheetBinding.tvInfoStockDisponible.text = "✓ Stock disponible: ${med.cantidadDisponible} ${med.unidadMedida} • Lote: ${med.lote}"
+            sheetBinding.tvInfoPresentacionVia.text = "Presentación: ${med.presentacion} • Vía sugerida: ${med.viaRecomendada}"
+            sheetBinding.tilDosisCantidad.suffixText = med.unidadMedida
+
+            // Preseleccionar vía sugerida
+            when {
+                med.viaRecomendada.contains("SC", ignoreCase = true) -> sheetBinding.autoCompleteVia.setText("Subcutánea (SC)", false)
+                med.viaRecomendada.contains("IM", ignoreCase = true) -> sheetBinding.autoCompleteVia.setText("Intramuscular (IM)", false)
+                med.viaRecomendada.contains("Oral", ignoreCase = true) -> sheetBinding.autoCompleteVia.setText("Oral", false)
+                med.viaRecomendada.contains("Tópica", ignoreCase = true) -> sheetBinding.autoCompleteVia.setText("Tópica", false)
+                med.viaRecomendada.contains("IV", ignoreCase = true) -> sheetBinding.autoCompleteVia.setText("Intravenosa (IV)", false)
+            }
+        }
+
+        // 2. Pacientes disponibles en el formulario
+        val listaPacientes = mutableListOf("Todos los pacientes")
+        animalBindingsList.forEachIndexed { index, b ->
+            val nombre = b.etPacienteNombreCard.text.toString().trim()
+            if (nombre.isNotEmpty()) {
+                listaPacientes.add(nombre)
+            } else {
+                listaPacientes.add("Paciente ${index + 1}")
+            }
+        }
+        val pacienteAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, listaPacientes)
+        sheetBinding.autoCompletePaciente.setAdapter(pacienteAdapter)
+        sheetBinding.autoCompletePaciente.setText(listaPacientes.first(), false)
+
+        // 3. Vías de administración
+        val vias = arrayOf("Subcutánea (SC)", "Intramuscular (IM)", "Intravenosa (IV)", "Oral", "Tópica", "Oftálmica / Ótica")
+        val viaAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, vias)
+        sheetBinding.autoCompleteVia.setAdapter(viaAdapter)
+        sheetBinding.autoCompleteVia.setText(vias[0], false)
+
+        // 4. Stepper y chips de dosis
+        sheetBinding.btnDosisMenos.setOnClickListener {
+            val actual = sheetBinding.etDosisCantidad.text.toString().toDoubleOrNull() ?: 1.0
+            val paso = if (medicamentoSeleccionado?.unidadMedida?.contains("comprimido", ignoreCase = true) == true) 1.0 else 0.5
+            val nuevo = maxOf(paso, actual - paso)
+            sheetBinding.etDosisCantidad.setText(String.format(Locale.US, "%.1f", nuevo))
+        }
+
+        sheetBinding.btnDosisMas.setOnClickListener {
+            val actual = sheetBinding.etDosisCantidad.text.toString().toDoubleOrNull() ?: 1.0
+            val paso = if (medicamentoSeleccionado?.unidadMedida?.contains("comprimido", ignoreCase = true) == true) 1.0 else 0.5
+            val maxStock = medicamentoSeleccionado?.cantidadDisponible ?: 999.0
+            val nuevo = minOf(maxStock, actual + paso)
+            sheetBinding.etDosisCantidad.setText(String.format(Locale.US, "%.1f", nuevo))
+        }
+
+        sheetBinding.chipDosis05.setOnClickListener { sheetBinding.etDosisCantidad.setText("0.5") }
+        sheetBinding.chipDosis10.setOnClickListener { sheetBinding.etDosisCantidad.setText("1.0") }
+        sheetBinding.chipDosis15.setOnClickListener { sheetBinding.etDosisCantidad.setText("1.5") }
+        sheetBinding.chipDosis20.setOnClickListener { sheetBinding.etDosisCantidad.setText("2.0") }
+        sheetBinding.chipDosis50.setOnClickListener { sheetBinding.etDosisCantidad.setText("5.0") }
+
+        sheetBinding.btnCerrarBottomSheet.setOnClickListener {
+            bottomSheet.dismiss()
+        }
+
+        // 5. Confirmar aplicación y descontar stock
+        sheetBinding.btnConfirmarAplicar.setOnClickListener {
+            val med = medicamentoSeleccionado
+            if (med == null) {
+                sheetBinding.tilSelectorMedicamento.error = "Selecciona un medicamento del maletín"
+                return@setOnClickListener
+            }
+            sheetBinding.tilSelectorMedicamento.error = null
+
+            val dosis = sheetBinding.etDosisCantidad.text.toString().toDoubleOrNull()
+            if (dosis == null || dosis <= 0.0) {
+                sheetBinding.tilDosisCantidad.error = "Ingresa una dosis válida"
+                return@setOnClickListener
+            }
+            if (dosis > med.cantidadDisponible) {
+                sheetBinding.tilDosisCantidad.error = "Dosis supera el stock disponible (${med.cantidadDisponible} ${med.unidadMedida})"
+                return@setOnClickListener
+            }
+            sheetBinding.tilDosisCantidad.error = null
+
+            val via = sheetBinding.autoCompleteVia.text.toString().trim().ifEmpty { "SC" }
+            val paciente = sheetBinding.autoCompletePaciente.text.toString().trim().ifEmpty { "Paciente" }
+
+            val exito = maletinManager.descontarStock(med.id, dosis)
+            if (!exito) {
+                Toast.makeText(this, "No se pudo descontar del maletín (stock insuficiente)", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val aplicado = MedicamentoAplicadoActa(
+                idMedicamento = med.id,
+                nombre = med.nombre,
+                concentracion = med.concentracion,
+                cantidad = dosis,
+                unidadMedida = med.unidadMedida,
+                viaAdministracion = via,
+                pacienteDestino = paciente
+            )
+            medicamentosAplicadosList.add(aplicado)
+
+            // Redacción automática en etTratamiento
+            if (sheetBinding.swSincronizarTratamientoTexto.isChecked) {
+                val dosisTxt = if (dosis % 1.0 == 0.0) dosis.toInt().toString() else dosis.toString()
+                val textoRedactado = "Suministro de ${med.nombre} ($dosisTxt ${med.unidadMedida} - vía $via) a $paciente"
+                concatenarTextoEnCampo(binding.etTratamiento, textoRedactado)
+            }
+
+            actualizarVistaMedicamentosAplicados()
+            bottomSheet.dismiss()
+            Toast.makeText(this, "Medicamento aplicado y descontado del maletín", Toast.LENGTH_SHORT).show()
+        }
+
+        bottomSheet.show()
+    }
+
+    private fun actualizarVistaMedicamentosAplicados() {
+        val total = medicamentosAplicadosList.size
+        binding.tvConteoMedicamentosAplicados.text = "$total aplicados"
+
+        if (total == 0) {
+            binding.containerMedicamentosAplicados.visibility = View.GONE
+            binding.containerMedicamentosAplicados.removeAllViews()
+        } else {
+            binding.containerMedicamentosAplicados.visibility = View.VISIBLE
+            binding.containerMedicamentosAplicados.removeAllViews()
+
+            for (item in medicamentosAplicadosList) {
+                val itemBinding = ItemMedicamentoAplicadoActaBinding.inflate(
+                    layoutInflater, binding.containerMedicamentosAplicados, false
+                )
+
+                val dosisTxt = if (item.cantidad % 1.0 == 0.0) item.cantidad.toInt().toString() else item.cantidad.toString()
+                itemBinding.tvNombreMedicamentoAplicado.text = "${item.nombre} • $dosisTxt ${item.unidadMedida}"
+                itemBinding.tvDetalleAplicacion.text = "Vía ${item.viaAdministracion} • Paciente: ${item.pacienteDestino ?: "General"}"
+
+                itemBinding.btnEliminarMedicamentoAplicado.setOnClickListener {
+                    MaterialAlertDialogBuilder(this)
+                        .setTitle("¿Remover medicamento?")
+                        .setMessage("Se devolverán $dosisTxt ${item.unidadMedida} de ${item.nombre} al maletín asignado.")
+                        .setPositiveButton("Devolver al maletín") { dialog, _ ->
+                            dialog.dismiss()
+                            MaletinManager.getInstance(this).devolverStock(item.idMedicamento, item.cantidad)
+                            medicamentosAplicadosList.remove(item)
+                            actualizarVistaMedicamentosAplicados()
+                            Toast.makeText(this, "Stock devuelto al maletín", Toast.LENGTH_SHORT).show()
+                        }
+                        .setNegativeButton("Cancelar", null)
+                        .show()
+                }
+
+                binding.containerMedicamentosAplicados.addView(itemBinding.root)
+            }
+        }
     }
 
     private fun concatenarTextoEnCampo(editText: android.widget.EditText, frase: String) {
@@ -1677,7 +1929,12 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
 
         if (!valido) {
-            Toast.makeText(this, "Por favor complete los campos obligatorios del Paso 1", Toast.LENGTH_SHORT).show()
+            MaterialAlertDialogBuilder(this)
+                .setIcon(R.drawable.warning_icon4)
+                .setTitle("Campos incompletos en Paso 1")
+                .setMessage("Por favor diligencie todos los campos obligatorios marcados antes de continuar al siguiente paso.")
+                .setPositiveButton("Revisar", null)
+                .show()
         }
         return valido
     }
@@ -1686,7 +1943,16 @@ class ActaAtencionActivity : AppCompatActivity() {
         var valido = true
 
         if (animalBindingsList.isEmpty()) {
-            Toast.makeText(this, "Debe agregar al menos un paciente/animal", Toast.LENGTH_SHORT).show()
+            MaterialAlertDialogBuilder(this)
+                .setIcon(R.drawable.baseline_pets_24)
+                .setTitle("Sin pacientes agregados")
+                .setMessage("Debe agregar al menos un paciente/animal para registrar la atención clínica.")
+                .setPositiveButton("Agregar paciente") { dialog, _ ->
+                    dialog.dismiss()
+                    agregarFormularioAnimal()
+                }
+                .setNegativeButton("Cerrar", null)
+                .show()
             return false
         }
 
@@ -1749,7 +2015,12 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
 
         if (!valido) {
-            Toast.makeText(this, "Complete los datos clínicos requeridos en el Paso 2", Toast.LENGTH_SHORT).show()
+            MaterialAlertDialogBuilder(this)
+                .setIcon(R.drawable.warning_icon4)
+                .setTitle("Datos clínicos incompletos")
+                .setMessage("Por favor complete los datos clínicos requeridos (diagnóstico, estado reproductivo y tratamiento) en el Paso 2.")
+                .setPositiveButton("Revisar", null)
+                .show()
         }
         return valido
     }
@@ -1864,7 +2135,12 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
 
         if (!valido) {
-            Toast.makeText(this, "Complete los campos obligatorios antes de finalizar", Toast.LENGTH_SHORT).show()
+            MaterialAlertDialogBuilder(this)
+                .setIcon(R.drawable.warning_icon4)
+                .setTitle("Paso 3 incompleto")
+                .setMessage("Por favor complete los campos requeridos (compromisos o datos de rescate) antes de registrar el acta.")
+                .setPositiveButton("Revisar", null)
+                .show()
         }
         return valido
     }
@@ -2229,9 +2505,10 @@ class ActaAtencionActivity : AppCompatActivity() {
                         withContext(Dispatchers.Main) {
                             setLoadingState(false)
                             MaterialAlertDialogBuilder(this@ActaAtencionActivity)
+                                .setIcon(R.drawable.warning_icon4)
                                 .setTitle("Error al subir evidencias")
                                 .setMessage("Uno o más archivos multimedia no se pudieron subir a la nube. Por favor verifica tu conexión a internet y asegúrate de que los videos no superen 10 MB.")
-                                .setPositiveButton("Aceptar", null)
+                                .setPositiveButton("Entendido", null)
                                 .show()
                         }
                         return@launch
@@ -2321,30 +2598,44 @@ class ActaAtencionActivity : AppCompatActivity() {
                     withContext(Dispatchers.Main) {
                         setLoadingState(false)
                         val mensajeExito = if (binding.swRequiereRescate.isChecked) {
-                            "Acta y Rescate CBA registrados exitosamente (ID #$idSeg) - Estado: $estadoCierre"
+                            "Acta y Rescate CBA registrados exitosamente (ID #$idSeg).\n\nEstado del caso: $estadoCierre"
                         } else {
-                            "Acta registrada exitosamente (ID #$idSeg) - Estado: $estadoCierre"
+                            "Acta registrada exitosamente (ID #$idSeg).\n\nEstado del caso: $estadoCierre"
                         }
-                        Toast.makeText(this@ActaAtencionActivity, mensajeExito, Toast.LENGTH_LONG).show()
-                        setResult(Activity.RESULT_OK)
-                        finish()
+                        MaterialAlertDialogBuilder(this@ActaAtencionActivity)
+                            .setIcon(R.drawable.ic_check)
+                            .setTitle("Atención registrada con éxito")
+                            .setMessage(mensajeExito)
+                            .setCancelable(false)
+                            .setPositiveButton("Finalizar") { dialog, _ ->
+                                dialog.dismiss()
+                                setResult(Activity.RESULT_OK)
+                                finish()
+                            }
+                            .show()
                     }
                 } else {
                     val errorStr = response.errorBody()?.string() ?: ""
                     val mensajeError = parsearErrorDjango(errorStr, response.code())
                     withContext(Dispatchers.Main) {
                         setLoadingState(false)
-                        Toast.makeText(this@ActaAtencionActivity, mensajeError, Toast.LENGTH_LONG).show()
+                        MaterialAlertDialogBuilder(this@ActaAtencionActivity)
+                            .setIcon(R.drawable.warning_icon4)
+                            .setTitle("No se pudo registrar el acta")
+                            .setMessage(mensajeError)
+                            .setPositiveButton("Entendido", null)
+                            .show()
                     }
                 }
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
                     setLoadingState(false)
-                    Toast.makeText(
-                        this@ActaAtencionActivity,
-                        "Error de conexión con el servidor: ${e.localizedMessage ?: e.message}",
-                        Toast.LENGTH_LONG
-                    ).show()
+                    MaterialAlertDialogBuilder(this@ActaAtencionActivity)
+                        .setIcon(R.drawable.warning_icon4)
+                        .setTitle("Error de conexión")
+                        .setMessage("No se pudo conectar con el servidor: ${e.localizedMessage ?: e.message}")
+                        .setPositiveButton("Entendido", null)
+                        .show()
                 }
             }
         }
@@ -2397,6 +2688,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                     if (yaAtendida) {
                         withContext(Dispatchers.Main) {
                             MaterialAlertDialogBuilder(this@ActaAtencionActivity)
+                                .setIcon(R.drawable.ic_info_circle)
                                 .setTitle("Petición ya atendida")
                                 .setMessage("Esta petición ya cuenta con un Acta de Seres Sintientes registrada.\n\nEl sistema no permite crear actas adicionales para el mismo caso para proteger la trazabilidad médica.")
                                 .setCancelable(false)
@@ -2569,6 +2861,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                     localFile.delete()
                     runOnUiThread {
                         MaterialAlertDialogBuilder(this)
+                            .setIcon(R.drawable.warning_icon4)
                             .setTitle("Video demasiado pesado")
                             .setMessage("El video seleccionado pesa ${sizeMb} MB y supera el límite de 10 MB permitido para almacenamiento en la nube.\n\nPor favor selecciona un video más corto o graba un clip breve.")
                             .setPositiveButton("Aceptar", null)

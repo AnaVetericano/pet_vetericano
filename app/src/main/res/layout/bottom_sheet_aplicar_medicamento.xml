@@ -1,0 +1,367 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet_m3"
+    android:orientation="vertical"
+    android:padding="20dp">
+
+    <!-- Indicador de arrastre superior del BottomSheet -->
+    <View
+        android:layout_width="40dp"
+        android:layout_height="4dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="16dp"
+        android:background="@drawable/bg_rounded_badge"
+        android:backgroundTint="#CBD5E1" />
+
+    <!-- Encabezado -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_medical_bag"
+            app:tint="@color/primary"
+            android:layout_marginEnd="10dp"
+            android:contentDescription="Maletín" />
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/nunito_bold"
+                android:text="Suministrar Medicamento"
+                android:textColor="@color/text_primary"
+                android:textSize="17sp" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/nunito"
+                android:text="Selecciona el fármaco y la dosis para descontar del maletín"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btnCerrarBottomSheet"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="Cerrar"
+            android:src="@drawable/ic_close_24"
+            app:tint="@color/text_secondary" />
+    </LinearLayout>
+
+    <!-- Selector de Medicamento (Exposed Dropdown) -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilSelectorMedicamento"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:hint="Medicamento del maletín *"
+        app:boxStrokeColor="@color/primary">
+
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/autoCompleteMedicamento"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"
+            android:textColor="@color/text_primary" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Caja Informativa del Stock y Concentración del Medicamento Seleccionado -->
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardInfoMedicamento"
+        style="?attr/materialCardViewFilledStyle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:visibility="gone"
+        app:cardBackgroundColor="#F1F5F9"
+        app:cardCornerRadius="10dp"
+        app:cardElevation="0dp"
+        tools:visibility="visible">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="10dp">
+
+            <TextView
+                android:id="@+id/tvInfoStockDisponible"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/nunito_bold"
+                android:textColor="@color/primary"
+                android:textSize="12sp"
+                tools:text="✓ Stock disponible: 18.5 ml (LT-2026-M01)" />
+
+            <TextView
+                android:id="@+id/tvInfoPresentacionVia"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:fontFamily="@font/nunito"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp"
+                tools:text="Presentación: Frasco ampolla 20 ml • Vía sugerida: SC / IV" />
+        </LinearLayout>
+    </com.google.android.material.card.MaterialCardView>
+
+    <!-- Selector de Paciente Destino (si hay múltiples pacientes) -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilSelectorPaciente"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:hint="Aplicado a paciente"
+        app:boxStrokeColor="@color/primary">
+
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/autoCompletePaciente"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"
+            android:textColor="@color/text_primary" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Cantidad / Dosis a suministrar -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/nunito_bold"
+        android:text="Dosis / Cantidad aplicada *"
+        android:textColor="@color/text_primary"
+        android:textSize="13sp"
+        android:layout_marginBottom="6dp" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:layout_marginBottom="8dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDosisMenos"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            android:padding="0dp"
+            app:icon="@drawable/ic_remove"
+            app:iconGravity="textStart"
+            app:iconSize="16dp"
+            app:iconTint="@color/primary"
+            app:cornerRadius="8dp"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="1dp" />
+
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilDosisCantidad"
+            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginHorizontal="8dp"
+            app:boxStrokeColor="@color/primary"
+            app:suffixText="ml">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etDosisCantidad"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:inputType="numberDecimal"
+                android:text="1.0"
+                android:fontFamily="@font/nunito_bold"
+                android:textColor="@color/text_primary" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnDosisMas"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
+            android:insetLeft="0dp"
+            android:insetTop="0dp"
+            android:insetRight="0dp"
+            android:insetBottom="0dp"
+            android:padding="0dp"
+            app:icon="@drawable/ic_add"
+            app:iconGravity="textStart"
+            app:iconSize="16dp"
+            app:iconTint="@color/primary"
+            app:cornerRadius="8dp"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="1dp" />
+    </LinearLayout>
+
+    <!-- Chips Rápidos de Dosis -->
+    <HorizontalScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:clipToPadding="false"
+        android:layout_marginBottom="12dp">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chipDosis05"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:minHeight="32dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="0dp"
+                android:text="0.5"
+                android:textAllCaps="false"
+                android:textSize="11sp"
+                android:textColor="@color/text_secondary"
+                app:cornerRadius="8dp"
+                app:backgroundTint="@color/chip_bg_neutral"
+                app:strokeColor="@color/chip_stroke_neutral"
+                app:strokeWidth="1dp"
+                android:layout_marginEnd="6dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chipDosis10"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:minHeight="32dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="0dp"
+                android:text="1.0"
+                android:textAllCaps="false"
+                android:textSize="11sp"
+                android:textColor="@color/text_secondary"
+                app:cornerRadius="8dp"
+                app:backgroundTint="@color/chip_bg_neutral"
+                app:strokeColor="@color/chip_stroke_neutral"
+                app:strokeWidth="1dp"
+                android:layout_marginEnd="6dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chipDosis15"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:minHeight="32dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="0dp"
+                android:text="1.5"
+                android:textAllCaps="false"
+                android:textSize="11sp"
+                android:textColor="@color/text_secondary"
+                app:cornerRadius="8dp"
+                app:backgroundTint="@color/chip_bg_neutral"
+                app:strokeColor="@color/chip_stroke_neutral"
+                app:strokeWidth="1dp"
+                android:layout_marginEnd="6dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chipDosis20"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:minHeight="32dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="0dp"
+                android:text="2.0"
+                android:textAllCaps="false"
+                android:textSize="11sp"
+                android:textColor="@color/text_secondary"
+                app:cornerRadius="8dp"
+                app:backgroundTint="@color/chip_bg_neutral"
+                app:strokeColor="@color/chip_stroke_neutral"
+                app:strokeWidth="1dp"
+                android:layout_marginEnd="6dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chipDosis50"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="32dp"
+                android:minHeight="32dp"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="0dp"
+                android:text="5.0"
+                android:textAllCaps="false"
+                android:textSize="11sp"
+                android:textColor="@color/text_secondary"
+                app:cornerRadius="8dp"
+                app:backgroundTint="@color/chip_bg_neutral"
+                app:strokeColor="@color/chip_stroke_neutral"
+                app:strokeWidth="1dp" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- Selector de Vía de Administración -->
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilViaAdministracion"
+        style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginBottom="12dp"
+        android:hint="Vía de administración *"
+        app:boxStrokeColor="@color/primary">
+
+        <com.google.android.material.textfield.MaterialAutoCompleteTextView
+            android:id="@+id/autoCompleteVia"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:inputType="none"
+            android:textColor="@color/text_primary" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- Switch de sincronización con el texto del tratamiento -->
+    <com.google.android.material.materialswitch.MaterialSwitch
+        android:id="@+id/swSincronizarTratamientoTexto"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:checked="true"
+        android:fontFamily="@font/nunito_bold"
+        android:text="Redactar automáticamente en el tratamiento"
+        android:textColor="@color/text_primary"
+        android:textSize="13sp"
+        android:layout_marginBottom="16dp" />
+
+    <!-- Botón Confirmar Aplicar -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnConfirmarAplicar"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:fontFamily="@font/nunito_bold"
+        android:text="Aplicar y descontar del maletín"
+        android:textAllCaps="false"
+        android:textSize="14sp"
+        app:cornerRadius="12dp"
+        app:icon="@drawable/ic_check"
+        app:iconGravity="textStart" />
+
+</LinearLayout>

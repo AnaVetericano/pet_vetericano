@@ -75,6 +75,11 @@ val ActivityActaAtencionBinding.chipTratamientoMedicacion: MaterialButton get() 
 val ActivityActaAtencionBinding.chipTratamientoTraslado: MaterialButton get() = layoutPaso2.chipTratamientoTraslado
 val ActivityActaAtencionBinding.tilTratamiento: TextInputLayout get() = layoutPaso2.tilTratamiento
 val ActivityActaAtencionBinding.etTratamiento: TextInputEditText get() = layoutPaso2.etTratamiento
+val ActivityActaAtencionBinding.cardMedicamentosMaletin: MaterialCardView get() = layoutPaso2.cardMedicamentosMaletin
+val ActivityActaAtencionBinding.tvSubtituloMaletinActa: TextView get() = layoutPaso2.tvSubtituloMaletinActa
+val ActivityActaAtencionBinding.tvConteoMedicamentosAplicados: TextView get() = layoutPaso2.tvConteoMedicamentosAplicados
+val ActivityActaAtencionBinding.btnAplicarMedicamentoMaletin: MaterialButton get() = layoutPaso2.btnAplicarMedicamentoMaletin
+val ActivityActaAtencionBinding.containerMedicamentosAplicados: LinearLayout get() = layoutPaso2.containerMedicamentosAplicados
 val ActivityActaAtencionBinding.cardEvidenciaMultimedia: MaterialCardView get() = layoutPaso2.cardEvidenciaMultimedia
 val ActivityActaAtencionBinding.tvSubtituloMedia: TextView get() = layoutPaso2.tvSubtituloMedia
 val ActivityActaAtencionBinding.layoutBotonesAccionMedia: LinearLayout get() = layoutPaso2.layoutBotonesAccionMedia

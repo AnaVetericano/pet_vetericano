@@ -202,175 +202,182 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <!-- Tarjetas de Conteo 2x2 M3 (Asignadas, En tratamiento, Atendidas, Transferidas) -->
-                <LinearLayout
+                <!-- Tarjeta Principal: Maletín con Medicamentos -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardMaletinMedicamentos"
+                    style="?attr/materialCardViewFilledStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
-                    android:orientation="vertical">
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/white"
+                    app:cardCornerRadius="18dp"
+                    app:cardElevation="2dp"
+                    app:strokeColor="@color/card_stroke"
+                    app:strokeWidth="1dp">
 
-                    <!-- Fila 1: Asignadas y En tratamiento -->
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal">
+                        android:orientation="vertical"
+                        android:padding="16dp">
 
-                        <!-- 1. Asignadas -->
-                        <com.google.android.material.card.MaterialCardView
-                            style="?attr/materialCardViewFilledStyle"
-                            android:layout_width="0dp"
+                        <!-- Cabecera de la tarjeta: Icono del maletín + Textos + Flecha -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginEnd="6dp"
-                            android:layout_weight="1"
-                            app:cardCornerRadius="14dp"
-                            app:cardElevation="1dp"
-                            app:cardBackgroundColor="@color/white"
-                            app:strokeColor="@color/card_stroke"
-                            app:strokeWidth="1dp">
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <!-- Contenedor del Maletín Médico -->
+                            <FrameLayout
+                                android:layout_width="54dp"
+                                android:layout_height="54dp"
+                                android:background="@drawable/bg_maletin_icon_container">
+
+                                <ImageView
+                                    android:layout_width="32dp"
+                                    android:layout_height="32dp"
+                                    android:layout_gravity="center"
+                                    android:contentDescription="Maletín con medicamentos"
+                                    android:src="@drawable/ic_medical_bag" />
+                            </FrameLayout>
+
+                            <!-- Títulos del Maletín -->
                             <LinearLayout
-                                android:layout_width="match_parent"
+                                android:layout_width="0dp"
                                 android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:padding="12dp">
+                                android:layout_marginStart="14dp"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
                                 <TextView
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito"
-                                    android:text="Peticiones asignadas"
-                                    android:textColor="@color/text_secondary"
-                                    android:textSize="11sp"/>
-                                <TextView
-                                    android:id="@+id/tvPeticionesAsignadas"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="2dp"
-                                    android:fontFamily="@font/nunito_display"
-                                    android:text="0"
+                                    android:letterSpacing="0.04"
+                                    android:text="BOTIQUÍN VETERINARIO"
                                     android:textColor="@color/primary"
-                                    android:textSize="22sp"
-                                    android:textStyle="bold"/>
-                            </LinearLayout>
-                        </com.google.android.material.card.MaterialCardView>
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
 
-                        <!-- 2. En tratamiento -->
-                        <com.google.android.material.card.MaterialCardView
-                            style="?attr/materialCardViewFilledStyle"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:layout_weight="1"
-                            app:cardCornerRadius="14dp"
-                            app:cardElevation="1dp"
-                            app:cardBackgroundColor="@color/white"
-                            app:strokeColor="@color/card_stroke"
-                            app:strokeWidth="1dp">
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:padding="12dp">
                                 <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="En tratamiento"
-                                    android:textColor="@color/text_secondary"
-                                    android:textSize="11sp"/>
-                                <TextView
-                                    android:id="@+id/tvPeticionesEnTratamiento"
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:fontFamily="@font/nunito_display"
-                                    android:text="0"
-                                    android:textColor="@color/secondary_dark"
-                                    android:textSize="22sp"
-                                    android:textStyle="bold"/>
+                                    android:text="Maletín de Medicamentos"
+                                    android:textColor="@color/text_primary"
+                                    android:textSize="17sp"
+                                    android:textStyle="bold" />
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Inventario disponible para atención"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
                             </LinearLayout>
-                        </com.google.android.material.card.MaterialCardView>
+
+                            <!-- Flecha indicadora -->
+                            <ImageView
+                                android:layout_width="22dp"
+                                android:layout_height="22dp"
+                                android:layout_gravity="center_vertical"
+                                android:src="@drawable/ic_chevron_right"
+                                app:tint="@color/text_muted" />
+                        </LinearLayout>
+
+                        <!-- Divisor sutil -->
+                        <View
+                            android:layout_width="match_parent"
+                            android:layout_height="1dp"
+                            android:layout_marginVertical="14dp"
+                            android:background="@color/divider" />
+
+                        <!-- Sección de conteo e indicadores -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal">
+
+                            <!-- Conteo Total -->
+                            <LinearLayout
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:orientation="vertical">
+
+                                <TextView
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Total en maletín"
+                                    android:textColor="@color/text_secondary"
+                                    android:textSize="12sp" />
+
+                                <LinearLayout
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:gravity="bottom"
+                                    android:orientation="horizontal">
+
+                                    <TextView
+                                        android:id="@+id/tvTotalMedicamentos"
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:fontFamily="@font/nunito_display"
+                                        android:text="24"
+                                        android:textColor="@color/primary"
+                                        android:textSize="32sp"
+                                        android:textStyle="bold" />
+
+                                    <TextView
+                                        android:layout_width="wrap_content"
+                                        android:layout_height="wrap_content"
+                                        android:layout_marginStart="6dp"
+                                        android:fontFamily="@font/nunito"
+                                        android:text="medicamentos"
+                                        android:textColor="@color/text_secondary"
+                                        android:textSize="13sp"
+                                        android:textStyle="bold" />
+                                </LinearLayout>
+                            </LinearLayout>
+
+                            <!-- Mini badge o resumen de stock -->
+                            <LinearLayout
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:background="@drawable/bg_rounded_badge"
+                                android:backgroundTint="@color/badge_alta_bg"
+                                android:gravity="center_vertical"
+                                android:orientation="horizontal"
+                                android:paddingHorizontal="10dp"
+                                android:paddingVertical="6dp">
+
+                                <ImageView
+                                    android:layout_width="14dp"
+                                    android:layout_height="14dp"
+                                    android:layout_marginEnd="5dp"
+                                    android:src="@drawable/ic_pill"
+                                    app:tint="@color/badge_alta_text" />
+
+                                <TextView
+                                    android:id="@+id/tvEstadoMaletin"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/nunito"
+                                    android:text="Stock disponible"
+                                    android:textColor="@color/badge_alta_text"
+                                    android:textSize="11sp"
+                                    android:textStyle="bold" />
+                            </LinearLayout>
+                        </LinearLayout>
                     </LinearLayout>
-
-                    <!-- Fila 2: Atendidas y Transferidas -->
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
-                        android:orientation="horizontal">
-
-                        <!-- 3. Atendidas -->
-                        <com.google.android.material.card.MaterialCardView
-                            style="?attr/materialCardViewFilledStyle"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginEnd="6dp"
-                            android:layout_weight="1"
-                            app:cardCornerRadius="14dp"
-                            app:cardElevation="1dp"
-                            app:cardBackgroundColor="@color/white"
-                            app:strokeColor="@color/card_stroke"
-                            app:strokeWidth="1dp">
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:padding="12dp">
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Atendidas"
-                                    android:textColor="@color/text_secondary"
-                                    android:textSize="11sp"/>
-                                <TextView
-                                    android:id="@+id/tvConteoAtencion"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="2dp"
-                                    android:fontFamily="@font/nunito_display"
-                                    android:text="0"
-                                    android:textColor="@color/success_dark"
-                                    android:textSize="22sp"
-                                    android:textStyle="bold"/>
-                            </LinearLayout>
-                        </com.google.android.material.card.MaterialCardView>
-
-                        <!-- 4. Transferidas a otro centro -->
-                        <com.google.android.material.card.MaterialCardView
-                            style="?attr/materialCardViewFilledStyle"
-                            android:layout_width="0dp"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="6dp"
-                            android:layout_weight="1"
-                            app:cardCornerRadius="14dp"
-                            app:cardElevation="1dp"
-                            app:cardBackgroundColor="@color/white"
-                            app:strokeColor="@color/card_stroke"
-                            app:strokeWidth="1dp">
-                            <LinearLayout
-                                android:layout_width="match_parent"
-                                android:layout_height="wrap_content"
-                                android:orientation="vertical"
-                                android:padding="12dp">
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:fontFamily="@font/nunito"
-                                    android:text="Transferidas"
-                                    android:textColor="@color/text_secondary"
-                                    android:textSize="11sp"/>
-                                <TextView
-                                    android:id="@+id/tvPeticionesTransferidas"
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="2dp"
-                                    android:fontFamily="@font/nunito_display"
-                                    android:text="0"
-                                    android:textColor="@color/grafico_transferidas"
-                                    android:textSize="22sp"
-                                    android:textStyle="bold"/>
-                            </LinearLayout>
-                        </com.google.android.material.card.MaterialCardView>
-                    </LinearLayout>
-                </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
 
                 <!-- Botón de Acción Principal Material Design 3 -->
                 <com.google.android.material.card.MaterialCardView

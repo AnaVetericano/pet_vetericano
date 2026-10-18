@@ -28,7 +28,7 @@
                 android:id="@+id/ivMediaThumbnail"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:contentDescription="Miniatura de evidencia"
+                android:contentDescription="@string/cd_miniatura_de_evidencia"
                 android:scaleType="centerCrop" />
 
             <!-- Capa superpuesta para videos (Ícono Play y Etiqueta) -->
@@ -61,7 +61,7 @@
                     android:fontFamily="@font/nunito_bold"
                     android:paddingHorizontal="6dp"
                     android:paddingVertical="1dp"
-                    android:text="VIDEO"
+                    android:text="@string/badge_video"
                     android:textColor="@color/white"
                     android:textSize="8sp" />
             </FrameLayout>
@@ -77,7 +77,7 @@
         android:layout_gravity="top|end"
         android:background="@drawable/circle_blue"
         android:backgroundTint="#EF4444"
-        android:contentDescription="Eliminar archivo"
+        android:contentDescription="@string/cd_eliminar_archivo"
         android:elevation="4dp"
         android:padding="4dp"
         android:src="@drawable/ic_close_circle"

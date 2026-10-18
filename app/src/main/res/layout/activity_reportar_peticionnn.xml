@@ -15,7 +15,7 @@
         android:layout_width="44dp"
         android:layout_height="44dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Atrás"
+        android:contentDescription="@string/cd_atras"
         android:src="@drawable/outline_arrow_back_ios_24"
         app:tint="@color/blue"
         app:layout_constraintStart_toStartOf="parent"
@@ -26,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/nunito_display"
-        android:text="Reportar Petición"
+        android:text="@string/lbl_reportar_peticion"
         android:textColor="@color/blue"
         android:textSize="22sp"
         android:textStyle="bold"
@@ -41,7 +41,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/nunito"
-        android:text="Paso 3 de 4"
+        android:text="@string/lbl_paso_3_de_4"
         android:textColor="@color/text_primary"
         android:textSize="15sp"
         android:textStyle="bold"
@@ -84,7 +84,7 @@
         android:layout_marginTop="24dp"
         android:fontFamily="@font/nunito_display"
         android:gravity="center"
-        android:text="Cuéntanos más sobre lo que está sucediendo"
+        android:text="@string/lbl_cuentanos_mas_sobre_lo_que"
         android:textColor="@color/text_primary"
         android:textSize="17sp"
         android:textStyle="bold"
@@ -112,7 +112,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="top"
-            android:hint="Describe la situación del animal, raza aproximada, signos de lesión..."
+            android:hint="@string/hint_describe_la_situacion_del_animal"
             android:inputType="textMultiLine"
             android:textColor="@color/text_primary"
             android:textColorHint="@color/text_muted"
@@ -137,7 +137,7 @@
             android:layout_weight="1"
             android:layout_marginEnd="6dp"
             android:fontFamily="@font/nunito_bold"
-            android:text="Adjuntar foto"
+            android:text="@string/btn_adjuntar_foto"
             android:textAllCaps="false"
             android:textColor="@color/primary"
             android:textSize="13.5sp"
@@ -160,7 +160,7 @@
             android:layout_weight="1"
             android:layout_marginStart="6dp"
             android:fontFamily="@font/nunito_bold"
-            android:text="Grabar video"
+            android:text="@string/lbl_grabar_video"
             android:textAllCaps="false"
             android:textColor="@color/secondary_dark"
             android:textSize="13.5sp"
@@ -184,7 +184,7 @@
         android:layout_marginTop="8dp"
         android:fontFamily="@font/nunito"
         android:gravity="center"
-        android:text="Puedes adjuntar hasta 2 evidencias (fotos o video corto)"
+        android:text="@string/lbl_puedes_adjuntar_hasta_2_evidencias"
         android:textColor="@color/text_secondary"
         android:textSize="12sp"
         app:layout_constraintTop_toBottomOf="@+id/layoutBotonesMultimedia" />
@@ -223,7 +223,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
-                    android:contentDescription="Evidencia 1" />
+                    android:contentDescription="@string/cd_evidencia_1" />
 
                 <!-- Overlay de Video 1 (Ícono Play y Etiqueta VIDEO) -->
                 <FrameLayout
@@ -253,7 +253,7 @@
                         android:fontFamily="@font/nunito_bold"
                         android:paddingHorizontal="6dp"
                         android:paddingVertical="1dp"
-                        android:text="VIDEO"
+                        android:text="@string/badge_video"
                         android:textColor="@color/white"
                         android:textSize="9sp" />
                 </FrameLayout>
@@ -266,7 +266,7 @@
                     android:layout_margin="6dp"
                     android:background="@drawable/bg_circle"
                     android:src="@android:drawable/ic_menu_close_clear_cancel"
-                    android:contentDescription="Eliminar evidencia 1"
+                    android:contentDescription="@string/cd_eliminar_evidencia_1"
                     app:tint="@color/white" />
 
             </FrameLayout>
@@ -294,7 +294,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
                     android:scaleType="centerCrop"
-                    android:contentDescription="Evidencia 2" />
+                    android:contentDescription="@string/cd_evidencia_2" />
 
                 <!-- Overlay de Video 2 (Ícono Play y Etiqueta VIDEO) -->
                 <FrameLayout
@@ -324,7 +324,7 @@
                         android:fontFamily="@font/nunito_bold"
                         android:paddingHorizontal="6dp"
                         android:paddingVertical="1dp"
-                        android:text="VIDEO"
+                        android:text="@string/badge_video"
                         android:textColor="@color/white"
                         android:textSize="9sp" />
                 </FrameLayout>
@@ -337,7 +337,7 @@
                     android:layout_margin="6dp"
                     android:background="@drawable/bg_circle"
                     android:src="@android:drawable/ic_menu_close_clear_cancel"
-                    android:contentDescription="Eliminar evidencia 2"
+                    android:contentDescription="@string/cd_eliminar_evidencia_2"
                     app:tint="@color/white" />
 
             </FrameLayout>
@@ -350,7 +350,7 @@
         android:layout_width="match_parent"
         android:layout_height="56dp"
         android:fontFamily="@font/nunito"
-        android:text="Continuar"
+        android:text="@string/btn_continuar"
         android:textAllCaps="false"
         android:textColor="@color/white"
         android:textSize="16sp"

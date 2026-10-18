@@ -25,7 +25,7 @@
             android:id="@+id/imgEvento"
             android:layout_width="match_parent"
             android:layout_height="180dp"
-            android:contentDescription="Imagen del evento"
+            android:contentDescription="@string/cd_imagen_del_evento"
             android:scaleType="centerCrop"
             android:src="@drawable/pastor_gato" />
 
@@ -45,7 +45,7 @@
                 android:fontFamily="@font/nunito"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="4dp"
-                android:text="ADOPCIÓN"
+                android:text="@string/lbl_adopcion_2"
                 android:textColor="@color/white"
                 android:textSize="11sp"
                 android:textStyle="bold" />
@@ -57,7 +57,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:fontFamily="@font/nunito_display"
-                android:text="Gran Jornada de Adopción"
+                android:text="@string/lbl_gran_jornada_de_adopcion"
                 android:textColor="@color/text_primary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -69,7 +69,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
                 android:fontFamily="@font/nunito"
-                android:text="Descripción del evento"
+                android:text="@string/lbl_descripcion_del_evento"
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp" />
 
@@ -80,7 +80,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="10dp"
                 android:fontFamily="@font/nunito"
-                android:text="📅 15 de septiembre de 2026"
+                android:text="@string/lbl_15_de_septiembre_de_2026"
                 android:textColor="@color/blue"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -92,7 +92,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:fontFamily="@font/nunito"
-                android:text="🕐 9:00 AM - 3:00 PM"
+                android:text="@string/lbl_9_00_am_3_00"
                 android:textColor="@color/text_secondary"
                 android:textSize="13sp" />
 
@@ -103,7 +103,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:fontFamily="@font/nunito"
-                android:text="📍 Parque Central"
+                android:text="@string/lbl_parque_central"
                 android:textColor="@color/text_secondary"
                 android:textSize="13sp" />
 
@@ -119,10 +119,10 @@
                     android:id="@+id/txtVerDetalle"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:contentDescription="Postularse al evento"
+                    android:contentDescription="@string/cd_postularse_al_evento"
                     android:fontFamily="@font/nunito"
                     android:padding="4dp"
-                    android:text="Postularse"
+                    android:text="@string/lbl_postularse"
                     android:textColor="@color/blue"
                     android:textSize="14sp"
                     android:textStyle="bold" />

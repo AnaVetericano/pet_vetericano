@@ -25,7 +25,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/nunito_display"
-            android:text="Hola,"
+            android:text="@string/lbl_hola"
             android:textColor="@color/blue"
             android:textSize="26sp"
             android:textStyle="bold" />
@@ -36,7 +36,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="2dp"
             android:fontFamily="@font/nunito"
-            android:text="¡Gracias por ayudar!"
+            android:text="@string/lbl_gracias_por_ayudar"
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
     </LinearLayout>
@@ -63,7 +63,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="12dp"
                 android:fontFamily="@font/nunito"
-                android:text="¿Qué deseas hacer hoy?"
+                android:text="@string/lbl_que_deseas_hacer_hoy"
                 android:textColor="@color/text_primary"
                 android:textSize="18sp"
                 android:textStyle="bold" />
@@ -101,7 +101,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/nunito_display"
-                            android:text="Reportar\nIncidencia"
+                            android:text="@string/lbl_reportar_incidencia"
                             android:textColor="@color/darkblue"
                             android:textSize="22sp"
                             android:textStyle="bold" />
@@ -111,7 +111,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:fontFamily="@font/nunito"
-                            android:text="Notifica animales heridos, en calle o maltrato"
+                            android:text="@string/lbl_notifica_animales_heridos_en_calle"
                             android:textColor="@color/darkblue2"
                             android:textSize="13sp" />
                     </LinearLayout>
@@ -130,7 +130,7 @@
                             android:layout_width="38dp"
                             android:layout_height="38dp"
                             android:layout_gravity="center"
-                            android:contentDescription="Reportar petición"
+                            android:contentDescription="@string/cd_reportar_peticion"
                             android:scaleType="fitCenter"
                             android:src="@drawable/paw_cat"
                             app:tint="@color/darkblue" />
@@ -185,7 +185,7 @@
                                 android:layout_width="28dp"
                                 android:layout_height="28dp"
                                 android:layout_gravity="center"
-                                android:contentDescription="Adopción"
+                                android:contentDescription="@string/cd_adopcion"
                                 android:scaleType="fitCenter"
                                 android:src="@drawable/adopcionicon"
                                 app:tint="@color/blue" />
@@ -197,7 +197,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
                             android:fontFamily="@font/nunito_display"
-                            android:text="Adopción"
+                            android:text="@string/lbl_adopcion"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp"
                             android:textStyle="bold" />
@@ -207,7 +207,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:fontFamily="@font/nunito"
-                            android:text="Dales un hogar"
+                            android:text="@string/lbl_dales_un_hogar"
                             android:textColor="@color/text_muted"
                             android:textSize="11sp" />
 
@@ -250,7 +250,7 @@
                                 android:layout_width="28dp"
                                 android:layout_height="28dp"
                                 android:layout_gravity="center"
-                                android:contentDescription="Voluntariado"
+                                android:contentDescription="@string/cd_voluntariado"
                                 android:scaleType="fitCenter"
                                 android:src="@drawable/heart"
                                 app:tint="@color/secondary_dark" />
@@ -262,7 +262,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="12dp"
                             android:fontFamily="@font/nunito_display"
-                            android:text="Voluntariado"
+                            android:text="@string/lbl_voluntariado"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp"
                             android:textStyle="bold" />
@@ -272,7 +272,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:fontFamily="@font/nunito"
-                            android:text="Únete a la causa"
+                            android:text="@string/lbl_unete_a_la_causa"
                             android:textColor="@color/text_muted"
                             android:textSize="11sp" />
 
@@ -291,7 +291,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="24dp"
                 android:fontFamily="@font/nunito"
-                android:text="Próximos eventos"
+                android:text="@string/lbl_proximos_eventos"
                 android:textColor="@color/text_primary"
                 android:textSize="18sp"
                 android:textStyle="bold"
@@ -361,7 +361,7 @@
                 android:layout_weight="1"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
-                android:contentDescription="Inicio"
+                android:contentDescription="@string/cd_inicio"
                 android:focusable="true"
                 android:padding="12dp"
                 android:src="@drawable/house"
@@ -390,7 +390,7 @@
                         android:layout_width="24dp"
                         android:layout_height="24dp"
                         android:layout_gravity="center"
-                        android:contentDescription="Reportar petición"
+                        android:contentDescription="@string/cd_reportar_peticion"
                         android:src="@drawable/paw_cat"
                         app:tint="@color/darkblue" />
 
@@ -406,7 +406,7 @@
                 android:layout_weight="1"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
-                android:contentDescription="Eventos"
+                android:contentDescription="@string/cd_eventos"
                 android:focusable="true"
                 android:padding="12dp"
                 android:src="@drawable/heart"
@@ -420,7 +420,7 @@
                 android:layout_weight="1"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
-                android:contentDescription="Perfil"
+                android:contentDescription="@string/cd_perfil"
                 android:focusable="true"
                 android:padding="12dp"
                 android:src="@drawable/user"

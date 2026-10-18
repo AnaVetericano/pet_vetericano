@@ -36,7 +36,7 @@
                 <ImageView
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:contentDescription="Cerrar sesión"
+                    android:contentDescription="@string/cd_cerrar_sesion"
                     android:padding="15dp"
                     android:src="@drawable/baseline_logout_24"
                     app:tint="@color/radix_tomato_solid" />
@@ -50,7 +50,7 @@
                 android:layout_marginTop="16dp"
                 android:fontFamily="@font/nunito_display"
                 android:gravity="center"
-                android:text="¿Cerrar sesión?"
+                android:text="@string/lbl_cerrar_sesion"
                 android:textColor="@color/text_primary"
                 android:textSize="21sp"
                 android:textStyle="bold" />
@@ -89,7 +89,7 @@
                         android:ellipsize="end"
                         android:fontFamily="@font/nunito_bold"
                         android:maxLines="1"
-                        android:text="usuario@vetericano.com"
+                        android:text="@string/lbl_usuario_vetericano_com"
                         android:textColor="@color/primary"
                         android:textSize="13sp" />
                 </LinearLayout>
@@ -104,7 +104,7 @@
                 android:fontFamily="@font/nunito"
                 android:gravity="center"
                 android:lineSpacingExtra="3dp"
-                android:text="Saldrás de tu cuenta en este dispositivo. Tu información y foto de perfil seguirán guardadas cuando vuelvas a ingresar."
+                android:text="@string/lbl_saldras_de_tu_cuenta_en"
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp" />
 
@@ -126,7 +126,7 @@
                     android:fontFamily="@font/nunito_bold"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-                    android:text="Cancelar"
+                    android:text="@string/btn_cancelar"
                     android:textAllCaps="false"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp"
@@ -144,7 +144,7 @@
                     android:fontFamily="@font/nunito_bold"
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
-                    android:text="Cerrar sesión"
+                    android:text="@string/btn_cerrar_sesion"
                     android:textAllCaps="false"
                     android:textColor="@color/white"
                     android:textSize="14sp"

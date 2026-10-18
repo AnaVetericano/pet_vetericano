@@ -34,7 +34,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
                 android:fontFamily="@font/nunito_bold"
-                android:text="Identificación de la atención"
+                android:text="@string/lbl_identificacion_de_la_atencion"
                 android:textColor="@color/text_primary"
                 android:textSize="16sp" />
 
@@ -53,7 +53,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="6dp"
                     android:layout_weight="1"
-                    android:hint="No. Radicado">
+                    android:hint="@string/hint_no_radicado">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etRadicado"
@@ -72,7 +72,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="6dp"
                     android:layout_weight="1"
-                    android:hint="Fecha atención">
+                    android:hint="@string/hint_fecha_atencion">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etFechaAtencion"
@@ -92,7 +92,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:hint="Solicitud de atención por *"
+                android:hint="@string/hint_solicitud_de_atencion_por"
                 app:boxStrokeColor="@color/primary">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -111,7 +111,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:hint="Quién reporta *"
+                android:hint="@string/hint_quien_reporta"
                 app:boxStrokeColor="@color/primary">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -128,7 +128,7 @@
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="¿Quién reporta? (Especifique Otro) *"
+                android:hint="@string/hint_quien_reporta_especifique_otro"
                 android:visibility="gone"
                 app:boxStrokeColor="@color/primary">
 
@@ -175,7 +175,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:fontFamily="@font/nunito_bold"
-                    android:text="Propietario / Responsable"
+                    android:text="@string/lbl_propietario_responsable"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp" />
 
@@ -189,7 +189,7 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
-                    android:text="En calle (Sin tutor)"
+                    android:text="@string/lbl_en_calle_sin_tutor"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
@@ -209,7 +209,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:hint="Nombre completo *"
+                android:hint="@string/hint_nombre_completo"
                 app:boxStrokeColor="@color/primary"
                 app:startIconDrawable="@drawable/user"
                 app:startIconTint="@color/primary">
@@ -237,7 +237,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginEnd="6dp"
                     android:layout_weight="1"
-                    android:hint="No. Cédula *"
+                    android:hint="@string/hint_no_cedula"
                     app:boxStrokeColor="@color/primary">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -255,7 +255,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="6dp"
                     android:layout_weight="1"
-                    android:hint="Teléfono *"
+                    android:hint="@string/hint_telefono_2"
                     app:boxStrokeColor="@color/primary">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -274,7 +274,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:hint="Correo electrónico (opcional)"
+                android:hint="@string/hint_correo_electronico_opcional"
                 app:boxStrokeColor="@color/primary"
                 app:startIconDrawable="@drawable/mail"
                 app:startIconTint="@color/primary">
@@ -294,7 +294,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
-                android:hint="Barrio *"
+                android:hint="@string/hint_barrio"
                 app:boxStrokeColor="@color/primary">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -311,7 +311,7 @@
                 style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Dirección domicilio *"
+                android:hint="@string/hint_direccion_domicilio"
                 app:boxStrokeColor="@color/primary">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -349,7 +349,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="10dp"
                 android:fontFamily="@font/nunito_bold"
-                android:text="Lugar de atención en campo"
+                android:text="@string/lbl_lugar_de_atencion_en_campo"
                 android:textColor="@color/text_primary"
                 android:textSize="16sp" />
 
@@ -367,7 +367,7 @@
                     android:insetTop="0dp"
                     android:insetBottom="0dp"
                     android:fontFamily="@font/nunito_bold"
-                    android:text="Fijar posición GPS"
+                    android:text="@string/lbl_fijar_posicion_gps"
                     android:textAllCaps="false"
                     android:textColor="@color/primary"
                     android:textSize="12sp"
@@ -384,7 +384,7 @@
                     android:layout_marginStart="12dp"
                     android:layout_weight="1"
                     android:fontFamily="@font/nunito_bold"
-                    android:text="Sin capturar"
+                    android:text="@string/lbl_sin_capturar"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -395,7 +395,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="8dp"
                 android:fontFamily="@font/nunito"
-                android:text="Presione el botón para fijar la ubicación GPS del operativo."
+                android:text="@string/lbl_presione_el_boton_para_fijar"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 

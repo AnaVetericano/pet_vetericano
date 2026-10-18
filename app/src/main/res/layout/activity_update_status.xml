@@ -30,7 +30,7 @@
             android:layout_height="32dp"
             android:background="?attr/selectableItemBackgroundBorderless"
             android:clickable="true"
-            android:contentDescription="Regresar"
+            android:contentDescription="@string/cd_regresar"
             android:focusable="true"
             android:src="@drawable/ic_back"
             app:tint="@color/blue"
@@ -48,7 +48,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/nunito_display"
-                android:text="Actualizar estado"
+                android:text="@string/btn_actualizar_estado"
                 android:textColor="@color/blue"
                 android:textSize="22sp"
                 android:textStyle="bold" />
@@ -58,7 +58,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/nunito"
-                android:text="PET-2026-00001"
+                android:text="@string/lbl_pet_2026_00001"
                 android:textColor="@color/blue"
                 android:textSize="12sp"
                 android:textStyle="bold" />
@@ -81,7 +81,7 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:fontFamily="@font/nunito_display"
-            android:text="Actualizar estado"
+            android:text="@string/btn_actualizar_estado"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold"
@@ -130,7 +130,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/nunito_display"
-                        android:text="Estado actual"
+                        android:text="@string/lbl_estado_actual"
                         android:textColor="@color/blue"
                         android:textSize="14sp"
                         android:textStyle="bold" />
@@ -147,7 +147,7 @@
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
                             android:fontFamily="@font/nunito"
-                            android:text="Registrado como"
+                            android:text="@string/lbl_registrado_como"
                             android:textColor="@color/text_muted"
                             android:textSize="14sp" />
 
@@ -159,7 +159,7 @@
                             android:paddingHorizontal="12dp"
                             android:paddingVertical="5dp"
                             android:fontFamily="@font/nunito"
-                            android:text="En evaluación"
+                            android:text="@string/lbl_en_evaluacion"
                             android:textColor="@color/secondary_dark"
                             android:textSize="12sp"
                             android:textStyle="bold"
@@ -184,7 +184,7 @@
                             android:layout_height="20dp"
                             android:src="@drawable/warning_icon"
                             app:tint="@color/badge_urgente_text"
-                            android:contentDescription="Alerta caso cerrado" />
+                            android:contentDescription="@string/cd_alerta_caso_cerrado" />
 
                         <TextView
                             android:id="@+id/tvMensajeCerrado"
@@ -193,7 +193,7 @@
                             android:layout_weight="1"
                             android:layout_marginStart="10dp"
                             android:fontFamily="@font/nunito"
-                            android:text="Este caso se encuentra finalizado. No se permiten nuevas modificaciones de estado para garantizar la trazabilidad médica y legal."
+                            android:text="@string/lbl_este_caso_se_encuentra_finalizado"
                             android:textColor="@color/badge_urgente_text"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -215,7 +215,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/nunito"
-                            android:text="💡 El paso de 'En evaluación' a 'En observación' o 'En tratamiento' se realiza automáticamente al guardar el Acta de Atención. También puedes registrar aquí un traslado externo o desenlace si aplica."
+                            android:text="@string/lbl_el_paso_de_en_evaluacion"
                             android:textColor="@color/primary"
                             android:textSize="12sp" />
                     </LinearLayout>
@@ -245,7 +245,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/nunito_display"
-                        android:text="Evolución clínica del paciente"
+                        android:text="@string/lbl_evolucion_clinica_del_paciente"
                         android:textColor="@color/blue"
                         android:textSize="15sp"
                         android:textStyle="bold" />
@@ -256,7 +256,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:fontFamily="@font/nunito"
-                        android:text="Fase activa del paciente durante su estadía médica"
+                        android:text="@string/lbl_fase_activa_del_paciente_durante"
                         android:textColor="@color/text_muted"
                         android:textSize="12sp" />
 
@@ -302,7 +302,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito"
-                                    android:text="En observación"
+                                    android:text="@string/lbl_en_observacion"
                                     android:textColor="@color/text_primary"
                                     android:textSize="14sp"
                                     android:textStyle="bold" />
@@ -313,7 +313,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:fontFamily="@font/nunito"
-                                    android:text="Monitoreo constante de constantes y evolución sin medicación invasiva"
+                                    android:text="@string/lbl_monitoreo_constante_de_constantes_y"
                                     android:textColor="@color/text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
@@ -362,7 +362,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito"
-                                    android:text="En tratamiento"
+                                    android:text="@string/lbl_en_tratamiento_2"
                                     android:textColor="@color/text_primary"
                                     android:textSize="14sp"
                                     android:textStyle="bold" />
@@ -373,7 +373,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:fontFamily="@font/nunito"
-                                    android:text="Bajo administración de medicamentos, curaciones o procedimientos activos"
+                                    android:text="@string/lbl_bajo_administracion_de_medicamentos_curaciones"
                                     android:textColor="@color/text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
@@ -422,7 +422,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito"
-                                    android:text="Alta médica"
+                                    android:text="@string/lbl_alta_medica"
                                     android:textColor="@color/text_primary"
                                     android:textSize="14sp"
                                     android:textStyle="bold" />
@@ -433,7 +433,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:fontFamily="@font/nunito"
-                                    android:text="Recuperación completada exitosamente. Finaliza el seguimiento clínico"
+                                    android:text="@string/lbl_recuperacion_completada_exitosamente_finaliza_el"
                                     android:textColor="@color/text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
@@ -464,7 +464,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/nunito_display"
-                        android:text="Cierre o derivación especial"
+                        android:text="@string/lbl_cierre_o_derivacion_especial"
                         android:textColor="@color/blue"
                         android:textSize="15sp"
                         android:textStyle="bold" />
@@ -475,7 +475,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:fontFamily="@font/nunito"
-                        android:text="Derivaciones a centros externos o desenlaces excepcionales"
+                        android:text="@string/lbl_derivaciones_a_centros_externos_o"
                         android:textColor="@color/text_muted"
                         android:textSize="12sp" />
 
@@ -521,7 +521,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito"
-                                    android:text="Transferido a otro centro"
+                                    android:text="@string/lbl_transferido_a_otro_centro"
                                     android:textColor="@color/text_primary"
                                     android:textSize="14sp"
                                     android:textStyle="bold" />
@@ -532,7 +532,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:fontFamily="@font/nunito"
-                                    android:text="Derivación a hospital de mayor nivel, quirófano o albergue externo"
+                                    android:text="@string/lbl_derivacion_a_hospital_de_mayor"
                                     android:textColor="@color/text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
@@ -581,7 +581,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito"
-                                    android:text="Reportar fallecimiento"
+                                    android:text="@string/lbl_reportar_fallecimiento"
                                     android:textColor="@color/text_primary"
                                     android:textSize="14sp"
                                     android:textStyle="bold" />
@@ -592,7 +592,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:fontFamily="@font/nunito"
-                                    android:text="Registro de deceso del paciente. Acción de cierre definitiva e irreversible"
+                                    android:text="@string/lbl_registro_de_deceso_del_paciente"
                                     android:textColor="@color/text_muted"
                                     android:textSize="12sp" />
                             </LinearLayout>
@@ -616,7 +616,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/nunito_display"
-                        android:text="Observación (opcional)"
+                        android:text="@string/lbl_observacion_opcional"
                         android:textColor="@color/blue"
                         android:textSize="15sp"
                         android:textStyle="bold" />
@@ -627,7 +627,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:fontFamily="@font/nunito"
-                        android:text="Describe el motivo o detalles del cambio de estado"
+                        android:text="@string/lbl_describe_el_motivo_o_detalles"
                         android:textColor="@color/text_muted"
                         android:textSize="12sp" />
 
@@ -639,7 +639,7 @@
                         android:background="@drawable/bg_search_field"
                         android:fontFamily="@font/nunito"
                         android:gravity="top|start"
-                        android:hint="Describe el motivo del cambio de estado..."
+                        android:hint="@string/hint_describe_el_motivo_del_cambio"
                         android:inputType="textMultiLine"
                         android:padding="14dp"
                         android:textColor="@color/text_primary"

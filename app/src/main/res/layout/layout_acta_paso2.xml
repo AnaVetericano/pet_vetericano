@@ -25,7 +25,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:fontFamily="@font/nunito_bold"
-            android:text="Pacientes / Animales atendidos"
+            android:text="@string/lbl_pacientes_animales_atendidos"
             android:textColor="@color/text_primary"
             android:textSize="16sp" />
 
@@ -38,7 +38,7 @@
             android:insetBottom="0dp"
             android:paddingHorizontal="12dp"
             android:fontFamily="@font/nunito_bold"
-            android:text="+ Añadir paciente"
+            android:text="@string/lbl_anadir_paciente"
             android:textAllCaps="false"
             android:textColor="@color/primary"
             android:textSize="12sp"
@@ -69,7 +69,7 @@
             android:layout_marginTop="4dp"
             android:layout_marginBottom="10dp"
             android:fontFamily="@font/nunito_bold"
-            android:text="Evaluación clínica y examen físico"
+            android:text="@string/lbl_evaluacion_clinica_y_examen_fisico"
             android:textColor="@color/text_primary"
             android:textSize="16sp" />
 
@@ -95,7 +95,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
                     android:fontFamily="@font/nunito_bold"
-                    android:text="Constantes fisiológicas básicas"
+                    android:text="@string/lbl_constantes_fisiologicas_basicas"
                     android:textColor="@color/text_secondary"
                     android:textSize="13sp" />
 
@@ -114,7 +114,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginEnd="6dp"
                         android:layout_weight="1"
-                        android:hint="Frec. Cardíaca"
+                        android:hint="@string/hint_frec_cardiaca"
                         app:boxStrokeColor="@color/primary"
                         app:suffixText="lpm">
 
@@ -133,7 +133,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="6dp"
                         android:layout_weight="1"
-                        android:hint="Frec. Respiratoria"
+                        android:hint="@string/hint_frec_respiratoria"
                         app:boxStrokeColor="@color/primary"
                         app:suffixText="rpm">
 
@@ -152,7 +152,7 @@
                     style="@style/Widget.Material3.TextInputLayout.OutlinedBox.ExposedDropdownMenu"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:hint="Estado de mucosas / TLLC"
+                    android:hint="@string/hint_estado_de_mucosas_tllc"
                     app:boxStrokeColor="@color/primary">
 
                     <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -173,7 +173,7 @@
             android:layout_marginTop="4dp"
             android:layout_marginBottom="6dp"
             android:fontFamily="@font/nunito_bold"
-            android:text="Anamnesis y descripción de la queja *"
+            android:text="@string/lbl_anamnesis_y_descripcion_de_la"
             android:textColor="@color/text_primary"
             android:textSize="16sp" />
 
@@ -200,7 +200,7 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
-                    android:text="+ En calle vulnerable"
+                    android:text="@string/lbl_en_calle_vulnerable"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
@@ -220,7 +220,7 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
-                    android:text="+ Herida / Dolor"
+                    android:text="@string/lbl_herida_dolor"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
@@ -240,7 +240,7 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
-                    android:text="+ Desnutrido"
+                    android:text="@string/lbl_desnutrido"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
@@ -257,7 +257,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="14dp"
-            android:hint="Anamnesis y descripción de la queja *"
+            android:hint="@string/hint_anamnesis_y_descripcion_de_la"
             app:boxStrokeColor="@color/primary">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -277,7 +277,7 @@
             android:layout_marginTop="4dp"
             android:layout_marginBottom="6dp"
             android:fontFamily="@font/nunito_bold"
-            android:text="Atención y tratamiento realizado *"
+            android:text="@string/lbl_atencion_y_tratamiento_realizado"
             android:textColor="@color/text_primary"
             android:textSize="16sp" />
 
@@ -304,7 +304,7 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
-                    android:text="+ Curación de heridas"
+                    android:text="@string/lbl_curacion_de_heridas"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
@@ -324,7 +324,7 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
-                    android:text="+ Antibiótico / AINE"
+                    android:text="@string/lbl_antibiotico_aine"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
@@ -344,7 +344,7 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
-                    android:text="+ Traslado a CBA"
+                    android:text="@string/lbl_traslado_a_cba"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
@@ -361,7 +361,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
-            android:hint="Tratamiento realizado en campo *"
+            android:hint="@string/hint_tratamiento_realizado_en_campo"
             app:boxStrokeColor="@color/primary">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -415,7 +415,7 @@
                             android:layout_gravity="center"
                             android:src="@drawable/ic_medical_bag"
                             app:tint="@color/primary"
-                            android:contentDescription="Maletín" />
+                            android:contentDescription="@string/cd_maletin" />
                     </FrameLayout>
 
                     <LinearLayout
@@ -428,7 +428,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/nunito_bold"
-                            android:text="Suministro desde maletín"
+                            android:text="@string/lbl_suministro_desde_maletin"
                             android:textColor="@color/text_primary"
                             android:textSize="15sp" />
 
@@ -437,7 +437,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/nunito"
-                            android:text="Aplica dosis y descuenta automáticamente de tu inventario"
+                            android:text="@string/lbl_aplica_dosis_y_descuenta_automaticamente"
                             android:textColor="@color/text_secondary"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -451,7 +451,7 @@
                         android:fontFamily="@font/nunito_bold"
                         android:paddingHorizontal="8dp"
                         android:paddingVertical="3dp"
-                        android:text="0 aplicados"
+                        android:text="@string/lbl_0_aplicados"
                         android:textColor="@color/text_secondary"
                         android:textSize="10sp" />
                 </LinearLayout>
@@ -464,7 +464,7 @@
                     android:layout_height="44dp"
                     android:layout_marginTop="4dp"
                     android:fontFamily="@font/nunito_bold"
-                    android:text="+ Aplicar medicamento del maletín"
+                    android:text="@string/lbl_aplicar_medicamento_del_maletin"
                     android:textAllCaps="false"
                     android:textColor="@color/primary"
                     android:textSize="13sp"
@@ -536,7 +536,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/nunito_bold"
-                            android:text="Evidencia fotográfica y video"
+                            android:text="@string/lbl_evidencia_fotografica_y_video"
                             android:textColor="@color/text_primary"
                             android:textSize="15sp" />
 
@@ -545,7 +545,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/nunito"
-                            android:text="Fotos de lesiones, postura o videos clínicos de la atención"
+                            android:text="@string/lbl_fotos_de_lesiones_postura_o"
                             android:textColor="@color/text_secondary"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -558,7 +558,7 @@
                         android:fontFamily="@font/nunito_bold"
                         android:paddingHorizontal="8dp"
                         android:paddingVertical="3dp"
-                        android:text="Opcional"
+                        android:text="@string/lbl_opcional"
                         android:textColor="@color/text_secondary"
                         android:textSize="10sp" />
                 </LinearLayout>
@@ -581,7 +581,7 @@
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
                         android:fontFamily="@font/nunito_bold"
-                        android:text="+ Foto"
+                        android:text="@string/lbl_foto"
                         android:textAllCaps="false"
                         android:textColor="@color/primary"
                         android:textSize="12sp"
@@ -603,7 +603,7 @@
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
                         android:fontFamily="@font/nunito_bold"
-                        android:text="+ Video"
+                        android:text="@string/lbl_video"
                         android:textAllCaps="false"
                         android:textColor="@color/primary"
                         android:textSize="12sp"

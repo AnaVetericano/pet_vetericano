@@ -25,7 +25,7 @@
             android:layout_marginEnd="10dp"
             android:src="@drawable/ic_pill"
             app:tint="@color/primary"
-            android:contentDescription="Medicamento" />
+            android:contentDescription="@string/cd_medicamento" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -67,7 +67,7 @@
                     android:fontFamily="@font/nunito_bold"
                     android:paddingHorizontal="6dp"
                     android:paddingVertical="1dp"
-                    android:text="Descontado"
+                    android:text="@string/lbl_descontado"
                     android:textColor="#166534"
                     android:textSize="9sp" />
             </LinearLayout>
@@ -79,7 +79,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Eliminar aplicación"
+            android:contentDescription="@string/cd_eliminar_aplicacion"
             android:padding="6dp"
             android:src="@drawable/ic_delete"
             app:tint="@color/radix_tomato_text" />

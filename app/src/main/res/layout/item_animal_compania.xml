@@ -80,7 +80,7 @@
                 android:layout_height="38dp"
                 android:layout_marginTop="8dp"
                 android:fontFamily="@font/nunito"
-                android:text="▶ Ver Video"
+                android:text="@string/lbl_ver_video"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="11sp"
@@ -100,10 +100,10 @@
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:contentDescription="Ver detalles del animal para adopción"
+                    android:contentDescription="@string/cd_ver_detalles_del_animal_para"
                     android:fontFamily="@font/nunito"
                     android:padding="4dp"
-                    android:text="Quiero adoptar"
+                    android:text="@string/lbl_quiero_adoptar"
                     android:textColor="@color/blue"
                     android:textSize="13sp"
                     android:textStyle="bold" />

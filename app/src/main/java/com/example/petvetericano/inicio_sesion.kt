@@ -29,6 +29,7 @@ class inicio_sesion : AppCompatActivity() {
         }
 
         val mensajeRegistro = intent.getStringExtra("REGISTRO_GOOGLE_MSG")
+            ?: intent.getStringExtra("LOGOUT_MSG")
         if (!mensajeRegistro.isNullOrEmpty()) {
             binding.root.post {
                 GoogleAuthHelper.mostrarMensajeMD3(this@inicio_sesion, mensajeRegistro, esError = false)
@@ -112,6 +113,7 @@ class inicio_sesion : AppCompatActivity() {
                             phone = ""
                         )
                         prefs.saveUserLastName(datos.apellido ?: "")
+                        prefs.saveProfileImagePath(datos.fotoPerfil ?: datos.foto ?: "")
                         prefs.saveAccessToken(datos.tokens.access)
                         prefs.saveUserId(datos.idUsuario)
                         prefs.saveUserRole(datos.idRol)

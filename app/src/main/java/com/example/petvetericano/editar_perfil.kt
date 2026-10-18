@@ -6,7 +6,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
@@ -19,25 +18,26 @@ import com.example.petvetericano.models.ActualizarPerfilRequest
 import com.example.petvetericano.network.RetrofitClient
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import java.io.File
-import java.io.FileOutputStream
+import kotlinx.coroutines.withContext
 
 class editar_perfil : AppCompatActivity() {
 
     private lateinit var binding: ActivityEditarPerfilBinding
     private lateinit var prefs: SharedPreferencesManager
 
-    // Estado original para dirty-check + foto pendiente de confirmar.
+    // Estado original para dirty-check + foto pendiente de guardar.
     private var nombreOriginal = ""
     private var apellidoOriginal = ""
     private var telefonoOriginal = ""
+    private var fotoOriginal = ""
     private var cargandoInicial = true
     private var fotoPendienteUri: Uri? = null
     private var guardando = false
 
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-        uri?.let { mostrarConfirmacionFoto(it) }
+        uri?.let { previsualizarFotoSeleccionada(it) }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -50,6 +50,7 @@ class editar_perfil : AppCompatActivity() {
 
         setupDarkMode()
         cargarDatosPerfil()
+        sincronizarConApi()
         setupMenuListeners()
 
         // Interceptar atrás del sistema si hay cambios sin guardar.
@@ -75,6 +76,7 @@ class editar_perfil : AppCompatActivity() {
         super.onResume()
         if (!hayCambiosSinGuardar() && !guardando) {
             cargarDatosPerfil()
+            sincronizarConApi()
         }
     }
 
@@ -113,6 +115,7 @@ class editar_perfil : AppCompatActivity() {
         nombreOriginal = nombre
         apellidoOriginal = apellido
         telefonoOriginal = telefono
+        fotoOriginal = rutaFoto
 
         binding.tilName.error = null
         binding.tilLastName.error = null
@@ -120,17 +123,65 @@ class editar_perfil : AppCompatActivity() {
         cargandoInicial = false
         actualizarEstadoBotones()
 
-        // Manejo de la foto: si hay una guardada se carga, sino usa la default del XML (@drawable/smithimg)
-        if (rutaFoto.isNotEmpty()) {
-            val archivo = File(rutaFoto)
-            if (archivo.exists()) {
-                binding.ivProfile.setImageURI(Uri.fromFile(archivo))
-            } else {
-                binding.ivProfile.setImageResource(R.drawable.smithimg)
-            }
+        // Mostrar foto previsualizada si hay una pendiente; de lo contrario la guardada en servidor o la default
+        val uriPendiente = fotoPendienteUri
+        if (uriPendiente != null) {
+            ProfilePhotoHelper.previsualizarUri(this, binding.ivProfile, uriPendiente)
         } else {
-            binding.ivProfile.setImageResource(R.drawable.smithimg)
+            ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivProfile, fotoOriginal)
         }
+    }
+
+    private fun sincronizarConApi() {
+        val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
+        if (token.isEmpty()) return
+
+        RetrofitClient.authToken = token
+        lifecycleScope.launch {
+            try {
+                val respuesta = RetrofitClient.apiService.obtenerPerfil()
+                if (respuesta.isSuccessful) {
+                    val perfil = respuesta.body() ?: return@launch
+                    val teniaCambios = hayCambiosSinGuardar()
+
+                    val remotoNombre = perfil.nombre?.trim() ?: ""
+                    val remotoApellido = perfil.apellido?.trim() ?: ""
+                    val remotoEmail = perfil.email?.trim() ?: ""
+                    val remotoTelefono = perfil.telefono?.trim() ?: ""
+                    val remotaFoto = perfil.fotoPerfil?.trim() ?: ""
+
+                    if (remotoNombre.isNotEmpty()) {
+                        prefs.saveUserData(
+                            remotoNombre,
+                            remotoEmail.ifEmpty { prefs.getUserEmail() },
+                            remotoTelefono.ifEmpty { prefs.getUserPhone() }
+                        )
+                    }
+                    if (remotoApellido.isNotEmpty()) {
+                        prefs.saveUserLastName(remotoApellido)
+                    }
+                    prefs.saveProfileImagePath(remotaFoto)
+                    fotoOriginal = remotaFoto
+
+                    if (!teniaCambios && !guardando) {
+                        cargarDatosPerfil()
+                    }
+                }
+            } catch (e: Exception) {
+                Log.d("EditarPerfil", "No se pudo sincronizar perfil remoto: ${e.message}")
+            }
+        }
+    }
+
+    private fun previsualizarFotoSeleccionada(uri: Uri) {
+        fotoPendienteUri = uri
+        ProfilePhotoHelper.previsualizarUri(this, binding.ivProfile, uri)
+        actualizarEstadoBotones()
+        Snackbar.make(
+            binding.root,
+            "Vista previa lista. Presiona \"Guardar Cambios\" para confirmar.",
+            Snackbar.LENGTH_SHORT
+        ).show()
     }
 
     private fun hayCambiosSinGuardar(): Boolean {
@@ -140,7 +191,8 @@ class editar_perfil : AppCompatActivity() {
         val actualTelefono = binding.etPhone.text.toString().trim()
         return actualNombre != nombreOriginal ||
                 actualApellido != apellidoOriginal ||
-                actualTelefono != telefonoOriginal
+                actualTelefono != telefonoOriginal ||
+                fotoPendienteUri != null
     }
 
     private fun actualizarEstadoBotones() {
@@ -165,6 +217,7 @@ class editar_perfil : AppCompatActivity() {
         binding.tilLastName.error = null
         binding.tilPhone.error = null
         fotoPendienteUri = null
+        ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivProfile, fotoOriginal)
         cargandoInicial = false
         actualizarEstadoBotones()
         Snackbar.make(binding.root, "Cambios descartados", Snackbar.LENGTH_SHORT).show()
@@ -193,7 +246,8 @@ class editar_perfil : AppCompatActivity() {
         val resumen = buildString {
             if (nuevoNombre != nombreOriginal) append("Nombre: $nombreOriginal → $nuevoNombre\n")
             if (nuevoApellido != apellidoOriginal) append("Apellido: $apellidoOriginal → $nuevoApellido\n")
-            if (nuevoTelefono != telefonoOriginal) append("Teléfono: $telefonoOriginal → $nuevoTelefono")
+            if (nuevoTelefono != telefonoOriginal) append("Teléfono: $telefonoOriginal → $nuevoTelefono\n")
+            if (fotoPendienteUri != null) append("Foto de perfil: Nueva imagen seleccionada")
         }.trim()
 
         MaterialAlertDialogBuilder(this)
@@ -235,13 +289,6 @@ class editar_perfil : AppCompatActivity() {
         guardando = true
         actualizarEstadoBotones()
 
-        val request = ActualizarPerfilRequest(
-            nombre = nuevoNombre,
-            apellido = nuevoApellido,
-            email = prefs.getUserEmail(),
-            telefono = nuevoTelefono
-        )
-
         lifecycleScope.launch {
             try {
                 val token = prefs.getAccessToken()
@@ -249,18 +296,52 @@ class editar_perfil : AppCompatActivity() {
                     RetrofitClient.authToken = token
                 }
 
+                val uriParaSubir = fotoPendienteUri
+                val fotoBase64 = if (uriParaSubir != null) {
+                    withContext(Dispatchers.IO) {
+                        ProfilePhotoHelper.uriABase64DataUri(this@editar_perfil, uriParaSubir)
+                    }
+                } else {
+                    null
+                }
+
+                if (uriParaSubir != null && fotoBase64 == null) {
+                    guardando = false
+                    actualizarEstadoBotones()
+                    Snackbar.make(binding.root, "No se pudo procesar la imagen seleccionada", Snackbar.LENGTH_LONG).show()
+                    return@launch
+                }
+
+                val request = ActualizarPerfilRequest(
+                    nombre = nuevoNombre,
+                    apellido = nuevoApellido,
+                    email = prefs.getUserEmail(),
+                    telefono = nuevoTelefono,
+                    fotoPerfil = fotoBase64
+                )
+
                 val respuesta = RetrofitClient.apiService.actualizarPerfil(request)
 
                 if (respuesta.isSuccessful) {
-                    // Guardamos de manera persistente utilizando los valores validados localmente
+                    val body = respuesta.body()
                     prefs.saveUserData(nuevoNombre, prefs.getUserEmail(), nuevoTelefono)
                     prefs.saveUserLastName(nuevoApellido)
+
+                    if (uriParaSubir != null || !body?.fotoPerfil.isNullOrEmpty()) {
+                        val nuevaFotoRemota = body?.fotoPerfil?.trim()?.takeIf { it.isNotEmpty() }
+                            ?: fotoBase64
+                            ?: fotoOriginal
+                        prefs.saveProfileImagePath(nuevaFotoRemota)
+                        fotoOriginal = nuevaFotoRemota
+                    }
 
                     nombreOriginal = nuevoNombre
                     apellidoOriginal = nuevoApellido
                     telefonoOriginal = nuevoTelefono
+                    fotoPendienteUri = null
                     guardando = false
                     actualizarEstadoBotones()
+                    ProfilePhotoHelper.cargarFotoPerfil(this@editar_perfil, binding.ivProfile, fotoOriginal)
                     Snackbar.make(binding.root, "Perfil actualizado", Snackbar.LENGTH_SHORT).show()
                     binding.root.postDelayed({ irAMenuInicial() }, 900)
                 } else {
@@ -288,66 +369,6 @@ class editar_perfil : AppCompatActivity() {
         intent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_NEW_TASK
         startActivity(intent)
         finish()
-    }
-
-    private fun mostrarConfirmacionFoto(uri: Uri) {
-        fotoPendienteUri = uri
-        try {
-            binding.ivProfile.setImageURI(uri)
-        } catch (_: Exception) { }
-
-        MaterialAlertDialogBuilder(this)
-            .setTitle("¿Usar esta foto como perfil?")
-            .setMessage("Se actualizará tu foto de perfil en este dispositivo.")
-            .setNegativeButton("Cancelar") { dialog, _ ->
-                dialog.dismiss()
-                fotoPendienteUri = null
-                val rutaFoto = prefs.getProfileImagePath().trim()
-                if (rutaFoto.isNotEmpty()) {
-                    val archivo = File(rutaFoto)
-                    if (archivo.exists()) binding.ivProfile.setImageURI(Uri.fromFile(archivo))
-                    else binding.ivProfile.setImageResource(R.drawable.smithimg)
-                } else {
-                    binding.ivProfile.setImageResource(R.drawable.smithimg)
-                }
-            }
-            .setPositiveButton("Confirmar") { dialog, _ ->
-                dialog.dismiss()
-                guardarYMostrarImagen(uri)
-                fotoPendienteUri = null
-            }
-            .setOnCancelListener {
-                fotoPendienteUri = null
-                val rutaFoto = prefs.getProfileImagePath().trim()
-                if (rutaFoto.isNotEmpty()) {
-                    val archivo = File(rutaFoto)
-                    if (archivo.exists()) binding.ivProfile.setImageURI(Uri.fromFile(archivo))
-                    else binding.ivProfile.setImageResource(R.drawable.smithimg)
-                } else {
-                    binding.ivProfile.setImageResource(R.drawable.smithimg)
-                }
-            }
-            .show()
-    }
-
-    private fun guardarYMostrarImagen(uri: Uri) {
-        try {
-            val archivoDestino = File(filesDir, "profile_picture.jpg")
-
-            contentResolver.openInputStream(uri)?.use { input ->
-                FileOutputStream(archivoDestino).use { output ->
-                    input.copyTo(output)
-                }
-            }
-
-            prefs.saveProfileImagePath(archivoDestino.absolutePath)
-            binding.ivProfile.setImageURI(Uri.fromFile(archivoDestino))
-
-            Toast.makeText(this, "Foto actualizada", Toast.LENGTH_SHORT).show()
-
-        } catch (e: Exception) {
-            Toast.makeText(this, "Error al guardar la foto: ${e.message}", Toast.LENGTH_SHORT).show()
-        }
     }
 
     private fun setupDarkMode() {
@@ -412,17 +433,12 @@ class editar_perfil : AppCompatActivity() {
     }
 
     private fun mostrarConfirmacionCerrarSesion() {
-        AlertDialog.Builder(this)
-            .setTitle("¿Cerrar sesión?")
-            .setMessage("Tendrás que volver a iniciar sesión para usar la app.")
-            .setNegativeButton("Cancelar") { dialog, _ ->
-                dialog.dismiss()
-            }
-            .setPositiveButton("Cerrar sesión") { dialog, _ ->
-                dialog.dismiss()
-                cerrarSesion()
-            }
-            .show()
+        ProfilePhotoHelper.mostrarDialogoCerrarSesionMD3(
+            activity = this,
+            emailUsuario = prefs.getUserEmail(),
+            esVeterinario = false,
+            onConfirmarCerrarSesion = { cerrarSesion() }
+        )
     }
 
     private fun cerrarSesion() {
@@ -432,6 +448,7 @@ class editar_perfil : AppCompatActivity() {
             RetrofitClient.authToken = null
 
             val intent = Intent(this@editar_perfil, inicio_sesion::class.java).apply {
+                putExtra("LOGOUT_MSG", "Has cerrado sesión correctamente. ¡Hasta pronto!")
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
             startActivity(intent)

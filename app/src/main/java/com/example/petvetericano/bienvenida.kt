@@ -124,12 +124,13 @@ class bienvenida : AppCompatActivity() {
                             prefs.saveUserData(
                                 name = soloNombre,
                                 email = datos.email,
-                                phone = prefs.getUserPhone()
+                                phone = datos.telefono?.takeIf { it.isNotBlank() } ?: prefs.getUserPhone()
                             )
                         }
                         if (soloApellido.isNotEmpty()) {
                             prefs.saveUserLastName(soloApellido)
                         }
+                        prefs.saveProfileImagePath(datos.fotoPerfil ?: "")
                     }
                 } else {
                     Toast.makeText(this@bienvenida, "Error al cargar el dashboard", Toast.LENGTH_SHORT).show()

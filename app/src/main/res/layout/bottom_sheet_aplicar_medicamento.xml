@@ -31,7 +31,7 @@
             android:src="@drawable/ic_medical_bag"
             app:tint="@color/primary"
             android:layout_marginEnd="10dp"
-            android:contentDescription="Maletín" />
+            android:contentDescription="@string/cd_maletin" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -43,7 +43,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/nunito_bold"
-                android:text="Suministrar Medicamento"
+                android:text="@string/lbl_suministrar_medicamento"
                 android:textColor="@color/text_primary"
                 android:textSize="17sp" />
 
@@ -51,7 +51,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/nunito"
-                android:text="Selecciona el fármaco y la dosis para descontar del maletín"
+                android:text="@string/lbl_selecciona_el_farmaco_y_la"
                 android:textColor="@color/text_secondary"
                 android:textSize="11sp" />
         </LinearLayout>
@@ -61,7 +61,7 @@
             android:layout_width="32dp"
             android:layout_height="32dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Cerrar"
+            android:contentDescription="@string/btn_cerrar"
             android:src="@drawable/ic_close_24"
             app:tint="@color/text_secondary" />
     </LinearLayout>
@@ -73,7 +73,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
-        android:hint="Medicamento del maletín *"
+        android:hint="@string/hint_medicamento_del_maletin"
         app:boxStrokeColor="@color/primary">
 
         <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -131,7 +131,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        android:hint="Aplicado a paciente"
+        android:hint="@string/hint_aplicado_a_paciente"
         app:boxStrokeColor="@color/primary">
 
         <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -147,7 +147,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/nunito_bold"
-        android:text="Dosis / Cantidad aplicada *"
+        android:text="@string/lbl_dosis_cantidad_aplicada"
         android:textColor="@color/text_primary"
         android:textSize="13sp"
         android:layout_marginBottom="6dp" />
@@ -193,7 +193,7 @@
                 android:layout_height="wrap_content"
                 android:gravity="center"
                 android:inputType="numberDecimal"
-                android:text="1.0"
+                android:text="@string/dose_1_0"
                 android:fontFamily="@font/nunito_bold"
                 android:textColor="@color/text_primary" />
         </com.google.android.material.textfield.TextInputLayout>
@@ -238,7 +238,7 @@
                 android:minHeight="32dp"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="0dp"
-                android:text="0.5"
+                android:text="@string/dose_0_5"
                 android:textAllCaps="false"
                 android:textSize="11sp"
                 android:textColor="@color/text_secondary"
@@ -256,7 +256,7 @@
                 android:minHeight="32dp"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="0dp"
-                android:text="1.0"
+                android:text="@string/dose_1_0"
                 android:textAllCaps="false"
                 android:textSize="11sp"
                 android:textColor="@color/text_secondary"
@@ -274,7 +274,7 @@
                 android:minHeight="32dp"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="0dp"
-                android:text="1.5"
+                android:text="@string/dose_1_5"
                 android:textAllCaps="false"
                 android:textSize="11sp"
                 android:textColor="@color/text_secondary"
@@ -292,7 +292,7 @@
                 android:minHeight="32dp"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="0dp"
-                android:text="2.0"
+                android:text="@string/dose_2_0"
                 android:textAllCaps="false"
                 android:textSize="11sp"
                 android:textColor="@color/text_secondary"
@@ -310,7 +310,7 @@
                 android:minHeight="32dp"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="0dp"
-                android:text="5.0"
+                android:text="@string/dose_5_0"
                 android:textAllCaps="false"
                 android:textSize="11sp"
                 android:textColor="@color/text_secondary"
@@ -328,7 +328,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        android:hint="Vía de administración *"
+        android:hint="@string/hint_via_de_administracion"
         app:boxStrokeColor="@color/primary">
 
         <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -346,7 +346,7 @@
         android:layout_height="wrap_content"
         android:checked="true"
         android:fontFamily="@font/nunito_bold"
-        android:text="Redactar automáticamente en el tratamiento"
+        android:text="@string/lbl_redactar_automaticamente_en_el_tratamiento"
         android:textColor="@color/text_primary"
         android:textSize="13sp"
         android:layout_marginBottom="16dp" />
@@ -357,7 +357,7 @@
         android:layout_width="match_parent"
         android:layout_height="48dp"
         android:fontFamily="@font/nunito_bold"
-        android:text="Aplicar y descontar del maletín"
+        android:text="@string/btn_aplicar_y_descontar_del_maletin"
         android:textAllCaps="false"
         android:textSize="14sp"
         app:cornerRadius="12dp"

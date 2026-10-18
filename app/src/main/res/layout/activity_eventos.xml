@@ -23,7 +23,7 @@
             android:layout_alignParentStart="true"
             android:layout_centerVertical="true"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Regresar"
+            android:contentDescription="@string/cd_regresar"
             android:src="@drawable/outline_arrow_back_ios_24"
             app:tint="@color/blue" />
 
@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_centerInParent="true"
             android:fontFamily="@font/nunito_display"
-            android:text="Eventos y Jornadas 🐾"
+            android:text="@string/lbl_eventos_y_jornadas"
             android:textColor="@color/blue"
             android:textSize="20sp"
             android:textStyle="bold" />
@@ -46,7 +46,7 @@
         android:paddingHorizontal="20dp"
         android:paddingTop="14dp"
         android:paddingBottom="10dp"
-        android:text="Conoce nuestras próximas actividades y jornadas de apoyo"
+        android:text="@string/lbl_conoce_nuestras_proximas_actividades_y"
         android:textColor="@color/text_secondary"
         android:textSize="14sp" />
 
@@ -67,7 +67,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="32dp"
         android:fontFamily="@font/nunito"
-        android:text="No hay eventos disponibles por el momento."
+        android:text="@string/lbl_no_hay_eventos_disponibles_por"
         android:textAlignment="center"
         android:textColor="@color/text_muted"
         android:textSize="15sp"

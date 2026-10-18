@@ -9,7 +9,7 @@
         android:id="@+id/carouselImgEvento"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:contentDescription="Imagen del evento"
+        android:contentDescription="@string/cd_imagen_del_evento"
         android:scaleType="centerCrop" />
 
     <!-- Overlay inferior con degradado -->
@@ -31,7 +31,7 @@
             android:ellipsize="end"
             android:fontFamily="@font/nunito_display"
             android:maxLines="1"
-            android:text="Evento"
+            android:text="@string/lbl_evento"
             android:textColor="@color/white"
             android:textSize="18sp"
             android:textStyle="bold" />
@@ -42,7 +42,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:fontFamily="@font/nunito"
-            android:text="📅 2026-10-15"
+            android:text="@string/lbl_2026_10_15"
             android:textColor="@color/white"
             android:textSize="13sp" />
 
@@ -52,7 +52,7 @@
             android:layout_height="40dp"
             android:layout_marginTop="8dp"
             android:fontFamily="@font/nunito"
-            android:text="Postularse"
+            android:text="@string/lbl_postularse"
             android:textSize="13sp"
             android:textStyle="bold"
             app:backgroundTint="@color/yellow"

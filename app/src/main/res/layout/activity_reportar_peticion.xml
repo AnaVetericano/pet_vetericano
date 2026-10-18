@@ -15,7 +15,7 @@
         android:layout_width="44dp"
         android:layout_height="44dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Atrás"
+        android:contentDescription="@string/cd_atras"
         android:src="@drawable/outline_arrow_back_ios_24"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -26,7 +26,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/nunito_display"
-        android:text="Reportar Petición"
+        android:text="@string/lbl_reportar_peticion"
         android:textColor="@color/blue"
         android:textSize="22sp"
         android:textStyle="bold"
@@ -42,7 +42,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/nunito"
-        android:text="Paso 1 de 4"
+        android:text="@string/lbl_paso_1_de_4"
         android:textColor="@color/text_primary"
         android:textSize="15sp"
         android:textStyle="bold"
@@ -85,7 +85,7 @@
         android:layout_marginTop="28dp"
         android:fontFamily="@font/nunito_display"
         android:gravity="center"
-        android:text="¿Qué tipo de petición quieres reportar?"
+        android:text="@string/lbl_que_tipo_de_peticion_quieres"
         android:textColor="@color/text_primary"
         android:textSize="18sp"
         android:textStyle="bold"
@@ -132,7 +132,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/nunito"
-                    android:text="ANIMAL HERIDO O EN PELIGRO"
+                    android:text="@string/lbl_animal_herido_o_en_peligro"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -142,7 +142,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:fontFamily="@font/nunito"
-                    android:text="Accidentes, atropellamientos o heridas graves"
+                    android:text="@string/lbl_accidentes_atropellamientos_o_heridas_graves"
                     android:textColor="@color/text_muted"
                     android:textSize="13sp" />
             </LinearLayout>
@@ -188,7 +188,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/nunito"
-                    android:text="MALTRATO ANIMAL"
+                    android:text="@string/lbl_maltrato_animal"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -198,7 +198,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:fontFamily="@font/nunito"
-                    android:text="Situaciones de abuso o violencia evidente"
+                    android:text="@string/lbl_situaciones_de_abuso_o_violencia"
                     android:textColor="@color/text_muted"
                     android:textSize="13sp" />
             </LinearLayout>
@@ -244,7 +244,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/nunito"
-                    android:text="ANIMAL EN CONDICIÓN DE CALLE"
+                    android:text="@string/lbl_animal_en_condicion_de_calle"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -254,7 +254,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:fontFamily="@font/nunito"
-                    android:text="Animales sin hogar, abandonados o desnutridos"
+                    android:text="@string/lbl_animales_sin_hogar_abandonados_o"
                     android:textColor="@color/text_muted"
                     android:textSize="13sp" />
             </LinearLayout>
@@ -300,7 +300,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/nunito"
-                    android:text="OTROS"
+                    android:text="@string/lbl_otros"
                     android:textColor="@color/text_primary"
                     android:textSize="16sp"
                     android:textStyle="bold" />
@@ -310,7 +310,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="4dp"
                     android:fontFamily="@font/nunito"
-                    android:text="Otras solicitudes o requerimientos generales"
+                    android:text="@string/lbl_otras_solicitudes_o_requerimientos_generales"
                     android:textColor="@color/text_muted"
                     android:textSize="13sp" />
             </LinearLayout>

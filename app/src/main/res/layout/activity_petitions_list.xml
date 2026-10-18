@@ -27,7 +27,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/nunito_display"
-            android:text="Peticiones"
+            android:text="@string/lbl_peticiones"
             android:textColor="@color/blue"
             android:textSize="28sp"
             android:textStyle="bold" />
@@ -38,7 +38,7 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="3dp"
             android:fontFamily="@font/nunito"
-            android:text="Hoy 30 ago 2026"
+            android:text="@string/lbl_hoy_30_ago_2026"
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
 
@@ -59,7 +59,7 @@
                 android:paddingHorizontal="12dp"
                 android:paddingVertical="6dp"
                 android:fontFamily="@font/nunito"
-                android:text="Asignadas hoy: 0"
+                android:text="@string/lbl_asignadas_hoy_0"
                 android:textColor="@color/blue"
                 android:textSize="12sp"
                 android:textStyle="bold" />
@@ -87,7 +87,7 @@
             android:drawableStart="@drawable/ic_search"
             android:drawablePadding="10dp"
             android:fontFamily="@font/nunito"
-            android:hint="Buscar petición"
+            android:hint="@string/hint_buscar_peticion"
             android:inputType="text"
             android:paddingHorizontal="16dp"
             android:textColor="@color/text_primary"
@@ -111,7 +111,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_gravity="center"
-                android:contentDescription="Filtrar"
+                android:contentDescription="@string/cd_filtrar"
                 android:src="@drawable/ic_filter"
                 app:tint="@color/text_primary" />
         </com.google.android.material.card.MaterialCardView>
@@ -143,7 +143,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:fontFamily="@font/nunito_display"
-                android:text="Todas"
+                android:text="@string/lbl_todas"
                 android:textColor="@color/blue"
                 android:textSize="15sp"
                 android:textStyle="bold" />
@@ -157,7 +157,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:fontFamily="@font/nunito_display"
-                android:text="Pendientes"
+                android:text="@string/lbl_pendientes"
                 android:textColor="@color/text_muted"
                 android:textSize="15sp" />
 
@@ -170,7 +170,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:fontFamily="@font/nunito_display"
-                android:text="En proceso"
+                android:text="@string/lbl_en_proceso"
                 android:textColor="@color/text_muted"
                 android:textSize="15sp" />
 
@@ -183,7 +183,7 @@
                 android:clickable="true"
                 android:focusable="true"
                 android:fontFamily="@font/nunito_display"
-                android:text="Atendidas"
+                android:text="@string/lbl_atendidas_2"
                 android:textColor="@color/text_muted"
                 android:textSize="15sp" />
         </LinearLayout>
@@ -237,7 +237,7 @@
                 android:layout_weight="1"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
-                android:contentDescription="Peticiones"
+                android:contentDescription="@string/cd_peticiones"
                 android:focusable="true"
                 android:padding="12dp"
                 android:src="@drawable/paper_on_paper"
@@ -250,7 +250,7 @@
                 android:layout_weight="1"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
-                android:contentDescription="Inicio"
+                android:contentDescription="@string/cd_inicio"
                 android:focusable="true"
                 android:padding="12dp"
                 android:src="@drawable/house"
@@ -263,7 +263,7 @@
                 android:layout_weight="1"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
-                android:contentDescription="Perfil"
+                android:contentDescription="@string/cd_perfil"
                 android:focusable="true"
                 android:padding="12dp"
                 android:src="@drawable/user"

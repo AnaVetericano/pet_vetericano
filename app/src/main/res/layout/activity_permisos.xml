@@ -14,7 +14,7 @@
         android:layout_width="44dp"
         android:layout_height="44dp"
         android:background="?attr/selectableItemBackgroundBorderless"
-        android:contentDescription="Atrás"
+        android:contentDescription="@string/cd_atras"
         android:src="@drawable/outline_arrow_back_ios_24"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -25,7 +25,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/nunito_display"
-        android:text="Permisos de la App"
+        android:text="@string/lbl_permisos_de_la_app"
         android:textColor="@color/blue"
         android:textSize="22sp"
         android:textStyle="bold"
@@ -40,7 +40,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="20dp"
         android:fontFamily="@font/nunito"
-        android:text="Administra las funciones a las que la aplicación tiene acceso en tu dispositivo para garantizar el mejor servicio."
+        android:text="@string/lbl_administra_las_funciones_a_las"
         android:textColor="@color/text_secondary"
         android:textSize="14sp"
         app:layout_constraintEnd_toEndOf="parent"
@@ -88,7 +88,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/nunito"
-                        android:text="Ubicación"
+                        android:text="@string/lbl_ubicacion"
                         android:textColor="@color/text_primary"
                         android:textSize="15sp"
                         android:textStyle="bold" />
@@ -97,7 +97,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/nunito"
-                        android:text="Para geolocalizar incidencias en el mapa"
+                        android:text="@string/lbl_para_geolocalizar_incidencias_en_el"
                         android:textColor="@color/text_muted"
                         android:textSize="12sp" />
                 </LinearLayout>
@@ -139,7 +139,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/nunito"
-                        android:text="Cámara"
+                        android:text="@string/lbl_camara"
                         android:textColor="@color/text_primary"
                         android:textSize="15sp"
                         android:textStyle="bold" />
@@ -148,7 +148,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/nunito"
-                        android:text="Para tomar fotos en las peticiones"
+                        android:text="@string/lbl_para_tomar_fotos_en_las"
                         android:textColor="@color/text_muted"
                         android:textSize="12sp" />
                 </LinearLayout>
@@ -190,7 +190,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/nunito"
-                        android:text="Notificaciones"
+                        android:text="@string/lbl_notificaciones"
                         android:textColor="@color/text_primary"
                         android:textSize="15sp"
                         android:textStyle="bold" />
@@ -199,7 +199,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/nunito"
-                        android:text="Alertas sobre actualizaciones de casos"
+                        android:text="@string/lbl_alertas_sobre_actualizaciones_de_casos"
                         android:textColor="@color/text_muted"
                         android:textSize="12sp" />
                 </LinearLayout>

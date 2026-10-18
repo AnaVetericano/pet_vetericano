@@ -29,7 +29,7 @@
                     android:layout_width="28dp"
                     android:layout_height="28dp"
                     android:layout_marginEnd="12dp"
-                    android:contentDescription="Google"
+                    android:contentDescription="@string/cd_google"
                     android:src="@drawable/ic_google" />
 
                 <TextView
@@ -38,7 +38,7 @@
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:fontFamily="@font/nunito_display"
-                    android:text="Vincular cuenta existente"
+                    android:text="@string/lbl_vincular_cuenta_existente"
                     android:textColor="@color/blue"
                     android:textSize="20sp"
                     android:textStyle="bold" />
@@ -51,7 +51,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:gravity="center"
-                    android:text="✕"
+                    android:text="@string/btn_dialog_close"
                     android:textColor="@color/text_muted"
                     android:textSize="18sp"
                     android:textStyle="bold" />
@@ -91,7 +91,7 @@
                         android:ellipsize="end"
                         android:fontFamily="@font/nunito"
                         android:maxLines="1"
-                        android:text="usuario@gmail.com"
+                        android:text="@string/lbl_usuario_gmail_com"
                         android:textColor="@color/blue"
                         android:textSize="14sp"
                         android:textStyle="bold" />
@@ -106,7 +106,7 @@
                 android:layout_marginTop="14dp"
                 android:fontFamily="@font/nunito"
                 android:lineSpacingExtra="2dp"
-                android:text="Esta cuenta ya está registrada en Vetericano. Ingresa tu contraseña por única vez para activar el acceso rápido con Google:"
+                android:text="@string/lbl_esta_cuenta_ya_esta_registrada"
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp" />
 
@@ -166,7 +166,7 @@
                 android:layout_height="54dp"
                 android:layout_marginTop="14dp"
                 android:fontFamily="@font/nunito"
-                android:text="Vincular e Iniciar Sesión"
+                android:text="@string/lbl_vincular_e_iniciar_sesion"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="15sp"
@@ -186,7 +186,7 @@
                 android:focusable="true"
                 android:fontFamily="@font/nunito"
                 android:gravity="center"
-                android:text="Cancelar"
+                android:text="@string/btn_cancelar"
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp"
                 android:textStyle="bold" />

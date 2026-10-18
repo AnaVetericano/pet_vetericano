@@ -48,7 +48,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/nunito"
-                            android:text="Buenos días,"
+                            android:text="@string/lbl_buenos_dias"
                             android:textColor="@color/text_secondary"
                             android:textSize="14sp" />
                         <TextView
@@ -56,7 +56,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/nunito_display"
-                            android:text="Juan Manuel O."
+                            android:text="@string/lbl_juan_manuel_o"
                             android:textColor="@color/text_primary"
                             android:textSize="20sp"
                             android:textStyle="bold" />
@@ -69,7 +69,7 @@
                         android:background="@drawable/bg_circle_avatar"
                         android:gravity="center"
                         android:fontFamily="@font/nunito_display"
-                        android:text="JM"
+                        android:text="@string/lbl_jm"
                         android:textColor="@color/primary"
                         android:textSize="16sp"
                         android:textStyle="bold" />
@@ -98,7 +98,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/nunito_display"
-                            android:text="Datos mensuales · ago 2026"
+                            android:text="@string/lbl_datos_mensuales_ago_2026"
                             android:textAlignment="center"
                             android:textColor="@color/primary"
                             android:textSize="14sp"
@@ -131,7 +131,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito_bold"
-                                    android:text="● Asignadas"
+                                    android:text="@string/lbl_asignadas"
                                     android:textColor="@color/grafico_asignadas"
                                     android:textSize="11sp"/>
                                 <TextView
@@ -139,7 +139,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito"
-                                    android:text="0"
+                                    android:text="@string/lbl_0"
                                     android:textColor="@color/text_primary"
                                     android:textStyle="bold"
                                     android:layout_marginBottom="4dp"/>
@@ -149,7 +149,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito_bold"
-                                    android:text="● En tratamiento"
+                                    android:text="@string/lbl_en_tratamiento"
                                     android:textColor="@color/grafico_en_tratamiento"
                                     android:textSize="11sp"/>
                                 <TextView
@@ -157,7 +157,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito"
-                                    android:text="0"
+                                    android:text="@string/lbl_0"
                                     android:textColor="@color/text_primary"
                                     android:textStyle="bold"
                                     android:layout_marginBottom="4dp"/>
@@ -167,7 +167,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito_bold"
-                                    android:text="● Atendidas"
+                                    android:text="@string/lbl_atendidas"
                                     android:textColor="@color/grafico_atendidas"
                                     android:textSize="11sp"/>
                                 <TextView
@@ -175,7 +175,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito"
-                                    android:text="0"
+                                    android:text="@string/lbl_0"
                                     android:textColor="@color/text_primary"
                                     android:textStyle="bold"
                                     android:layout_marginBottom="4dp"/>
@@ -185,7 +185,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito_bold"
-                                    android:text="● Transferidas"
+                                    android:text="@string/lbl_transferidas"
                                     android:textColor="@color/grafico_transferidas"
                                     android:textSize="11sp"/>
                                 <TextView
@@ -193,7 +193,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito"
-                                    android:text="0"
+                                    android:text="@string/lbl_0"
                                     android:textColor="@color/text_primary"
                                     android:textStyle="bold"/>
                             </LinearLayout>
@@ -240,7 +240,7 @@
                                     android:layout_width="32dp"
                                     android:layout_height="32dp"
                                     android:layout_gravity="center"
-                                    android:contentDescription="Maletín con medicamentos"
+                                    android:contentDescription="@string/cd_maletin_con_medicamentos"
                                     android:src="@drawable/ic_medical_bag" />
                             </FrameLayout>
 
@@ -257,7 +257,7 @@
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito"
                                     android:letterSpacing="0.04"
-                                    android:text="BOTIQUÍN VETERINARIO"
+                                    android:text="@string/lbl_botiquin_veterinario"
                                     android:textColor="@color/primary"
                                     android:textSize="11sp"
                                     android:textStyle="bold" />
@@ -267,7 +267,7 @@
                                     android:layout_height="wrap_content"
                                     android:layout_marginTop="2dp"
                                     android:fontFamily="@font/nunito_display"
-                                    android:text="Maletín de Medicamentos"
+                                    android:text="@string/lbl_maletin_de_medicamentos"
                                     android:textColor="@color/text_primary"
                                     android:textSize="17sp"
                                     android:textStyle="bold" />
@@ -276,7 +276,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito"
-                                    android:text="Inventario disponible para atención"
+                                    android:text="@string/lbl_inventario_disponible_para_atencion"
                                     android:textColor="@color/text_secondary"
                                     android:textSize="12sp" />
                             </LinearLayout>
@@ -315,7 +315,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito"
-                                    android:text="Total en maletín"
+                                    android:text="@string/lbl_total_en_maletin"
                                     android:textColor="@color/text_secondary"
                                     android:textSize="12sp" />
 
@@ -330,7 +330,7 @@
                                         android:layout_width="wrap_content"
                                         android:layout_height="wrap_content"
                                         android:fontFamily="@font/nunito_display"
-                                        android:text="24"
+                                        android:text="@string/lbl_24"
                                         android:textColor="@color/primary"
                                         android:textSize="32sp"
                                         android:textStyle="bold" />
@@ -340,7 +340,7 @@
                                         android:layout_height="wrap_content"
                                         android:layout_marginStart="6dp"
                                         android:fontFamily="@font/nunito"
-                                        android:text="medicamentos"
+                                        android:text="@string/lbl_medicamentos"
                                         android:textColor="@color/text_secondary"
                                         android:textSize="13sp"
                                         android:textStyle="bold" />
@@ -370,7 +370,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito"
-                                    android:text="Stock disponible"
+                                    android:text="@string/lbl_stock_disponible"
                                     android:textColor="@color/badge_alta_text"
                                     android:textSize="11sp"
                                     android:textStyle="bold" />
@@ -409,7 +409,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="10dp"
                             android:fontFamily="@font/nunito_bold"
-                            android:text="Ver todas las Peticiones"
+                            android:text="@string/btn_ver_todas_las_peticiones"
                             android:textColor="@color/white"
                             android:textSize="14sp"/>
                     </LinearLayout>
@@ -443,7 +443,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/nunito_display"
-                                android:text="Pendientes de atención"
+                                android:text="@string/lbl_pendientes_de_atencion"
                                 android:textColor="@color/primary"
                                 android:textSize="15sp"
                                 android:textStyle="bold"/>
@@ -457,7 +457,7 @@
                                 android:fontFamily="@font/nunito_bold"
                                 android:paddingHorizontal="10dp"
                                 android:paddingVertical="3dp"
-                                android:text="0 urgentes"
+                                android:text="@string/lbl_0_urgentes"
                                 android:textColor="@color/badge_urgente_text"
                                 android:textSize="11sp"/>
                         </RelativeLayout>
@@ -492,7 +492,7 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginTop="8dp"
                                 android:fontFamily="@font/nunito_bold"
-                                android:text="¡Sin peticiones pendientes!"
+                                android:text="@string/lbl_sin_peticiones_pendientes"
                                 android:textColor="@color/text_primary"
                                 android:textSize="14sp" />
 
@@ -502,7 +502,7 @@
                                 android:layout_marginTop="2dp"
                                 android:fontFamily="@font/nunito"
                                 android:gravity="center"
-                                android:text="Todas las atenciones asignadas ya han sido trabajadas."
+                                android:text="@string/lbl_todas_las_atenciones_asignadas_ya"
                                 android:textColor="@color/text_secondary"
                                 android:textSize="11.5sp" />
                         </LinearLayout>
@@ -538,7 +538,7 @@
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/nunito_display"
-                                android:text="Transferidos a otro centro"
+                                android:text="@string/lbl_transferidos_a_otro_centro"
                                 android:textColor="@color/grafico_transferidas"
                                 android:textSize="15sp"
                                 android:textStyle="bold"/>
@@ -552,7 +552,7 @@
                                 android:fontFamily="@font/nunito_bold"
                                 android:paddingHorizontal="10dp"
                                 android:paddingVertical="3dp"
-                                android:text="0 transferidos"
+                                android:text="@string/lbl_0_transferidos"
                                 android:textColor="@color/badge_transferido_text"
                                 android:textSize="11sp"/>
                         </RelativeLayout>
@@ -604,7 +604,7 @@
                 android:layout_weight="1"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
-                android:contentDescription="Peticiones"
+                android:contentDescription="@string/cd_peticiones"
                 android:focusable="true"
                 android:padding="12dp"
                 android:src="@drawable/paper_on_paper"
@@ -617,7 +617,7 @@
                 android:layout_weight="1"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
-                android:contentDescription="Inicio"
+                android:contentDescription="@string/cd_inicio"
                 android:focusable="true"
                 android:padding="12dp"
                 android:src="@drawable/house"
@@ -630,7 +630,7 @@
                 android:layout_weight="1"
                 android:background="?attr/selectableItemBackgroundBorderless"
                 android:clickable="true"
-                android:contentDescription="Perfil"
+                android:contentDescription="@string/cd_perfil"
                 android:focusable="true"
                 android:padding="12dp"
                 android:src="@drawable/user"

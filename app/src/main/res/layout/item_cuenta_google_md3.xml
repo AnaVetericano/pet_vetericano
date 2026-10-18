@@ -38,7 +38,7 @@
                 android:layout_height="match_parent"
                 android:fontFamily="@font/nunito_display"
                 android:gravity="center"
-                android:text="G"
+                android:text="@string/lbl_g"
                 android:textColor="@color/blue"
                 android:textSize="16sp"
                 android:textStyle="bold" />
@@ -61,7 +61,7 @@
                 android:fontFamily="@font/nunito"
                 android:maxLines="1"
                 android:singleLine="true"
-                android:text="usuario@gmail.com"
+                android:text="@string/lbl_usuario_gmail_com"
                 android:textColor="@color/text_primary"
                 android:textSize="14sp"
                 android:textStyle="bold" />
@@ -74,7 +74,7 @@
                 android:fontFamily="@font/nunito"
                 android:maxLines="1"
                 android:singleLine="true"
-                android:text="Cuenta de Google"
+                android:text="@string/lbl_cuenta_de_google"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
         </LinearLayout>

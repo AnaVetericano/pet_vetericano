@@ -151,6 +151,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
                     if (nuevaMatricula.isNotEmpty()) {
                         prefs.saveUserMatriculaProfesional(nuevaMatricula)
                     }
+                    prefs.saveProfileImagePath(perfil.fotoPerfil ?: "")
 
                     withContext(Dispatchers.Main) {
                         actualizarDatosUsuario()

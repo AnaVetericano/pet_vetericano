@@ -47,6 +47,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
             actualizarDatosUsuario()
             fetchDashboardData()
             sincronizarPerfilUsuario()
+            sincronizarKitDashboard()
         }
 
         // Cargar nombre e iniciales del veterinario inmediatamente
@@ -99,12 +100,26 @@ class dahsboard_veterianrio : AppCompatActivity() {
         fetchDashboardData()
         sincronizarPerfilUsuario()
         actualizarResumenMaletin()
+        sincronizarKitDashboard()
     }
 
     private fun actualizarResumenMaletin() {
         val maletin = MaletinManager.getInstance(this)
         binding.tvTotalMedicamentos.text = maletin.getTotalMedicamentosDisponibles().toString()
         binding.tvEstadoMaletin.text = maletin.getEstadoStock()
+    }
+
+    private fun sincronizarKitDashboard() {
+        val prefs = SharedPreferencesManager(this)
+        val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
+        if (token.isEmpty()) return
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            MaletinManager.getInstance(this@dahsboard_veterianrio).sincronizarDesdeServidor(token)
+            withContext(Dispatchers.Main) {
+                actualizarResumenMaletin()
+            }
+        }
     }
 
     private fun actualizarDatosUsuario() {

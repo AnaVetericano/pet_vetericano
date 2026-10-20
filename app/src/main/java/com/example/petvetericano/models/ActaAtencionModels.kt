@@ -168,7 +168,14 @@ data class SeguimientoPeticionVisitaRequest(
     val fotos: List<String> = emptyList(),
 
     @SerializedName("videos")
-    val videos: List<String> = emptyList()
+    val videos: List<String> = emptyList(),
+
+    // Consumo del Kit de Medicamentos del Veterinario
+    @SerializedName("medicamentos_usados")
+    val medicamentosUsados: List<MedicamentoUsadoRequest>? = null,
+
+    @SerializedName("sincronizacion_offline")
+    val sincronizacionOffline: Boolean = false
 )
 
 data class LugarAtencionActa(
@@ -283,7 +290,10 @@ data class CrearActaResponse(
     val mensaje: String?,
 
     @SerializedName("id_seguimiento")
-    val idSeguimiento: Int?
+    val idSeguimiento: Int?,
+
+    @SerializedName("alertas_farmacia")
+    val alertasFarmacia: AlertasFarmaciaResponse? = null
 )
 
 data class RazaItemResponse(

@@ -13,6 +13,14 @@ import com.example.petvetericano.models.UsuarioPerfilResponse
 import com.example.petvetericano.models.confirmarpeticion
 import com.example.petvetericano.models.PostularseResponse
 import com.example.petvetericano.models.VoluntariadoEventos
+import com.example.petvetericano.models.KitMiKitResponse
+import com.example.petvetericano.models.SnapshotMovilResponse
+import com.example.petvetericano.models.CrearSolicitudKitRequest
+import com.example.petvetericano.models.SolicitudKitResponse
+import com.example.petvetericano.models.ListadoPaginadoResponse
+import com.example.petvetericano.models.SincronizarOfflineRequest
+import com.example.petvetericano.models.SincronizarOfflineResponse
+import com.example.petvetericano.models.AlertasKitResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -20,6 +28,7 @@ import retrofit2.http.Header
 import retrofit2.http.PATCH
 import retrofit2.http.POST
 import retrofit2.http.Path
+import retrofit2.http.Query
 
 interface ApiService {
 
@@ -142,6 +151,48 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Path("id") idEvento: Int
     ): Response<PostularseResponse>
+
+    // --- INVENTARIO KIT VETERINARIO ---
+    @GET("inventario/kit/mi-kit/")
+    suspend fun obtenerMiKit(
+        @Header("Authorization") token: String
+    ): Response<KitMiKitResponse>
+
+    @GET("inventario/kit/snapshot-movil/")
+    suspend fun obtenerSnapshotMovil(
+        @Header("Authorization") token: String,
+        @Query("id_medicamento") idMedicamento: Int? = null
+    ): Response<SnapshotMovilResponse>
+
+    @POST("inventario/kit/solicitudes/")
+    suspend fun crearSolicitudKit(
+        @Header("Authorization") token: String,
+        @Body request: CrearSolicitudKitRequest
+    ): Response<SolicitudKitResponse>
+
+    @GET("inventario/kit/solicitudes/")
+    suspend fun listarSolicitudesKit(
+        @Header("Authorization") token: String,
+        @Query("estado") estado: String? = null,
+        @Query("tipo") tipo: String? = null
+    ): Response<ListadoPaginadoResponse<SolicitudKitResponse>>
+
+    @POST("inventario/kit/solicitudes/{id}/cancelar/")
+    suspend fun cancelarSolicitudKit(
+        @Header("Authorization") token: String,
+        @Path("id") idSolicitud: Int
+    ): Response<GenericResponse>
+
+    @POST("inventario/kit/sincronizar-offline/")
+    suspend fun sincronizarOfflineKit(
+        @Header("Authorization") token: String,
+        @Body request: SincronizarOfflineRequest
+    ): Response<SincronizarOfflineResponse>
+
+    @GET("inventario/kit/alertas/")
+    suspend fun obtenerAlertasKit(
+        @Header("Authorization") token: String
+    ): Response<AlertasKitResponse>
 
 }
 

@@ -2,8 +2,13 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_recargar_maletin"
+        android:id="@+id/action_sincronizar_maletin"
         android:icon="@drawable/ic_sync"
-        android:title="Reiniciar stock"
+        android:title="Sincronizar maletín"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/action_solicitudes_kit"
+        android:icon="@drawable/ic_medical_bag"
+        android:title="Solicitudes de Kit"
         app:showAsAction="ifRoom" />
 </menu>

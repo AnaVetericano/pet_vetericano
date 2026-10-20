@@ -1,15 +1,22 @@
 package com.example.petvetericano
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.widget.NestedScrollView
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.databinding.ActivityMaletinMedicamentosBinding
 import com.example.petvetericano.models.MedicamentoMaletin
+import com.example.petvetericano.network.RetrofitClient
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 class MaletinMedicamentosActivity : AppCompatActivity() {
 
@@ -31,7 +38,12 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
         configurarRecyclerView()
         configurarFiltros()
         configurarBuscador()
+        configurarSwipeRefresh()
+        configurarFab()
         actualizarDatosVista()
+
+        // Sincronización automática con backend al entrar
+        sincronizarMaletin(forzar = false)
     }
 
     override fun onResume() {
@@ -46,8 +58,12 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
 
         binding.toolbarMaletin.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.action_recargar_maletin -> {
-                    mostrarDialogoReiniciarMaletin()
+                R.id.action_sincronizar_maletin -> {
+                    sincronizarMaletin(forzar = true)
+                    true
+                }
+                R.id.action_solicitudes_kit -> {
+                    abrirPantallaSolicitudesKit()
                     true
                 }
                 else -> false
@@ -61,6 +77,32 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
         }
         binding.rvMedicamentos.layoutManager = LinearLayoutManager(this)
         binding.rvMedicamentos.adapter = adapter
+    }
+
+    private fun configurarSwipeRefresh() {
+        binding.swipeRefreshMaletin.setOnRefreshListener {
+            sincronizarMaletin(forzar = true)
+        }
+    }
+
+    private fun configurarFab() {
+        binding.fabSolicitarReposicion.setOnClickListener {
+            abrirPantallaSolicitudesKit()
+        }
+
+        binding.nestedScrollMaletin.setOnScrollChangeListener(
+            NestedScrollView.OnScrollChangeListener { _, _, scrollY, _, oldScrollY ->
+                if (scrollY > oldScrollY + 12 && binding.fabSolicitarReposicion.isExtended) {
+                    binding.fabSolicitarReposicion.shrink()
+                } else if (scrollY < oldScrollY - 12 && !binding.fabSolicitarReposicion.isExtended) {
+                    binding.fabSolicitarReposicion.extend()
+                }
+            }
+        )
+
+        binding.btnEmptySolicitarDotacion.setOnClickListener {
+            abrirPantallaSolicitudesKit()
+        }
     }
 
     private fun configurarFiltros() {
@@ -90,9 +132,16 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
 
     private fun actualizarDatosVista() {
         val totalRefs = maletinManager.getTotalMedicamentosDisponibles()
-        val totalTodas = maletinManager.getTotalReferencias()
         binding.tvTotalReferenciasHeader.text = "$totalRefs"
         binding.tvEstadoGeneralBadge.text = maletinManager.getEstadoStock()
+
+        val ultSync = maletinManager.getUltimoTimestampSync()
+        if (ultSync > 0L) {
+            val fechaFmt = android.text.format.DateFormat.format("dd/MM/yyyy HH:mm", ultSync)
+            binding.tvEstadoSincronizacion.text = "Sincronizado: $fechaFmt • Disponible offline"
+        } else {
+            binding.tvEstadoSincronizacion.text = "Sin sincronización previa • Tira hacia abajo para actualizar"
+        }
 
         filtrarLista()
     }
@@ -124,21 +173,81 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
         if (filtrados.isEmpty()) {
             binding.layoutEmptyMedicamentos.visibility = View.VISIBLE
             binding.rvMedicamentos.visibility = View.GONE
+            if (todos.isEmpty()) {
+                binding.tvEmptyTitulo.text = "Maletín sin asignación activa"
+                binding.tvEmptySubtitulo.text = "Aún no tienes medicamentos asignados en tu kit personal por la administración."
+                binding.btnEmptySolicitarDotacion.visibility = View.VISIBLE
+            } else {
+                binding.tvEmptyTitulo.text = getString(R.string.lbl_no_se_encontraron_medicamentos)
+                binding.tvEmptySubtitulo.text = getString(R.string.lbl_intenta_con_otro_termino_de)
+                binding.btnEmptySolicitarDotacion.visibility = View.GONE
+            }
         } else {
             binding.layoutEmptyMedicamentos.visibility = View.GONE
             binding.rvMedicamentos.visibility = View.VISIBLE
         }
     }
 
+    private fun sincronizarMaletin(forzar: Boolean) {
+        val prefs = SharedPreferencesManager(this)
+        val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
+        if (token.isEmpty()) {
+            binding.swipeRefreshMaletin.isRefreshing = false
+            return
+        }
+
+        binding.swipeRefreshMaletin.isRefreshing = true
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            // Sincronizar consumos pendientes offline si existen
+            maletinManager.sincronizarConsumosPendientes(token)
+
+            val resultado = maletinManager.sincronizarDesdeServidor(token)
+
+            withContext(Dispatchers.Main) {
+                binding.swipeRefreshMaletin.isRefreshing = false
+                actualizarDatosVista()
+
+                resultado.onSuccess {
+                    if (forzar) {
+                        Toast.makeText(this@MaletinMedicamentosActivity, "Maletín sincronizado con farmacia CBA", Toast.LENGTH_SHORT).show()
+                    }
+                }.onFailure { err ->
+                    if (forzar) {
+                        MaterialAlertDialogBuilder(this@MaletinMedicamentosActivity)
+                            .setIcon(R.drawable.warning_icon4)
+                            .setTitle("Error de sincronización")
+                            .setMessage("No se pudo conectar con el servidor: ${err.localizedMessage ?: err.message}.\n\nSe mantienen los datos locales disponibles offline.")
+                            .setPositiveButton("Aceptar", null)
+                            .show()
+                    }
+                }
+            }
+        }
+    }
+
     private fun mostrarDetalleMedicamento(med: MedicamentoMaletin) {
         val mensaje = buildString {
-            append("• Concentración: ").append(med.concentracion).append("\n")
+            append("• Stock vigente disponible: ").append(med.saldoDisponibleInt).append(" ").append(med.unidadMedida).append("\n")
+            if (med.saldoVencido > 0) {
+                append("⚠️ Stock vencido (no apto): ").append(med.saldoVencido).append(" ").append(med.unidadMedida).append("\n")
+            }
             append("• Presentación: ").append(med.presentacion).append("\n")
-            append("• Vía sugerida: ").append(med.viaRecomendada).append("\n")
-            append("• Stock actual: ").append(med.cantidadDisponible).append(" / ").append(med.cantidadInicial).append(" ").append(med.unidadMedida).append("\n")
-            append("• Número de Lote: ").append(med.lote).append("\n")
-            append("• Vencimiento: ").append(med.fechaVencimiento).append("\n\n")
-            append("Indicaciones clínicas:\n").append(med.descripcionUso)
+            append("• Vía recomendada: ").append(med.viaRecomendada).append("\n")
+            append("• Categoría médica: ").append(med.categoria).append("\n\n")
+
+            if (med.lotes.isNotEmpty()) {
+                append("Lotes asignados en kit:\n")
+                med.lotes.forEach { lote ->
+                    val estadoLote = if (lote.vencido) "❌ VENCIDO" else "✓ Vigente"
+                    append("  - Lote #").append(lote.idInventario)
+                        .append(": ").append(lote.cantidadActual).append(" uds")
+                        .append(" (Vence: ").append(lote.fechaVencimiento ?: "N/D").append(" - ").append(estadoLote).append(")\n")
+                }
+                append("\n")
+            }
+
+            append("Indicaciones clínicas:\n").append(med.descripcionUso.ifEmpty { "Uso clínico veterinario institucional CBA." })
         }
 
         MaterialAlertDialogBuilder(this)
@@ -149,18 +258,7 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun mostrarDialogoReiniciarMaletin() {
-        MaterialAlertDialogBuilder(this)
-            .setIcon(R.drawable.ic_medical_bag)
-            .setTitle("¿Restablecer inventario del maletín?")
-            .setMessage("Esta opción recarga al 100% las existencias de todos los medicamentos asignados para continuar las pruebas en campo.")
-            .setPositiveButton("Restablecer") { dialog, _ ->
-                dialog.dismiss()
-                maletinManager.reiniciarStock()
-                actualizarDatosVista()
-                Toast.makeText(this, "Stock del maletín restablecido con éxito", Toast.LENGTH_SHORT).show()
-            }
-            .setNegativeButton("Cancelar", null)
-            .show()
+    private fun abrirPantallaSolicitudesKit() {
+        startActivity(Intent(this, SolicitudesKitActivity::class.java))
     }
 }

@@ -2,14 +2,21 @@ package com.example.petvetericano
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.petvetericano.models.ConsumoOfflineItem
+import com.example.petvetericano.models.KitItemResponse
 import com.example.petvetericano.models.MedicamentoMaletin
+import com.example.petvetericano.models.SincronizarOfflineRequest
+import com.example.petvetericano.models.SincronizarOfflineResponse
+import com.example.petvetericano.network.RetrofitClient
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 
 /**
- * Gestor del inventario del Maletín de Medicamentos asignado al veterinario.
- * Gestiona el stock local, las deducciones automáticas desde el acta de atención
- * y provee métricas para el Dashboard y la pantalla de Maletín.
+ * Gestor del inventario del Maletín de Medicamentos asignado al veterinario (Kit Móvil).
+ * Conecta con el backend Django (/api/inventario/kit/), mantiene la caché offline
+ * para trabajo en campo sin conectividad y gestiona la cola de consumos pendientes.
  */
 class MaletinManager(context: Context) {
 
@@ -19,6 +26,8 @@ class MaletinManager(context: Context) {
 
     companion object {
         private const val KEY_MEDICAMENTOS = "MALETIN_MEDICAMENTOS_LIST"
+        private const val KEY_ULTIMA_SYNC = "MALETIN_ULTIMA_SINCRONIZACION"
+        private const val KEY_CONSUMOS_PENDIENTES = "MALETIN_CONSUMOS_PENDIENTES"
 
         @Volatile
         private var instance: MaletinManager? = null
@@ -31,54 +40,132 @@ class MaletinManager(context: Context) {
     }
 
     /**
-     * Obtiene la lista completa de medicamentos asignados al maletín.
-     * Si es la primera vez que se accede, precarga el inventario médico veterinario.
+     * Obtiene la lista actual de medicamentos del maletín desde la caché local.
      */
     fun getMedicamentos(): List<MedicamentoMaletin> {
         val json = prefs.getString(KEY_MEDICAMENTOS, null)
         return if (!json.isNullOrEmpty()) {
             try {
                 val type = object : TypeToken<List<MedicamentoMaletin>>() {}.type
-                gson.fromJson<List<MedicamentoMaletin>>(json, type) ?: getListaInicialMedicamentos()
+                gson.fromJson<List<MedicamentoMaletin>>(json, type) ?: emptyList()
             } catch (_: Exception) {
-                getListaInicialMedicamentos()
+                emptyList()
             }
         } else {
-            val inicial = getListaInicialMedicamentos()
-            guardarMedicamentos(inicial)
-            inicial
+            emptyList()
         }
     }
 
     /**
-     * Obtiene un medicamento por su ID único.
+     * Guarda la lista de medicamentos en caché local.
+     */
+    fun guardarMedicamentos(lista: List<MedicamentoMaletin>) {
+        val json = gson.toJson(lista)
+        prefs.edit().putString(KEY_MEDICAMENTOS, json).apply()
+    }
+
+    /**
+     * Obtiene un medicamento por su ID.
      */
     fun getMedicamento(id: String): MedicamentoMaletin? {
         return getMedicamentos().find { it.id == id }
     }
 
     /**
-     * Guarda la lista actualizada de medicamentos.
+     * Indica si ya hay datos de inventario cacheados.
      */
-    private fun guardarMedicamentos(lista: List<MedicamentoMaletin>) {
-        val json = gson.toJson(lista)
-        prefs.edit().putString(KEY_MEDICAMENTOS, json).apply()
+    fun hayDatosSincronizados(): Boolean {
+        return getMedicamentos().isNotEmpty()
     }
 
     /**
-     * Descuenta una cantidad específica del stock disponible de un medicamento.
-     * @return true si se pudo descontar, false si no hay suficiente stock.
+     * Obtiene el timestamp de la última sincronización con el servidor.
+     */
+    fun getUltimoTimestampSync(): Long {
+        return prefs.getLong(KEY_ULTIMA_SYNC, 0L)
+    }
+
+    /**
+     * Sincroniza el inventario completo del maletín desde el backend (/api/inventario/kit/mi-kit/).
+     * Si falla la red pero hay datos en caché, preserva la caché local.
+     */
+    suspend fun sincronizarDesdeServidor(token: String): Result<List<MedicamentoMaletin>> = withContext(Dispatchers.IO) {
+        if (token.isBlank()) {
+            return@withContext Result.failure(IllegalStateException("Token de autenticación vacío"))
+        }
+
+        try {
+            val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
+            val response = RetrofitClient.apiService.obtenerMiKit(authHeader)
+
+            if (response.isSuccessful && response.body() != null) {
+                val body = response.body()!!
+                val listaTransformada = body.items.map { item ->
+                    MedicamentoMaletin.fromKitItem(item)
+                }
+
+                guardarMedicamentos(listaTransformada)
+                prefs.edit().putLong(KEY_ULTIMA_SYNC, System.currentTimeMillis()).apply()
+
+                Result.success(listaTransformada)
+            } else {
+                // Si /mi-kit/ falla por algún motivo, intentar con snapshot-movil/
+                val snapshotResp = RetrofitClient.apiService.obtenerSnapshotMovil(authHeader)
+                if (snapshotResp.isSuccessful && snapshotResp.body() != null) {
+                    val snapshot = snapshotResp.body()!!
+                    val existentesMap = getMedicamentos().associateBy { it.idMedicamentoInt }
+
+                    val listaDesdeSnapshot = snapshot.stock.map { stockItem ->
+                        val anterior = existentesMap[stockItem.idMedicamento]
+                        MedicamentoMaletin(
+                            id = stockItem.idMedicamento.toString(),
+                            nombre = stockItem.nombre,
+                            categoria = anterior?.categoria ?: "General",
+                            unidadMedida = anterior?.unidadMedida ?: "unidades",
+                            cantidadDisponible = stockItem.saldoDisponible.toDouble(),
+                            cantidadInicial = maxOf(anterior?.cantidadInicial ?: 0.0, stockItem.saldoDisponible.toDouble()),
+                            lote = anterior?.lote ?: "Lote activo",
+                            fechaVencimiento = anterior?.fechaVencimiento ?: "Vigente",
+                            viaRecomendada = anterior?.viaRecomendada ?: "Clínica",
+                            descripcionUso = anterior?.descripcionUso ?: ""
+                        )
+                    }
+
+                    guardarMedicamentos(listaDesdeSnapshot)
+                    prefs.edit().putLong(KEY_ULTIMA_SYNC, snapshot.timestamp * 1000).apply()
+
+                    Result.success(listaDesdeSnapshot)
+                } else {
+                    val code = response.code()
+                    val errorStr = response.errorBody()?.string() ?: "Error $code"
+                    Result.failure(Exception("Error al consultar el kit ($code): $errorStr"))
+                }
+            }
+        } catch (e: Exception) {
+            val locales = getMedicamentos()
+            if (locales.isNotEmpty()) {
+                // Modo resiliente: falló la red pero podemos continuar con la caché local
+                Result.success(locales)
+            } else {
+                Result.failure(e)
+            }
+        }
+    }
+
+    /**
+     * Descuenta una cantidad de existencias de un medicamento en la memoria local.
+     * @return true si se pudo descontar, false si no hay suficiente stock disponible.
      */
     @Synchronized
     fun descontarStock(id: String, cantidad: Double): Boolean {
-        if (cantidad <= 0) return false
+        if (cantidad <= 0.0) return false
         val lista = getMedicamentos().toMutableList()
         val index = lista.indexOfFirst { it.id == id }
         if (index != -1) {
             val med = lista[index]
             if (med.cantidadDisponible >= cantidad) {
-                val nuevaCantidad = String.format(java.util.Locale.US, "%.2f", med.cantidadDisponible - cantidad).toDouble()
-                lista[index] = med.copy(cantidadDisponible = maxOf(0.0, nuevaCantidad))
+                val nuevaCantidad = (med.cantidadDisponible - cantidad).coerceAtLeast(0.0)
+                lista[index] = med.copy(cantidadDisponible = nuevaCantidad)
                 guardarMedicamentos(lista)
                 return true
             }
@@ -87,23 +174,23 @@ class MaletinManager(context: Context) {
     }
 
     /**
-     * Revierte / devuelve una cantidad descontada (en caso de que el usuario remueva el ítem).
+     * Revierte / devuelve una cantidad descontada (si el veterinario remueve el medicamento del acta).
      */
     @Synchronized
     fun devolverStock(id: String, cantidad: Double) {
-        if (cantidad <= 0) return
+        if (cantidad <= 0.0) return
         val lista = getMedicamentos().toMutableList()
         val index = lista.indexOfFirst { it.id == id }
         if (index != -1) {
             val med = lista[index]
-            val nuevaCantidad = String.format(java.util.Locale.US, "%.2f", med.cantidadDisponible + cantidad).toDouble()
-            lista[index] = med.copy(cantidadDisponible = minOf(med.cantidadInicial, nuevaCantidad))
+            val nuevaCantidad = med.cantidadDisponible + cantidad
+            lista[index] = med.copy(cantidadDisponible = nuevaCantidad)
             guardarMedicamentos(lista)
         }
     }
 
     /**
-     * Retorna el número de referencias de medicamentos con stock disponible (> 0).
+     * Retorna el número de medicamentos con stock disponible (> 0).
      */
     fun getTotalMedicamentosDisponibles(): Int {
         return getMedicamentos().count { it.cantidadDisponible > 0 }
@@ -117,175 +204,94 @@ class MaletinManager(context: Context) {
     }
 
     /**
-     * Calcula el estado general del maletín (Stock disponible, Stock bajo, etc.).
+     * Calcula el estado general del maletín para el Dashboard y badges M3.
      */
     fun getEstadoStock(): String {
         val meds = getMedicamentos()
         if (meds.isEmpty()) return "Sin asignación"
 
+        val vencidos = meds.count { it.saldoVencido > 0 }
         val agotados = meds.count { it.cantidadDisponible <= 0 }
-        val bajos = meds.count { it.cantidadDisponible > 0 && (it.cantidadDisponible / it.cantidadInicial) <= 0.25 }
+        val bajos = meds.count { it.cantidadDisponible > 0 && it.cantidadDisponible < 5 }
 
         return when {
+            vencidos > 0 -> "$vencidos vencidos"
             agotados > 0 -> "$agotados agotados"
             bajos > 0 -> "$bajos stock bajo"
             else -> "Stock disponible"
         }
     }
 
-    /**
-     * Reinicia el inventario al stock inicial asignado (ideal para recargar el maletín en campo o pruebas).
-     */
-    fun reiniciarStock() {
-        val inicial = getListaInicialMedicamentos()
-        guardarMedicamentos(inicial)
+    // =========================================================================
+    // COLA DE CONSUMOS PENDIENTES OFFLINE
+    // =========================================================================
+
+    fun getConsumosPendientes(): List<ConsumoOfflineItem> {
+        val json = prefs.getString(KEY_CONSUMOS_PENDIENTES, null)
+        return if (!json.isNullOrEmpty()) {
+            try {
+                val type = object : TypeToken<List<ConsumoOfflineItem>>() {}.type
+                gson.fromJson<List<ConsumoOfflineItem>>(json, type) ?: emptyList()
+            } catch (_: Exception) {
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+
+    private fun guardarConsumosPendientes(lista: List<ConsumoOfflineItem>) {
+        val json = gson.toJson(lista)
+        prefs.edit().putString(KEY_CONSUMOS_PENDIENTES, json).apply()
+    }
+
+    fun encolarConsumoPendiente(item: ConsumoOfflineItem) {
+        val actuales = getConsumosPendientes().toMutableList()
+        // Evita duplicados por client_uuid
+        if (actuales.none { it.clientUuid == item.clientUuid }) {
+            actuales.add(item)
+            guardarConsumosPendientes(actuales)
+        }
     }
 
     /**
-     * Inventario inicial médico veterinario realista para atención en campo.
+     * Sincroniza los consumos acumulados offline con el backend (/api/inventario/kit/sincronizar-offline/).
      */
-    private fun getListaInicialMedicamentos(): List<MedicamentoMaletin> {
-        return listOf(
-            MedicamentoMaletin(
-                id = "MED-001",
-                nombre = "Meloxicam 0.5%",
-                concentracion = "5 mg/ml",
-                categoria = "Analgésico / AINE",
-                presentacion = "Frasco ampolla 20 ml",
-                unidadMedida = "ml",
-                cantidadDisponible = 18.5,
-                cantidadInicial = 20.0,
-                lote = "LT-2026-M01",
-                fechaVencimiento = "04/2027",
-                viaRecomendada = "SC / IV / Oral",
-                descripcionUso = "Antiinflamatorio y analgésico no esteroideo para control del dolor e inflamación en caninos y felinos."
-            ),
-            MedicamentoMaletin(
-                id = "MED-002",
-                nombre = "Enrofloxacina 10%",
-                concentracion = "100 mg/ml",
-                categoria = "Antibiótico",
-                presentacion = "Frasco inyectable 50 ml",
-                unidadMedida = "ml",
-                cantidadDisponible = 42.0,
-                cantidadInicial = 50.0,
-                lote = "LT-2026-E12",
-                fechaVencimiento = "08/2027",
-                viaRecomendada = "SC / IM",
-                descripcionUso = "Fluoroquinolona de amplio espectro bactericida para infecciones dérmicas, respiratorias y gastrointestinales."
-            ),
-            MedicamentoMaletin(
-                id = "MED-003",
-                nombre = "Tramadol Clorhidrato",
-                concentracion = "50 mg/ml",
-                categoria = "Analgésico / AINE",
-                presentacion = "Ampolla inyectable 20 ml",
-                unidadMedida = "ml",
-                cantidadDisponible = 15.0,
-                cantidadInicial = 20.0,
-                lote = "LT-2026-T44",
-                fechaVencimiento = "11/2026",
-                viaRecomendada = "SC / IM / IV",
-                descripcionUso = "Analgésico opioide para dolor agudo, politraumatismos y procedimientos de emergencia en campo."
-            ),
-            MedicamentoMaletin(
-                id = "MED-004",
-                nombre = "Dexametasona 2 mg",
-                concentracion = "2 mg/ml",
-                categoria = "Corticoide",
-                presentacion = "Frasco inyectable 50 ml",
-                unidadMedida = "ml",
-                cantidadDisponible = 45.0,
-                cantidadInicial = 50.0,
-                lote = "LT-2026-D09",
-                fechaVencimiento = "01/2028",
-                viaRecomendada = "IM / IV / SC",
-                descripcionUso = "Glucocorticoide de alta potencia para reacciones anafilácticas, shock y procesos inflamatorios agudos."
-            ),
-            MedicamentoMaletin(
-                id = "MED-005",
-                nombre = "Oxitetraciclina Spray",
-                concentracion = "Polvo en aerosol",
-                categoria = "Antibiótico",
-                presentacion = "Frasco spray 200 ml",
-                unidadMedida = "ml",
-                cantidadDisponible = 180.0,
-                cantidadInicial = 200.0,
-                lote = "LT-2026-O88",
-                fechaVencimiento = "05/2027",
-                viaRecomendada = "Tópica",
-                descripcionUso = "Cicatrizante antiséptico y protector dérmico con tinte violeta para heridas expuestas y miasis."
-            ),
-            MedicamentoMaletin(
-                id = "MED-006",
-                nombre = "Lactato de Ringer",
-                concentracion = "Solución electrolítica",
-                categoria = "Fluidoterapia",
-                presentacion = "Bolsa infusión 500 ml",
-                unidadMedida = "ml",
-                cantidadDisponible = 500.0,
-                cantidadInicial = 500.0,
-                lote = "LT-2026-R03",
-                fechaVencimiento = "09/2028",
-                viaRecomendada = "IV / SC",
-                descripcionUso = "Fluido cristaloide isotónico para rehidratación urgente y estabilización hemodinámica."
-            ),
-            MedicamentoMaletin(
-                id = "MED-007",
-                nombre = "Praziquantel + Pirantel",
-                concentracion = "50 mg / 144 mg",
-                categoria = "Antiparasitario",
-                presentacion = "Blíster x 30 comprimidos",
-                unidadMedida = "comprimidos",
-                cantidadDisponible = 26.0,
-                cantidadInicial = 30.0,
-                lote = "LT-2026-P55",
-                fechaVencimiento = "03/2027",
-                viaRecomendada = "Oral",
-                descripcionUso = "Antiparasitario interno oral de amplio espectro contra tenias, nematodos y ascaris."
-            ),
-            MedicamentoMaletin(
-                id = "MED-008",
-                nombre = "Ivermectina 1%",
-                concentracion = "10 mg/ml",
-                categoria = "Antiparasitario",
-                presentacion = "Frasco inyectable 50 ml",
-                unidadMedida = "ml",
-                cantidadDisponible = 38.0,
-                cantidadInicial = 50.0,
-                lote = "LT-2026-I17",
-                fechaVencimiento = "10/2027",
-                viaRecomendada = "SC",
-                descripcionUso = "Endectocida para tratamiento de sarna sarcóptica, demodécica y parásitos externos."
-            ),
-            MedicamentoMaletin(
-                id = "MED-009",
-                nombre = "Cefalexina 500 mg",
-                concentracion = "500 mg",
-                categoria = "Antibiótico",
-                presentacion = "Caja x 40 comprimidos",
-                unidadMedida = "comprimidos",
-                cantidadDisponible = 32.0,
-                cantidadInicial = 40.0,
-                lote = "LT-2026-C23",
-                fechaVencimiento = "02/2027",
-                viaRecomendada = "Oral",
-                descripcionUso = "Cefalosporina oral para piodermas, heridas infectadas e infecciones de tejidos blandos."
-            ),
-            MedicamentoMaletin(
-                id = "MED-010",
-                nombre = "Furosemida 50 mg",
-                concentracion = "50 mg/ml",
-                categoria = "Cardiología / Renal",
-                presentacion = "Ampolla 20 ml",
-                unidadMedida = "ml",
-                cantidadDisponible = 16.0,
-                cantidadInicial = 20.0,
-                lote = "LT-2026-F91",
-                fechaVencimiento = "07/2027",
-                viaRecomendada = "IV / IM",
-                descripcionUso = "Diurético de asa para edema pulmonar cardiogénico o ascitis severa."
+    suspend fun sincronizarConsumosPendientes(token: String): Result<SincronizarOfflineResponse> = withContext(Dispatchers.IO) {
+        val pendientes = getConsumosPendientes()
+        if (pendientes.isEmpty()) {
+            return@withContext Result.success(SincronizarOfflineResponse())
+        }
+
+        try {
+            val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
+            val response = RetrofitClient.apiService.sincronizarOfflineKit(
+                token = authHeader,
+                request = SincronizarOfflineRequest(consumos = pendientes)
             )
-        )
+
+            if (response.isSuccessful && response.body() != null) {
+                // 200 OK: todos aplicados
+                guardarConsumosPendientes(emptyList())
+                Result.success(response.body()!!)
+            } else if (response.code() == 409) {
+                // 409 CONFLICTO_STOCK_KIT: según la regla oficial del proyecto, los conflictos
+                // ya quedan registrados como RECHAZADO_CONFLICTO en el servidor y NO deben reintentarse.
+                // Limpiamos la cola y retornamos el detalle para informar al usuario.
+                guardarConsumosPendientes(emptyList())
+                val errorBodyStr = response.errorBody()?.string() ?: ""
+                val conflictResp = try {
+                    gson.fromJson(errorBodyStr, SincronizarOfflineResponse::class.java)
+                } catch (_: Exception) {
+                    SincronizarOfflineResponse(error = "CONFLICTO_STOCK_KIT")
+                }
+                Result.success(conflictResp)
+            } else {
+                val code = response.code()
+                Result.failure(Exception("Error al sincronizar consumos ($code)"))
+            }
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 }

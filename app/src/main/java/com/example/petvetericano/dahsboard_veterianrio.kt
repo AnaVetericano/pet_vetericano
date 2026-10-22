@@ -7,6 +7,7 @@ import android.view.View
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
@@ -52,6 +53,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
 
         // Cargar nombre e iniciales del veterinario inmediatamente
         actualizarDatosUsuario()
+        configurarBotonModoOscuro()
 
         // Avatar y nombre clicables para acceder a opciones de editar perfil
         binding.tvInicialesAvatar.setOnClickListener {
@@ -398,15 +400,39 @@ class dahsboard_veterianrio : AppCompatActivity() {
 
         pieChart.isDrawHoleEnabled = true
         pieChart.holeRadius = 75f
+        pieChart.setHoleColor(ContextCompat.getColor(this, R.color.card_background))
         pieChart.setTransparentCircleAlpha(0)
 
         pieChart.setDrawCenterText(true)
         pieChart.centerText = "$total\ntotal"
         pieChart.setCenterTextSize(16f)
-        pieChart.setCenterTextColor(Color.parseColor("#0F172A"))
+        pieChart.setCenterTextColor(ContextCompat.getColor(this, R.color.text_primary))
 
         pieChart.description.isEnabled = false
         pieChart.legend.isEnabled = false
         pieChart.invalidate()
+    }
+
+    /**
+     * Configura el botón rápido en la cabecera para alternar entre Modo Claro y Oscuro con un solo toque.
+     */
+    private fun configurarBotonModoOscuro() {
+        val sharedPreferences = getSharedPreferences("ThemePrefs", MODE_PRIVATE)
+        val isDarkMode = sharedPreferences.getBoolean("isDarkMode", false)
+
+        binding.btnThemeToggle.setImageResource(
+            if (isDarkMode) R.drawable.baseline_light_mode_24 else R.drawable.baseline_dark_mode_24
+        )
+
+        binding.btnThemeToggle.setOnClickListener {
+            val nuevoModo = !sharedPreferences.getBoolean("isDarkMode", false)
+            sharedPreferences.edit().putBoolean("isDarkMode", nuevoModo).apply()
+
+            if (nuevoModo) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            }
+        }
     }
 }

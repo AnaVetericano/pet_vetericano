@@ -65,6 +65,7 @@
     <string name="lbl_alertas_sobre_actualizaciones_de_casos">Alertas sobre actualizaciones de casos</string>
     <string name="hint_telefono_min_10_digitos">Teléfono (Mín. 10 dígitos)</string>
     <string name="helper_min_8_caracteres_una_mayuscula">Mín. 8 caracteres, una mayúscula y un número</string>
+    <string name="desc_modo_oscuro">Reduce el brillo para descansar la vista</string>
     <string name="lbl_cerrar_sesion">¿Cerrar sesión?</string>
     <string name="lbl_usuario_vetericano_com">usuario@vetericano.com</string>
     <string name="lbl_saldras_de_tu_cuenta_en">Saldrás de tu cuenta en este dispositivo. Tu información y foto de perfil seguirán guardadas cuando vuelvas a ingresar.</string>

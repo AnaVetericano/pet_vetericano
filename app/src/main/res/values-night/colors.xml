@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Colores base de la marca Vetericano (Ajustados para Dark Mode con contraste WCAG AA) -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="blue">#FF7070D6</color>
+    <color name="darkblue2">#FF1E224A</color>
+    <color name="darkblue">#FF0B0F19</color>
+    <color name="gray_paw_cat">#FF2A3342</color>
+    <color name="yellow">#FBBF24</color>
+
+    <!-- Derivados armónicos de la paleta oficial para tema oscuro -->
+    <color name="primary">#7070D6</color>
+    <color name="primary_dark">#0B0F19</color>
+    <color name="primary_variant">#5C5CBF</color>
+    <color name="secondary">#FBBF24</color>
+    <color name="secondary_dark">#D97706</color>
+    <color name="secondary_light">#2E2305</color>
+    <color name="primary_light">#1E224A</color>
+    <color name="primary_soft">#161938</color>
+
+    <!-- Superficies, fondos y textos en Dark Mode (Paleta Slate de alta fidelidad) -->
+    <color name="bg_screen">#0F172A</color>
+    <color name="card_background">#1E293B</color>
+    <color name="card_stroke">#334155</color>
+    <color name="input_background">#1E293B</color>
+    <color name="input_stroke">#475569</color>
+    <color name="text_primary">#F8FAFC</color>
+    <color name="text_secondary">#94A3B8</color>
+    <color name="text_muted">#64748B</color>
+    <color name="divider">#334155</color>
+
+    <!-- Paleta Semántica Detallada (Radix UI Dark) -->
+    <!-- Alerta / Error (Tomato) -->
+    <color name="radix_tomato_solid">#E54D2E</color>
+    <color name="radix_tomato_bg">#36140D</color>
+    <color name="radix_tomato_text">#F87171</color>
+    <color name="radix_tomato_border">#612015</color>
+
+    <!-- Confirmación / Éxito (Grass) -->
+    <color name="radix_grass_solid">#46A758</color>
+    <color name="radix_grass_bg">#0E2A15</color>
+    <color name="radix_grass_text">#4ADE80</color>
+    <color name="radix_grass_border">#1D542B</color>
+
+    <!-- Advertencia (Amber) -->
+    <color name="radix_amber_solid">#FFC53D</color>
+    <color name="radix_amber_bg">#362705</color>
+    <color name="radix_amber_text">#FBBF24</color>
+    <color name="radix_amber_border">#5E4508</color>
+
+    <!-- Chips y superficies neutras suaves en Dark Mode -->
+    <color name="chip_bg_neutral">#1E293B</color>
+    <color name="chip_stroke_neutral">#334155</color>
+
+    <!-- Estados funcionales -->
+    <color name="success">#34D399</color>
+    <color name="success_dark">#10B981</color>
+    <color name="error">#F87171</color>
+    <color name="error_dark">#EF4444</color>
+    <color name="info">#60A5FA</color>
+
+    <!-- ======================================================= -->
+    <!-- COLORES PARA LA UI (Gráficos, Badges, Avatar) en Dark   -->
+    <!-- ======================================================= -->
+
+    <!-- Colores del Gráfico Mensual -->
+    <color name="grafico_asignadas">#7070D6</color>
+    <color name="grafico_en_tratamiento">#FBBF24</color>
+    <color name="grafico_atendidas">#34D399</color>
+    <color name="grafico_transferidas">#A78BFA</color>
+    <color name="grafico_reasignadas">#FBBF24</color>
+
+    <!-- Badges de estado en modo oscuro con fondos tenues y textos legibles -->
+    <color name="badge_urgente_bg">#36140D</color>
+    <color name="badge_urgente_text">#F87171</color>
+
+    <color name="badge_proceso_bg">#362705</color>
+    <color name="badge_proceso_text">#FBBF24</color>
+
+    <color name="badge_asignada_bg">#1E224A</color>
+    <color name="badge_asignada_text">#9B9BEE</color>
+
+    <!-- Elementos adicionales de UI -->
+    <color name="color_avatar_bg">#1E224A</color>
+
+    <!-- Colores para estados clínicos y especiales -->
+    <color name="badge_transferido_bg">#251A40</color>
+    <color name="badge_transferido_text">#C4B5FD</color>
+    <color name="badge_alta_bg">#0E2A15</color>
+    <color name="badge_alta_text">#4ADE80</color>
+    <color name="badge_observacion_bg">#082B2A</color>
+    <color name="badge_observacion_text">#5EEAD4</color>
+
+</resources>

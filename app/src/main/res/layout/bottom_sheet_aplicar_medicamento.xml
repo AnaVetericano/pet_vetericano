@@ -14,7 +14,7 @@
         android:id="@+id/dragHandleBottomSheet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:tint="#94A3B8" />
+        app:tint="@color/text_muted" />
 
     <!-- Encabezado con Icono y Botón Cerrar -->
     <LinearLayout
@@ -102,7 +102,7 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
         android:visibility="gone"
-        app:cardBackgroundColor="#F1F5F9"
+        app:cardBackgroundColor="@color/chip_bg_neutral"
         app:cardCornerRadius="12dp"
         app:cardElevation="0dp"
         app:strokeColor="@color/card_stroke"

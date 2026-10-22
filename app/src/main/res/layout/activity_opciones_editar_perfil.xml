@@ -13,7 +13,7 @@
         android:id="@+id/toolbarPerfil"
         android:layout_width="match_parent"
         android:layout_height="?attr/actionBarSize"
-        android:background="@color/white"
+        android:background="@color/bg_screen"
         android:elevation="1dp"
         app:layout_constraintTop_toTopOf="parent">
 
@@ -138,7 +138,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="20dp"
-                app:cardBackgroundColor="@color/white"
+                app:cardBackgroundColor="@color/card_background"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="1dp"
                 app:strokeColor="@color/card_stroke"
@@ -304,7 +304,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="24dp"
-                app:cardBackgroundColor="@color/white"
+                app:cardBackgroundColor="@color/card_background"
                 app:cardCornerRadius="18dp"
                 app:cardElevation="1dp"
                 app:strokeColor="@color/card_stroke"
@@ -392,8 +392,6 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:enabled="false"
-                        android:hint="Cédula / Documento de identidad (D.I.)"
-                        app:helperText="No se puede modificar por ser un dato sensible"
                         app:helperTextEnabled="true"
                         android:hint="@string/hint_cedula_documento_de_identidad_d"
                         app:helperText="@string/helper_ej_18_609_007"
@@ -442,6 +440,64 @@
                 app:cornerRadius="14dp"
                 app:elevation="2dp" />
 
+            <!-- AJUSTE MODO OSCURO MATERIAL 3 -->
+            <com.google.android.material.card.MaterialCardView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                app:cardBackgroundColor="@color/card_background"
+                app:cardCornerRadius="14dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/card_stroke"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="16dp"
+                    android:paddingVertical="14dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/baseline_dark_mode_24"
+                        app:tint="@color/primary" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/nunito_bold"
+                            android:text="@string/lbl_modo_oscuro"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="@font/nunito"
+                            android:text="@string/desc_modo_oscuro"
+                            android:textColor="@color/text_secondary"
+                            android:textSize="12sp" />
+                    </LinearLayout>
+
+                    <com.google.android.material.switchmaterial.SwitchMaterial
+                        android:id="@+id/switchDarkMode"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        app:thumbTint="@color/primary" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- SEPARADOR DE ACCIONES CRÍTICAS -->
             <View
                 android:layout_width="match_parent"
@@ -457,7 +513,7 @@
                 android:layout_height="wrap_content"
                 android:clickable="true"
                 android:focusable="true"
-                app:cardBackgroundColor="@color/white"
+                app:cardBackgroundColor="@color/card_background"
                 app:cardCornerRadius="14dp"
                 app:cardElevation="0dp"
                 app:strokeColor="@color/error"

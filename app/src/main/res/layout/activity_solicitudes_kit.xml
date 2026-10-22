@@ -10,7 +10,7 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/white"
+        android:background="@color/bg_screen"
         app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
@@ -29,7 +29,7 @@
             android:id="@+id/tabLayoutSolicitudes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/white"
+            android:background="@color/bg_screen"
             app:tabIndicatorColor="@color/primary"
             app:tabIndicatorHeight="3dp"
             app:tabSelectedTextColor="@color/primary"
@@ -131,7 +131,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
-                    app:cardBackgroundColor="@color/white"
+                    app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
                     app:strokeColor="@color/card_stroke"
@@ -239,7 +239,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="24dp"
-                    app:cardBackgroundColor="@color/white"
+                    app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="20dp"
                     app:cardElevation="0dp"
                     app:strokeColor="@color/card_stroke"

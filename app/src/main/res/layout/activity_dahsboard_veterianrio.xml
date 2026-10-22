@@ -62,6 +62,16 @@
                             android:textStyle="bold" />
                     </LinearLayout>
 
+                    <ImageButton
+                        android:id="@+id/btnThemeToggle"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp"
+                        android:layout_marginEnd="8dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:contentDescription="@string/lbl_modo_oscuro"
+                        android:src="@drawable/baseline_dark_mode_24"
+                        app:tint="@color/primary" />
+
                     <TextView
                         android:id="@+id/tvInicialesAvatar"
                         android:layout_width="48dp"
@@ -83,7 +93,7 @@
                     android:layout_marginTop="20dp"
                     app:cardCornerRadius="18dp"
                     app:cardElevation="1dp"
-                    app:cardBackgroundColor="@color/white"
+                    app:cardBackgroundColor="@color/card_background"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
 
@@ -211,7 +221,7 @@
                     android:layout_marginTop="16dp"
                     android:clickable="true"
                     android:focusable="true"
-                    app:cardBackgroundColor="@color/white"
+                    app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="18dp"
                     app:cardElevation="2dp"
                     app:strokeColor="@color/card_stroke"
@@ -424,7 +434,7 @@
                     android:layout_marginTop="16dp"
                     app:cardCornerRadius="18dp"
                     app:cardElevation="1dp"
-                    app:cardBackgroundColor="@color/white"
+                    app:cardBackgroundColor="@color/card_background"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
 
@@ -519,7 +529,7 @@
                     android:layout_marginBottom="20dp"
                     app:cardCornerRadius="18dp"
                     app:cardElevation="1dp"
-                    app:cardBackgroundColor="@color/white"
+                    app:cardBackgroundColor="@color/card_background"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
 
@@ -580,7 +590,7 @@
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="16dp"
-        app:cardBackgroundColor="@color/white"
+        app:cardBackgroundColor="@color/card_background"
         app:cardCornerRadius="24dp"
         app:cardElevation="3dp"
         app:strokeColor="@color/card_stroke"

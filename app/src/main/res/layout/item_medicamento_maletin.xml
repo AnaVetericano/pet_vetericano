@@ -7,7 +7,7 @@
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
     android:layout_marginVertical="6dp"
-    app:cardBackgroundColor="@color/white"
+    app:cardBackgroundColor="@color/card_background"
     app:cardCornerRadius="16dp"
     app:cardElevation="1dp"
     app:strokeColor="@color/card_stroke"
@@ -125,7 +125,7 @@
             android:layout_height="6dp"
             android:layout_marginBottom="12dp"
             app:indicatorColor="@color/primary"
-            app:trackColor="#E2E8F0"
+            app:trackColor="@color/card_stroke"
             app:trackCornerRadius="4dp"
             tools:progress="85" />
 
@@ -164,7 +164,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:background="@drawable/bg_rounded_badge"
-                android:backgroundTint="#F1F5F9"
+                android:backgroundTint="@color/chip_bg_neutral"
                 android:fontFamily="@font/nunito_bold"
                 android:paddingHorizontal="7dp"
                 android:paddingVertical="2dp"

@@ -47,7 +47,7 @@
     </style>
 
     <style name="Widget.Vetericano.BottomSheet" parent="Widget.Material3.BottomSheet.Modal">
-        <item name="backgroundTint">@color/white</item>
+        <item name="backgroundTint">@color/card_background</item>
         <item name="shapeAppearance">@style/ShapeAppearance.Vetericano.BottomSheet</item>
     </style>
 
@@ -58,9 +58,9 @@
 
     <!-- ===== Estilo Material 3 para Alert Dialogs ===== -->
     <style name="ThemeOverlay.Vetericano.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
-        <!-- Fondo blanco limpio y superficie M3 -->
-        <item name="colorSurface">@color/white</item>
-        <item name="android:background">@color/white</item>
+        <!-- Superficie M3 responsiva al tema -->
+        <item name="colorSurface">@color/card_background</item>
+        <item name="android:background">@color/card_background</item>
 
         <!-- Forma M3 con esquinas redondeadas de 24dp -->
         <item name="shapeAppearance">@style/ShapeAppearance.Vetericano.Dialog</item>

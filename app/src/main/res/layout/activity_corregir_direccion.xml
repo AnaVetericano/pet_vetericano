@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F8FAFC"
+    android:background="@color/input_background"
     android:padding="24dp">
 
     <!-- HEADER: Botón Atrás y Título -->
@@ -18,7 +18,7 @@
         android:src="@drawable/outline_arrow_back_ios_24"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
-        app:tint="#4141A5" />
+        app:tint="@color/primary" />
 
     <TextView
         android:id="@+id/tvTitle"
@@ -26,7 +26,7 @@
         android:layout_height="wrap_content"
         android:fontFamily="@font/nunito_display"
         android:text="@string/lbl_corregir_direccion"
-        android:textColor="#4141A5"
+        android:textColor="@color/primary"
         android:textSize="22sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@id/btnBack"
@@ -41,18 +41,18 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        app:boxBackgroundColor="#FFFFFF"
+        app:boxBackgroundColor="@color/input_background"
         app:boxCornerRadiusBottomEnd="14dp"
         app:boxCornerRadiusBottomStart="14dp"
         app:boxCornerRadiusTopEnd="14dp"
         app:boxCornerRadiusTopStart="14dp"
-        app:boxStrokeColor="#4141A5"
-        app:hintTextColor="#4141A5"
+        app:boxStrokeColor="@color/primary"
+        app:hintTextColor="@color/primary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/btnBack"
         app:startIconDrawable="@drawable/buscar"
-        app:startIconTint="#4141A5">
+        app:startIconTint="@color/primary">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etSearch"
@@ -62,8 +62,8 @@
             android:imeOptions="actionSearch"
             android:inputType="text"
             android:maxLines="1"
-            android:textColor="#0F172A"
-            android:textColorHint="#94A3B8"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_muted"
             android:textSize="14sp" />
     </com.google.android.material.textfield.TextInputLayout>
 
@@ -76,7 +76,7 @@
         android:layout_marginBottom="12dp"
         app:cardCornerRadius="18dp"
         app:cardElevation="1dp"
-        app:strokeColor="#E2E8F0"
+        app:strokeColor="@color/card_stroke"
         app:strokeWidth="1dp"
         app:layout_constraintBottom_toTopOf="@id/btnLocation"
         app:layout_constraintTop_toBottomOf="@id/tilSearch">
@@ -98,7 +98,7 @@
         android:fontFamily="@font/nunito"
         android:text="@string/lbl_usar_mi_ubicacion_actual"
         android:textAllCaps="false"
-        android:textColor="#4141A5"
+        android:textColor="@color/primary"
         android:textSize="13sp"
         android:textStyle="bold"
         app:cornerRadius="14dp"
@@ -106,9 +106,9 @@
         app:iconGravity="textStart"
         app:iconPadding="8dp"
         app:iconSize="22dp"
-        app:iconTint="#4141A5"
+        app:iconTint="@color/primary"
         app:layout_constraintBottom_toTopOf="@id/btnGuardarDireccion"
-        app:strokeColor="#4141A5"
+        app:strokeColor="@color/primary"
         app:strokeWidth="1.5dp" />
 
     <com.google.android.material.button.MaterialButton
@@ -121,7 +121,7 @@
         android:textColor="@color/white"
         android:textSize="16sp"
         android:textStyle="bold"
-        app:backgroundTint="#4141A5"
+        app:backgroundTint="@color/primary"
         app:cornerRadius="16dp"
         app:elevation="3dp"
         app:layout_constraintBottom_toBottomOf="parent" />

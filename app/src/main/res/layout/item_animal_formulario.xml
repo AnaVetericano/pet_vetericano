@@ -29,7 +29,7 @@
                 android:layout_width="22dp"
                 android:layout_height="22dp"
                 android:layout_marginEnd="8dp"
-                android:contentDescription="Icono paciente"
+                android:contentDescription="@string/cd_icono_paciente"
                 android:src="@drawable/baseline_pets_24"
                 app:tint="@color/primary" />
 
@@ -39,7 +39,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:fontFamily="@font/nunito_bold"
-                android:text="Datos del Paciente"
+                android:text="@string/lbl_datos_del_paciente"
                 android:textColor="@color/text_primary"
                 android:textSize="15sp" />
 
@@ -53,7 +53,7 @@
                 android:insetBottom="0dp"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="0dp"
-                android:text="Eliminar"
+                android:text="@string/btn_eliminar"
                 android:textAllCaps="false"
                 android:textColor="@color/radix_tomato_text"
                 android:textSize="12sp"
@@ -73,7 +73,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="6dp"
-            android:hint="Nombre del paciente *"
+            android:hint="@string/hint_nombre_del_paciente"
             app:boxStrokeColor="@color/primary"
             app:hintTextColor="@color/primary"
             app:startIconDrawable="@drawable/baseline_pets_24"
@@ -104,7 +104,7 @@
                 android:insetBottom="0dp"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="3dp"
-                android:text="+ Sin nombre (Callejero)"
+                android:text="@string/lbl_sin_nombre_callejero"
                 android:textAllCaps="false"
                 android:textSize="11sp"
                 android:textColor="@color/text_secondary"
@@ -129,7 +129,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                android:hint="Especie *"
+                android:hint="@string/hint_especie"
                 app:boxStrokeColor="@color/primary">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -147,7 +147,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                android:hint="Sexo *"
+                android:hint="@string/hint_sexo"
                 app:boxStrokeColor="@color/primary">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -174,7 +174,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
-                android:hint="Raza *"
+                android:hint="@string/hint_raza"
                 app:boxStrokeColor="@color/primary">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -192,7 +192,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
-                android:hint="Color *"
+                android:hint="@string/hint_color"
                 app:boxStrokeColor="@color/primary">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -226,7 +226,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/nunito_bold"
-                    android:text="Edad del paciente *"
+                    android:text="@string/lbl_edad_del_paciente"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp"
                     android:layout_marginBottom="8dp" />
@@ -272,7 +272,7 @@
                             android:layout_height="wrap_content"
                             android:gravity="center"
                             android:inputType="number"
-                            android:text="1"
+                            android:text="@string/lbl_1"
                             android:fontFamily="@font/nunito_bold"
                             android:textColor="@color/text_primary" />
                     </com.google.android.material.textfield.TextInputLayout>
@@ -304,7 +304,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
-                        android:hint="Unidad"
+                        android:hint="@string/hint_unidad"
                         app:boxStrokeColor="@color/primary">
 
                         <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -339,7 +339,7 @@
                             android:insetBottom="0dp"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="3dp"
-                            android:text="Cachorro (6 m)"
+                            android:text="@string/lbl_cachorro_6_m"
                             android:textAllCaps="false"
                             android:textSize="11sp"
                             android:textColor="@color/text_secondary"
@@ -359,7 +359,7 @@
                             android:insetBottom="0dp"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="3dp"
-                            android:text="Adulto (2 a)"
+                            android:text="@string/lbl_adulto_2_a"
                             android:textAllCaps="false"
                             android:textSize="11sp"
                             android:textColor="@color/text_secondary"
@@ -379,7 +379,7 @@
                             android:insetBottom="0dp"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="3dp"
-                            android:text="Senior (9 a)"
+                            android:text="@string/lbl_senior_9_a"
                             android:textAllCaps="false"
                             android:textSize="11sp"
                             android:textColor="@color/text_secondary"
@@ -397,7 +397,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:hint="Edad calculada para el acta"
+                    android:hint="@string/hint_edad_calculada_para_el_acta"
                     app:boxStrokeColor="@color/primary">
 
                     <com.google.android.material.textfield.TextInputEditText
@@ -425,7 +425,7 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:hint="Peso estimado"
+                android:hint="@string/hint_peso_estimado"
                 app:boxStrokeColor="@color/primary"
                 app:suffixText="kg">
 
@@ -449,7 +449,7 @@
                 android:padding="0dp"
                 android:layout_marginStart="8dp"
                 android:fontFamily="@font/nunito_bold"
-                android:text="-1"
+                android:text="@string/btn_decrement_1"
                 android:textSize="12sp"
                 android:textColor="@color/primary"
                 app:cornerRadius="8dp"
@@ -468,7 +468,7 @@
                 android:padding="0dp"
                 android:layout_marginStart="6dp"
                 android:fontFamily="@font/nunito_bold"
-                android:text="+1"
+                android:text="@string/btn_increment_1"
                 android:textSize="12sp"
                 android:textColor="@color/primary"
                 app:cornerRadius="8dp"
@@ -483,7 +483,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            android:hint="¿Está esterilizado?"
+            android:hint="@string/hint_esta_esterilizado"
             app:boxStrokeColor="@color/primary">
 
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
@@ -500,7 +500,7 @@
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Características adicionales u observaciones"
+            android:hint="@string/hint_caracteristicas_adicionales_u_observaciones"
             app:boxStrokeColor="@color/primary">
 
             <com.google.android.material.textfield.TextInputEditText

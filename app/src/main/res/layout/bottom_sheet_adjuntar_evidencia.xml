@@ -37,7 +37,7 @@
                 android:layout_width="22dp"
                 android:layout_height="22dp"
                 android:layout_gravity="center"
-                android:contentDescription="Icono de evidencia"
+                android:contentDescription="@string/cd_icono_de_evidencia"
                 android:src="@drawable/camera"
                 app:tint="@color/primary" />
         </FrameLayout>
@@ -54,7 +54,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/nunito_bold"
-                android:text="Adjuntar evidencia fotográfica"
+                android:text="@string/btn_adjuntar_evidencia_fotografica"
                 android:textColor="@color/text_primary"
                 android:textSize="17sp" />
 
@@ -63,7 +63,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/nunito"
-                android:text="Selecciona el origen para documentar el hallazgo clínico"
+                android:text="@string/lbl_selecciona_el_origen_para_documentar"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
         </LinearLayout>
@@ -73,7 +73,7 @@
             android:layout_width="36dp"
             android:layout_height="36dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Cerrar"
+            android:contentDescription="@string/btn_cerrar"
             android:padding="8dp"
             android:src="@drawable/ic_close_24"
             app:tint="@color/text_secondary" />
@@ -135,7 +135,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/nunito_bold"
-                    android:text="Tomar foto con la cámara"
+                    android:text="@string/lbl_tomar_foto_con_la_camara"
                     android:textColor="@color/text_primary"
                     android:textSize="14.5sp" />
 
@@ -144,7 +144,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/nunito"
-                    android:text="Captura en tiempo real durante la atención en campo"
+                    android:text="@string/lbl_captura_en_tiempo_real_durante"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -206,7 +206,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/nunito_bold"
-                    android:text="Seleccionar de la galería"
+                    android:text="@string/btn_seleccionar_de_la_galeria"
                     android:textColor="@color/text_primary"
                     android:textSize="14.5sp" />
 
@@ -215,7 +215,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/nunito"
-                    android:text="Elegir archivo almacenado en el dispositivo"
+                    android:text="@string/lbl_elegir_archivo_almacenado_en_el"
                     android:textColor="@color/text_secondary"
                     android:textSize="12sp" />
             </LinearLayout>
@@ -253,7 +253,7 @@
             android:layout_marginStart="10dp"
             android:layout_weight="1"
             android:fontFamily="@font/nunito"
-            android:text="Optimización automática: Las fotos se procesan en Full HD para una subida ágil y segura."
+            android:text="@string/lbl_optimizacion_automatica_las_fotos_se"
             android:textColor="@color/text_secondary"
             android:textSize="11.5sp" />
     </LinearLayout>
@@ -265,7 +265,7 @@
         android:layout_width="match_parent"
         android:layout_height="46dp"
         android:fontFamily="@font/nunito_bold"
-        android:text="Cancelar"
+        android:text="@string/btn_cancelar"
         android:textAllCaps="false"
         android:textColor="@color/text_secondary"
         android:textSize="13.5sp"

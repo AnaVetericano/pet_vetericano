@@ -40,7 +40,7 @@
                     android:layout_gravity="center"
                     android:src="@drawable/ic_pill"
                     app:tint="@color/primary"
-                    android:contentDescription="Icono medicamento" />
+                    android:contentDescription="@string/cd_icono_medicamento" />
             </FrameLayout>
 
             <!-- Título y Concentración -->
@@ -105,7 +105,7 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:fontFamily="@font/nunito"
-                android:text="Stock en maletín:"
+                android:text="@string/lbl_stock_en_maletin"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 

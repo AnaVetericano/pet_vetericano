@@ -16,7 +16,7 @@
         app:layout_constraintTop_toTopOf="parent"
         app:navigationIcon="@drawable/baseline_arrow_back_24"
         app:navigationIconTint="@color/text_primary"
-        app:title="Acta de atención en campo"
+        app:title="@string/title_acta_de_atencion_en_campo"
         app:titleTextAppearance="@style/TextAppearance.Vetericano.HeadlineSmall"
         app:titleTextColor="@color/text_primary" />
 
@@ -62,7 +62,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/nunito_bold"
-                    android:text="Acta de Seres Sintientes"
+                    android:text="@string/lbl_acta_de_seres_sintientes"
                     android:textColor="@color/text_primary"
                     android:textSize="13sp" />
 
@@ -71,7 +71,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/nunito"
-                    android:text="Atención y valoración clínica en campo"
+                    android:text="@string/lbl_atencion_y_valoracion_clinica_en"
                     android:textColor="@color/text_secondary"
                     android:textSize="11sp" />
             </LinearLayout>
@@ -94,7 +94,7 @@
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="3dp"
                     android:fontFamily="@font/nunito_bold"
-                    android:text="Con Rescate CBA"
+                    android:text="@string/lbl_con_rescate_cba"
                     android:textColor="@color/radix_amber_text"
                     android:textSize="10sp" />
             </com.google.android.material.card.MaterialCardView>
@@ -141,7 +141,7 @@
                     android:background="@drawable/circle_blue"
                     android:fontFamily="@font/nunito_bold"
                     android:gravity="center"
-                    android:text="1"
+                    android:text="@string/acta_step_1_number"
                     android:textColor="@color/white"
                     android:textSize="12sp" />
 
@@ -151,7 +151,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
                     android:fontFamily="@font/nunito_bold"
-                    android:text="Datos\nGenerales"
+                    android:text="@string/lbl_datos_generales"
                     android:textAlignment="center"
                     android:textColor="@color/primary"
                     android:textSize="11sp" />
@@ -180,7 +180,7 @@
                     android:background="@drawable/circle_gray"
                     android:fontFamily="@font/nunito_bold"
                     android:gravity="center"
-                    android:text="2"
+                    android:text="@string/acta_step_2_number"
                     android:textColor="@color/text_muted"
                     android:textSize="12sp" />
 
@@ -190,7 +190,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
                     android:fontFamily="@font/nunito"
-                    android:text="Pacientes\ny Clínica"
+                    android:text="@string/lbl_pacientes_y_clinica"
                     android:textAlignment="center"
                     android:textColor="@color/text_muted"
                     android:textSize="11sp" />
@@ -219,7 +219,7 @@
                     android:background="@drawable/circle_gray"
                     android:fontFamily="@font/nunito_bold"
                     android:gravity="center"
-                    android:text="3"
+                    android:text="@string/acta_step_3_number"
                     android:textColor="@color/text_muted"
                     android:textSize="12sp" />
 
@@ -229,7 +229,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="3dp"
                     android:fontFamily="@font/nunito"
-                    android:text="Pruebas\ny Cierre"
+                    android:text="@string/lbl_pruebas_y_cierre"
                     android:textAlignment="center"
                     android:textColor="@color/text_muted"
                     android:textSize="11sp" />
@@ -294,7 +294,7 @@
             android:layout_marginEnd="6dp"
             android:layout_weight="1"
             android:fontFamily="@font/nunito_bold"
-            android:text="Anterior"
+            android:text="@string/btn_anterior"
             android:textAllCaps="false"
             android:textColor="@color/text_secondary"
             android:textSize="13sp"
@@ -311,7 +311,7 @@
             android:layout_marginStart="6dp"
             android:layout_weight="1"
             android:fontFamily="@font/nunito_bold"
-            android:text="Siguiente paso"
+            android:text="@string/btn_siguiente_paso"
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="13sp"
@@ -360,7 +360,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:fontFamily="@font/nunito_bold"
-                    android:text="Registrando acta en el sistema..."
+                    android:text="@string/lbl_registrando_acta_en_el_sistema"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp" />
             </LinearLayout>

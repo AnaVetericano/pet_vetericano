@@ -22,7 +22,7 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="Regresar"
+            android:contentDescription="@string/cd_regresar"
             android:src="@drawable/outline_arrow_back_ios_24"
             app:tint="@color/text_primary" />
 
@@ -32,7 +32,7 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:fontFamily="@font/nunito_bold"
-            android:text="Perfil Profesional"
+            android:text="@string/lbl_perfil_profesional"
             android:textColor="@color/text_primary"
             android:textSize="18sp" />
     </com.google.android.material.appbar.MaterialToolbar>
@@ -96,7 +96,7 @@
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
-                        android:contentDescription="Cambiar foto de perfil"
+                        android:contentDescription="@string/cd_cambiar_foto_de_perfil"
                         android:padding="9dp"
                         android:src="@drawable/camera"
                         app:tint="@color/white" />
@@ -127,7 +127,7 @@
                 android:fontFamily="@font/nunito_bold"
                 android:paddingHorizontal="14dp"
                 android:paddingVertical="5dp"
-                android:text="Médico Veterinario Oficial"
+                android:text="@string/lbl_medico_veterinario_oficial"
                 android:textColor="@color/primary"
                 android:textSize="12sp" />
 
@@ -155,7 +155,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
                         android:fontFamily="@font/nunito_bold"
-                        android:text="Información del funcionario"
+                        android:text="@string/lbl_informacion_del_funcionario"
                         android:textColor="@color/text_primary"
                         android:textSize="15sp" />
 
@@ -166,7 +166,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="14dp"
-                        android:hint="Nombres"
+                        android:hint="@string/hint_nombres"
                         app:boxCornerRadiusBottomEnd="12dp"
                         app:boxCornerRadiusBottomStart="12dp"
                         app:boxCornerRadiusTopEnd="12dp"
@@ -200,7 +200,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="14dp"
-                        android:hint="Apellidos"
+                        android:hint="@string/hint_apellidos"
                         app:boxCornerRadiusBottomEnd="12dp"
                         app:boxCornerRadiusBottomStart="12dp"
                         app:boxCornerRadiusTopEnd="12dp"
@@ -234,7 +234,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="14dp"
-                        android:hint="Correo institucional"
+                        android:hint="@string/hint_correo_institucional"
                         app:boxCornerRadiusBottomEnd="12dp"
                         app:boxCornerRadiusBottomStart="12dp"
                         app:boxCornerRadiusTopEnd="12dp"
@@ -267,7 +267,7 @@
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:hint="Teléfono de contacto"
+                        android:hint="@string/hint_telefono_de_contacto"
                         app:boxCornerRadiusBottomEnd="12dp"
                         app:boxCornerRadiusBottomStart="12dp"
                         app:boxCornerRadiusTopEnd="12dp"
@@ -335,7 +335,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
                             android:fontFamily="@font/nunito_bold"
-                            android:text="Tarjeta Profesional (COMVEZCOL)"
+                            android:text="@string/lbl_tarjeta_profesional_comvezcol"
                             android:textColor="@color/text_primary"
                             android:textSize="15sp" />
                     </LinearLayout>
@@ -345,7 +345,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="16dp"
                         android:fontFamily="@font/nunito"
-                        android:text="Acreditación oficial del Consejo Profesional de Medicina Veterinaria"
+                        android:text="@string/lbl_acreditacion_oficial_del_consejo_profesional"
                         android:textColor="@color/text_secondary"
                         android:textSize="12sp" />
 
@@ -356,8 +356,8 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginBottom="14dp"
-                        android:hint="Matrícula profesional"
-                        app:helperText="Recomendado: Ingresa tu matrícula profesional para validar actas"
+                        android:hint="@string/hint_matricula_profesional"
+                        app:helperText="@string/helper_recomendado_ingresa_tu_matricula_profesional"
                         app:helperTextTextColor="@color/primary"
                         app:boxCornerRadiusBottomEnd="12dp"
                         app:boxCornerRadiusBottomStart="12dp"
@@ -395,6 +395,8 @@
                         android:hint="Cédula / Documento de identidad (D.I.)"
                         app:helperText="No se puede modificar por ser un dato sensible"
                         app:helperTextEnabled="true"
+                        android:hint="@string/hint_cedula_documento_de_identidad_d"
+                        app:helperText="@string/helper_ej_18_609_007"
                         app:helperTextTextColor="@color/text_muted"
                         app:boxCornerRadiusBottomEnd="12dp"
                         app:boxCornerRadiusBottomStart="12dp"
@@ -433,7 +435,7 @@
                 android:layout_marginBottom="24dp"
                 android:backgroundTint="@color/primary"
                 android:fontFamily="@font/nunito_bold"
-                android:text="Guardar Cambios"
+                android:text="@string/btn_guardar_cambios"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="15sp"
@@ -481,7 +483,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
                         android:fontFamily="@font/nunito_bold"
-                        android:text="Cerrar sesión"
+                        android:text="@string/btn_cerrar_sesion"
                         android:textColor="@color/error_dark"
                         android:textSize="15sp" />
                 </LinearLayout>

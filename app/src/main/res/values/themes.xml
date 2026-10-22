@@ -2,12 +2,14 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.PetVetericano" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <item name="colorPrimary">@color/blue</item>
-        <item name="colorPrimaryDark">@color/darkblue</item>
-        <item name="colorSecondary">@color/yellow</item>
-        <item name="android:statusBarColor">@color/white</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSurface">@color/card_background</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="android:statusBarColor">@color/card_background</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
-        <item name="android:windowBackground">@color/white</item>
+        <item name="android:windowBackground">@color/bg_screen</item>
 
         <!-- Tipografía de la app: Nunito (la misma del panel web) -->
         <item name="android:fontFamily">@font/nunito</item>
@@ -47,7 +49,7 @@
     </style>
 
     <style name="Widget.Vetericano.BottomSheet" parent="Widget.Material3.BottomSheet.Modal">
-        <item name="backgroundTint">@color/white</item>
+        <item name="backgroundTint">@color/card_background</item>
         <item name="shapeAppearance">@style/ShapeAppearance.Vetericano.BottomSheet</item>
     </style>
 
@@ -58,9 +60,9 @@
 
     <!-- ===== Estilo Material 3 para Alert Dialogs ===== -->
     <style name="ThemeOverlay.Vetericano.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
-        <!-- Fondo blanco limpio y superficie M3 -->
-        <item name="colorSurface">@color/white</item>
-        <item name="android:background">@color/white</item>
+        <!-- Superficie adaptable a modo claro/oscuro M3 -->
+        <item name="colorSurface">@color/card_background</item>
+        <item name="android:background">@color/card_background</item>
 
         <!-- Forma M3 con esquinas redondeadas de 24dp -->
         <item name="shapeAppearance">@style/ShapeAppearance.Vetericano.Dialog</item>

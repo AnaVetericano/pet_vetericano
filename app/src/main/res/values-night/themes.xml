@@ -1,11 +1,24 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme. -->
+    <!-- Base application theme (Dark Mode). -->
     <style name="Base.Theme.PetVetericano" parent="Theme.Material3.DayNight.NoActionBar">
-        <!-- Customize your dark theme here. -->
-        <item name="colorPrimary">@color/blue</item>
-        <item name="colorPrimaryDark">@color/darkblue</item>
-        <item name="colorSecondary">@color/yellow</item>
-        <item name="android:statusBarColor">@color/darkblue</item>
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSurface">@color/card_background</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="android:statusBarColor">@color/card_background</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowBackground">@color/bg_screen</item>
+
+        <!-- Tipografía de la app: Nunito -->
+        <item name="android:fontFamily">@font/nunito</item>
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Vetericano.LabelLarge</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Vetericano.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Vetericano.BodyMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Vetericano.HeadlineSmall</item>
+
+        <!-- Diálogos emergentes con diseño Material 3 -->
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Vetericano.MaterialAlertDialog</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.Vetericano.MaterialAlertDialog</item>
     </style>
 </resources>

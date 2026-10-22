@@ -386,7 +386,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
 
         if (entries.isEmpty()) {
             entries.add(PieEntry(1f, ""))
-            colores.add(Color.parseColor("#E2E8F0"))
+            colores.add(ContextCompat.getColor(this, R.color.card_stroke))
         }
 
         val dataSet = PieDataSet(entries, "")
@@ -397,13 +397,14 @@ class dahsboard_veterianrio : AppCompatActivity() {
         pieChart.data = data
 
         pieChart.isDrawHoleEnabled = true
+        pieChart.setHoleColor(ContextCompat.getColor(this, R.color.card_background))
         pieChart.holeRadius = 75f
         pieChart.setTransparentCircleAlpha(0)
 
         pieChart.setDrawCenterText(true)
         pieChart.centerText = "$total\ntotal"
         pieChart.setCenterTextSize(16f)
-        pieChart.setCenterTextColor(Color.parseColor("#0F172A"))
+        pieChart.setCenterTextColor(ContextCompat.getColor(this, R.color.text_primary))
 
         pieChart.description.isEnabled = false
         pieChart.legend.isEnabled = false

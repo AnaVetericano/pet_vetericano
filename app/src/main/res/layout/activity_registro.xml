@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/card_background"
     android:fillViewport="true"
     tools:context=".Registro">
 
@@ -410,7 +410,7 @@
             android:textColor="@color/text_primary"
             android:textSize="15sp"
             android:textStyle="bold"
-            app:backgroundTint="@color/white"
+            app:backgroundTint="@color/card_background"
             app:cornerRadius="16dp"
             app:icon="@drawable/ic_google"
             app:iconGravity="textStart"

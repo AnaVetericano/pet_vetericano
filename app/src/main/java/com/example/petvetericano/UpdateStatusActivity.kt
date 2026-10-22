@@ -136,7 +136,7 @@ class UpdateStatusActivity : AppCompatActivity() {
         selectedEstado = nuevoEstado
 
         val colorStrokeDefault = ContextCompat.getColor(this, R.color.card_stroke)
-        val colorWhite = ContextCompat.getColor(this, R.color.white)
+        val colorWhite = ContextCompat.getColor(this, R.color.card_background)
         val density = resources.displayMetrics.density
 
         for (item in optionItems) {

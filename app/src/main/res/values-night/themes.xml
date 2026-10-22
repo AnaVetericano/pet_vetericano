@@ -12,7 +12,7 @@
         <item name="colorOnBackground">@color/text_primary</item>
 
         <!-- Barra de estado y fondo de pantalla -->
-        <item name="android:statusBarColor">@color/bg_screen</item>
+        <item name="android:statusBarColor">@color/card_background</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
         <item name="android:windowBackground">@color/bg_screen</item>
 

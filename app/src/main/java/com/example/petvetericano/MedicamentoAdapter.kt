@@ -78,7 +78,7 @@ class MedicamentoAdapter(
                 else -> {
                     val green = Color.parseColor("#10B981")
                     binding.progressBarStock.setIndicatorColor(green)
-                    binding.tvStockCantidad.setTextColor(Color.parseColor("#1E293B"))
+                    binding.tvStockCantidad.setTextColor(androidx.core.content.ContextCompat.getColor(binding.root.context, R.color.text_primary))
                 }
             }
 

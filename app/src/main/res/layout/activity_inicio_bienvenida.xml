@@ -58,13 +58,13 @@
         android:layout_marginTop="20dp"
         android:layout_marginBottom="24dp"
         app:cardCornerRadius="28dp"
-        android:backgroundTint="@color/white"
+        android:backgroundTint="@color/card_background"
         app:cardElevation="2dp"
         app:layout_constraintBottom_toTopOf="@+id/layoutButtons"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView3"
-        app:strokeColor="@color/white"
+        app:strokeColor="@color/card_background"
         app:strokeWidth="1dp">
 
         <ImageView

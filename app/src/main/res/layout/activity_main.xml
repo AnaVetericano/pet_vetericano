@@ -59,7 +59,7 @@
         android:layout_marginBottom="24dp"
         app:cardCornerRadius="28dp"
         app:cardElevation="2dp"
-        android:backgroundTint="@color/white"
+        android:backgroundTint="@color/card_background"
         app:strokeColor="@color/primary_light"
         app:strokeWidth="2dp"
         app:layout_constraintBottom_toTopOf="@+id/layoutButtons"

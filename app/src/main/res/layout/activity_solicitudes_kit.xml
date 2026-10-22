@@ -10,7 +10,7 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/bg_screen"
+        android:background="@color/card_background"
         app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
@@ -29,7 +29,7 @@
             android:id="@+id/tabLayoutSolicitudes"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/bg_screen"
+            android:background="@color/card_background"
             app:tabIndicatorColor="@color/primary"
             app:tabIndicatorHeight="3dp"
             app:tabSelectedTextColor="@color/primary"

@@ -388,7 +388,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
 
         if (entries.isEmpty()) {
             entries.add(PieEntry(1f, ""))
-            colores.add(Color.parseColor("#E2E8F0"))
+            colores.add(ContextCompat.getColor(this, R.color.card_stroke))
         }
 
         val dataSet = PieDataSet(entries, "")
@@ -399,6 +399,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
         pieChart.data = data
 
         pieChart.isDrawHoleEnabled = true
+        pieChart.setHoleColor(ContextCompat.getColor(this, R.color.card_background))
         pieChart.holeRadius = 75f
         pieChart.setHoleColor(ContextCompat.getColor(this, R.color.card_background))
         pieChart.setTransparentCircleAlpha(0)

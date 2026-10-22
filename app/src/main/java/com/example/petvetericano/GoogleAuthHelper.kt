@@ -170,54 +170,35 @@ object GoogleAuthHelper {
     }
 
     /**
-     * Lanza el selector nativo del sistema Android únicamente cuando el usuario desea importar
-     * una cuenta adicional del teléfono sin escribirla manualmente.
+     * Solicita el permiso de lectura de cuentas del teléfono si aún no ha sido concedido
+     * y abre el modal Material Design 3 para sincronizar o elegir otra cuenta del dispositivo.
      */
-    private suspend fun importarCuentaDesdeSistemaAndroid(activity: ComponentActivity): String? {
-        return try {
-            suspendCancellableCoroutine { cont ->
-                val key = "google_sys_picker_${UUID.randomUUID()}"
-                var launcher: androidx.activity.result.ActivityResultLauncher<Intent>? = null
-
-                launcher = activity.activityResultRegistry.register(
-                    key,
-                    ActivityResultContracts.StartActivityForResult()
-                ) { result ->
-                    launcher?.unregister()
-                    if (!cont.isActive) return@register
-
-                    if (result.resultCode == Activity.RESULT_OK && result.data != null) {
-                        val accountName = result.data?.getStringExtra(AccountManager.KEY_ACCOUNT_NAME)
-                        val cleanEmail = accountName?.trim()?.lowercase(Locale.ROOT)
-                        if (!cleanEmail.isNullOrEmpty()) {
-                            SharedPreferencesManager(activity).saveKnownGoogleAccount(cleanEmail)
-                        }
-                        cont.resume(cleanEmail)
-                    } else {
-                        cont.resume(null)
+    private suspend fun mostrarDialogoSincronizarTelefonoMD3(activity: ComponentActivity): String? {
+        try {
+            val perm = android.Manifest.permission.GET_ACCOUNTS
+            if (ContextCompat.checkSelfPermission(activity, perm) != android.content.pm.PackageManager.PERMISSION_GRANTED) {
+                suspendCancellableCoroutine<Boolean> { cont ->
+                    val key = "google_perm_${UUID.randomUUID()}"
+                    var launcher: androidx.activity.result.ActivityResultLauncher<String>? = null
+                    launcher = activity.activityResultRegistry.register(
+                        key,
+                        ActivityResultContracts.RequestPermission()
+                    ) { granted ->
+                        launcher?.unregister()
+                        if (cont.isActive) cont.resume(granted)
                     }
+                    cont.invokeOnCancellation { launcher.unregister() }
+                    launcher.launch(perm)
                 }
-
-                cont.invokeOnCancellation {
-                    launcher.unregister()
-                }
-
-                @Suppress("DEPRECATION")
-                val intent = AccountManager.newChooseAccountIntent(
-                    null,
-                    null,
-                    arrayOf("com.google"),
-                    null,
-                    null,
-                    null,
-                    null
-                )
-                launcher.launch(intent)
             }
         } catch (e: Exception) {
-            Log.w(TAG, "No se pudo abrir el selector del sistema: ${e.message}")
-            null
+            Log.w(TAG, "No se pudo solicitar permiso GET_ACCOUNTS: ${e.message}")
         }
+
+        return mostrarDialogoSelectorCuentaMD3(
+            activity = activity,
+            esModoSincronizarTelefono = true
+        )
     }
 
     /**
@@ -225,7 +206,10 @@ object GoogleAuthHelper {
      * cargando únicamente las cuentas pertenecientes al dispositivo actual.
      */
     private suspend fun seleccionarCuentaGoogleMD3(activity: ComponentActivity): CredencialGoogleExtraida? {
-        val emailSeleccionado = mostrarDialogoSelectorCuentaMD3(activity)
+        val emailSeleccionado = mostrarDialogoSelectorCuentaMD3(
+            activity = activity,
+            esModoSincronizarTelefono = false
+        )
         if (emailSeleccionado.isNullOrEmpty()) {
             return null
         }
@@ -240,7 +224,10 @@ object GoogleAuthHelper {
         )
     }
 
-    private suspend fun mostrarDialogoSelectorCuentaMD3(activity: ComponentActivity): String? =
+    private suspend fun mostrarDialogoSelectorCuentaMD3(
+        activity: ComponentActivity,
+        esModoSincronizarTelefono: Boolean = false
+    ): String? =
         suspendCancellableCoroutine { cont ->
             val dialog = Dialog(activity)
             dialog.setContentView(R.layout.dialog_seleccionar_cuenta_google)
@@ -251,15 +238,24 @@ object GoogleAuthHelper {
             )
 
             val prefs = SharedPreferencesManager(activity)
+            val tvTituloDialog = dialog.findViewById<TextView>(R.id.tvTituloSelectorGoogle)
+            val tvSubtituloDialog = dialog.findViewById<TextView>(R.id.tvSubtituloSelectorGoogle)
             val llListaCuentas = dialog.findViewById<LinearLayout>(R.id.llListaCuentasGoogle)
             val cardAgregar = dialog.findViewById<MaterialCardView>(R.id.itemAgregarCuentaGoogle)
             val llContenedorNueva = dialog.findViewById<LinearLayout>(R.id.llContenedorNuevaCuentaGoogle)
             val tilNuevaCuenta = dialog.findViewById<TextInputLayout>(R.id.tilNuevaCuentaGoogle)
             val edtNuevaCuenta = dialog.findViewById<TextInputEditText>(R.id.edtNuevaCuentaGoogle)
+            val chipGmail = dialog.findViewById<MaterialCardView>(R.id.chipDominioGmail)
+            val chipUnicauca = dialog.findViewById<MaterialCardView>(R.id.chipDominioUnicauca)
             val btnImportarSistema = dialog.findViewById<MaterialButton>(R.id.btnImportarCuentaSistema)
             val btnCancelar = dialog.findViewById<MaterialButton>(R.id.btnCancelarSelectorGoogle)
             val btnAceptar = dialog.findViewById<MaterialButton>(R.id.btnAceptarSelectorGoogle)
             val btnCerrar = dialog.findViewById<TextView>(R.id.btnCerrarSelectorGoogle)
+
+            if (esModoSincronizarTelefono) {
+                tvTituloDialog.text = "Sincronizar cuenta del teléfono"
+                tvSubtituloDialog.text = "Selecciona o agrega una cuenta del dispositivo"
+            }
 
             val cuentasDisponibles = obtenerCuentasDisponiblesDispositivo(activity).toMutableList()
 
@@ -306,6 +302,20 @@ object GoogleAuthHelper {
                 }
             }
 
+            fun aplicarDominioRapido(dominio: String) {
+                val actual = edtNuevaCuenta.text?.toString()?.trim() ?: ""
+                val usuario = actual.substringBefore("@").trim()
+                val nuevoTexto = if (usuario.isNotEmpty()) "$usuario$dominio" else dominio
+                edtNuevaCuenta.setText(nuevoTexto)
+                edtNuevaCuenta.setSelection(
+                    if (usuario.isNotEmpty()) nuevoTexto.length else 0
+                )
+                edtNuevaCuenta.requestFocus()
+            }
+
+            chipGmail?.setOnClickListener { aplicarDominioRapido("@gmail.com") }
+            chipUnicauca?.setOnClickListener { aplicarDominioRapido("@unicauca.edu.co") }
+
             fun renderizarCuentas() {
                 llListaCuentas.removeAllViews()
                 val inflater = LayoutInflater.from(activity)
@@ -323,7 +333,11 @@ object GoogleAuthHelper {
                     tvInicial.text = inicial
                     tvEmail.text = email
                     val vinculada = prefs.getGoogleAccountPassword(email).isNotEmpty()
-                    tvSub.text = if (vinculada) "Cuenta vinculada en Vetericano" else "Cuenta de Google"
+                    tvSub.text = when {
+                        esModoSincronizarTelefono -> "Cuenta detectada en este teléfono"
+                        vinculada -> "Cuenta vinculada en Vetericano"
+                        else -> "Cuenta de Google"
+                    }
 
                     val estaSeleccionado = (indiceSeleccionado == index)
                     aplicarEstiloTarjeta(cardItem, cardAvatar, tvInicial, rbItem, estaSeleccionado)
@@ -345,10 +359,15 @@ object GoogleAuthHelper {
                     rbAgregar,
                     agregarSeleccionado
                 )
-                btnImportarSistema.text = if (cuentasDisponibles.isEmpty()) {
-                    "Seleccionar cuenta de Google de mi teléfono"
+                if (esModoSincronizarTelefono) {
+                    btnImportarSistema.visibility = View.GONE
                 } else {
-                    "Sincronizar otra cuenta del teléfono"
+                    btnImportarSistema.visibility = View.VISIBLE
+                    btnImportarSistema.text = if (cuentasDisponibles.isEmpty()) {
+                        "Seleccionar cuenta de Google de mi teléfono"
+                    } else {
+                        "Sincronizar otra cuenta del teléfono"
+                    }
                 }
                 llContenedorNueva.visibility = if (agregarSeleccionado) View.VISIBLE else View.GONE
             }
@@ -365,7 +384,7 @@ object GoogleAuthHelper {
 
             btnImportarSistema.setOnClickListener {
                 activity.lifecycleScope.launch {
-                    val cuentaImportada = importarCuentaDesdeSistemaAndroid(activity)
+                    val cuentaImportada = mostrarDialogoSincronizarTelefonoMD3(activity)
                     if (!cuentaImportada.isNullOrEmpty()) {
                         if (!cuentasDisponibles.contains(cuentaImportada)) {
                             cuentasDisponibles.add(cuentaImportada)

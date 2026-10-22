@@ -2,7 +2,9 @@ package com.example.petvetericano
 
 import android.net.Uri
 import android.os.Bundle
+import android.text.InputFilter
 import android.util.Log
+import android.util.Patterns
 import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
@@ -14,6 +16,7 @@ import com.example.petvetericano.models.ActualizarPerfilRequest
 import com.example.petvetericano.network.RetrofitClient
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -24,11 +27,31 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         const val TITULO_PROFESIONAL_FIJO = "Médico Veterinario Zootecnista"
         private const val MENSAJE_RECOMENDACION_MATRICULA =
             "Recomendado: Ingresa tu matrícula profesional para validar actas"
+        private const val MENSAJE_CEDULA_SENSIBLE =
+            "No se puede modificar por ser un dato sensible"
+
+        const val MIN_LENGTH_NOMBRE = 2
+        const val MAX_LENGTH_NOMBRE = 50
+        const val MIN_LENGTH_APELLIDO = 2
+        const val MAX_LENGTH_APELLIDO = 50
+        const val MAX_LENGTH_EMAIL = 100
+        const val MAX_LENGTH_TELEFONO = 10
+        const val MIN_LENGTH_MATRICULA = 4
+        const val MAX_LENGTH_MATRICULA = 15
+        const val MAX_LENGTH_IDENTIFICACION = 12
+
+        private val REGEX_LETRAS_ESPACIOS = Regex("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")
+        private val REGEX_MATRICULA = Regex("^[a-zA-Z0-9-]+$")
     }
 
     private lateinit var binding: ActivityOpcionesEditarPerfilBinding
     private lateinit var prefs: SharedPreferencesManager
 
+    private var nombreOriginal: String = ""
+    private var apellidoOriginal: String = ""
+    private var emailOriginal: String = ""
+    private var telefonoOriginal: String = ""
+    private var matriculaOriginal: String = ""
     private var fotoOriginal: String = ""
     private var fotoPendienteUri: Uri? = null
     private var guardando: Boolean = false
@@ -46,6 +69,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
         prefs = SharedPreferencesManager(this)
 
+        configurarFiltrosYRestricciones()
         setupListeners()
         cargarDatosPerfil()
         sincronizarConApi()
@@ -75,9 +99,9 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
             pickImageLauncher.launch("image/*")
         }
 
-        // Acción de clic para guardar la información ingresada
+        // Acción de clic para guardar la información ingresada (con diálogo MD3 de confirmación)
         binding.btnSave.setOnClickListener {
-            guardarDatosPerfil()
+            mostrarConfirmacionGuardarDatosPerfil()
         }
 
         // Acción de clic para cerrar sesión del veterinario
@@ -86,9 +110,80 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Configura los límites máximos de caracteres por cada tipo de dato
+     * y bloquea la edición del campo Cédula/D.I. por tratarse de un dato sensible.
+     */
+    private fun configurarFiltrosYRestricciones() {
+        val filtroSoloLetras = InputFilter { source, start, end, _, _, _ ->
+            val sb = StringBuilder()
+            for (i in start until end) {
+                val c = source[i]
+                if (c.isLetter() || c == ' ') {
+                    sb.append(c)
+                }
+            }
+            if (sb.length == end - start) null else sb.toString()
+        }
+
+        val filtroSoloDigitos = InputFilter { source, start, end, _, _, _ ->
+            val sb = StringBuilder()
+            for (i in start until end) {
+                val c = source[i]
+                if (c.isDigit()) {
+                    sb.append(c)
+                }
+            }
+            if (sb.length == end - start) null else sb.toString()
+        }
+
+        val filtroMatricula = InputFilter { source, start, end, _, _, _ ->
+            val sb = StringBuilder()
+            for (i in start until end) {
+                val c = source[i]
+                if (c.isLetterOrDigit() || c == '-') {
+                    sb.append(c.uppercaseChar())
+                }
+            }
+            sb.toString()
+        }
+
+        // Nombre y Apellido con exactamente el mismo filtro y límite (50 caracteres)
+        binding.etName.filters = arrayOf(filtroSoloLetras, InputFilter.LengthFilter(MAX_LENGTH_NOMBRE))
+        binding.etLastName.filters = arrayOf(filtroSoloLetras, InputFilter.LengthFilter(MAX_LENGTH_APELLIDO))
+        binding.etEmail.filters = arrayOf(InputFilter.LengthFilter(MAX_LENGTH_EMAIL))
+        binding.etPhone.filters = arrayOf(filtroSoloDigitos, InputFilter.LengthFilter(MAX_LENGTH_TELEFONO))
+        binding.etMatriculaProfesional.filters = arrayOf(filtroMatricula, InputFilter.LengthFilter(MAX_LENGTH_MATRICULA))
+        binding.etIdentificacion.filters = arrayOf(InputFilter.LengthFilter(MAX_LENGTH_IDENTIFICACION))
+
+        // Bloquear estrictamente la cédula / documento de identidad por ser un dato sensible
+        binding.tilIdentificacion.isEnabled = false
+        binding.tilIdentificacion.helperText = MENSAJE_CEDULA_SENSIBLE
+        binding.etIdentificacion.isEnabled = false
+        binding.etIdentificacion.isFocusable = false
+        binding.etIdentificacion.isClickable = false
+        binding.etIdentificacion.isCursorVisible = false
+        binding.etIdentificacion.keyListener = null
+    }
+
     private fun setupListeners() {
+        // Misma lógica de limpieza de errores para Nombre y Apellido
+        binding.etName.doOnTextChanged { _, _, _, _ ->
+            binding.tilName.error = null
+        }
+        binding.etLastName.doOnTextChanged { _, _, _, _ ->
+            binding.tilLastName.error = null
+        }
+        binding.etEmail.doOnTextChanged { _, _, _, _ ->
+            binding.tilEmail.error = null
+        }
+        binding.etPhone.doOnTextChanged { _, _, _, _ ->
+            binding.tilPhone.error = null
+        }
+
         // Mensaje dinámico: recomienda ingresar la matrícula y se oculta automáticamente cuando se escribe
         binding.etMatriculaProfesional.doOnTextChanged { text, _, _, _ ->
+            binding.tilMatriculaProfesional.error = null
             if (text.isNullOrBlank()) {
                 binding.tilMatriculaProfesional.helperText = MENSAJE_RECOMENDACION_MATRICULA
             } else {
@@ -97,13 +192,45 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         }
     }
 
+    private fun normalizarTextoPersona(valor: String, maxLength: Int): String {
+        return valor.trim().replace("\\s+".toRegex(), " ").take(maxLength)
+    }
+
+    private fun normalizarTelefono(valor: String): String {
+        val soloDigitos = valor.filter { it.isDigit() }
+        val sinIndicativo = if (soloDigitos.length > MAX_LENGTH_TELEFONO && soloDigitos.startsWith("57")) {
+            soloDigitos.removePrefix("57")
+        } else {
+            soloDigitos
+        }
+        return sinIndicativo.take(MAX_LENGTH_TELEFONO)
+    }
+
     private fun cargarDatosPerfil() {
-        val nombre = prefs.getUserName()
-        val apellido = prefs.getUserLastName()
-        val email = prefs.getUserEmail()
-        val phone = prefs.getUserPhone()
-        val identificacion = prefs.getUserIdentification()
-        val matricula = prefs.getUserMatriculaProfesional()
+        var nombre = normalizarTextoPersona(prefs.getUserName(), MAX_LENGTH_NOMBRE)
+        var apellido = normalizarTextoPersona(prefs.getUserLastName(), MAX_LENGTH_APELLIDO)
+        val email = prefs.getUserEmail().trim().take(MAX_LENGTH_EMAIL)
+        val phone = normalizarTelefono(prefs.getUserPhone())
+        val identificacion = prefs.getUserIdentification().trim().take(MAX_LENGTH_IDENTIFICACION)
+        val matricula = prefs.getUserMatriculaProfesional().trim().uppercase().take(MAX_LENGTH_MATRICULA)
+
+        // Misma lógica de separación/limpieza entre Nombre y Apellido que en editar_perfil
+        if (apellido.isEmpty() && nombre.contains(" ")) {
+            val partes = nombre.split("\\s+".toRegex(), limit = 2)
+            nombre = normalizarTextoPersona(partes[0], MAX_LENGTH_NOMBRE)
+            apellido = normalizarTextoPersona(partes.getOrElse(1) { "" }, MAX_LENGTH_APELLIDO)
+            if (nombre.isNotEmpty()) {
+                prefs.saveUserData(nombre, email, phone)
+            }
+            if (apellido.isNotEmpty()) {
+                prefs.saveUserLastName(apellido)
+            }
+        } else if (apellido.isNotEmpty() && nombre.endsWith(apellido, ignoreCase = true) && nombre.length > apellido.length) {
+            nombre = normalizarTextoPersona(nombre.substring(0, nombre.length - apellido.length), MAX_LENGTH_NOMBRE)
+            if (nombre.isNotEmpty()) {
+                prefs.saveUserData(nombre, email, phone)
+            }
+        }
 
         actualizarEncabezadoUsuario()
 
@@ -113,6 +240,12 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         binding.etPhone.setText(phone)
         binding.etIdentificacion.setText(identificacion)
         binding.etMatriculaProfesional.setText(matricula)
+
+        nombreOriginal = nombre
+        apellidoOriginal = apellido
+        emailOriginal = email
+        telefonoOriginal = phone
+        matriculaOriginal = matricula
 
         // Estado inicial del mensaje de recomendación para la matrícula
         if (matricula.isNotBlank()) {
@@ -135,9 +268,13 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
     }
 
     private fun actualizarEncabezadoUsuario() {
-        val nombre = prefs.getUserName().trim()
-        val apellido = prefs.getUserLastName().trim()
-        val nombreCompleto = if (apellido.isNotEmpty() && !nombre.contains(apellido)) "$nombre $apellido" else nombre
+        val nombre = normalizarTextoPersona(prefs.getUserName(), MAX_LENGTH_NOMBRE)
+        val apellido = normalizarTextoPersona(prefs.getUserLastName(), MAX_LENGTH_APELLIDO)
+        val nombreCompleto = if (apellido.isNotEmpty() && !nombre.contains(apellido, ignoreCase = true)) {
+            "$nombre $apellido"
+        } else {
+            nombre
+        }
         binding.tvProfileUserName.text = nombreCompleto.ifEmpty { "Médico Veterinario" }
     }
 
@@ -165,19 +302,173 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
             .show()
     }
 
-    private fun guardarDatosPerfil() {
-        val newName = binding.etName.text.toString().trim()
-        val newLastName = binding.etLastName.text.toString().trim()
-        val newEmail = binding.etEmail.text.toString().trim()
-        val newPhone = binding.etPhone.text.toString().trim()
-        val newIdentificacion = binding.etIdentificacion.text.toString().trim()
-        val newMatricula = binding.etMatriculaProfesional.text.toString().trim()
+    /**
+     * Valida Nombres y Apellidos con exactamente la misma regla de negocio.
+     */
+    private fun validarCampoNombreOApellido(
+        valor: String,
+        til: TextInputLayout,
+        etiqueta: String,
+        minLength: Int,
+        maxLength: Int
+    ): Boolean {
+        return when {
+            valor.isEmpty() -> {
+                til.error = "Ingresa tus $etiqueta"
+                false
+            }
+            valor.length < minLength -> {
+                til.error = "Debe tener al menos $minLength caracteres"
+                false
+            }
+            valor.length > maxLength -> {
+                til.error = "No puede superar los $maxLength caracteres"
+                false
+            }
+            !REGEX_LETRAS_ESPACIOS.matches(valor) -> {
+                til.error = "Solo se permiten letras y espacios"
+                false
+            }
+            else -> {
+                til.error = null
+                true
+            }
+        }
+    }
 
-        if (newName.isEmpty() || newEmail.isEmpty()) {
-            Toast.makeText(this, "Completa los campos obligatorios (Nombre y Correo)", Toast.LENGTH_SHORT).show()
+    private fun validarCamposVeterinario(
+        newName: String,
+        newLastName: String,
+        newEmail: String,
+        newPhone: String,
+        newMatricula: String
+    ): Boolean {
+        val nombreValido = validarCampoNombreOApellido(
+            valor = newName,
+            til = binding.tilName,
+            etiqueta = "nombres",
+            minLength = MIN_LENGTH_NOMBRE,
+            maxLength = MAX_LENGTH_NOMBRE
+        )
+
+        val apellidoValido = validarCampoNombreOApellido(
+            valor = newLastName,
+            til = binding.tilLastName,
+            etiqueta = "apellidos",
+            minLength = MIN_LENGTH_APELLIDO,
+            maxLength = MAX_LENGTH_APELLIDO
+        )
+
+        val emailValido = when {
+            newEmail.isEmpty() -> {
+                binding.tilEmail.error = "Ingresa tu correo institucional"
+                false
+            }
+            newEmail.length > MAX_LENGTH_EMAIL || !Patterns.EMAIL_ADDRESS.matcher(newEmail).matches() -> {
+                binding.tilEmail.error = "Ingresa un correo electrónico válido (máx. $MAX_LENGTH_EMAIL caracteres)"
+                false
+            }
+            else -> {
+                binding.tilEmail.error = null
+                true
+            }
+        }
+
+        val telefonoValido = when {
+            newPhone.isEmpty() -> {
+                binding.tilPhone.error = "Ingresa tu teléfono de contacto"
+                false
+            }
+            newPhone.length != MAX_LENGTH_TELEFONO || !newPhone.all { it.isDigit() } -> {
+                binding.tilPhone.error = "El teléfono debe tener exactamente $MAX_LENGTH_TELEFONO dígitos"
+                false
+            }
+            else -> {
+                binding.tilPhone.error = null
+                true
+            }
+        }
+
+        val matriculaValida = when {
+            newMatricula.isEmpty() -> {
+                binding.tilMatriculaProfesional.error = null
+                true
+            }
+            newMatricula.length < MIN_LENGTH_MATRICULA || newMatricula.length > MAX_LENGTH_MATRICULA -> {
+                binding.tilMatriculaProfesional.error =
+                    "La matrícula debe tener entre $MIN_LENGTH_MATRICULA y $MAX_LENGTH_MATRICULA caracteres"
+                false
+            }
+            !REGEX_MATRICULA.matches(newMatricula) -> {
+                binding.tilMatriculaProfesional.error = "Solo letras, números y guiones"
+                false
+            }
+            else -> {
+                binding.tilMatriculaProfesional.error = null
+                true
+            }
+        }
+
+        return nombreValido && apellidoValido && emailValido && telefonoValido && matriculaValida
+    }
+
+    private fun mostrarConfirmacionGuardarDatosPerfil() {
+        val newName = normalizarTextoPersona(binding.etName.text?.toString() ?: "", MAX_LENGTH_NOMBRE)
+        val newLastName = normalizarTextoPersona(binding.etLastName.text?.toString() ?: "", MAX_LENGTH_APELLIDO)
+        val newEmail = (binding.etEmail.text?.toString() ?: "").trim().take(MAX_LENGTH_EMAIL)
+        val newPhone = normalizarTelefono(binding.etPhone.text?.toString() ?: "")
+        val newMatricula = (binding.etMatriculaProfesional.text?.toString() ?: "")
+            .trim()
+            .uppercase()
+            .take(MAX_LENGTH_MATRICULA)
+
+        if (!validarCamposVeterinario(newName, newLastName, newEmail, newPhone, newMatricula)) {
+            Toast.makeText(this, "Revisa los campos marcados en el formulario", Toast.LENGTH_SHORT).show()
             return
         }
 
+        val cambios = mutableListOf<CambioPerfilItem>()
+        if (newName != nombreOriginal) {
+            cambios.add(CambioPerfilItem("Nombres", nombreOriginal, newName))
+        }
+        if (newLastName != apellidoOriginal) {
+            cambios.add(CambioPerfilItem("Apellidos", apellidoOriginal, newLastName))
+        }
+        if (newEmail != emailOriginal) {
+            cambios.add(CambioPerfilItem("Correo institucional", emailOriginal, newEmail))
+        }
+        if (newPhone != telefonoOriginal) {
+            cambios.add(CambioPerfilItem("Teléfono de contacto", telefonoOriginal, newPhone))
+        }
+        if (newMatricula != matriculaOriginal) {
+            cambios.add(CambioPerfilItem("Matrícula profesional", matriculaOriginal, newMatricula))
+        }
+        if (fotoPendienteUri != null) {
+            val estadoFotoAnterior = if (fotoOriginal.isNotEmpty()) "Foto actual" else "Sin foto"
+            cambios.add(CambioPerfilItem("Foto de perfil", estadoFotoAnterior, "Nueva imagen seleccionada"))
+        }
+
+        if (cambios.isEmpty()) {
+            Snackbar.make(binding.root, "No hay cambios nuevos por guardar", Snackbar.LENGTH_SHORT).show()
+            return
+        }
+
+        ProfilePhotoHelper.mostrarDialogoGuardarCambiosMD3(
+            activity = this,
+            cambios = cambios,
+            onConfirmarGuardar = {
+                ejecutarGuardadoPerfilVeterinario(newName, newLastName, newEmail, newPhone, newMatricula)
+            }
+        )
+    }
+
+    private fun ejecutarGuardadoPerfilVeterinario(
+        newName: String,
+        newLastName: String,
+        newEmail: String,
+        newPhone: String,
+        newMatricula: String
+    ) {
         val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
         if (token.isEmpty()) {
             Toast.makeText(this, "Sesión no válida. Inicia sesión nuevamente.", Toast.LENGTH_SHORT).show()
@@ -208,26 +499,44 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                     return@launch
                 }
 
+                // La cédula (identificacion) no se envía para modificación ya que es un dato sensible bloqueado
                 val request = ActualizarPerfilRequest(
                     nombre = newName,
                     apellido = newLastName,
                     email = newEmail,
                     telefono = newPhone,
-                    identificacion = newIdentificacion.ifEmpty { null },
+                    identificacion = null,
                     matriculaProfesional = newMatricula.ifEmpty { null },
                     fotoPerfil = fotoBase64
                 )
                 val response = RetrofitClient.apiService.actualizarPerfil(request)
                 if (response.isSuccessful) {
                     val body = response.body()
-                    prefs.saveUserData(
+                    val nombreGuardado = normalizarTextoPersona(
                         body?.nombre?.takeIf { it.isNotBlank() } ?: newName,
-                        body?.email?.takeIf { it.isNotBlank() } ?: newEmail,
-                        body?.telefono ?: newPhone
+                        MAX_LENGTH_NOMBRE
                     )
-                    prefs.saveUserLastName(body?.apellido ?: newLastName)
-                    prefs.saveUserIdentification(body?.identificacion ?: newIdentificacion)
-                    prefs.saveUserMatriculaProfesional(body?.matriculaProfesional ?: newMatricula)
+                    val apellidoGuardado = normalizarTextoPersona(
+                        body?.apellido?.takeIf { it.isNotBlank() } ?: newLastName,
+                        MAX_LENGTH_APELLIDO
+                    )
+                    val emailGuardado = (body?.email?.takeIf { it.isNotBlank() } ?: newEmail)
+                        .trim()
+                        .take(MAX_LENGTH_EMAIL)
+                    val telefonoGuardado = normalizarTelefono(
+                        body?.telefono?.takeIf { it.isNotBlank() } ?: newPhone
+                    )
+                    val matriculaGuardada = (body?.matriculaProfesional ?: newMatricula)
+                        .trim()
+                        .uppercase()
+                        .take(MAX_LENGTH_MATRICULA)
+
+                    prefs.saveUserData(nombreGuardado, emailGuardado, telefonoGuardado)
+                    prefs.saveUserLastName(apellidoGuardado)
+                    if (!body?.identificacion.isNullOrBlank()) {
+                        prefs.saveUserIdentification(body!!.identificacion!!.trim().take(MAX_LENGTH_IDENTIFICACION))
+                    }
+                    prefs.saveUserMatriculaProfesional(matriculaGuardada)
 
                     if (uriParaSubir != null || !body?.fotoPerfil.isNullOrEmpty()) {
                         val nuevaFotoRemota = body?.fotoPerfil?.trim()?.takeIf { it.isNotEmpty() }
@@ -237,6 +546,11 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                         fotoOriginal = nuevaFotoRemota
                     }
 
+                    nombreOriginal = nombreGuardado
+                    apellidoOriginal = apellidoGuardado
+                    emailOriginal = emailGuardado
+                    telefonoOriginal = telefonoGuardado
+                    matriculaOriginal = matriculaGuardada
                     fotoPendienteUri = null
                     guardando = false
                     actualizarEncabezadoUsuario()
@@ -273,30 +587,42 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                 if (respuesta.isSuccessful) {
                     val perfil = respuesta.body() ?: return@launch
 
-                    if (!perfil.nombre.isNullOrEmpty()) {
-                        binding.etName.setText(perfil.nombre)
-                        prefs.saveUserData(perfil.nombre, prefs.getUserEmail(), prefs.getUserPhone())
+                    val remotoNombre = normalizarTextoPersona(perfil.nombre ?: "", MAX_LENGTH_NOMBRE)
+                    val remotoApellido = normalizarTextoPersona(perfil.apellido ?: "", MAX_LENGTH_APELLIDO)
+                    val remotoEmail = (perfil.email ?: "").trim().take(MAX_LENGTH_EMAIL)
+                    val remotoTelefono = normalizarTelefono(perfil.telefono ?: "")
+                    val remotaIdentificacion = (perfil.identificacion ?: "").trim().take(MAX_LENGTH_IDENTIFICACION)
+                    val remotaMatricula = (perfil.matriculaProfesional ?: "").trim().uppercase().take(MAX_LENGTH_MATRICULA)
+
+                    if (remotoNombre.isNotEmpty()) {
+                        binding.etName.setText(remotoNombre)
+                        prefs.saveUserData(remotoNombre, prefs.getUserEmail(), prefs.getUserPhone())
+                        nombreOriginal = remotoNombre
                     }
-                    if (!perfil.apellido.isNullOrEmpty()) {
-                        binding.etLastName.setText(perfil.apellido)
-                        prefs.saveUserLastName(perfil.apellido)
+                    if (remotoApellido.isNotEmpty()) {
+                        binding.etLastName.setText(remotoApellido)
+                        prefs.saveUserLastName(remotoApellido)
+                        apellidoOriginal = remotoApellido
                     }
-                    if (!perfil.email.isNullOrEmpty()) {
-                        binding.etEmail.setText(perfil.email)
-                        prefs.saveUserData(prefs.getUserName(), perfil.email, prefs.getUserPhone())
+                    if (remotoEmail.isNotEmpty()) {
+                        binding.etEmail.setText(remotoEmail)
+                        prefs.saveUserData(prefs.getUserName(), remotoEmail, prefs.getUserPhone())
+                        emailOriginal = remotoEmail
                     }
-                    if (!perfil.telefono.isNullOrEmpty()) {
-                        binding.etPhone.setText(perfil.telefono)
-                        prefs.saveUserData(prefs.getUserName(), prefs.getUserEmail(), perfil.telefono)
+                    if (remotoTelefono.isNotEmpty()) {
+                        binding.etPhone.setText(remotoTelefono)
+                        prefs.saveUserData(prefs.getUserName(), prefs.getUserEmail(), remotoTelefono)
+                        telefonoOriginal = remotoTelefono
                     }
-                    if (!perfil.identificacion.isNullOrEmpty()) {
-                        binding.etIdentificacion.setText(perfil.identificacion)
-                        prefs.saveUserIdentification(perfil.identificacion)
+                    if (remotaIdentificacion.isNotEmpty()) {
+                        binding.etIdentificacion.setText(remotaIdentificacion)
+                        prefs.saveUserIdentification(remotaIdentificacion)
                     }
-                    if (!perfil.matriculaProfesional.isNullOrEmpty()) {
-                        binding.etMatriculaProfesional.setText(perfil.matriculaProfesional)
-                        prefs.saveUserMatriculaProfesional(perfil.matriculaProfesional)
+                    if (remotaMatricula.isNotEmpty()) {
+                        binding.etMatriculaProfesional.setText(remotaMatricula)
+                        prefs.saveUserMatriculaProfesional(remotaMatricula)
                         binding.tilMatriculaProfesional.helperText = null
+                        matriculaOriginal = remotaMatricula
                     }
 
                     val fotoRemota = perfil.fotoPerfil?.trim() ?: ""

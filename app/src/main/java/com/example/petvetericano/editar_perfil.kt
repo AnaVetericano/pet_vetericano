@@ -3,12 +3,12 @@ package com.example.petvetericano
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.InputFilter
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.widget.doOnTextChanged
@@ -18,11 +18,23 @@ import com.example.petvetericano.models.ActualizarPerfilRequest
 import com.example.petvetericano.network.RetrofitClient
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.snackbar.Snackbar
+import com.google.android.material.textfield.TextInputLayout
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 class editar_perfil : AppCompatActivity() {
+
+    companion object {
+        const val MIN_LENGTH_NOMBRE = 2
+        const val MAX_LENGTH_NOMBRE = 50
+        const val MIN_LENGTH_APELLIDO = 2
+        const val MAX_LENGTH_APELLIDO = 50
+        const val MAX_LENGTH_TELEFONO = 10
+        const val MAX_LENGTH_EMAIL = 100
+
+        private val REGEX_LETRAS_ESPACIOS = Regex("^[a-zA-ZáéíóúÁÉÍÓÚñÑüÜ\\s]+$")
+    }
 
     private lateinit var binding: ActivityEditarPerfilBinding
     private lateinit var prefs: SharedPreferencesManager
@@ -48,6 +60,7 @@ class editar_perfil : AppCompatActivity() {
 
         prefs = SharedPreferencesManager(this)
 
+        configurarFiltrosDeCampos()
         setupDarkMode()
         cargarDatosPerfil()
         sincronizarConApi()
@@ -80,27 +93,80 @@ class editar_perfil : AppCompatActivity() {
         }
     }
 
+    /**
+     * Configura filtros estrictos de longitud y tipo de carácter para todos los campos.
+     * Nombre y Apellido comparten exactamente la misma lógica y límite (50 caracteres).
+     */
+    private fun configurarFiltrosDeCampos() {
+        val filtroSoloLetras = InputFilter { source, start, end, _, _, _ ->
+            val sb = StringBuilder()
+            for (i in start until end) {
+                val c = source[i]
+                if (c.isLetter() || c == ' ') {
+                    sb.append(c)
+                }
+            }
+            if (sb.length == end - start) null else sb.toString()
+        }
+
+        val filtroSoloDigitos = InputFilter { source, start, end, _, _, _ ->
+            val sb = StringBuilder()
+            for (i in start until end) {
+                val c = source[i]
+                if (c.isDigit()) {
+                    sb.append(c)
+                }
+            }
+            if (sb.length == end - start) null else sb.toString()
+        }
+
+        binding.etName.filters = arrayOf(filtroSoloLetras, InputFilter.LengthFilter(MAX_LENGTH_NOMBRE))
+        binding.etLastName.filters = arrayOf(filtroSoloLetras, InputFilter.LengthFilter(MAX_LENGTH_APELLIDO))
+        binding.etPhone.filters = arrayOf(filtroSoloDigitos, InputFilter.LengthFilter(MAX_LENGTH_TELEFONO))
+        binding.etEmail.filters = arrayOf(InputFilter.LengthFilter(MAX_LENGTH_EMAIL))
+
+        binding.tilEmail.isEnabled = false
+        binding.etEmail.isEnabled = false
+        binding.etEmail.isFocusable = false
+        binding.etEmail.isClickable = false
+        binding.etEmail.isCursorVisible = false
+    }
+
+    private fun normalizarTextoPersona(valor: String, maxLength: Int): String {
+        return valor.trim().replace("\\s+".toRegex(), " ").take(maxLength)
+    }
+
+    private fun normalizarTelefono(valor: String): String {
+        val soloDigitos = valor.filter { it.isDigit() }
+        val sinIndicativo = if (soloDigitos.length > MAX_LENGTH_TELEFONO && soloDigitos.startsWith("57")) {
+            soloDigitos.removePrefix("57")
+        } else {
+            soloDigitos
+        }
+        return sinIndicativo.take(MAX_LENGTH_TELEFONO)
+    }
+
     private fun cargarDatosPerfil() {
-        var nombre = prefs.getUserName().trim()
-        var apellido = prefs.getUserLastName().trim()
-        val email = prefs.getUserEmail().trim()
-        val telefono = prefs.getUserPhone().trim()
+        var nombre = normalizarTextoPersona(prefs.getUserName(), MAX_LENGTH_NOMBRE)
+        var apellido = normalizarTextoPersona(prefs.getUserLastName(), MAX_LENGTH_APELLIDO)
+        val email = prefs.getUserEmail().trim().take(MAX_LENGTH_EMAIL)
+        val telefono = normalizarTelefono(prefs.getUserPhone())
         val rutaFoto = prefs.getProfileImagePath().trim()
 
         if (apellido.isEmpty() && nombre.contains(" ")) {
             val partes = nombre.split("\\s+".toRegex(), limit = 2)
-            nombre = partes[0]
-            apellido = partes.getOrElse(1) { "" }
+            nombre = normalizarTextoPersona(partes[0], MAX_LENGTH_NOMBRE)
+            apellido = normalizarTextoPersona(partes.getOrElse(1) { "" }, MAX_LENGTH_APELLIDO)
             if (nombre.isNotEmpty()) {
-                prefs.saveUserData(nombre, prefs.getUserEmail(), prefs.getUserPhone())
+                prefs.saveUserData(nombre, email, telefono)
             }
             if (apellido.isNotEmpty()) {
                 prefs.saveUserLastName(apellido)
             }
-        } else if (apellido.isNotEmpty() && nombre.endsWith(apellido)) {
-            nombre = nombre.removeSuffix(apellido).trim()
+        } else if (apellido.isNotEmpty() && nombre.endsWith(apellido, ignoreCase = true) && nombre.length > apellido.length) {
+            nombre = normalizarTextoPersona(nombre.substring(0, nombre.length - apellido.length), MAX_LENGTH_NOMBRE)
             if (nombre.isNotEmpty()) {
-                prefs.saveUserData(nombre, prefs.getUserEmail(), prefs.getUserPhone())
+                prefs.saveUserData(nombre, email, telefono)
             }
         }
 
@@ -144,10 +210,10 @@ class editar_perfil : AppCompatActivity() {
                     val perfil = respuesta.body() ?: return@launch
                     val teniaCambios = hayCambiosSinGuardar()
 
-                    val remotoNombre = perfil.nombre?.trim() ?: ""
-                    val remotoApellido = perfil.apellido?.trim() ?: ""
-                    val remotoEmail = perfil.email?.trim() ?: ""
-                    val remotoTelefono = perfil.telefono?.trim() ?: ""
+                    val remotoNombre = normalizarTextoPersona(perfil.nombre ?: "", MAX_LENGTH_NOMBRE)
+                    val remotoApellido = normalizarTextoPersona(perfil.apellido ?: "", MAX_LENGTH_APELLIDO)
+                    val remotoEmail = (perfil.email ?: "").trim().take(MAX_LENGTH_EMAIL)
+                    val remotoTelefono = normalizarTelefono(perfil.telefono ?: "")
                     val remotaFoto = perfil.fotoPerfil?.trim() ?: ""
 
                     if (remotoNombre.isNotEmpty()) {
@@ -186,9 +252,9 @@ class editar_perfil : AppCompatActivity() {
 
     private fun hayCambiosSinGuardar(): Boolean {
         if (cargandoInicial) return false
-        val actualNombre = binding.etName.text.toString().trim()
-        val actualApellido = binding.etLastName.text.toString().trim()
-        val actualTelefono = binding.etPhone.text.toString().trim()
+        val actualNombre = normalizarTextoPersona(binding.etName.text?.toString() ?: "", MAX_LENGTH_NOMBRE)
+        val actualApellido = normalizarTextoPersona(binding.etLastName.text?.toString() ?: "", MAX_LENGTH_APELLIDO)
+        val actualTelefono = normalizarTelefono(binding.etPhone.text?.toString() ?: "")
         return actualNombre != nombreOriginal ||
                 actualApellido != apellidoOriginal ||
                 actualTelefono != telefonoOriginal ||
@@ -236,49 +302,104 @@ class editar_perfil : AppCompatActivity() {
     }
 
     private fun mostrarConfirmacionGuardar() {
-        val nuevoNombre = binding.etName.text.toString().trim()
-        val nuevoApellido = binding.etLastName.text.toString().trim()
-        val nuevoTelefono = binding.etPhone.text.toString().trim()
+        val nuevoNombre = normalizarTextoPersona(binding.etName.text?.toString() ?: "", MAX_LENGTH_NOMBRE)
+        val nuevoApellido = normalizarTextoPersona(binding.etLastName.text?.toString() ?: "", MAX_LENGTH_APELLIDO)
+        val nuevoTelefono = normalizarTelefono(binding.etPhone.text?.toString() ?: "")
 
         if (!validarCampos(nuevoNombre, nuevoApellido, nuevoTelefono)) return
         if (!hayCambiosSinGuardar()) return
 
-        val resumen = buildString {
-            if (nuevoNombre != nombreOriginal) append("Nombre: $nombreOriginal → $nuevoNombre\n")
-            if (nuevoApellido != apellidoOriginal) append("Apellido: $apellidoOriginal → $nuevoApellido\n")
-            if (nuevoTelefono != telefonoOriginal) append("Teléfono: $telefonoOriginal → $nuevoTelefono\n")
-            if (fotoPendienteUri != null) append("Foto de perfil: Nueva imagen seleccionada")
-        }.trim()
+        val cambios = mutableListOf<CambioPerfilItem>()
+        if (nuevoNombre != nombreOriginal) {
+            cambios.add(CambioPerfilItem("Nombre", nombreOriginal, nuevoNombre))
+        }
+        if (nuevoApellido != apellidoOriginal) {
+            cambios.add(CambioPerfilItem("Apellido", apellidoOriginal, nuevoApellido))
+        }
+        if (nuevoTelefono != telefonoOriginal) {
+            cambios.add(CambioPerfilItem("Teléfono", telefonoOriginal, nuevoTelefono))
+        }
+        if (fotoPendienteUri != null) {
+            val estadoFotoAnterior = if (fotoOriginal.isNotEmpty()) "Foto actual" else "Sin foto"
+            cambios.add(CambioPerfilItem("Foto de perfil", estadoFotoAnterior, "Nueva imagen seleccionada"))
+        }
 
-        MaterialAlertDialogBuilder(this)
-            .setTitle("¿Guardar cambios?")
-            .setMessage("Se actualizará tu perfil:\n$resumen")
-            .setNegativeButton("Cancelar") { dialog, _ -> dialog.dismiss() }
-            .setPositiveButton("Guardar") { dialog, _ ->
-                dialog.dismiss()
+        ProfilePhotoHelper.mostrarDialogoGuardarCambiosMD3(
+            activity = this,
+            cambios = cambios,
+            onConfirmarGuardar = {
                 ejecutarGuardado(nuevoNombre, nuevoApellido, nuevoTelefono)
             }
-            .show()
+        )
+    }
+
+    /**
+     * Valida Nombre y Apellido aplicando exactamente la misma lógica de negocio a ambos.
+     */
+    private fun validarCampoNombreOApellido(
+        valor: String,
+        til: TextInputLayout,
+        etiqueta: String,
+        minLength: Int,
+        maxLength: Int
+    ): Boolean {
+        return when {
+            valor.isEmpty() -> {
+                til.error = "Ingresa tu $etiqueta"
+                false
+            }
+            valor.length < minLength -> {
+                til.error = "El $etiqueta debe tener al menos $minLength caracteres"
+                false
+            }
+            valor.length > maxLength -> {
+                til.error = "El $etiqueta no puede superar los $maxLength caracteres"
+                false
+            }
+            !REGEX_LETRAS_ESPACIOS.matches(valor) -> {
+                til.error = "El $etiqueta solo debe contener letras y espacios"
+                false
+            }
+            else -> {
+                til.error = null
+                true
+            }
+        }
     }
 
     private fun validarCampos(nuevoNombre: String, nuevoApellido: String, nuevoTelefono: String): Boolean {
-        var valido = true
-        if (nuevoNombre.isEmpty()) {
-            binding.tilName.error = "Ingresa tu nombre"
-            valido = false
-        } else binding.tilName.error = null
+        val nombreValido = validarCampoNombreOApellido(
+            valor = nuevoNombre,
+            til = binding.tilName,
+            etiqueta = "nombre",
+            minLength = MIN_LENGTH_NOMBRE,
+            maxLength = MAX_LENGTH_NOMBRE
+        )
 
-        if (nuevoApellido.isEmpty()) {
-            binding.tilLastName.error = "Ingresa tu apellido"
-            valido = false
-        } else binding.tilLastName.error = null
+        val apellidoValido = validarCampoNombreOApellido(
+            valor = nuevoApellido,
+            til = binding.tilLastName,
+            etiqueta = "apellido",
+            minLength = MIN_LENGTH_APELLIDO,
+            maxLength = MAX_LENGTH_APELLIDO
+        )
 
-        if (nuevoTelefono.isEmpty()) {
-            binding.tilPhone.error = "Ingresa tu número de teléfono"
-            valido = false
-        } else binding.tilPhone.error = null
+        val telefonoValido = when {
+            nuevoTelefono.isEmpty() -> {
+                binding.tilPhone.error = "Ingresa tu número de teléfono"
+                false
+            }
+            nuevoTelefono.length != MAX_LENGTH_TELEFONO || !nuevoTelefono.all { it.isDigit() } -> {
+                binding.tilPhone.error = "El teléfono debe tener exactamente $MAX_LENGTH_TELEFONO dígitos"
+                false
+            }
+            else -> {
+                binding.tilPhone.error = null
+                true
+            }
+        }
 
-        return valido
+        return nombreValido && apellidoValido && telefonoValido
     }
 
     private fun guardarCambiosYVolver() {
@@ -315,7 +436,7 @@ class editar_perfil : AppCompatActivity() {
                 val request = ActualizarPerfilRequest(
                     nombre = nuevoNombre,
                     apellido = nuevoApellido,
-                    email = prefs.getUserEmail(),
+                    email = prefs.getUserEmail().take(MAX_LENGTH_EMAIL),
                     telefono = nuevoTelefono,
                     fotoPerfil = fotoBase64
                 )
@@ -324,8 +445,20 @@ class editar_perfil : AppCompatActivity() {
 
                 if (respuesta.isSuccessful) {
                     val body = respuesta.body()
-                    prefs.saveUserData(nuevoNombre, prefs.getUserEmail(), nuevoTelefono)
-                    prefs.saveUserLastName(nuevoApellido)
+                    val nombreGuardado = normalizarTextoPersona(
+                        body?.nombre?.takeIf { it.isNotBlank() } ?: nuevoNombre,
+                        MAX_LENGTH_NOMBRE
+                    )
+                    val apellidoGuardado = normalizarTextoPersona(
+                        body?.apellido?.takeIf { it.isNotBlank() } ?: nuevoApellido,
+                        MAX_LENGTH_APELLIDO
+                    )
+                    val telefonoGuardado = normalizarTelefono(
+                        body?.telefono?.takeIf { it.isNotBlank() } ?: nuevoTelefono
+                    )
+
+                    prefs.saveUserData(nombreGuardado, prefs.getUserEmail(), telefonoGuardado)
+                    prefs.saveUserLastName(apellidoGuardado)
 
                     if (uriParaSubir != null || !body?.fotoPerfil.isNullOrEmpty()) {
                         val nuevaFotoRemota = body?.fotoPerfil?.trim()?.takeIf { it.isNotEmpty() }
@@ -335,9 +468,9 @@ class editar_perfil : AppCompatActivity() {
                         fotoOriginal = nuevaFotoRemota
                     }
 
-                    nombreOriginal = nuevoNombre
-                    apellidoOriginal = nuevoApellido
-                    telefonoOriginal = nuevoTelefono
+                    nombreOriginal = nombreGuardado
+                    apellidoOriginal = apellidoGuardado
+                    telefonoOriginal = telefonoGuardado
                     fotoPendienteUri = null
                     guardando = false
                     actualizarEstadoBotones()

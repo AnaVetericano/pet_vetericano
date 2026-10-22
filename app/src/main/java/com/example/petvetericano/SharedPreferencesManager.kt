@@ -10,6 +10,15 @@ class SharedPreferencesManager(context: Context) {
     private val googlePrefs: SharedPreferences =
         context.getSharedPreferences("PetVetericanoGoogleAuthPrefs", Context.MODE_PRIVATE)
 
+    companion object {
+        private const val MAX_LENGTH_NOMBRE = 50
+        private const val MAX_LENGTH_APELLIDO = 50
+        private const val MAX_LENGTH_EMAIL = 100
+        private const val MAX_LENGTH_TELEFONO = 10
+        private const val MAX_LENGTH_IDENTIFICACION = 12
+        private const val MAX_LENGTH_MATRICULA = 15
+    }
+
     fun saveGoogleAccountPassword(email: String, password: String) {
         if (email.isNotEmpty() && password.isNotEmpty()) {
             val cleanEmail = email.lowercase().trim()
@@ -64,31 +73,40 @@ class SharedPreferencesManager(context: Context) {
     }
 
     fun saveUserData(name: String, email: String, phone: String) {
+        val cleanName = name.trim().replace("\\s+".toRegex(), " ").take(MAX_LENGTH_NOMBRE)
+        val cleanEmail = email.trim().take(MAX_LENGTH_EMAIL)
+        val cleanPhone = phone.trim().take(MAX_LENGTH_TELEFONO)
+
         prefs.edit().apply {
-            if (name.isNotEmpty())  putString("USER_NAME",  name)
-            if (email.isNotEmpty()) putString("USER_EMAIL", email)
-            if (phone.isNotEmpty()) putString("USER_PHONE", phone)
+            if (cleanName.isNotEmpty()) putString("USER_NAME", cleanName)
+            if (cleanEmail.isNotEmpty()) putString("USER_EMAIL", cleanEmail)
+            if (cleanPhone.isNotEmpty()) putString("USER_PHONE", cleanPhone)
             apply()
         }
-        if (email.isNotEmpty()) {
-            saveKnownGoogleAccount(email)
+        if (cleanEmail.isNotEmpty()) {
+            saveKnownGoogleAccount(cleanEmail)
         }
     }
 
     fun saveUserLastName(lastName: String) {
-        if (lastName.isNotEmpty()) {
-            prefs.edit().putString("USER_LASTNAME", lastName).apply()
+        val cleanLastName = lastName.trim().replace("\\s+".toRegex(), " ").take(MAX_LENGTH_APELLIDO)
+        if (cleanLastName.isNotEmpty()) {
+            prefs.edit().putString("USER_LASTNAME", cleanLastName).apply()
         }
     }
 
     // Guardar Identificación / Cédula
     fun saveUserIdentification(identification: String) {
-        prefs.edit().putString("USER_IDENTIFICATION", identification).apply()
+        val cleanId = identification.trim().take(MAX_LENGTH_IDENTIFICACION)
+        if (cleanId.isNotEmpty()) {
+            prefs.edit().putString("USER_IDENTIFICATION", cleanId).apply()
+        }
     }
 
     // Guardar Matrícula Profesional (COMVEZCOL)
     fun saveUserMatriculaProfesional(matricula: String) {
-        prefs.edit().putString("USER_MATRICULA_PROFESIONAL", matricula).apply()
+        val cleanMatricula = matricula.trim().uppercase().take(MAX_LENGTH_MATRICULA)
+        prefs.edit().putString("USER_MATRICULA_PROFESIONAL", cleanMatricula).apply()
     }
 
     // Título profesional fijo oficial del médico veterinario

@@ -3,13 +3,24 @@ package com.example.petvetericano
 import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.graphics.Paint
 import android.net.Uri
 import android.util.Base64
+import android.view.LayoutInflater
+import android.view.View
 import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.TextView
 import com.bumptech.glide.Glide
 import java.io.ByteArrayOutputStream
 import kotlin.math.max
 import kotlin.math.roundToInt
+
+data class CambioPerfilItem(
+    val campo: String,
+    val valorAnterior: String,
+    val valorNuevo: String
+)
 
 object ProfilePhotoHelper {
 
@@ -124,6 +135,84 @@ object ProfilePhotoHelper {
         } catch (_: Exception) {
             null
         }
+    }
+
+    /**
+     * Muestra el diálogo de confirmación "¿Guardar cambios?" con el resumen visual de
+     * cada campo modificado (Antes → Después) siguiendo los lineamientos de Material Design 3.
+     */
+    fun mostrarDialogoGuardarCambiosMD3(
+        activity: android.app.Activity,
+        cambios: List<CambioPerfilItem>,
+        onConfirmarGuardar: () -> Unit
+    ) {
+        if (activity.isFinishing || cambios.isEmpty()) return
+
+        val dialog = android.app.Dialog(activity)
+        dialog.setContentView(R.layout.dialog_guardar_cambios_md3)
+        dialog.window?.setBackgroundDrawable(
+            android.graphics.drawable.ColorDrawable(android.graphics.Color.TRANSPARENT)
+        )
+        dialog.window?.setLayout(
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+        )
+
+        val tvTitulo = dialog.findViewById<TextView>(R.id.tvTituloGuardarMd3)
+        val tvSubtitulo = dialog.findViewById<TextView>(R.id.tvSubtituloGuardarMd3)
+        val llListaCambios = dialog.findViewById<LinearLayout>(R.id.llListaCambiosMd3)
+        val btnCancelar = dialog.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnCancelarGuardarMd3)
+        val btnConfirmar = dialog.findViewById<com.google.android.material.button.MaterialButton>(R.id.btnConfirmarGuardarMd3)
+
+        tvTitulo?.text = "¿Guardar cambios?"
+        tvSubtitulo?.text = if (cambios.size == 1) {
+            "Se actualizará el siguiente dato en tu perfil:"
+        } else {
+            "Se actualizarán los siguientes ${cambios.size} datos en tu perfil:"
+        }
+
+        llListaCambios?.removeAllViews()
+        val inflater = LayoutInflater.from(activity)
+
+        cambios.forEachIndexed { index, item ->
+            val itemView = inflater.inflate(R.layout.item_cambio_perfil_md3, llListaCambios, false)
+            val tvCampo = itemView.findViewById<TextView>(R.id.tvCampoCambioMd3)
+            val tvAnterior = itemView.findViewById<TextView>(R.id.tvValorAnteriorMd3)
+            val tvFlecha = itemView.findViewById<TextView>(R.id.tvFlechaCambioMd3)
+            val tvNuevo = itemView.findViewById<TextView>(R.id.tvValorNuevoMd3)
+            val divider = itemView.findViewById<View>(R.id.dividerCambioMd3)
+
+            tvCampo.text = item.campo
+
+            val anteriorLimpio = item.valorAnterior.trim()
+            if (anteriorLimpio.isEmpty()) {
+                tvAnterior.text = "Sin registrar"
+                tvAnterior.paintFlags = tvAnterior.paintFlags and Paint.STRIKE_THRU_TEXT_FLAG.inv()
+            } else {
+                tvAnterior.text = anteriorLimpio
+                tvAnterior.paintFlags = tvAnterior.paintFlags or Paint.STRIKE_THRU_TEXT_FLAG
+            }
+
+            tvFlecha.text = "→"
+            tvNuevo.text = item.valorNuevo.trim().ifEmpty { "Vacío" }
+
+            divider.visibility = if (index == cambios.lastIndex) View.GONE else View.VISIBLE
+            llListaCambios?.addView(itemView)
+        }
+
+        btnCancelar?.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        btnConfirmar?.setOnClickListener {
+            btnConfirmar.isEnabled = false
+            btnCancelar?.isEnabled = false
+            btnConfirmar.text = "Guardando…"
+            dialog.dismiss()
+            onConfirmarGuardar()
+        }
+
+        dialog.show()
     }
 
     /**

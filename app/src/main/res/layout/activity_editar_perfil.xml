@@ -106,6 +106,8 @@
                         app:boxCornerRadiusTopEnd="14dp"
                         app:boxCornerRadiusTopStart="14dp"
                         app:boxStrokeColor="@color/blue"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="50"
                         app:errorEnabled="true"
                         app:hintTextColor="@color/blue"
                         app:startIconDrawable="@drawable/user"
@@ -118,6 +120,7 @@
                             android:autofillHints="givenName"
                             android:imeOptions="actionNext"
                             android:inputType="textPersonName|textCapWords"
+                            android:maxLength="50"
                             android:maxLines="1"
                             android:singleLine="true"
                             android:textColor="@color/text_primary"
@@ -138,6 +141,8 @@
                         app:boxCornerRadiusTopEnd="14dp"
                         app:boxCornerRadiusTopStart="14dp"
                         app:boxStrokeColor="@color/blue"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="50"
                         app:errorEnabled="true"
                         app:hintTextColor="@color/blue"
                         app:startIconDrawable="@drawable/user"
@@ -150,13 +155,14 @@
                             android:autofillHints="familyName"
                             android:imeOptions="actionNext"
                             android:inputType="textPersonName|textCapWords"
+                            android:maxLength="50"
                             android:maxLines="1"
                             android:singleLine="true"
                             android:textColor="@color/text_primary"
                             android:textSize="14sp" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Campo Teléfono (NUEVO) -->
+                    <!-- Campo Teléfono -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilPhone"
                         android:layout_width="match_parent"
@@ -170,9 +176,11 @@
                         app:boxCornerRadiusTopEnd="14dp"
                         app:boxCornerRadiusTopStart="14dp"
                         app:boxStrokeColor="@color/blue"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="10"
                         app:errorEnabled="true"
                         app:hintTextColor="@color/blue"
-                        app:startIconDrawable="@drawable/user"
+                        app:startIconDrawable="@drawable/phone"
                         app:startIconTint="?attr/colorPrimary">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -180,8 +188,10 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:autofillHints="phone"
+                            android:digits="0123456789"
                             android:imeOptions="actionDone"
-                            android:inputType="phone"
+                            android:inputType="number"
+                            android:maxLength="10"
                             android:maxLines="1"
                             android:singleLine="true"
                             android:textColor="@color/text_primary"
@@ -214,7 +224,12 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:autofillHints="emailAddress"
+                            android:clickable="false"
+                            android:cursorVisible="false"
+                            android:enabled="false"
+                            android:focusable="false"
                             android:inputType="textEmailAddress"
+                            android:maxLength="50"
                             android:maxLines="1"
                             android:singleLine="true"
                             android:textColor="@color/text_primary"

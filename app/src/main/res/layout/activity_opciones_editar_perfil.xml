@@ -172,6 +172,9 @@
                         app:boxCornerRadiusTopEnd="12dp"
                         app:boxCornerRadiusTopStart="12dp"
                         app:boxStrokeColor="@color/primary"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="50"
+                        app:errorEnabled="true"
                         app:hintTextColor="@color/primary"
                         app:startIconDrawable="@drawable/user"
                         app:startIconTint="@color/primary">
@@ -181,7 +184,11 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/nunito"
+                            android:imeOptions="actionNext"
                             android:inputType="textPersonName|textCapWords"
+                            android:maxLength="50"
+                            android:maxLines="1"
+                            android:singleLine="true"
                             android:textColor="@color/text_primary"
                             android:textSize="14sp" />
                     </com.google.android.material.textfield.TextInputLayout>
@@ -199,6 +206,9 @@
                         app:boxCornerRadiusTopEnd="12dp"
                         app:boxCornerRadiusTopStart="12dp"
                         app:boxStrokeColor="@color/primary"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="50"
+                        app:errorEnabled="true"
                         app:hintTextColor="@color/primary"
                         app:startIconDrawable="@drawable/user"
                         app:startIconTint="@color/primary">
@@ -208,13 +218,18 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/nunito"
+                            android:imeOptions="actionNext"
                             android:inputType="textPersonName|textCapWords"
+                            android:maxLength="50"
+                            android:maxLines="1"
+                            android:singleLine="true"
                             android:textColor="@color/text_primary"
                             android:textSize="14sp" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Campo Correo -->
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilEmail"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -225,6 +240,9 @@
                         app:boxCornerRadiusTopEnd="12dp"
                         app:boxCornerRadiusTopStart="12dp"
                         app:boxStrokeColor="@color/primary"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="50"
+                        app:errorEnabled="true"
                         app:hintTextColor="@color/primary"
                         app:startIconDrawable="@drawable/mail"
                         app:startIconTint="@color/primary">
@@ -234,13 +252,18 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/nunito"
+                            android:imeOptions="actionNext"
                             android:inputType="textEmailAddress"
+                            android:maxLength="50"
+                            android:maxLines="1"
+                            android:singleLine="true"
                             android:textColor="@color/text_primary"
                             android:textSize="14sp" />
                     </com.google.android.material.textfield.TextInputLayout>
 
                     <!-- Campo Teléfono -->
                     <com.google.android.material.textfield.TextInputLayout
+                        android:id="@+id/tilPhone"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
@@ -250,6 +273,9 @@
                         app:boxCornerRadiusTopEnd="12dp"
                         app:boxCornerRadiusTopStart="12dp"
                         app:boxStrokeColor="@color/primary"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="10"
+                        app:errorEnabled="true"
                         app:hintTextColor="@color/primary"
                         app:startIconDrawable="@drawable/phone"
                         app:startIconTint="@color/primary">
@@ -258,8 +284,13 @@
                             android:id="@+id/etPhone"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:digits="0123456789"
                             android:fontFamily="@font/nunito"
-                            android:inputType="phone"
+                            android:imeOptions="actionNext"
+                            android:inputType="number"
+                            android:maxLength="10"
+                            android:maxLines="1"
+                            android:singleLine="true"
                             android:textColor="@color/text_primary"
                             android:textSize="14sp" />
                     </com.google.android.material.textfield.TextInputLayout>
@@ -333,6 +364,9 @@
                         app:boxCornerRadiusTopEnd="12dp"
                         app:boxCornerRadiusTopStart="12dp"
                         app:boxStrokeColor="@color/primary"
+                        app:counterEnabled="true"
+                        app:counterMaxLength="10"
+                        app:errorEnabled="true"
                         app:hintTextColor="@color/primary"
                         app:startIconDrawable="@drawable/id_card"
                         app:startIconTint="@color/primary">
@@ -342,17 +376,25 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/nunito"
+                            android:imeOptions="actionDone"
                             android:inputType="textCapCharacters"
+                            android:maxLength="10"
+                            android:maxLines="1"
+                            android:singleLine="true"
                             android:textColor="@color/text_primary"
                             android:textSize="14sp" />
                     </com.google.android.material.textfield.TextInputLayout>
 
-                    <!-- Campo Cédula / Documento de Identidad -->
+                    <!-- Campo Cédula / Documento de Identidad (BLOQUEADO - DATO SENSIBLE) -->
                     <com.google.android.material.textfield.TextInputLayout
                         android:id="@+id/tilIdentificacion"
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:enabled="false"
+                        android:hint="Cédula / Documento de identidad (D.I.)"
+                        app:helperText="No se puede modificar por ser un dato sensible"
+                        app:helperTextEnabled="true"
                         android:hint="@string/hint_cedula_documento_de_identidad_d"
                         app:helperText="@string/helper_ej_18_609_007"
                         app:helperTextTextColor="@color/text_muted"
@@ -369,8 +411,15 @@
                             android:id="@+id/etIdentificacion"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:clickable="false"
+                            android:cursorVisible="false"
+                            android:enabled="false"
+                            android:focusable="false"
                             android:fontFamily="@font/nunito"
-                            android:inputType="text"
+                            android:inputType="none"
+                            android:maxLength="12"
+                            android:maxLines="1"
+                            android:singleLine="true"
                             android:textColor="@color/text_primary"
                             android:textSize="14sp" />
                     </com.google.android.material.textfield.TextInputLayout>

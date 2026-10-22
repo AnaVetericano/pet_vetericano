@@ -1,0 +1,83 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:paddingVertical="6dp">
+
+    <!-- Nombre del campo modificado -->
+    <TextView
+        android:id="@+id/tvCampoCambioMd3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/nunito_bold"
+        android:letterSpacing="0.02"
+        android:text="Nombre"
+        android:textColor="@color/primary"
+        android:textSize="12sp" />
+
+    <!-- Fila Antes -> Después -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <TextView
+            android:id="@+id/tvValorAnteriorMd3"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:ellipsize="end"
+            android:fontFamily="@font/nunito"
+            android:maxLines="1"
+            android:text="Valor anterior"
+            android:textColor="@color/text_muted"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/tvFlechaCambioMd3"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="8dp"
+            android:fontFamily="@font/nunito_bold"
+            android:text="→"
+            android:textColor="@color/primary"
+            android:textSize="14sp" />
+
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1.15"
+            app:cardBackgroundColor="@color/radix_grass_bg"
+            app:cardCornerRadius="8dp"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/radix_grass_border"
+            app:strokeWidth="1dp">
+
+            <TextView
+                android:id="@+id/tvValorNuevoMd3"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ellipsize="end"
+                android:fontFamily="@font/nunito_bold"
+                android:maxLines="1"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="3dp"
+                android:text="Valor nuevo"
+                android:textColor="@color/radix_grass_text"
+                android:textSize="13sp" />
+        </com.google.android.material.card.MaterialCardView>
+    </LinearLayout>
+
+    <!-- Divisor sutil entre ítems -->
+    <View
+        android:id="@+id/dividerCambioMd3"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:layout_marginTop="8dp"
+        android:background="@color/divider" />
+
+</LinearLayout>

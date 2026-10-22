@@ -1651,27 +1651,43 @@ class ActaAtencionActivity : AppCompatActivity() {
         sheetBinding.autoCompleteVia.setAdapter(viaAdapter)
         sheetBinding.autoCompleteVia.setText(vias[0], false)
 
-        // 4. Stepper y chips de dosis
+        // 4. Stepper y chips de dosis M3 (Enteros)
         sheetBinding.btnDosisMenos.setOnClickListener {
-            val actual = sheetBinding.etDosisCantidad.text.toString().toDoubleOrNull() ?: 1.0
-            val paso = if (medicamentoSeleccionado?.unidadMedida?.contains("comprimido", ignoreCase = true) == true) 1.0 else 0.5
-            val nuevo = maxOf(paso, actual - paso)
-            sheetBinding.etDosisCantidad.setText(String.format(Locale.US, "%.1f", nuevo))
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            val actual = sheetBinding.etDosisCantidad.text.toString().toIntOrNull() ?: 1
+            val nuevo = maxOf(1, actual - 1)
+            sheetBinding.etDosisCantidad.setText(nuevo.toString())
         }
 
         sheetBinding.btnDosisMas.setOnClickListener {
-            val actual = sheetBinding.etDosisCantidad.text.toString().toDoubleOrNull() ?: 1.0
-            val paso = if (medicamentoSeleccionado?.unidadMedida?.contains("comprimido", ignoreCase = true) == true) 1.0 else 0.5
-            val maxStock = medicamentoSeleccionado?.cantidadDisponible ?: 999.0
-            val nuevo = minOf(maxStock, actual + paso)
-            sheetBinding.etDosisCantidad.setText(String.format(Locale.US, "%.1f", nuevo))
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            val actual = sheetBinding.etDosisCantidad.text.toString().toIntOrNull() ?: 1
+            val maxStock = (medicamentoSeleccionado?.cantidadDisponible ?: 999.0).toInt()
+            val nuevo = minOf(maxStock, actual + 1)
+            sheetBinding.etDosisCantidad.setText(nuevo.toString())
         }
 
-        sheetBinding.chipDosis05.setOnClickListener { sheetBinding.etDosisCantidad.setText("0.5") }
-        sheetBinding.chipDosis10.setOnClickListener { sheetBinding.etDosisCantidad.setText("1.0") }
-        sheetBinding.chipDosis15.setOnClickListener { sheetBinding.etDosisCantidad.setText("1.5") }
-        sheetBinding.chipDosis20.setOnClickListener { sheetBinding.etDosisCantidad.setText("2.0") }
-        sheetBinding.chipDosis50.setOnClickListener { sheetBinding.etDosisCantidad.setText("5.0") }
+        sheetBinding.chipDosis05.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            sheetBinding.etDosisCantidad.setText("1")
+        }
+        sheetBinding.chipDosis10.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            sheetBinding.etDosisCantidad.setText("2")
+        }
+        sheetBinding.chipDosis15.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            sheetBinding.etDosisCantidad.setText("3")
+        }
+        sheetBinding.chipDosis20.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            sheetBinding.etDosisCantidad.setText("5")
+        }
+        sheetBinding.chipDosis50.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            val maxStock = (medicamentoSeleccionado?.cantidadDisponible ?: 1.0).toInt().coerceAtLeast(1)
+            sheetBinding.etDosisCantidad.setText(maxStock.toString())
+        }
 
         sheetBinding.btnCerrarBottomSheet.setOnClickListener {
             bottomSheet.dismiss()
@@ -1686,13 +1702,13 @@ class ActaAtencionActivity : AppCompatActivity() {
             }
             sheetBinding.tilSelectorMedicamento.error = null
 
-            val dosis = sheetBinding.etDosisCantidad.text.toString().toDoubleOrNull()
-            if (dosis == null || dosis <= 0.0) {
-                sheetBinding.tilDosisCantidad.error = "Ingresa una dosis válida"
+            val dosis = sheetBinding.etDosisCantidad.text.toString().toIntOrNull()
+            if (dosis == null || dosis <= 0) {
+                sheetBinding.tilDosisCantidad.error = "Ingresa una cantidad entera válida (mínimo 1)"
                 return@setOnClickListener
             }
-            if (dosis > med.cantidadDisponible) {
-                sheetBinding.tilDosisCantidad.error = "Dosis supera el stock disponible (${med.cantidadDisponible} ${med.unidadMedida})"
+            if (dosis > med.cantidadDisponible.toInt()) {
+                sheetBinding.tilDosisCantidad.error = "Supera el stock disponible (${med.cantidadDisponible.toInt()} ${med.unidadMedida})"
                 return@setOnClickListener
             }
             sheetBinding.tilDosisCantidad.error = null
@@ -1700,27 +1716,29 @@ class ActaAtencionActivity : AppCompatActivity() {
             val via = sheetBinding.autoCompleteVia.text.toString().trim().ifEmpty { "SC" }
             val paciente = sheetBinding.autoCompletePaciente.text.toString().trim().ifEmpty { "Paciente" }
 
-            val exito = maletinManager.descontarStock(med.id, dosis)
+            val exito = maletinManager.descontarStock(med.id, dosis.toDouble())
             if (!exito) {
                 Toast.makeText(this, "No se pudo descontar del maletín (stock insuficiente)", Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
 
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+
             val aplicado = MedicamentoAplicadoActa(
                 idMedicamento = med.id,
                 nombre = med.nombre,
                 concentracion = med.concentracion,
-                cantidad = dosis,
+                cantidad = dosis.toDouble(),
                 unidadMedida = med.unidadMedida,
                 viaAdministracion = via,
-                pacienteDestino = paciente
+                pacienteDestino = paciente,
+                clientUuid = java.util.UUID.randomUUID().toString()
             )
             medicamentosAplicadosList.add(aplicado)
 
             // Redacción automática en etTratamiento
             if (sheetBinding.swSincronizarTratamientoTexto.isChecked) {
-                val dosisTxt = if (dosis % 1.0 == 0.0) dosis.toInt().toString() else dosis.toString()
-                val textoRedactado = "Suministro de ${med.nombre} ($dosisTxt ${med.unidadMedida} - vía $via) a $paciente"
+                val textoRedactado = "Suministro de ${med.nombre} ($dosis ${med.unidadMedida} - vía $via) a $paciente"
                 concatenarTextoEnCampo(binding.etTratamiento, textoRedactado)
             }
 
@@ -2569,7 +2587,9 @@ class ActaAtencionActivity : AppCompatActivity() {
                     firmaNotificado = firmaNotificado,
                     observacion = observacion,
                     fotos = urlsFotos,
-                    videos = urlsVideos
+                    videos = urlsVideos,
+                    medicamentosUsados = medicamentosAplicadosList.map { it.toMedicamentoUsadoRequest() }.ifEmpty { null },
+                    sincronizacionOffline = false
                 )
 
                 // 1. Enviar el Acta completa de atención en campo (POST /api/peticiones/seguimiento/crear/)
@@ -2578,6 +2598,8 @@ class ActaAtencionActivity : AppCompatActivity() {
                 if (response.isSuccessful && response.body() != null) {
                     val body = response.body()!!
                     val idSeg = body.idSeguimiento ?: 0
+                    val alertasFarmacia = body.alertasFarmacia
+                    val tieneConflictos = alertasFarmacia?.conflictosStock?.isNotEmpty() == true
 
                     // 2. Cierre y actualización del estado de la petición en el backend (PATCH /api/peticiones/{id}/estado/)
                     if (peticionId != -1) {
@@ -2597,10 +2619,17 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                     withContext(Dispatchers.Main) {
                         setLoadingState(false)
-                        val mensajeExito = if (binding.swRequiereRescate.isChecked) {
+                        var mensajeExito = if (binding.swRequiereRescate.isChecked) {
                             "Acta y Rescate CBA registrados exitosamente (ID #$idSeg).\n\nEstado del caso: $estadoCierre"
                         } else {
                             "Acta registrada exitosamente (ID #$idSeg).\n\nEstado del caso: $estadoCierre"
+                        }
+
+                        if (tieneConflictos) {
+                            val descConflictos = alertasFarmacia!!.conflictosStock.joinToString("\n") { c ->
+                                "• ${c.nombreMedicamento ?: "Medicamento"}: Solicitado ${c.solicitado}, Disponible ${c.disponible}"
+                            }
+                            mensajeExito += "\n\n⚠️ Advertencia de stock en farmacia:\n$descConflictos"
                         }
                         MaterialAlertDialogBuilder(this@ActaAtencionActivity)
                             .setIcon(R.drawable.ic_check)
@@ -2645,11 +2674,23 @@ class ActaAtencionActivity : AppCompatActivity() {
         return try {
             if (errorBody.isNotEmpty()) {
                 val json = JSONObject(errorBody)
+                val errCod = json.optString("error")
+                if (errCod == "STOCK_INSUFICIENTE_KIT") {
+                    val detalle = json.optString("detalle")
+                    val solicitado = json.optInt("solicitado", 0)
+                    val disponible = json.optInt("disponible", 0)
+                    val medNombre = json.optString("nombre_medicamento", "el medicamento")
+                    return if (detalle.isNotEmpty()) {
+                        "Stock insuficiente en tu maletín:\n$detalle"
+                    } else {
+                        "No cuentas con existencias suficientes de $medNombre en tu maletín clínico (Solicitado: $solicitado, Disponible: $disponible)."
+                    }
+                }
                 val primerClave = json.keys().asSequence().firstOrNull()
                 if (primerClave != null) {
                     val valor = json.optJSONArray(primerClave)?.optString(0)
                         ?: json.optString(primerClave)
-                    if (primerClave.equals("error", ignoreCase = true) || primerClave.equals("detail", ignoreCase = true)) {
+                    if (primerClave.equals("error", ignoreCase = true) || primerClave.equals("detail", ignoreCase = true) || primerClave.equals("detalle", ignoreCase = true)) {
                         valor
                     } else {
                         "Error ($primerClave): $valor"

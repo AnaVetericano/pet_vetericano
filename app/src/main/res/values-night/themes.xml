@@ -1,11 +1,17 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
-    <!-- Base application theme (Dark Mode). -->
+    <!-- Base application theme para Modo Oscuro (Dark Theme) -->
     <style name="Base.Theme.PetVetericano" parent="Theme.Material3.DayNight.NoActionBar">
+        <!-- Paleta principal en Modo Oscuro -->
         <item name="colorPrimary">@color/primary</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSurface">@color/card_background</item>
+        <item name="colorSurfaceContainer">@color/card_background</item>
+        <item name="colorSurfaceContainerHigh">@color/card_background</item>
         <item name="colorOnSurface">@color/text_primary</item>
+        <item name="colorOnBackground">@color/text_primary</item>
+
+        <!-- Barra de estado y fondo de pantalla -->
         <item name="android:statusBarColor">@color/card_background</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
         <item name="android:windowBackground">@color/bg_screen</item>
@@ -21,4 +27,6 @@
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.Vetericano.MaterialAlertDialog</item>
         <item name="alertDialogTheme">@style/ThemeOverlay.Vetericano.MaterialAlertDialog</item>
     </style>
+
+    <style name="Theme.PetVetericano" parent="Base.Theme.PetVetericano" />
 </resources>

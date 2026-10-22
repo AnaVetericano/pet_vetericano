@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityOpcionesEditarPerfilBinding
@@ -107,6 +108,28 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         // Acción de clic para cerrar sesión del veterinario
         binding.btnLogout.setOnClickListener {
             mostrarConfirmacionCerrarSesion()
+        }
+
+        setupDarkMode()
+    }
+
+    /**
+     * Inicializa y controla el switch de Modo Oscuro con persistencia y cambio reactivo en caliente.
+     */
+    private fun setupDarkMode() {
+        val sharedPreferences = getSharedPreferences("ThemePrefs", MODE_PRIVATE)
+        val isDarkMode = sharedPreferences.getBoolean("isDarkMode", false)
+
+        binding.switchDarkMode.isChecked = isDarkMode
+
+        binding.switchDarkMode.setOnCheckedChangeListener { _, isChecked ->
+            sharedPreferences.edit().putBoolean("isDarkMode", isChecked).apply()
+
+            if (isChecked) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            }
         }
     }
 

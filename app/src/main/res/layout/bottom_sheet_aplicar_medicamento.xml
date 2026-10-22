@@ -14,7 +14,7 @@
         android:id="@+id/dragHandleBottomSheet"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        app:tint="#94A3B8" />
+        app:tint="@color/text_muted" />
 
     <!-- Encabezado con Icono y Botón Cerrar -->
     <LinearLayout

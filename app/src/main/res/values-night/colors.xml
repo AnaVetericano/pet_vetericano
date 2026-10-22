@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- Colores base inmutables (para textos/iconos sobre botones de color) -->
+    <!-- Colores base inmutables para Modo Oscuro -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="blue">#6868D6</color>
-    <color name="darkblue2">#5252B8</color>
-    <color name="darkblue">#0B071E</color>
-    <color name="gray_paw_cat">#1E293B</color>
+    <color name="blue">#FF7070D6</color>
+    <color name="darkblue2">#FF5252B8</color>
+    <color name="darkblue">#FF0B071E</color>
+    <color name="gray_paw_cat">#FF1E293B</color>
     <color name="yellow">#FBBF24</color>
 
     <!-- Derivados armónicos de la paleta oficial adaptados a Modo Oscuro -->
@@ -27,7 +27,7 @@
     <color name="input_stroke">#475569</color>
     <color name="text_primary">#F8FAFC</color>
     <color name="text_secondary">#CBD5E1</color>
-    <color name="text_muted">#64748B</color>
+    <color name="text_muted">#94A3B8</color>
     <color name="divider">#334155</color>
 
     <!-- Paleta Semántica Detallada (Radix UI Colors - Dark Mode) -->

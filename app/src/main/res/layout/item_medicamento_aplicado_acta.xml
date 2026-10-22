@@ -63,12 +63,12 @@
                     android:layout_height="wrap_content"
                     android:layout_marginStart="8dp"
                     android:background="@drawable/bg_rounded_badge"
-                    android:backgroundTint="#DCFCE7"
+                    android:backgroundTint="@color/badge_alta_bg"
                     android:fontFamily="@font/nunito_bold"
                     android:paddingHorizontal="6dp"
                     android:paddingVertical="1dp"
                     android:text="@string/lbl_descontado"
-                    android:textColor="#166534"
+                    android:textColor="@color/badge_alta_text"
                     android:textSize="9sp" />
             </LinearLayout>
         </LinearLayout>

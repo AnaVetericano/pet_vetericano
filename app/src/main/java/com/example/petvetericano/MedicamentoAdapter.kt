@@ -98,6 +98,9 @@ class MedicamentoAdapter(
                 categoria.contains("Antibiótico", ignoreCase = true) -> {
                     Pair(Color.parseColor("#FEF3C7"), Color.parseColor("#B45309")) // Ámbar M3
                 }
+                categoria.contains("Anestésico", ignoreCase = true) -> {
+                    Pair(Color.parseColor("#F3E8FF"), Color.parseColor("#7E22CE")) // Púrpura M3
+                }
                 categoria.contains("Corticoide", ignoreCase = true) -> {
                     Pair(Color.parseColor("#FEE2E2"), Color.parseColor("#B91C1C")) // Rojo suave M3
                 }

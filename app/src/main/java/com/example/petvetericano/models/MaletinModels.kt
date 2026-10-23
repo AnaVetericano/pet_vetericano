@@ -48,6 +48,14 @@ data class MedicamentoMaletin(
 
             val fechaVencStr = primerLote?.fechaVencimiento ?: "No registrada"
             val cantTotal = (item.saldoDisponible + item.saldoVencido).toDouble()
+            val totalReferencia = item.lotes.sumOf { it.cantidadReferencia }.toDouble()
+            val cantidadInicialCalculada = if (totalReferencia > 0) {
+                totalReferencia
+            } else if (cantTotal > 0) {
+                cantTotal
+            } else {
+                maxOf(item.saldoDisponible.toDouble(), 1.0)
+            }
 
             return MedicamentoMaletin(
                 id = item.idMedicamento.toString(),
@@ -57,7 +65,7 @@ data class MedicamentoMaletin(
                 presentacion = "Unidad clínica",
                 unidadMedida = "unidades",
                 cantidadDisponible = item.saldoDisponible.toDouble(),
-                cantidadInicial = if (cantTotal > 0) cantTotal else item.saldoDisponible.toDouble(),
+                cantidadInicial = cantidadInicialCalculada,
                 lote = loteStr,
                 fechaVencimiento = fechaVencStr,
                 viaRecomendada = "Vía veterinaria",
@@ -67,15 +75,41 @@ data class MedicamentoMaletin(
             )
         }
 
-        private fun categorizarPorNombre(nombre: String): String {
+        fun categorizarPorNombre(nombre: String): String {
             val n = nombre.lowercase()
             return when {
-                n.contains("amox") || n.contains("cefa") || n.contains("enro") || n.contains("penic") || n.contains("oxitet") -> "Antibióticos"
-                n.contains("melo") || n.contains("trama") || n.contains("dipirona") || n.contains("ketoprof") || n.contains("carprof") -> "Analgésicos / AINE"
+                // Antibióticos
+                n.contains("amox") || n.contains("cefa") || n.contains("enro") ||
+                n.contains("ampi") || n.contains("estomizol") || n.contains("metronidazol") ||
+                n.contains("doxiciclina") || n.contains("azitro") || n.contains("penic") ||
+                n.contains("oxitet") -> "Antibióticos"
+
+                // Anestésicos y Sedantes
+                n.contains("ketamina") || n.contains("xilacina") || n.contains("acepromacina") ||
+                n.contains("propofol") || n.contains("lidocaina") || n.contains("diazepam") -> "Anestésicos"
+
+                // Analgésicos y Antiinflamatorios (AINE)
+                n.contains("tramadol") || n.contains("meloxicam") || n.contains("aspirina") ||
+                n.contains("ibuprofeno") || n.contains("carprof") || n.contains("dipirona") ||
+                n.contains("flunixin") || n.contains("ketoprof") || n.contains("naproxeno") ||
+                n.contains("acetaminof") || n.contains("paracetamol") -> "Analgésicos / AINE"
+
+                // Corticoides
                 n.contains("dexa") || n.contains("predni") || n.contains("hidrocort") -> "Corticoides"
-                n.contains("iverm") || n.contains("prazi") || n.contains("pirant") || n.contains("fenbend") || n.contains("albend") -> "Antiparasitarios"
-                n.contains("ringer") || n.contains("salino") || n.contains("dextrosa") || n.contains("cloruro") || n.contains("suero") -> "Fluidoterapia"
-                else -> "General"
+
+                // Vitaminas y Suplementos
+                n.contains("vitamina") || n.contains("complejo") || n.contains("calcio") ||
+                n.contains("hierro") -> "Vitaminas"
+
+                // Antiparasitarios
+                n.contains("iverm") || n.contains("prazi") || n.contains("pirant") ||
+                n.contains("fenbend") || n.contains("albend") || n.contains("fipronil") -> "Antiparasitarios"
+
+                // Fluidoterapia
+                n.contains("ringer") || n.contains("salino") || n.contains("dextrosa") ||
+                n.contains("cloruro") || n.contains("suero") -> "Fluidoterapia"
+
+                else -> "Otros"
             }
         }
     }

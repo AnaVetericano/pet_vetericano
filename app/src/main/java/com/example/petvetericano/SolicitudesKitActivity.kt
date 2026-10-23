@@ -10,7 +10,6 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.databinding.ActivitySolicitudesKitBinding
 import com.example.petvetericano.models.CrearSolicitudKitRequest
 import com.example.petvetericano.models.ItemSolicitudInput
-import com.example.petvetericano.models.MedicamentoMaletin
 import com.example.petvetericano.models.SolicitudKitResponse
 import com.example.petvetericano.network.RetrofitClient
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -19,14 +18,21 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
+data class OpcionMedicamentoSolicitud(
+    val idMedicamento: Int,
+    val nombre: String,
+    val presentacion: String = "",
+    val saldoDisponible: Int = 0
+)
+
 class SolicitudesKitActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivitySolicitudesKitBinding
     private lateinit var maletinManager: MaletinManager
     private lateinit var adapter: SolicitudesKitAdapter
 
-    private var medicamentosDisponibles: List<MedicamentoMaletin> = emptyList()
-    private var medicamentoSeleccionado: MedicamentoMaletin? = null
+    private var medicamentosDisponibles: List<OpcionMedicamentoSolicitud> = emptyList()
+    private var medicamentoSeleccionado: OpcionMedicamentoSolicitud? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -137,6 +143,11 @@ class SolicitudesKitActivity : AppCompatActivity() {
             val esReposicion = binding.chipTipoReposicion.isChecked
             val tipo = if (esReposicion) "REPOSICION" else "DEVOLUCION"
 
+            if (tipo == "DEVOLUCION" && cantidad > med.saldoDisponible) {
+                binding.tilCantidadSolicitud.error = "No puedes devolver más de lo que tienes en el maletín (${med.saldoDisponible} uds)"
+                return@setOnClickListener
+            }
+
             enviarSolicitud(
                 CrearSolicitudKitRequest(
                     tipoSolicitud = tipo,
@@ -144,7 +155,7 @@ class SolicitudesKitActivity : AppCompatActivity() {
                     esReposicionTotal = false,
                     items = listOf(
                         ItemSolicitudInput(
-                            idMedicamento = med.idMedicamentoInt,
+                            idMedicamento = med.idMedicamento,
                             cantidad = cantidad
                         )
                     )
@@ -154,13 +165,62 @@ class SolicitudesKitActivity : AppCompatActivity() {
     }
 
     private fun actualizarSelectorMedicamentos() {
-        medicamentosDisponibles = maletinManager.getMedicamentos()
-        val nombres = medicamentosDisponibles.map { "${it.nombre} (Disp: ${it.saldoDisponibleInt})" }
-        val arrayAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, nombres)
-        binding.autoCompleteMedSolicitud.setAdapter(arrayAdapter)
+        val medsMaletin = maletinManager.getMedicamentos()
+        val maletinMap = medsMaletin.associateBy { it.idMedicamentoInt }
 
-        binding.autoCompleteMedSolicitud.setOnItemClickListener { _, _, position, _ ->
-            medicamentoSeleccionado = medicamentosDisponibles.getOrNull(position)
+        val prefs = SharedPreferencesManager(this)
+        val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            var listaOpciones: List<OpcionMedicamentoSolicitud> = emptyList()
+
+            if (token.isNotEmpty()) {
+                try {
+                    val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
+                    val resp = RetrofitClient.apiService.obtenerCatalogoMedicamentos(authHeader)
+                    if (resp.isSuccessful && resp.body() != null) {
+                        listaOpciones = resp.body()!!.filter { it.activo }.map { cat ->
+                            val enMaletin = maletinMap[cat.idMedicamento]
+                            OpcionMedicamentoSolicitud(
+                                idMedicamento = cat.idMedicamento,
+                                nombre = cat.nombre,
+                                presentacion = cat.presentacion ?: "",
+                                saldoDisponible = enMaletin?.saldoDisponibleInt ?: 0
+                            )
+                        }
+                    }
+                } catch (_: Exception) {
+                    // Fallback local ante fallo de red
+                }
+            }
+
+            if (listaOpciones.isEmpty()) {
+                listaOpciones = medsMaletin.map { med ->
+                    OpcionMedicamentoSolicitud(
+                        idMedicamento = med.idMedicamentoInt,
+                        nombre = med.nombre,
+                        presentacion = med.presentacion,
+                        saldoDisponible = med.saldoDisponibleInt
+                    )
+                }
+            }
+
+            withContext(Dispatchers.Main) {
+                medicamentosDisponibles = listaOpciones
+                val nombres = listaOpciones.map { item ->
+                    if (item.saldoDisponible > 0) {
+                        "${item.nombre} (En maletín: ${item.saldoDisponible})"
+                    } else {
+                        "${item.nombre} (Sin existencias en maletín)"
+                    }
+                }
+                val arrayAdapter = ArrayAdapter(this@SolicitudesKitActivity, android.R.layout.simple_dropdown_item_1line, nombres)
+                binding.autoCompleteMedSolicitud.setAdapter(arrayAdapter)
+
+                binding.autoCompleteMedSolicitud.setOnItemClickListener { _, _, position, _ ->
+                    medicamentoSeleccionado = medicamentosDisponibles.getOrNull(position)
+                }
+            }
         }
     }
 

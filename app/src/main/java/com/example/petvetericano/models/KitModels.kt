@@ -393,3 +393,31 @@ data class AlertasKitResponse(
     @SerializedName("proximos_a_vencer")
     val proximosAVencer: List<AlertaLoteResponse> = emptyList()
 ) : Serializable
+
+// =========================================================================
+// 8. CATÁLOGO GENERAL DE MEDICAMENTOS CBA
+// =========================================================================
+
+data class MedicamentoCatalogoItem(
+    @SerializedName("id_medicamento")
+    val idMedicamento: Int,
+
+    @SerializedName("nombre")
+    val nombre: String,
+
+    @SerializedName("principio_activo")
+    val principioActivo: String? = null,
+
+    @SerializedName("presentacion")
+    val presentacion: String? = null,
+
+    @SerializedName("concentracion")
+    val concentracion: String? = null,
+
+    @SerializedName("tipo")
+    val tipo: String? = null,
+
+    @SerializedName("activo")
+    val activo: Boolean = true
+) : Serializable
+

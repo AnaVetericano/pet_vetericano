@@ -2,8 +2,114 @@
     <!-- Base application theme. -->
     <style name="Base.Theme.PetVetericano" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Customize your light theme here. -->
-        <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
+        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimaryDark">@color/primary_dark</item>
+        <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSurface">@color/card_background</item>
+        <item name="colorOnSurface">@color/text_primary</item>
+        <item name="android:statusBarColor">@color/card_background</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="android:windowBackground">@color/bg_screen</item>
+
+        <!-- Tipografía de la app: Nunito (la misma del panel web) -->
+        <item name="android:fontFamily">@font/nunito</item>
+        <!-- Los componentes de Material también usan Nunito -->
+        <item name="textAppearanceLabelLarge">@style/TextAppearance.Vetericano.LabelLarge</item>
+        <item name="textAppearanceBodyLarge">@style/TextAppearance.Vetericano.BodyLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Vetericano.BodyMedium</item>
+        <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Vetericano.HeadlineSmall</item>
+
+        <!-- Diálogos emergentes con diseño Material 3 -->
+        <item name="materialAlertDialogTheme">@style/ThemeOverlay.Vetericano.MaterialAlertDialog</item>
+        <item name="alertDialogTheme">@style/ThemeOverlay.Vetericano.MaterialAlertDialog</item>
     </style>
 
     <style name="Theme.PetVetericano" parent="Base.Theme.PetVetericano" />
+
+    <!-- ===== Tipografía (Nunito) para componentes Material ===== -->
+    <style name="TextAppearance.Vetericano.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
+        <item name="android:fontFamily">@font/nunito</item>
+    </style>
+
+    <style name="TextAppearance.Vetericano.BodyMedium" parent="TextAppearance.Material3.BodyMedium">
+        <item name="android:fontFamily">@font/nunito</item>
+    </style>
+
+    <style name="TextAppearance.Vetericano.LabelLarge" parent="TextAppearance.Material3.LabelLarge">
+        <item name="android:fontFamily">@font/nunito_bold</item>
+    </style>
+
+    <style name="TextAppearance.Vetericano.HeadlineSmall" parent="TextAppearance.Material3.HeadlineSmall">
+        <item name="android:fontFamily">@font/nunito_bold</item>
+    </style>
+
+    <!-- ===== Estilo Material 3 para BottomSheetDialog ===== -->
+    <style name="ThemeOverlay.Vetericano.BottomSheetDialog" parent="ThemeOverlay.Material3.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/Widget.Vetericano.BottomSheet</item>
+    </style>
+
+    <style name="Widget.Vetericano.BottomSheet" parent="Widget.Material3.BottomSheet.Modal">
+        <item name="backgroundTint">@color/card_background</item>
+        <item name="shapeAppearance">@style/ShapeAppearance.Vetericano.BottomSheet</item>
+    </style>
+
+    <style name="ShapeAppearance.Vetericano.BottomSheet" parent="ShapeAppearance.Material3.Corner.None">
+        <item name="cornerSizeTopLeft">28dp</item>
+        <item name="cornerSizeTopRight">28dp</item>
+    </style>
+
+    <!-- ===== Estilo Material 3 para Alert Dialogs ===== -->
+    <style name="ThemeOverlay.Vetericano.MaterialAlertDialog" parent="ThemeOverlay.Material3.MaterialAlertDialog">
+        <!-- Superficie adaptable a modo claro/oscuro M3 -->
+        <item name="colorSurface">@color/card_background</item>
+        <item name="android:background">@color/card_background</item>
+
+        <!-- Forma M3 con esquinas redondeadas de 24dp -->
+        <item name="shapeAppearance">@style/ShapeAppearance.Vetericano.Dialog</item>
+
+        <!-- Tipografía de cabecera e icono -->
+        <item name="materialAlertDialogTitleTextStyle">@style/TextAppearance.Vetericano.Dialog.Title</item>
+        <item name="materialAlertDialogTitleIconStyle">@style/Widget.Vetericano.Dialog.Icon</item>
+
+        <!-- Tipografía de cuerpo del mensaje -->
+        <item name="materialAlertDialogBodyTextStyle">@style/TextAppearance.Vetericano.Dialog.Body</item>
+
+        <!-- Botones de Acción M3 -->
+        <item name="buttonBarPositiveButtonStyle">@style/Widget.Vetericano.Dialog.Button.Positive</item>
+        <item name="buttonBarNegativeButtonStyle">@style/Widget.Vetericano.Dialog.Button.Negative</item>
+        <item name="buttonBarNeutralButtonStyle">@style/Widget.Vetericano.Dialog.Button.Negative</item>
+    </style>
+
+    <style name="ShapeAppearance.Vetericano.Dialog" parent="ShapeAppearance.Material3.Corner.Medium">
+        <item name="cornerSize">24dp</item>
+    </style>
+
+    <style name="Widget.Vetericano.Dialog.Icon" parent="MaterialAlertDialog.Material3.Title.Icon">
+        <item name="tint">@color/primary</item>
+    </style>
+
+    <style name="TextAppearance.Vetericano.Dialog.Title" parent="MaterialAlertDialog.Material3.Title.Text">
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="android:textColor">@color/text_primary</item>
+        <item name="android:textSize">20sp</item>
+    </style>
+
+    <style name="TextAppearance.Vetericano.Dialog.Body" parent="MaterialAlertDialog.Material3.Body.Text">
+        <item name="android:fontFamily">@font/nunito</item>
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:textSize">14sp</item>
+        <item name="android:lineSpacingExtra">3dp</item>
+    </style>
+
+    <style name="Widget.Vetericano.Dialog.Button.Positive" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/primary</item>
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="android:textSize">14sp</item>
+    </style>
+
+    <style name="Widget.Vetericano.Dialog.Button.Negative" parent="Widget.Material3.Button.TextButton.Dialog">
+        <item name="android:textColor">@color/text_secondary</item>
+        <item name="android:fontFamily">@font/nunito_bold</item>
+        <item name="android:textSize">14sp</item>
+    </style>
 </resources>

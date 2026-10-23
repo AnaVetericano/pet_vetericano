@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <!-- Imagen del evento (viene de la API) -->
+    <ImageView
+        android:id="@+id/carouselImgEvento"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/cd_imagen_del_evento"
+        android:scaleType="centerCrop" />
+
+    <!-- Overlay inferior con degradado -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:background="@drawable/gradient_overlay"
+        android:orientation="vertical"
+        android:paddingStart="16dp"
+        android:paddingTop="40dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="28dp">
+
+        <TextView
+            android:id="@+id/carouselTitulo"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:fontFamily="@font/nunito_display"
+            android:maxLines="1"
+            android:text="@string/lbl_evento"
+            android:textColor="@color/white"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/carouselFecha"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:fontFamily="@font/nunito"
+            android:text="@string/lbl_2026_10_15"
+            android:textColor="@color/white"
+            android:textSize="13sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/carouselBtnPostularse"
+            android:layout_width="wrap_content"
+            android:layout_height="40dp"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/nunito"
+            android:text="@string/lbl_postularse"
+            android:textSize="13sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/yellow"
+            android:textColor="@color/darkblue"
+            app:cornerRadius="20dp" />
+    </LinearLayout>
+
+</FrameLayout>

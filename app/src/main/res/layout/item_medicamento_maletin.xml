@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    style="?attr/materialCardViewFilledStyle"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginHorizontal="16dp"
+    android:layout_marginVertical="6dp"
+    app:cardBackgroundColor="@color/card_background"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="1dp"
+    app:strokeColor="@color/card_stroke"
+    app:strokeWidth="1dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp">
+
+        <!-- Fila Superior: Icono, Nombres y Badge de Categoría -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Contenedor Icono Píldora -->
+            <FrameLayout
+                android:layout_width="44dp"
+                android:layout_height="44dp"
+                android:background="@drawable/bg_maletin_icon_container"
+                android:layout_marginEnd="12dp">
+
+                <ImageView
+                    android:id="@+id/ivIconoMedicamento"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_gravity="center"
+                    android:src="@drawable/ic_pill"
+                    app:tint="@color/primary"
+                    android:contentDescription="@string/cd_icono_medicamento" />
+            </FrameLayout>
+
+            <!-- Título y Concentración -->
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvNombreMedicamento"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/nunito_bold"
+                    android:textColor="@color/text_primary"
+                    android:textSize="16sp"
+                    tools:text="Meloxicam 0.5%" />
+
+                <TextView
+                    android:id="@+id/tvConcentracionPresentacion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="@font/nunito"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="12sp"
+                    tools:text="5 mg/ml • Frasco ampolla 20 ml" />
+            </LinearLayout>
+
+            <!-- Badge de Categoría -->
+            <TextView
+                android:id="@+id/tvCategoriaBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_rounded_badge"
+                android:backgroundTint="@color/badge_alta_bg"
+                android:fontFamily="@font/nunito_bold"
+                android:paddingHorizontal="8dp"
+                android:paddingVertical="4dp"
+                android:textColor="@color/badge_alta_text"
+                android:textSize="10sp"
+                tools:text="AINE / Analgésico" />
+        </LinearLayout>
+
+        <!-- Divisor sutil -->
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginVertical="12dp"
+            android:background="@color/card_stroke" />
+
+        <!-- Nivel y Barra de Stock -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:layout_marginBottom="6dp">
+
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/nunito"
+                android:text="@string/lbl_stock_en_maletin"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+
+            <TextView
+                android:id="@+id/tvStockCantidad"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/nunito_bold"
+                android:textColor="@color/text_primary"
+                android:textSize="13sp"
+                tools:text="18.5 / 20.0 ml" />
+        </LinearLayout>
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/progressBarStock"
+            android:layout_width="match_parent"
+            android:layout_height="6dp"
+            android:layout_marginBottom="12dp"
+            app:indicatorColor="@color/primary"
+            app:trackColor="@color/card_stroke"
+            app:trackCornerRadius="4dp"
+            tools:progress="85" />
+
+        <!-- Fila de Metadatos: Lote, Vencimiento y Vía -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <!-- Lote -->
+            <TextView
+                android:id="@+id/tvLote"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/nunito"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp"
+                tools:text="Lote: LT-2026-M01" />
+
+            <!-- Vence -->
+            <TextView
+                android:id="@+id/tvVencimiento"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="12dp"
+                android:fontFamily="@font/nunito"
+                android:textColor="@color/text_secondary"
+                android:textSize="11sp"
+                tools:text="Vence: 04/2027" />
+
+            <!-- Vía de administración chip -->
+            <TextView
+                android:id="@+id/tvVia"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_rounded_badge"
+                android:backgroundTint="@color/chip_bg_neutral"
+                android:fontFamily="@font/nunito_bold"
+                android:paddingHorizontal="7dp"
+                android:paddingVertical="2dp"
+                android:textColor="@color/text_secondary"
+                android:textSize="10sp"
+                tools:text="Vía: SC / IV" />
+        </LinearLayout>
+
+    </LinearLayout>
+</com.google.android.material.card.MaterialCardView>

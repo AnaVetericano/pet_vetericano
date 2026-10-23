@@ -1,5 +1,96 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Colores base de la marca Vetericano -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="blue">#FF4141A5</color>
+    <color name="darkblue2">#FF353583</color>
+    <color name="darkblue">#FF170B3D</color>
+    <color name="gray_paw_cat">#FFF1F1F1</color>
+    <color name="yellow">#F1B800</color>
+
+    <!-- Derivados armónicos de la paleta oficial -->
+    <color name="primary">#4141A5</color>
+    <color name="primary_dark">#170B3D</color>
+    <color name="primary_variant">#353583</color>
+    <color name="secondary">#F1B800</color>
+    <color name="secondary_dark">#D49F00</color>
+    <color name="secondary_light">#FFF4D0</color>
+    <color name="primary_light">#EEF0FF</color>
+    <color name="primary_soft">#F4F5FF</color>
+
+    <!-- Superficies, fondos y textos para diseño limpio y moderno -->
+    <color name="bg_screen">#F4F5F7</color>
+    <color name="card_background">#FFFFFFFF</color>
+    <color name="card_stroke">#E2E8F0</color>
+    <color name="input_background">#F8FAFC</color>
+    <color name="input_stroke">#CBD5E1</color>
+    <color name="text_primary">#0F172A</color>
+    <color name="text_secondary">#475569</color>
+    <color name="text_muted">#94A3B8</color>
+    <color name="divider">#E2E8F0</color>
+
+    <!-- Paleta Semántica Detallada (Radix UI Colors) -->
+    <!-- Alerta / Error (Tomato) -->
+    <color name="radix_tomato_solid">#E54D2E</color>
+    <color name="radix_tomato_bg">#FEEBE7</color>
+    <color name="radix_tomato_text">#D13415</color>
+    <color name="radix_tomato_border">#F5A898</color>
+
+    <!-- Confirmación / Éxito (Grass) -->
+    <color name="radix_grass_solid">#46A758</color>
+    <color name="radix_grass_bg">#E9F6E9</color>
+    <color name="radix_grass_text">#2A7E3B</color>
+    <color name="radix_grass_border">#94CE9A</color>
+
+    <!-- Advertencia (Amber) -->
+    <color name="radix_amber_solid">#FFC53D</color>
+    <color name="radix_amber_bg">#FFF7C2</color>
+    <color name="radix_amber_text">#AB6400</color>
+    <color name="radix_amber_border">#E9C162</color>
+
+    <!-- Chips y superficies neutras suaves -->
+    <color name="chip_bg_neutral">#F1F5F9</color>
+    <color name="chip_stroke_neutral">#E2E8F0</color>
+
+
+    <!-- Estados funcionales -->
+    <color name="success">#10B981</color>
+    <color name="success_dark">#059669</color>
+    <color name="error">#EF4444</color>
+    <color name="error_dark">#DC2626</color>
+    <color name="info">#3B82F6</color>
+
+    <!-- ======================================================= -->
+    <!-- COLORES AGREGADOS PARA LA UI (Gráficos, Badges, Avatar) -->
+    <!-- ======================================================= -->
+
+    <!-- Colores del Gráfico Mensual (Usando tu paleta Vetericano) -->
+    <color name="grafico_asignadas">#4141A5</color>          <!-- Azul primary: Peticiones asignadas -->
+    <color name="grafico_en_tratamiento">#F1B800</color>     <!-- Amarillo secondary: En tratamiento / proceso -->
+    <color name="grafico_atendidas">#10B981</color>          <!-- Verde success: Peticiones atendidas / cerradas -->
+    <color name="grafico_transferidas">#6D28D9</color>       <!-- Morado transferido: Transferidas a otro centro -->
+    <color name="grafico_reasignadas">#F1B800</color>        <!-- Compatibilidad: En tratamiento -->
+
+    <!-- Colores para Badges de estado en el RecyclerView -->
+    <color name="badge_urgente_bg">#FEE2E2</color>       <!-- Fondo rojo claro -->
+    <color name="badge_urgente_text">#EF4444</color>     <!-- Texto color error -->
+
+    <color name="badge_proceso_bg">#FFF4D0</color>       <!-- Fondo amarillo claro (secondary_light) -->
+    <color name="badge_proceso_text">#D49F00</color>     <!-- Texto amarillo oscuro (secondary_dark) -->
+
+    <color name="badge_asignada_bg">#EEF0FF</color>      <!-- Fondo azul claro (primary_light) -->
+    <color name="badge_asignada_text">#4141A5</color>    <!-- Texto azul (primary) -->
+
+    <!-- Elementos adicionales de UI -->
+    <color name="color_avatar_bg">#EEF0FF</color>        <!-- primary_light -->
+
+    <!-- Colores para estados clínicos y especiales -->
+    <color name="badge_transferido_bg">#EDE9FE</color>
+    <color name="badge_transferido_text">#6D28D9</color>
+    <color name="badge_alta_bg">#D1FAE5</color>
+    <color name="badge_alta_text">#047857</color>
+    <color name="badge_observacion_bg">#CCFBF1</color>
+    <color name="badge_observacion_text">#0F766E</color>
+
 </resources>

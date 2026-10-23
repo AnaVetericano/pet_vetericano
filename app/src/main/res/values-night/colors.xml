@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Colores base inmutables para Modo Oscuro -->
+    <color name="black">#FF000000</color>
+    <color name="white">#FFFFFFFF</color>
+    <color name="blue">#FF7070D6</color>
+    <color name="darkblue2">#FF5252B8</color>
+    <color name="darkblue">#FF0B071E</color>
+    <color name="gray_paw_cat">#FF1E293B</color>
+    <color name="yellow">#FBBF24</color>
+
+    <!-- Derivados armónicos de la paleta oficial adaptados a Modo Oscuro -->
+    <color name="primary">#6868D6</color>
+    <color name="primary_dark">#0B071E</color>
+    <color name="primary_variant">#5252B8</color>
+    <color name="secondary">#FBBF24</color>
+    <color name="secondary_dark">#F59E0B</color>
+    <color name="secondary_light">#3B2F10</color>
+    <color name="primary_light">#1E2246</color>
+    <color name="primary_soft">#181C38</color>
+
+    <!-- Superficies, fondos y textos para Modo Oscuro (Slate Dark Palette) -->
+    <color name="bg_screen">#0F172A</color>
+    <color name="card_background">#1E293B</color>
+    <color name="card_stroke">#334155</color>
+    <color name="input_background">#162032</color>
+    <color name="input_stroke">#475569</color>
+    <color name="text_primary">#F8FAFC</color>
+    <color name="text_secondary">#CBD5E1</color>
+    <color name="text_muted">#94A3B8</color>
+    <color name="divider">#334155</color>
+
+    <!-- Paleta Semántica Detallada (Radix UI Colors - Dark Mode) -->
+    <!-- Alerta / Error (Tomato) -->
+    <color name="radix_tomato_solid">#E54D2E</color>
+    <color name="radix_tomato_bg">#3B1816</color>
+    <color name="radix_tomato_text">#FCA5A5</color>
+    <color name="radix_tomato_border">#7F1D1D</color>
+
+    <!-- Confirmación / Éxito (Grass) -->
+    <color name="radix_grass_solid">#46A758</color>
+    <color name="radix_grass_bg">#133220</color>
+    <color name="radix_grass_text">#86EFAC</color>
+    <color name="radix_grass_border">#14532D</color>
+
+    <!-- Advertencia (Amber) -->
+    <color name="radix_amber_solid">#FFC53D</color>
+    <color name="radix_amber_bg">#3B2A10</color>
+    <color name="radix_amber_text">#FDE68A</color>
+    <color name="radix_amber_border">#78350F</color>
+
+    <!-- Chips y superficies neutras suaves -->
+    <color name="chip_bg_neutral">#263349</color>
+    <color name="chip_stroke_neutral">#334155</color>
+
+    <!-- Estados funcionales -->
+    <color name="success">#34D399</color>
+    <color name="success_dark">#10B981</color>
+    <color name="error">#F87171</color>
+    <color name="error_dark">#EF4444</color>
+    <color name="info">#60A5FA</color>
+
+    <!-- ======================================================= -->
+    <!-- COLORES AGREGADOS PARA LA UI (Gráficos, Badges, Avatar) -->
+    <!-- ======================================================= -->
+
+    <!-- Colores del Gráfico Mensual -->
+    <color name="grafico_asignadas">#6868D6</color>
+    <color name="grafico_en_tratamiento">#FBBF24</color>
+    <color name="grafico_atendidas">#34D399</color>
+    <color name="grafico_transferidas">#A78BFA</color>
+    <color name="grafico_reasignadas">#FBBF24</color>
+
+    <!-- Colores para Badges de estado en el RecyclerView -->
+    <color name="badge_urgente_bg">#3B1816</color>
+    <color name="badge_urgente_text">#F87171</color>
+
+    <color name="badge_proceso_bg">#3B2A10</color>
+    <color name="badge_proceso_text">#FBBF24</color>
+
+    <color name="badge_asignada_bg">#1E2246</color>
+    <color name="badge_asignada_text">#818CF8</color>
+
+    <!-- Elementos adicionales de UI -->
+    <color name="color_avatar_bg">#1E2246</color>
+
+    <!-- Colores para estados clínicos y especiales -->
+    <color name="badge_transferido_bg">#2E1B4B</color>
+    <color name="badge_transferido_text">#C4B5FD</color>
+    <color name="badge_alta_bg">#133220</color>
+    <color name="badge_alta_text">#6EE7B7</color>
+    <color name="badge_observacion_bg">#113435</color>
+    <color name="badge_observacion_text">#5EEAD4</color>
+
+</resources>

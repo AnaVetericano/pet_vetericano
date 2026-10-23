@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    Familia Nunito para títulos (reemplaza a @font/black): ExtraBold (800).
+    Se registra también como 700 para que android:textStyle="bold"
+    use la misma fuente y NO genere negrita sintética (que deforma la letra).
+-->
+<font-family xmlns:android="http://schemas.android.com/apk/res/android">
+    <font
+        android:font="@font/nunito_extrabold"
+        android:fontStyle="normal"
+        android:fontWeight="400" />
+    <font
+        android:font="@font/nunito_extrabold"
+        android:fontStyle="normal"
+        android:fontWeight="700" />
+</font-family>

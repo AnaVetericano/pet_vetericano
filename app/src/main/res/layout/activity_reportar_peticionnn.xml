@@ -1,10 +1,363 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:padding="24dp"
+    android:background="@color/bg_screen"
     tools:context=".reportar_peticionnn">
+
+    <ImageButton
+        android:id="@+id/btndev"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:contentDescription="@string/cd_atras"
+        android:src="@drawable/outline_arrow_back_ios_24"
+        app:tint="@color/blue"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <TextView
+        android:id="@+id/tvTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:fontFamily="@font/nunito_display"
+        android:text="@string/lbl_reportar_peticion"
+        android:textColor="@color/blue"
+        android:textSize="22sp"
+        android:textStyle="bold"
+        app:layout_constraintBottom_toBottomOf="@id/btndev"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="@id/btndev" />
+
+    <TextView
+        android:id="@+id/tvStep"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:fontFamily="@font/nunito"
+        android:text="@string/lbl_paso_3_de_4"
+        android:textColor="@color/text_primary"
+        android:textSize="15sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvTitle" />
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="0dp"
+        android:layout_height="8dp"
+        android:layout_marginHorizontal="32dp"
+        android:layout_marginTop="12dp"
+        android:max="100"
+        android:progress="75"
+        android:progressDrawable="@drawable/progres"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/tvStep" />
+
+    <ImageView
+        android:id="@+id/ivStepIcon"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="@drawable/bg_circle"
+        android:padding="7dp"
+        android:src="@drawable/baseline_pets_24"
+        app:tint="@color/white"
+        app:layout_constraintBottom_toBottomOf="@id/progressBar"
+        app:layout_constraintTop_toTopOf="@id/progressBar"
+        app:layout_constraintStart_toStartOf="@id/progressBar"
+        app:layout_constraintEnd_toEndOf="@id/progressBar"
+        app:layout_constraintHorizontal_bias="0.75" />
+
+    <TextView
+        android:id="@+id/tvQuestion"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="24dp"
+        android:fontFamily="@font/nunito_display"
+        android:gravity="center"
+        android:text="@string/lbl_cuentanos_mas_sobre_lo_que"
+        android:textColor="@color/text_primary"
+        android:textSize="17sp"
+        android:textStyle="bold"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/progressBar" />
+
+    <com.google.android.material.textfield.TextInputLayout
+        android:id="@+id/tilDescripcion"
+        style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+        android:layout_width="match_parent"
+        android:layout_height="140dp"
+        android:layout_marginTop="16dp"
+        app:boxBackgroundColor="@color/input_background"
+        app:boxCornerRadiusBottomEnd="16dp"
+        app:boxCornerRadiusBottomStart="16dp"
+        app:boxCornerRadiusTopEnd="16dp"
+        app:boxCornerRadiusTopStart="16dp"
+        app:boxStrokeColor="@color/blue"
+        app:hintTextColor="@color/blue"
+        app:layout_constraintTop_toBottomOf="@id/tvQuestion">
+
+        <com.google.android.material.textfield.TextInputEditText
+            android:id="@+id/etDescripcion"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="top"
+            android:hint="@string/hint_describe_la_situacion_del_animal"
+            android:inputType="textMultiLine"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_muted"
+            android:textSize="14sp" />
+    </com.google.android.material.textfield.TextInputLayout>
+
+    <!-- CONTENEDOR DE ACCIONES MULTIMEDIA (FOTO Y VIDEO - M3) -->
+    <LinearLayout
+        android:id="@+id/layoutBotonesMultimedia"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:orientation="horizontal"
+        app:layout_constraintTop_toBottomOf="@+id/tilDescripcion">
+
+        <!-- BOTÓN ADJUNTAR FOTO -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAdjuntarFoto"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:layout_marginEnd="6dp"
+            android:fontFamily="@font/nunito_bold"
+            android:text="@string/btn_adjuntar_foto"
+            android:textAllCaps="false"
+            android:textColor="@color/primary"
+            android:textSize="13.5sp"
+            app:backgroundTint="@color/primary_light"
+            app:cornerRadius="14dp"
+            app:icon="@drawable/camera"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconSize="18dp"
+            app:iconTint="@color/primary"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="1dp" />
+
+        <!-- BOTÓN ADJUNTAR VIDEO -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnAdjuntarVideo"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="0dp"
+            android:layout_height="52dp"
+            android:layout_weight="1"
+            android:layout_marginStart="6dp"
+            android:fontFamily="@font/nunito_bold"
+            android:text="@string/lbl_grabar_video"
+            android:textAllCaps="false"
+            android:textColor="@color/secondary_dark"
+            android:textSize="13.5sp"
+            app:backgroundTint="@color/secondary_light"
+            app:cornerRadius="14dp"
+            app:icon="@drawable/ic_videocam"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconSize="20dp"
+            app:iconTint="@color/secondary_dark"
+            app:strokeColor="@color/secondary"
+            app:strokeWidth="1dp" />
+
+    </LinearLayout>
+
+    <!-- Texto indicador de evidencias (fotos / video) -->
+    <TextView
+        android:id="@+id/tvContadorEvidencias"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:fontFamily="@font/nunito"
+        android:gravity="center"
+        android:text="@string/lbl_puedes_adjuntar_hasta_2_evidencias"
+        android:textColor="@color/text_secondary"
+        android:textSize="12sp"
+        app:layout_constraintTop_toBottomOf="@+id/layoutBotonesMultimedia" />
+
+    <!-- CONTENEDOR DE EVIDENCIAS CARGADAS (FOTOS Y VIDEOS) -->
+    <LinearLayout
+        android:id="@+id/layoutFotoCargada"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/tvContadorEvidencias">
+
+        <!-- EVIDENCIA 1 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardFoto1"
+            android:layout_width="140dp"
+            android:layout_height="96dp"
+            android:layout_marginEnd="12dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="1dp"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp"
+            android:visibility="gone">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/ivFoto1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="@string/cd_evidencia_1" />
+
+                <!-- Overlay de Video 1 (Ícono Play y Etiqueta VIDEO) -->
+                <FrameLayout
+                    android:id="@+id/layoutVideoOverlay1"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#40000000"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/circle_blue"
+                        android:backgroundTint="#B3170B3D"
+                        android:padding="6dp"
+                        android:src="@drawable/ic_play_arrow"
+                        app:tint="@color/white" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|center_horizontal"
+                        android:layout_marginBottom="4dp"
+                        android:background="@drawable/circle_gray"
+                        android:backgroundTint="#CC000000"
+                        android:fontFamily="@font/nunito_bold"
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="1dp"
+                        android:text="@string/badge_video"
+                        android:textColor="@color/white"
+                        android:textSize="9sp" />
+                </FrameLayout>
+
+                <ImageButton
+                    android:id="@+id/btnEliminar1"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_circle"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    android:contentDescription="@string/cd_eliminar_evidencia_1"
+                    app:tint="@color/white" />
+
+            </FrameLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- EVIDENCIA 2 -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardFoto2"
+            android:layout_width="140dp"
+            android:layout_height="96dp"
+            android:clickable="true"
+            android:focusable="true"
+            app:cardCornerRadius="16dp"
+            app:cardElevation="1dp"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp"
+            android:visibility="gone">
+
+            <FrameLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ImageView
+                    android:id="@+id/ivFoto2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    android:contentDescription="@string/cd_evidencia_2" />
+
+                <!-- Overlay de Video 2 (Ícono Play y Etiqueta VIDEO) -->
+                <FrameLayout
+                    android:id="@+id/layoutVideoOverlay2"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="#40000000"
+                    android:visibility="gone">
+
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:background="@drawable/circle_blue"
+                        android:backgroundTint="#B3170B3D"
+                        android:padding="6dp"
+                        android:src="@drawable/ic_play_arrow"
+                        app:tint="@color/white" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|center_horizontal"
+                        android:layout_marginBottom="4dp"
+                        android:background="@drawable/circle_gray"
+                        android:backgroundTint="#CC000000"
+                        android:fontFamily="@font/nunito_bold"
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="1dp"
+                        android:text="@string/badge_video"
+                        android:textColor="@color/white"
+                        android:textSize="9sp" />
+                </FrameLayout>
+
+                <ImageButton
+                    android:id="@+id/btnEliminar2"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="6dp"
+                    android:background="@drawable/bg_circle"
+                    android:src="@android:drawable/ic_menu_close_clear_cancel"
+                    android:contentDescription="@string/cd_eliminar_evidencia_2"
+                    app:tint="@color/white" />
+
+            </FrameLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+    </LinearLayout>
+
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnContinue"
+        android:layout_width="match_parent"
+        android:layout_height="56dp"
+        android:fontFamily="@font/nunito"
+        android:text="@string/btn_continuar"
+        android:textAllCaps="false"
+        android:textColor="@color/white"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        app:backgroundTint="@color/blue"
+        app:cornerRadius="16dp"
+        app:elevation="3dp"
+        app:layout_constraintBottom_toBottomOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

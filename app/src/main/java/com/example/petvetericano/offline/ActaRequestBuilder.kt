@@ -53,13 +53,7 @@ object ActaRequestBuilder {
             val colorRaw = card.color.trim()
             val color = if (colorRaw.equals("Seleccionar", ignoreCase = true)) "" else colorRaw
 
-            val edad = if (card.edadTexto.isNotBlank()) {
-                card.edadTexto.trim()
-            } else {
-                val num = card.edadNumero.trim().ifEmpty { "1" }
-                val unidad = card.edadUnidad.trim().ifEmpty { "Años" }
-                "$num $unidad"
-            }
+            val edad = card.edadTexto.trim()
             val peso = card.peso.trim().toDoubleOrNull()
             val descExtra = card.descripcion.trim()
             val esterilizado = card.esterilizado.trim().equals("Si", ignoreCase = true)
@@ -94,15 +88,7 @@ object ActaRequestBuilder {
         val pacienteColor = if (colorPrimerRaw.isNullOrEmpty() || colorPrimerRaw.equals("Seleccionar", ignoreCase = true)) null else colorPrimerRaw
         val razaPrimerRaw = primerAnimal?.raza?.trim()
         val pacienteRaza = if (razaPrimerRaw.isNullOrEmpty() || razaPrimerRaw.equals("Seleccionar", ignoreCase = true)) null else razaPrimerRaw
-        val pacienteEdad = primerAnimal?.let {
-            if (it.edadTexto.isNotBlank()) {
-                it.edadTexto.trim()
-            } else {
-                val num = it.edadNumero.trim().ifEmpty { "1" }
-                val unidad = it.edadUnidad.trim().ifEmpty { "Años" }
-                "$num $unidad"
-            }
-        }?.ifEmpty { null }
+        val pacienteEdad = primerAnimal?.edadTexto?.trim()?.ifEmpty { null }
         val pesoPaciente = primerAnimal?.peso?.trim()?.toDoubleOrNull()
         val esterilizadoStr = primerAnimal?.esterilizado?.trim()
         val esterilizacionPaciente = when {

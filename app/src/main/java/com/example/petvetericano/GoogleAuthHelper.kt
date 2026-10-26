@@ -33,6 +33,8 @@ import com.example.petvetericano.models.LoginRequest
 import com.example.petvetericano.models.LoginResponse
 import com.example.petvetericano.models.RegisterRequest
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.offline.ActaLocalRepository
+import com.example.petvetericano.offline.ActaSyncScheduler
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
 import com.google.android.material.button.MaterialButton
@@ -42,7 +44,9 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -796,6 +800,8 @@ object GoogleAuthHelper {
         prefs.saveUserId(datos.idUsuario)
         prefs.saveUserRole(datos.idRol)
 
+        encolarSincronizacionActasPendientes(activity.applicationContext, datos.idUsuario)
+
         val destino = if (datos.idRol == inicio_sesion.ROL_VETERINARIO) {
             Intent(activity, dahsboard_veterianrio::class.java)
         } else {
@@ -809,6 +815,18 @@ object GoogleAuthHelper {
 
         activity.startActivity(destino)
         activity.finish()
+    }
+
+    private fun encolarSincronizacionActasPendientes(context: Context, idVeterinario: Int) {
+        val appContext = context.applicationContext
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            try {
+                ActaLocalRepository.getInstance(appContext).resetAuthErrorsToPending(idVeterinario)
+                ActaSyncScheduler.enqueuePendingForCurrentUser(appContext)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error al sincronizar actas offline pendientes tras login: ${e.message}", e)
+            }
+        }
     }
 
     fun generarPasswordGoogleDeterministica(email: String): String {

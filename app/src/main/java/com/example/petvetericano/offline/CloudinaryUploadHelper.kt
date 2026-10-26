@@ -1,4 +1,4 @@
-﻿package com.example.petvetericano.offline
+package com.example.petvetericano.offline
 
 import android.content.Context
 import android.net.Uri
@@ -121,6 +121,11 @@ object CloudinaryUploadHelper {
                         }
 
                         override fun onReschedule(reqId: String?, error: ErrorInfo?) {
+                            try {
+                                reqId?.let { MediaManager.get().cancelRequest(it) }
+                            } catch (e: Exception) {
+                                Log.w(TAG, "Excepción al cancelar petición reprogramada Cloudinary: ${e.message}")
+                            }
                             val mensaje = error?.description ?: "Petición reprogramada por conectividad"
                             safeResume(ResultadoSubida.ErrorRed(mensaje))
                         }
@@ -231,6 +236,11 @@ object CloudinaryUploadHelper {
                             safeResume(clasificarErrorInfo(error))
                         }
                         override fun onReschedule(reqId: String?, error: ErrorInfo?) {
+                            try {
+                                reqId?.let { MediaManager.get().cancelRequest(it) }
+                            } catch (e: Exception) {
+                                Log.w(TAG, "Excepción al cancelar petición reprogramada Uri Cloudinary: ${e.message}")
+                            }
                             val mensaje = error?.description ?: "Petición reprogramada por conectividad"
                             safeResume(ResultadoSubida.ErrorRed(mensaje))
                         }

@@ -535,4 +535,11 @@
     <string name="acta_offline_notif_atencion_datos_texto">El acta %1$s no pudo sincronizarse: %2$s. Toca para revisarla y reenviar.</string>
     <string name="acta_offline_notif_atencion_sesion_titulo">Inicia sesión para sincronizar tus actas</string>
     <string name="acta_offline_notif_atencion_sesion_texto">Tu sesión expiró mientras había actas pendientes de envío. Toca para iniciar sesión y reanudar.</string>
+
+    <!-- Acta Offline: Errores de sincronización (Tarea 4a) -->
+    <string name="acta_offline_error_datos_generico">Revisa los datos del acta y vuelve a enviarla</string>
+    <string name="acta_offline_error_sesion">Tu sesión expiró. Inicia sesión para reanudar el envío</string>
+    <string name="acta_offline_error_evidencia_faltante">Falta uno de los archivos adjuntos (foto o video) en el dispositivo</string>
+    <string name="acta_offline_error_evidencia_subida">No se pudieron subir las fotos o videos del acta</string>
+    <string name="acta_offline_error_reintentos">No se pudo enviar el acta después de varios intentos</string>
 </resources>

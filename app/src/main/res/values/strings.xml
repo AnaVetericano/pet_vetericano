@@ -523,4 +523,16 @@
     <string name="acta_offline_dialog_atencion_mensaje">Esta acta no pudo enviarse: %1$s. Corrígela y vuelve a enviarla.</string>
     <string name="acta_offline_toast_borrador_restaurado">Borrador restaurado en el Paso %1$d</string>
     <string name="acta_offline_toast_borrador_descartado">Borrador anterior descartado</string>
+
+    <!-- Acta Offline: Notificaciones (Tarea 5) -->
+    <string name="acta_offline_channel_nombre">Sincronización de Actas en Campo</string>
+    <string name="acta_offline_channel_descripcion">Notificaciones sobre el envío automático de actas registradas sin conexión</string>
+    <string name="acta_offline_notif_exito_titulo">Acta sincronizada exitosamente</string>
+    <string name="acta_offline_notif_exito_texto">El acta %1$s (Petición #%2$d) fue registrada correctamente en el sistema.</string>
+    <string name="acta_offline_notif_stock_alerta_titulo">Acta enviada con alerta de stock</string>
+    <string name="acta_offline_notif_stock_alerta_texto">El acta %1$s se guardó correctamente, pero se registró alerta de stock en: %2$s.</string>
+    <string name="acta_offline_notif_atencion_datos_titulo">Un acta requiere revisión</string>
+    <string name="acta_offline_notif_atencion_datos_texto">El acta %1$s no pudo sincronizarse: %2$s. Toca para revisarla y reenviar.</string>
+    <string name="acta_offline_notif_atencion_sesion_titulo">Inicia sesión para sincronizar tus actas</string>
+    <string name="acta_offline_notif_atencion_sesion_texto">Tu sesión expiró mientras había actas pendientes de envío. Toca para iniciar sesión y reanudar.</string>
 </resources>

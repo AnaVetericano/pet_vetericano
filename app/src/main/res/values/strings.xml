@@ -542,4 +542,14 @@
     <string name="acta_offline_error_evidencia_faltante">Falta uno de los archivos adjuntos (foto o video) en el dispositivo</string>
     <string name="acta_offline_error_evidencia_subida">No se pudieron subir las fotos o videos del acta</string>
     <string name="acta_offline_error_reintentos">No se pudo enviar el acta después de varios intentos</string>
+
+    <!-- Acta Offline: envío híbrido (Tarea 4b) -->
+    <string name="acta_offline_dialog_encolada_titulo">Acta guardada sin conexión</string>
+    <string name="acta_offline_dialog_encolada_mensaje">No hay conexión estable en este momento. El acta %1$s quedó guardada de forma segura en el dispositivo y se enviará automáticamente en segundo plano apenas vuelva internet.</string>
+    <string name="acta_offline_dialog_encolada_boton">Entendido</string>
+    <string name="acta_offline_dialog_en_cola_titulo">Acta en cola de envío</string>
+    <string name="acta_offline_dialog_en_cola_mensaje">El acta %1$s ya está guardada y se enviará automáticamente cuando haya conexión estable. No se puede editar mientras tanto.</string>
+    <string name="acta_offline_dialog_ya_enviada_titulo">Acta ya enviada</string>
+    <string name="acta_offline_dialog_ya_enviada_mensaje">El acta %1$s ya fue enviada correctamente.</string>
+    <string name="acta_offline_dialog_en_cola_boton">Entendido</string>
 </resources>

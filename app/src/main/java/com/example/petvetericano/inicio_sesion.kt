@@ -6,8 +6,14 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityInicioSesionBinding
+import android.util.Log
 import com.example.petvetericano.models.LoginRequest
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.offline.ActaLocalRepository
+import com.example.petvetericano.offline.ActaSyncScheduler
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 
 class inicio_sesion : AppCompatActivity() {
@@ -16,6 +22,7 @@ class inicio_sesion : AppCompatActivity() {
 
     companion object {
         const val ROL_VETERINARIO = 3
+        private const val TAG = "inicio_sesion"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -118,6 +125,8 @@ class inicio_sesion : AppCompatActivity() {
                         prefs.saveUserId(datos.idUsuario)
                         prefs.saveUserRole(datos.idRol)
 
+                        encolarSincronizacionActasPendientes(datos.idUsuario)
+
                         val intent = if (datos.idRol == ROL_VETERINARIO) {
                             Intent(this@inicio_sesion, dahsboard_veterianrio::class.java)
                         } else {
@@ -145,6 +154,18 @@ class inicio_sesion : AppCompatActivity() {
                 }
             } catch (e: Exception) {
                 GoogleAuthHelper.mostrarMensajeMD3(this@inicio_sesion, "Error de conexión con el servidor", esError = true)
+            }
+        }
+    }
+
+    private fun encolarSincronizacionActasPendientes(idVeterinario: Int) {
+        val appContext = applicationContext
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            try {
+                ActaLocalRepository.getInstance(appContext).resetAuthErrorsToPending(idVeterinario)
+                ActaSyncScheduler.enqueuePendingForCurrentUser(appContext)
+            } catch (e: Exception) {
+                Log.e(TAG, "Error al sincronizar actas offline pendientes tras login: ${e.message}", e)
             }
         }
     }

@@ -515,4 +515,12 @@
     <string name="helper_recomendado_ingresa_tu_matricula_profesional">Recomendado: Ingresa tu matrícula profesional para validar actas</string>
     <string name="hint_cedula_documento_de_identidad_d">Cédula / Documento de identidad (D.I.)</string>
     <string name="helper_ej_18_609_007">Ej: 18.609.007</string>
+    <!-- Acta Offline: Diálogos y Toasts de Borrador (Tareas 3a + 3b) -->
+    <string name="acta_offline_dialog_borrador_titulo">Borrador encontrado</string>
+    <string name="acta_offline_dialog_borrador_mensaje">Tienes un borrador guardado de esta petición (Paso %1$d de 3, actualizado el %2$s). ¿Deseas continuar donde lo dejaste o empezar de nuevo?</string>
+    <string name="acta_offline_dialog_borrador_continuar">Continuar borrador</string>
+    <string name="acta_offline_dialog_borrador_descartar">Empezar de nuevo</string>
+    <string name="acta_offline_dialog_atencion_mensaje">Esta acta no pudo enviarse: %1$s. Corrígela y vuelve a enviarla.</string>
+    <string name="acta_offline_toast_borrador_restaurado">Borrador restaurado en el Paso %1$d</string>
+    <string name="acta_offline_toast_borrador_descartado">Borrador anterior descartado</string>
 </resources>

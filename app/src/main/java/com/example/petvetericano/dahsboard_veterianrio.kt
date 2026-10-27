@@ -14,6 +14,9 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.databinding.ActivityDahsboardVeterianrioBinding
+import com.example.petvetericano.offline.ActaColaBottomSheet
+import com.example.petvetericano.offline.ActaLocalRepository
+import com.example.petvetericano.offline.ActaSyncScheduler
 import com.example.petvetericano.models.PeticionPendiente
 import com.example.petvetericano.models.TipoEstado
 import com.example.petvetericano.network.RetrofitClient
@@ -49,6 +52,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
             fetchDashboardData()
             sincronizarPerfilUsuario()
             sincronizarKitDashboard()
+            actualizarBadgeCola()
         }
 
         // Cargar nombre e iniciales del veterinario inmediatamente
@@ -88,6 +92,40 @@ class dahsboard_veterianrio : AppCompatActivity() {
             startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
         }
 
+        // Cola de actas offline
+        binding.btnActaCola.setOnClickListener {
+            if (!supportFragmentManager.isStateSaved &&
+                supportFragmentManager.findFragmentByTag(ActaColaBottomSheet.TAG) == null
+            ) {
+                val prefs = SharedPreferencesManager(this)
+                val idVet = prefs.getUserId()
+                ActaColaBottomSheet.newInstance(idVet).show(
+                    supportFragmentManager,
+                    ActaColaBottomSheet.TAG
+                )
+            }
+        }
+
+        supportFragmentManager.setFragmentResultListener(
+            ActaColaBottomSheet.RESULT_KEY,
+            this
+        ) { _, _ ->
+            actualizarBadgeCola()
+        }
+
+        if (savedInstanceState == null) {
+            val prefs = SharedPreferencesManager(this)
+            val idVet = prefs.getUserId()
+            if (idVet > 0) {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    ActaSyncScheduler.reactivarObsoletas(this@dahsboard_veterianrio, idVet)
+                    withContext(Dispatchers.Main) {
+                        actualizarBadgeCola()
+                    }
+                }
+            }
+        }
+
         // Mostrar animación de carga inicial
         binding.swipeRefreshLayout.isRefreshing = true
         fetchDashboardData()
@@ -103,6 +141,38 @@ class dahsboard_veterianrio : AppCompatActivity() {
         sincronizarPerfilUsuario()
         actualizarResumenMaletin()
         sincronizarKitDashboard()
+        actualizarBadgeCola()
+    }
+
+    private fun actualizarBadgeCola() {
+        val prefs = SharedPreferencesManager(this)
+        val idVet = prefs.getUserId()
+        if (idVet <= 0) {
+            binding.actaColaContainer.visibility = View.GONE
+            return
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val totalEnCola = ActaLocalRepository.getInstance(this@dahsboard_veterianrio).contarEnCola(idVet)
+            withContext(Dispatchers.Main) {
+                if (isFinishing || isDestroyed) return@withContext
+
+                if (totalEnCola > 0) {
+                    binding.actaColaContainer.visibility = View.VISIBLE
+                    binding.tvActaColaBadge.text = if (totalEnCola > 99) {
+                        getString(R.string.acta_offline_cola_badge_max)
+                    } else {
+                        totalEnCola.toString()
+                    }
+                    binding.btnActaCola.contentDescription = getString(
+                        R.string.acta_offline_cola_icono_desc,
+                        totalEnCola
+                    )
+                } else {
+                    binding.actaColaContainer.visibility = View.GONE
+                }
+            }
+        }
     }
 
     private fun actualizarResumenMaletin() {

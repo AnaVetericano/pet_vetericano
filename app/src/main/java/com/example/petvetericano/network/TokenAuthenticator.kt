@@ -63,6 +63,10 @@ class TokenAuthenticator(
                 return null
             }
 
+            if (refreshToken == SesionExpiradaManager.refreshMuerto) {
+                return null
+            }
+
             val refreshUrl = "${RetrofitClient.BASE_URL}token/refresh/"
             val mediaType = "application/json; charset=utf-8".toMediaType()
             val requestJson = JSONObject().apply {
@@ -88,6 +92,7 @@ class TokenAuthenticator(
                 val code = resp.code
                 if (code == 400 || code == 401) {
                     Log.w(TAG, "Refresh token inválido o vencido (HTTP $code)")
+                    SesionExpiradaManager.marcarSesionMuerta(refreshToken)
                     return null
                 }
 

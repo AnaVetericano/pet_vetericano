@@ -601,4 +601,8 @@
     <string name="acta_offline_reproducir_video_error">No se pudo reproducir el video</string>
     <string name="acta_offline_direccion_actualizada_ok">Dirección actualizada correctamente</string>
     <string name="acta_offline_na">N/A</string>
+    <!-- Tarea 2-P4: Sesión expirada -->
+    <string name="sesion_expirada_titulo">Tu sesión venció</string>
+    <string name="sesion_expirada_mensaje">Por seguridad, inicia sesión de nuevo. Las actas guardadas en este teléfono no se pierden.</string>
+    <string name="sesion_expirada_boton">Iniciar sesión</string>
 </resources>

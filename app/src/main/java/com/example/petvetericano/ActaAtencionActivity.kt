@@ -72,6 +72,7 @@ import com.example.petvetericano.offline.ActaLocalEntity
 import com.example.petvetericano.offline.ActaLocalRepository
 import com.example.petvetericano.offline.ActaRequestBuilder
 import com.example.petvetericano.offline.ActaSyncScheduler
+import com.example.petvetericano.offline.CatalogosCacheManager
 import com.example.petvetericano.offline.CloudinaryUploadHelper
 import com.example.petvetericano.offline.EstadoSincronizacionActa
 import com.example.petvetericano.offline.EvidenciaLocalItem
@@ -1234,15 +1235,90 @@ class ActaAtencionActivity : AppCompatActivity() {
     }
 
     /**
-     * Carga todos los catálogos oficiales desde el backend (Especies, Razas y Exámenes)
-     * para que la app móvil consuma exactamente los insumos creados desde la web.
+     * Refresca los selectores de exámenes clínicos y las opciones de especies y razas
+     * en todas las tarjetas de pacientes instanciadas en la vista.
+     */
+    private fun refrescarDropdownsCatalogos() {
+        actualizandoCatalogos = true
+        try {
+            // Actualizar dropdown de exámenes clínicos en el Paso 3
+            actualizarDropdownExamenes()
+
+            // Actualizar especies y razas de cada formulario de animal instanciado
+            for (itemBinding in animalBindingsList) {
+                val estadoPendiente = estadoRestauradoPorTarjeta[itemBinding]
+                val especieActual = itemBinding.autoCompleteEspecieCard.text.toString().trim().let {
+                    if (it.isEmpty() || it.equals("Seleccionar", ignoreCase = true)) {
+                        estadoPendiente?.especie.orEmpty()
+                    } else {
+                        it
+                    }
+                }
+                val razaActual = itemBinding.autoCompleteRazaCard.text.toString().trim().let {
+                    if (it.isEmpty() || it.equals("Seleccionar", ignoreCase = true)) {
+                        estadoPendiente?.raza.orEmpty()
+                    } else {
+                        it
+                    }
+                }
+                actualizarOpcionesEspecies(itemBinding)
+                if (especieActual.isNotEmpty() && !especieActual.equals("Seleccionar", ignoreCase = true)) {
+                    itemBinding.autoCompleteEspecieCard.setText(especieActual, false)
+                    itemBinding.tilPacienteRaza.isEnabled = true
+                    itemBinding.autoCompleteRazaCard.isEnabled = true
+                    itemBinding.tilPacienteRaza.helperText = null
+                    actualizarOpcionesRazas(itemBinding, especieActual, razaActual)
+                }
+            }
+        } finally {
+            actualizandoCatalogos = false
+        }
+    }
+
+    /**
+     * Carga todos los catálogos oficiales desde la caché local o el backend (Especies, Razas y Exámenes)
+     * para que la app móvil consuma exactamente los insumos creados desde la web, incluso sin conexión.
      */
     private fun cargarCatalogosBackend() {
-        val prefs = SharedPreferencesManager(this)
-        val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
-        if (token.isEmpty()) return
-
         lifecycleScope.launch(Dispatchers.IO) {
+            // A) Al iniciar: leer la caché local y, si hay datos, poblar variables y refrescar dropdowns en Main
+            val especiesCache = CatalogosCacheManager.obtenerEspecies(this@ActaAtencionActivity)
+            val razasCache = CatalogosCacheManager.obtenerRazas(this@ActaAtencionActivity)
+            val examenesCache = CatalogosCacheManager.obtenerExamenes(this@ActaAtencionActivity)
+
+            var huboDatosCache = false
+            if (especiesCache.isNotEmpty()) {
+                listaEspeciesBackend.clear()
+                listaEspeciesBackend.addAll(especiesCache)
+                huboDatosCache = true
+            }
+            if (razasCache.isNotEmpty()) {
+                listaRazasBackend.clear()
+                listaRazasBackend.addAll(razasCache)
+                huboDatosCache = true
+            }
+            if (examenesCache.isNotEmpty()) {
+                listaExamenesBackend.clear()
+                listaExamenesBackend.addAll(examenesCache)
+                huboDatosCache = true
+            }
+
+            if (huboDatosCache) {
+                withContext(Dispatchers.Main) {
+                    refrescarDropdownsCatalogos()
+                }
+            }
+
+            // C) Si no hay red: no llamar a los endpoints (evita esperas); queda la caché o contingencia
+            if (!NetworkUtils.hayRedDisponible(this@ActaAtencionActivity)) {
+                return@launch
+            }
+
+            val prefs = SharedPreferencesManager(this@ActaAtencionActivity)
+            val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
+            if (token.isEmpty()) return@launch
+
+            // B) Con red: llamar a los 3 endpoints secuencialmente
             // 1. Sincronizar Especies
             try {
                 val respEspecies = RetrofitClient.apiService.obtenerEspecies("Bearer $token")
@@ -1251,6 +1327,10 @@ class ActaAtencionActivity : AppCompatActivity() {
                     if (activas.isNotEmpty()) {
                         listaEspeciesBackend.clear()
                         listaEspeciesBackend.addAll(activas)
+                        CatalogosCacheManager.guardarEspecies(this@ActaAtencionActivity, activas)
+                        withContext(Dispatchers.Main) {
+                            refrescarDropdownsCatalogos()
+                        }
                     }
                 }
             } catch (_: Exception) {}
@@ -1263,6 +1343,10 @@ class ActaAtencionActivity : AppCompatActivity() {
                     if (activas.isNotEmpty()) {
                         listaRazasBackend.clear()
                         listaRazasBackend.addAll(activas)
+                        CatalogosCacheManager.guardarRazas(this@ActaAtencionActivity, activas)
+                        withContext(Dispatchers.Main) {
+                            refrescarDropdownsCatalogos()
+                        }
                     }
                 }
             } catch (_: Exception) {}
@@ -1275,46 +1359,13 @@ class ActaAtencionActivity : AppCompatActivity() {
                     if (activas.isNotEmpty()) {
                         listaExamenesBackend.clear()
                         listaExamenesBackend.addAll(activas)
+                        CatalogosCacheManager.guardarExamenes(this@ActaAtencionActivity, activas)
+                        withContext(Dispatchers.Main) {
+                            refrescarDropdownsCatalogos()
+                        }
                     }
                 }
             } catch (_: Exception) {}
-
-            withContext(Dispatchers.Main) {
-                actualizandoCatalogos = true
-                try {
-                    // Actualizar dropdown de exámenes clínicos en el Paso 3
-                    actualizarDropdownExamenes()
-
-                    // Actualizar especies y razas de cada formulario de animal instanciado
-                    for (itemBinding in animalBindingsList) {
-                        val estadoPendiente = estadoRestauradoPorTarjeta[itemBinding]
-                        val especieActual = itemBinding.autoCompleteEspecieCard.text.toString().trim().let {
-                            if (it.isEmpty() || it.equals("Seleccionar", ignoreCase = true)) {
-                                estadoPendiente?.especie.orEmpty()
-                            } else {
-                                it
-                            }
-                        }
-                        val razaActual = itemBinding.autoCompleteRazaCard.text.toString().trim().let {
-                            if (it.isEmpty() || it.equals("Seleccionar", ignoreCase = true)) {
-                                estadoPendiente?.raza.orEmpty()
-                            } else {
-                                it
-                            }
-                        }
-                        actualizarOpcionesEspecies(itemBinding)
-                        if (especieActual.isNotEmpty() && !especieActual.equals("Seleccionar", ignoreCase = true)) {
-                            itemBinding.autoCompleteEspecieCard.setText(especieActual, false)
-                            itemBinding.tilPacienteRaza.isEnabled = true
-                            itemBinding.autoCompleteRazaCard.isEnabled = true
-                            itemBinding.tilPacienteRaza.helperText = null
-                            actualizarOpcionesRazas(itemBinding, especieActual, razaActual)
-                        }
-                    }
-                } finally {
-                    actualizandoCatalogos = false
-                }
-            }
         }
     }
 

@@ -605,4 +605,8 @@
     <string name="sesion_expirada_titulo">Tu sesión venció</string>
     <string name="sesion_expirada_mensaje">Por seguridad, inicia sesión de nuevo. Las actas guardadas en este teléfono no se pierden.</string>
     <string name="sesion_expirada_boton">Iniciar sesión</string>
+    <!-- Tarea 1d: Dashboard y lista de peticiones offline -->
+    <string name="acta_offline_error_cargar_dashboard">Error al cargar dashboard</string>
+    <string name="acta_offline_error_cargar_peticiones">Error al cargar peticiones</string>
+    <string name="acta_offline_error_generico_con_detalle">Error: %1$s</string>
 </resources>

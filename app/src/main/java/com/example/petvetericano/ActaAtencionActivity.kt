@@ -2944,6 +2944,11 @@ class ActaAtencionActivity : AppCompatActivity() {
                             .show()
                     }
                 }
+            } catch (ce: kotlinx.coroutines.CancellationException) {
+                if (!actaEnviadaExitosamente) {
+                    encolarActaYFinalizar()
+                }
+                throw ce
             } catch (e: IOException) {
                 encolarActaYFinalizar()
             } catch (e: Exception) {
@@ -3967,10 +3972,15 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     private suspend fun encolarActaYFinalizar(idSeguimientoRemotoPrevio: Int? = null) {
         withContext(NonCancellable + Dispatchers.IO) {
-            val (entidadDesdeVistas, fallbackRadicado) = withContext(Dispatchers.Main.immediate) {
-                val entidad = construirEntidadDesdeVistas(incluirFirmas = true)
-                val fallback = binding.etRadicado.text?.toString()?.trim()?.ifEmpty { null } ?: "RAD-VIS"
-                entidad to fallback
+            val destruidaOFinalizando = isDestroyed || isFinishing
+            val (entidadDesdeVistas, fallbackRadicado) = if (!destruidaOFinalizando) {
+                withContext(Dispatchers.Main.immediate) {
+                    val entidad = construirEntidadDesdeVistas(incluirFirmas = true)
+                    val fallback = binding.etRadicado.text?.toString()?.trim()?.ifEmpty { null } ?: "RAD-VIS"
+                    entidad to fallback
+                }
+            } else {
+                null to (entidadBorradorActual?.nroRadicadoAtencion?.takeIf { it.isNotBlank() } ?: "RAD-VIS")
             }
             val idVet = obtenerIdVeterinarioActual()
             var idLocalParaEncolar: Long = -1L
@@ -3979,8 +3989,8 @@ class ActaAtencionActivity : AppCompatActivity() {
             synchronized(dbWriteLock) {
                 val filaActual = actaLocalRepository.obtenerPorPeticionYVeterinario(peticionId, idVet)
                 val radicadoEntidad = (entidadDesdeVistas?.nroRadicadoAtencion?.takeIf { it.isNotBlank() }
-                    ?: filaActual?.nroRadicadoAtencion?.takeIf { it.isNotBlank() }
-                    ?: entidadBorradorActual?.nroRadicadoAtencion?.takeIf { it.isNotBlank() })
+                    ?: entidadBorradorActual?.nroRadicadoAtencion?.takeIf { it.isNotBlank() }
+                    ?: filaActual?.nroRadicadoAtencion?.takeIf { it.isNotBlank() })
                 if (!radicadoEntidad.isNullOrBlank()) {
                     nroRadicadoParaDialogo = radicadoEntidad
                 }
@@ -3993,9 +4003,10 @@ class ActaAtencionActivity : AppCompatActivity() {
                 )
 
                 if (!yaBloqueada) {
-                    val idRemotoFinal = idSeguimientoRemotoPrevio ?: filaActual?.idSeguimientoRemoto
-                    val entidadAEncolar = (entidadDesdeVistas ?: filaActual)?.copy(
-                        idLocal = filaActual?.idLocal ?: 0L,
+                    val idRemotoFinal = idSeguimientoRemotoPrevio ?: filaActual?.idSeguimientoRemoto ?: entidadBorradorActual?.idSeguimientoRemoto
+                    val entidadBase = entidadDesdeVistas ?: entidadBorradorActual ?: filaActual
+                    val entidadAEncolar = entidadBase?.copy(
+                        idLocal = filaActual?.idLocal ?: entidadBorradorActual?.idLocal ?: 0L,
                         idPeticion = peticionId,
                         idVeterinario = idVet,
                         idSeguimientoRemoto = idRemotoFinal,
@@ -4028,9 +4039,9 @@ class ActaAtencionActivity : AppCompatActivity() {
 
             withContext(Dispatchers.Main) {
                 enviandoActa = false
-                setLoadingState(false)
-                setResult(Activity.RESULT_OK)
                 if (!isFinishing && !isDestroyed) {
+                    setLoadingState(false)
+                    setResult(Activity.RESULT_OK)
                     val nroRadicado = nroRadicadoParaDialogo.ifBlank { "RAD-VIS" }
                     MaterialDialogHelper.mostrarExito(
                         context = this@ActaAtencionActivity,
@@ -4042,7 +4053,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                             finish()
                         }
                     )
-                } else {
+                } else if (!isFinishing) {
                     finish()
                 }
             }

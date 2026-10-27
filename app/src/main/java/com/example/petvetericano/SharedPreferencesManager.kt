@@ -2,6 +2,7 @@ package com.example.petvetericano
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.petvetericano.offline.PeticionesCacheManager
 
 class SharedPreferencesManager(context: Context) {
     private val appContext: Context = context.applicationContext
@@ -174,6 +175,7 @@ class SharedPreferencesManager(context: Context) {
         val currentUserId = getUserId()
         if (currentUserId > 0) {
             MaletinManager.limpiarCacheUsuario(appContext, currentUserId)
+            PeticionesCacheManager.limpiarCacheVeterinario(appContext, currentUserId)
         }
         prefs.edit().clear().apply()
         try {

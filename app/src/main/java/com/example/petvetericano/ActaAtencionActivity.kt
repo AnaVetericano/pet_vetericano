@@ -67,12 +67,17 @@ import com.example.petvetericano.offline.ActaFormSnapshotMapper
 import com.example.petvetericano.offline.ActaLocalEntity
 import com.example.petvetericano.offline.ActaLocalRepository
 import com.example.petvetericano.offline.ActaRequestBuilder
+import com.example.petvetericano.offline.ActaSyncScheduler
+import com.example.petvetericano.offline.CloudinaryUploadHelper
 import com.example.petvetericano.offline.EstadoSincronizacionActa
 import com.example.petvetericano.offline.EvidenciaLocalItem
+import com.example.petvetericano.offline.ResultadoSubida
 import com.google.gson.Gson
 import java.io.File
+import java.io.IOException
 import java.util.WeakHashMap
 import kotlin.coroutines.resume
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 data class MediaAdjunto(
@@ -236,6 +241,7 @@ class ActaAtencionActivity : AppCompatActivity() {
     private var huboInteraccionUsuario = false
     private var actaEnviadaExitosamente = false
     private var edicionBloqueadaPorEstado = false
+    private var enviandoActa = false
     private var ultimaRutaLocalCopiada: String = ""
     private val estadoRestauradoPorTarjeta = WeakHashMap<ItemAnimalFormularioBinding, AnimalCardState>()
     private val medicamentosPersistidosPrevios = mutableListOf<MedicamentoAplicadoActa>()
@@ -2362,7 +2368,11 @@ class ActaAtencionActivity : AppCompatActivity() {
     private fun siNo(valor: Boolean): String = if (valor) "SÍ" else "NO"
 
     private fun submitActa() {
+        if (enviandoActa) return
+        enviandoActa = true
+
         if (peticionId == -1) {
+            enviandoActa = false
             Toast.makeText(this, "Error: ID de petición no válido", Toast.LENGTH_LONG).show()
             return
         }
@@ -2374,6 +2384,7 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
 
         if (idVeterinario == -1) {
+            enviandoActa = false
             Toast.makeText(
                 this,
                 "Error: No se encontró el usuario veterinario en sesión. Inicie sesión nuevamente.",
@@ -2686,6 +2697,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                 if (token.isEmpty()) {
                     withContext(Dispatchers.Main) {
+                        enviandoActa = false
                         setLoadingState(false)
                         Toast.makeText(this@ActaAtencionActivity, "Sesión no válida. Inicie sesión nuevamente.", Toast.LENGTH_LONG).show()
                     }
@@ -2695,7 +2707,8 @@ class ActaAtencionActivity : AppCompatActivity() {
                 // Subida de evidencias multimedia (fotos y videos) a Cloudinary
                 val urlsFotos = mutableListOf<String>()
                 val urlsVideos = mutableListOf<String>()
-                var falloSubidaAlguna = false
+                var falloPermanenteEvidencias = false
+                var falloRedEvidencias = false
 
                 if (selectedMediaList.isNotEmpty()) {
                     val totalMedia = selectedMediaList.size
@@ -2706,23 +2719,44 @@ class ActaAtencionActivity : AppCompatActivity() {
                     for ((idx, media) in selectedMediaList.withIndex()) {
                         val numActual = idx + 1
                         val urlExistente = media.remoteUrl?.takeIf { it.startsWith("http") }
-                        val secureUrl = urlExistente ?: subirACloudinary(media, numActual, totalMedia)
-                        if (secureUrl != null) {
-                            if (urlExistente == null) {
-                                persistirRemoteUrlEvidencia(media, secureUrl)
-                            }
+                        if (urlExistente != null) {
                             if (media.esVideo) {
-                                urlsVideos.add(secureUrl)
+                                urlsVideos.add(urlExistente)
                             } else {
-                                urlsFotos.add(secureUrl)
+                                urlsFotos.add(urlExistente)
                             }
                         } else {
-                            falloSubidaAlguna = true
+                            when (val res = subirACloudinary(media, numActual, totalMedia)) {
+                                is ResultadoSubida.Exito -> {
+                                    val secureUrl = res.secureUrl
+                                    persistirRemoteUrlEvidencia(media, secureUrl)
+                                    if (media.esVideo) {
+                                        urlsVideos.add(secureUrl)
+                                    } else {
+                                        urlsFotos.add(secureUrl)
+                                    }
+                                }
+                                is ResultadoSubida.ErrorRed -> {
+                                    falloRedEvidencias = true
+                                    break
+                                }
+                                is ResultadoSubida.ArchivoNoExiste,
+                                is ResultadoSubida.ErrorPermanente -> {
+                                    falloPermanenteEvidencias = true
+                                    break
+                                }
+                            }
                         }
                     }
 
-                    if (falloSubidaAlguna) {
+                    if (falloRedEvidencias) {
+                        encolarActaYFinalizar()
+                        return@launch
+                    }
+
+                    if (falloPermanenteEvidencias) {
                         withContext(Dispatchers.Main) {
+                            enviandoActa = false
                             setLoadingState(false)
                             MaterialAlertDialogBuilder(this@ActaAtencionActivity)
                                 .setIcon(R.drawable.warning_icon4)
@@ -2805,7 +2839,14 @@ class ActaAtencionActivity : AppCompatActivity() {
                 }
 
                 // 1. Enviar el Acta completa de atención en campo (POST /api/peticiones/seguimiento/crear/)
-                val response = RetrofitClient.apiService.crearSeguimientoPeticionVisita("Bearer $token", request)
+                val response = try {
+                    RetrofitClient.apiService.crearSeguimientoPeticionVisita("Bearer $token", request)
+                } catch (e: IOException) {
+                    encolarActaYFinalizar()
+                    return@launch
+                }
+
+                val postCode = response.code()
 
                 if (response.isSuccessful && response.body() != null) {
                     val body = response.body()!!
@@ -2813,12 +2854,24 @@ class ActaAtencionActivity : AppCompatActivity() {
                     val alertasFarmacia = body.alertasFarmacia
                     val tieneConflictos = alertasFarmacia?.conflictosStock?.isNotEmpty() == true
 
-                    marcarEnvioOnlineExitosoYLimpiarBorrador()
+                    val idLocalActual = synchronized(dbWriteLock) {
+                        entidadBorradorActual?.idLocal?.takeIf { it > 0L }
+                            ?: actaLocalRepository.obtenerPorPeticionYVeterinario(peticionId, idVeterinario)?.idLocal
+                            ?: 0L
+                    }
+
+                    // 1. REGISTRAR idSeguimientoRemoto EN EL ACTO antes del PATCH
+                    if (idSeg > 0 && idLocalActual > 0L) {
+                        synchronized(dbWriteLock) {
+                            actaLocalRepository.guardarIdSeguimientoRemoto(idLocalActual, idSeg)
+                            entidadBorradorActual = entidadBorradorActual?.copy(idSeguimientoRemoto = idSeg)
+                        }
+                    }
 
                     // 2. Cierre y actualización del estado de la petición en el backend (PATCH /api/peticiones/{id}/estado/)
                     if (peticionId != -1) {
                         try {
-                            RetrofitClient.apiService.actualizarEstadoPeticion(
+                            val patchResponse = RetrofitClient.apiService.actualizarEstadoPeticion(
                                 "Bearer $token",
                                 peticionId,
                                 com.example.petvetericano.models.ActualizarEstadoRequest(
@@ -2826,9 +2879,26 @@ class ActaAtencionActivity : AppCompatActivity() {
                                     observacion = null // Se envía null para evitar que el endpoint de estado cree una fila huérfana duplicada en seguimiento_peticiones_visita
                                 )
                             )
-                        } catch (_: Exception) {
-                            // Si falla la actualización secundaria del estado, el acta principal ya quedó registrada exitosamente
+                            val patchCode = patchResponse.code()
+                            when {
+                                patchCode == 401 || patchCode >= 500 -> {
+                                    encolarActaYFinalizar(idSeguimientoRemotoPrevio = if (idSeg > 0) idSeg else null)
+                                    return@launch
+                                }
+                                else -> {
+                                    // 2xx o 4xx (excepto 401): cuenta como éxito, igual que en el Worker
+                                    marcarEnvioOnlineExitosoYLimpiarBorrador(codigoHttp = patchCode)
+                                }
+                            }
+                        } catch (e: IOException) {
+                            encolarActaYFinalizar(idSeguimientoRemotoPrevio = if (idSeg > 0) idSeg else null)
+                            return@launch
+                        } catch (e: Exception) {
+                            encolarActaYFinalizar(idSeguimientoRemotoPrevio = if (idSeg > 0) idSeg else null)
+                            return@launch
                         }
+                    } else {
+                        marcarEnvioOnlineExitosoYLimpiarBorrador()
                     }
 
                     withContext(Dispatchers.Main) {
@@ -2857,10 +2927,14 @@ class ActaAtencionActivity : AppCompatActivity() {
                             }
                             .show()
                     }
+                } else if (postCode == 408 || postCode == 429 || postCode >= 500) {
+                    encolarActaYFinalizar()
+                    return@launch
                 } else {
                     val errorStr = response.errorBody()?.string() ?: ""
-                    val mensajeError = parsearErrorDjango(errorStr, response.code())
+                    val mensajeError = parsearErrorDjango(errorStr, postCode)
                     withContext(Dispatchers.Main) {
+                        enviandoActa = false
                         setLoadingState(false)
                         MaterialAlertDialogBuilder(this@ActaAtencionActivity)
                             .setIcon(R.drawable.warning_icon4)
@@ -2870,8 +2944,11 @@ class ActaAtencionActivity : AppCompatActivity() {
                             .show()
                     }
                 }
+            } catch (e: IOException) {
+                encolarActaYFinalizar()
             } catch (e: Exception) {
                 withContext(Dispatchers.Main) {
+                    enviandoActa = false
                     setLoadingState(false)
                     MaterialAlertDialogBuilder(this@ActaAtencionActivity)
                         .setIcon(R.drawable.warning_icon4)
@@ -3324,46 +3401,12 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
     }
 
-    private suspend fun subirACloudinary(media: MediaAdjunto, index: Int, total: Int): String? =
-        suspendCancellableCoroutine { cont ->
-            runOnUiThread {
-                binding.tvLoadingMensaje.text = "Subiendo archivo $index de $total a la nube..."
-            }
-            try {
-                val requestId = MediaManager.get()
-                    .upload(media.uri)
-                    .unsigned("preset_android")
-                    .callback(object : UploadCallback {
-                        override fun onStart(requestId: String?) {}
-
-                        override fun onProgress(requestId: String?, bytes: Long, totalBytes: Long) {}
-
-                        override fun onSuccess(requestId: String?, resultData: Map<*, *>?) {
-                            val url = resultData?.get("secure_url") as? String
-                            if (cont.isActive) {
-                                cont.resume(url)
-                            }
-                        }
-
-                        override fun onError(requestId: String?, error: ErrorInfo?) {
-                            if (cont.isActive) {
-                                cont.resume(null)
-                            }
-                        }
-
-                        override fun onReschedule(requestId: String?, error: ErrorInfo?) {}
-                    })
-                    .dispatch()
-
-                cont.invokeOnCancellation {
-                    try {
-                        MediaManager.get().cancelRequest(requestId)
-                    } catch (_: Exception) {}
-                }
-            } catch (e: Exception) {
-                if (cont.isActive) cont.resume(null)
-            }
+    private suspend fun subirACloudinary(media: MediaAdjunto, index: Int, total: Int): ResultadoSubida {
+        withContext(Dispatchers.Main) {
+            binding.tvLoadingMensaje.text = "Subiendo archivo $index de $total a la nube..."
         }
+        return CloudinaryUploadHelper.subirUri(this@ActaAtencionActivity, media.uri, media.esVideo)
+    }
 
     // ========================================================
     // PERSISTENCIA OFFLINE DE BORRADOR Y PARIDAD (TAREA 3C)
@@ -3895,8 +3938,9 @@ class ActaAtencionActivity : AppCompatActivity() {
         } catch (_: Exception) {}
     }
 
-    private fun marcarEnvioOnlineExitosoYLimpiarBorrador() {
+    private fun marcarEnvioOnlineExitosoYLimpiarBorrador(codigoHttp: Int? = null) {
         actaEnviadaExitosamente = true
+        edicionBloqueadaPorEstado = true
         guardadoHandler.removeCallbacks(guardadoDebounceRunnable)
         val actual = synchronized(dbWriteLock) {
             entidadBorradorActual
@@ -3905,9 +3949,103 @@ class ActaAtencionActivity : AppCompatActivity() {
         limpiarArchivosLocalesBorrador(actual)
         synchronized(dbWriteLock) {
             if (actual != null && actual.idLocal > 0L) {
-                actaLocalRepository.eliminar(actual.idLocal)
+                actaLocalRepository.marcarEstado(
+                    idLocal = actual.idLocal,
+                    estado = EstadoSincronizacionActa.ENVIADA,
+                    codigoHttp = codigoHttp,
+                    error = null
+                )
+                entidadBorradorActual = actual.copy(
+                    estadoSincronizacion = EstadoSincronizacionActa.ENVIADA,
+                    ultimoCodigoHttp = codigoHttp,
+                    ultimoError = null,
+                    actualizadoEn = System.currentTimeMillis()
+                )
             }
-            entidadBorradorActual = null
+        }
+    }
+
+    private suspend fun encolarActaYFinalizar(idSeguimientoRemotoPrevio: Int? = null) {
+        withContext(NonCancellable + Dispatchers.IO) {
+            val (entidadDesdeVistas, fallbackRadicado) = withContext(Dispatchers.Main.immediate) {
+                val entidad = construirEntidadDesdeVistas(incluirFirmas = true)
+                val fallback = binding.etRadicado.text?.toString()?.trim()?.ifEmpty { null } ?: "RAD-VIS"
+                entidad to fallback
+            }
+            val idVet = obtenerIdVeterinarioActual()
+            var idLocalParaEncolar: Long = -1L
+            var nroRadicadoParaDialogo = fallbackRadicado
+
+            synchronized(dbWriteLock) {
+                val filaActual = actaLocalRepository.obtenerPorPeticionYVeterinario(peticionId, idVet)
+                val radicadoEntidad = (entidadDesdeVistas?.nroRadicadoAtencion?.takeIf { it.isNotBlank() }
+                    ?: filaActual?.nroRadicadoAtencion?.takeIf { it.isNotBlank() }
+                    ?: entidadBorradorActual?.nroRadicadoAtencion?.takeIf { it.isNotBlank() })
+                if (!radicadoEntidad.isNullOrBlank()) {
+                    nroRadicadoParaDialogo = radicadoEntidad
+                }
+
+                val yaBloqueada = filaActual != null && (
+                    filaActual.estadoSincronizacion == EstadoSincronizacionActa.ENVIADA ||
+                    filaActual.estadoSincronizacion == EstadoSincronizacionActa.PENDIENTE_ENVIO ||
+                    filaActual.estadoSincronizacion == EstadoSincronizacionActa.ENVIANDO ||
+                    filaActual.estadoSincronizacion == EstadoSincronizacionActa.ERROR_REINTENTABLE
+                )
+
+                if (!yaBloqueada) {
+                    val idRemotoFinal = idSeguimientoRemotoPrevio ?: filaActual?.idSeguimientoRemoto
+                    val entidadAEncolar = (entidadDesdeVistas ?: filaActual)?.copy(
+                        idLocal = filaActual?.idLocal ?: 0L,
+                        idPeticion = peticionId,
+                        idVeterinario = idVet,
+                        idSeguimientoRemoto = idRemotoFinal,
+                        estadoSincronizacion = EstadoSincronizacionActa.PENDIENTE_ENVIO,
+                        sincronizacionOffline = true,
+                        reintentos = 0,
+                        ultimoError = null,
+                        ultimoCodigoHttp = null,
+                        actualizadoEn = System.currentTimeMillis()
+                    )
+                    if (entidadAEncolar != null) {
+                        // Escritura directa en repositorio: evita el candado defensivo de guardarEntidadEnDb diseñado para borradores ordinarios.
+                        val nuevoId = actaLocalRepository.guardarBorrador(entidadAEncolar)
+                        val persistida = if (nuevoId > 0L) entidadAEncolar.copy(idLocal = nuevoId) else entidadAEncolar
+                        entidadBorradorActual = persistida
+                        idLocalParaEncolar = persistida.idLocal
+                    }
+                } else {
+                    idLocalParaEncolar = filaActual.idLocal
+                }
+            }
+
+            if (idLocalParaEncolar > 0L) {
+                ActaSyncScheduler.enqueueOneTimeSync(applicationContext, idLocalParaEncolar)
+            }
+
+            actaEnviadaExitosamente = true
+            edicionBloqueadaPorEstado = true
+            guardadoHandler.removeCallbacks(guardadoDebounceRunnable)
+
+            withContext(Dispatchers.Main) {
+                enviandoActa = false
+                setLoadingState(false)
+                setResult(Activity.RESULT_OK)
+                if (!isFinishing && !isDestroyed) {
+                    val nroRadicado = nroRadicadoParaDialogo.ifBlank { "RAD-VIS" }
+                    MaterialDialogHelper.mostrarExito(
+                        context = this@ActaAtencionActivity,
+                        titulo = getString(R.string.acta_offline_dialog_encolada_titulo),
+                        mensaje = getString(R.string.acta_offline_dialog_encolada_mensaje, nroRadicado),
+                        textoBoton = getString(R.string.acta_offline_dialog_encolada_boton),
+                        cancelable = false,
+                        onAceptar = {
+                            finish()
+                        }
+                    )
+                } else {
+                    finish()
+                }
+            }
         }
     }
 

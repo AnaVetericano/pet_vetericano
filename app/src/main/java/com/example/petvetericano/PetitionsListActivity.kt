@@ -15,6 +15,9 @@ import com.example.petvetericano.adapters.PetitionAdapter
 import com.example.petvetericano.databinding.ActivityPetitionsListBinding
 import com.example.petvetericano.models.Petition
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.models.PeticionListResponse
+import com.example.petvetericano.offline.NetworkUtils
+import com.example.petvetericano.offline.PeticionesCacheManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -27,6 +30,7 @@ class PetitionsListActivity : AppCompatActivity() {
     private lateinit var binding: ActivityPetitionsListBinding
     private var todasLasPeticiones: List<Petition> = emptyList()
     private var estadoFiltroActual: String = "todas" // todas, pendientes, proceso, atendidas
+    private var avisoOfflineMostrado = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -62,35 +66,86 @@ class PetitionsListActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch(Dispatchers.IO) {
+            val idVet = prefs.getUserId()
+
+            if (!NetworkUtils.hayRedDisponible(this@PetitionsListActivity)) {
+                cargarDesdeCacheOFallar(idVet) {
+                    Toast.makeText(this@PetitionsListActivity, R.string.acta_offline_error_cargar_peticiones, Toast.LENGTH_SHORT).show()
+                }
+                return@launch
+            }
+
             try {
                 val response = RetrofitClient.apiService.listarPeticiones("Bearer $token")
-                withContext(Dispatchers.Main) {
-                    if (response.isSuccessful && response.body() != null) {
-                        val listaOriginal = response.body()!!
-                        todasLasPeticiones = listaOriginal.map {
-                            Petition(
-                                code = it.numero_radicado?.takeIf { rad -> rad.isNotBlank() }
-                                    ?: String.format(Locale.US, "PET-2026-%05d", it.id_peticion),
-                                title = it.tipo ?: "Desconocido",
-                                location = it.ubicacion_direccion ?: "No especificada",
-                                time = it.fecha ?: "",
-                                status = it.estado ?: "Pendiente",
-                                priorityType = it.id_peticion
-                            )
-                        }
-
-                        binding.tvAsignadasHoy.text = "Asignadas hoy: ${todasLasPeticiones.size}"
-                        aplicarFiltros()
-                    } else {
-                        Toast.makeText(this@PetitionsListActivity, "Error al cargar peticiones", Toast.LENGTH_SHORT).show()
+                if (response.isSuccessful && response.body() != null) {
+                    val body = response.body()!!
+                    if (idVet > 0 && body.isNotEmpty()) {
+                        PeticionesCacheManager.guardar(this@PetitionsListActivity, idVet, body)
+                    }
+                    withContext(Dispatchers.Main) {
+                        procesarListaPeticiones(body)
+                    }
+                } else if (response.code() == 401) {
+                    withContext(Dispatchers.Main) {
+                        Toast.makeText(this@PetitionsListActivity, R.string.acta_offline_error_cargar_peticiones, Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    cargarDesdeCacheOFallar(idVet) {
+                        Toast.makeText(this@PetitionsListActivity, R.string.acta_offline_error_cargar_peticiones, Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@PetitionsListActivity, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                cargarDesdeCacheOFallar(idVet) {
+                    val mensaje = e.message
+                    val texto = if (!mensaje.isNullOrBlank()) {
+                        getString(R.string.acta_offline_error_generico_con_detalle, mensaje)
+                    } else {
+                        getString(R.string.acta_offline_error_cargar_peticiones)
+                    }
+                    Toast.makeText(this@PetitionsListActivity, texto, Toast.LENGTH_SHORT).show()
                 }
             }
         }
+    }
+
+    private suspend fun cargarDesdeCacheOFallar(idVet: Int, mensajeError: () -> Unit) {
+        val cached = if (idVet > 0) {
+            PeticionesCacheManager.obtenerTodas(this@PetitionsListActivity, idVet)
+        } else {
+            emptyList()
+        }
+        withContext(Dispatchers.Main) {
+            if (cached.isNotEmpty()) {
+                procesarListaPeticiones(cached)
+                mostrarAvisoModoSinConexion()
+            } else {
+                mensajeError()
+            }
+        }
+    }
+
+    private fun mostrarAvisoModoSinConexion() {
+        if (!avisoOfflineMostrado) {
+            avisoOfflineMostrado = true
+            Toast.makeText(this, R.string.acta_offline_detalle_modo_sin_conexion, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun procesarListaPeticiones(listaOriginal: List<PeticionListResponse>) {
+        todasLasPeticiones = listaOriginal.map {
+            Petition(
+                code = it.numero_radicado?.takeIf { rad -> rad.isNotBlank() }
+                    ?: String.format(Locale.US, "PET-2026-%05d", it.id_peticion),
+                title = it.tipo ?: "Desconocido",
+                location = it.ubicacion_direccion ?: "No especificada",
+                time = it.fecha ?: "",
+                status = it.estado ?: "Pendiente",
+                priorityType = it.id_peticion
+            )
+        }
+
+        binding.tvAsignadasHoy.text = "Asignadas hoy: ${todasLasPeticiones.size}"
+        aplicarFiltros()
     }
 
     private fun setupSearch() {
@@ -186,6 +241,11 @@ class PetitionsListActivity : AppCompatActivity() {
         binding.recyclerPeticiones.adapter = PetitionAdapter(filtradas) { petition ->
             val intent = Intent(this@PetitionsListActivity, DetallePeticion::class.java).apply {
                 putExtra("PETICION_ID", petition.priorityType)
+                putExtra("DIRECCION_ACTUAL", petition.location)
+                putExtra("PETICION_RADICADO", petition.code)
+                putExtra("PETICION_ESTADO", petition.status)
+                putExtra("PETICION_TIPO", petition.title)
+                putExtra("PETICION_FECHA", petition.time)
             }
             startActivity(intent)
         }

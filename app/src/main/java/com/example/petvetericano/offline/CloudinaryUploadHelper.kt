@@ -94,9 +94,11 @@ object CloudinaryUploadHelper {
 
             var requestId: String? = null
             try {
+                val tipoRecurso = if (esVideo) "video" else "image"
                 val uploadRequest = MediaManager.get()
                     .upload(file.absolutePath)
                     .unsigned(UPLOAD_PRESET)
+                    .option("resource_type", tipoRecurso)
                     .callback(object : UploadCallback {
                         override fun onStart(reqId: String?) {
                             // Sin acción en inicio
@@ -156,11 +158,13 @@ object CloudinaryUploadHelper {
      */
     private fun clasificarErrorInfo(error: ErrorInfo?): ResultadoSubida {
         if (error == null) {
-            return ResultadoSubida.ErrorRed("Error desconocido de Cloudinary (ErrorInfo null)")
+            Log.w(TAG, "ErrorInfo es null al recibir fallo de Cloudinary")
+            return ResultadoSubida.ErrorPermanente("Error desconocido de Cloudinary (ErrorInfo null)")
         }
 
         val code = error.code
         val descripcion = error.description?.takeIf { it.isNotBlank() } ?: "Error Cloudinary código $code"
+        Log.e(TAG, "Error Cloudinary reportado: code=$code, description=$descripcion")
 
         return when (code) {
             ErrorInfo.FILE_DOES_NOT_EXIST,
@@ -172,6 +176,7 @@ object CloudinaryUploadHelper {
             ErrorInfo.SIGNATURE_FAILURE,
             ErrorInfo.PAYLOAD_EMPTY,
             ErrorInfo.BYTE_ARRAY_PAYLOAD_EMPTY,
+            ErrorInfo.PAYLOAD_LOAD_FAILURE,
             ErrorInfo.PREPROCESS_ERROR -> {
                 ResultadoSubida.ErrorPermanente(descripcion)
             }
@@ -181,8 +186,27 @@ object CloudinaryUploadHelper {
                 ResultadoSubida.ErrorRed(descripcion)
             }
             else -> {
-                // Cualquier error no distinguible con certeza se trata como reintentable de red
-                ResultadoSubida.ErrorRed(descripcion)
+                // UNKNOWN_ERROR (código 6) u otros códigos devueltos por el SDK:
+                // ErrorRed SOLO para fallos de conectividad o 5xx del servidor.
+                // 4xx (400 archivo inválido, "Invalid image file", 401/403 preset/credenciales, 413 tamaño) es ErrorPermanente.
+                val descLower = descripcion.lowercase()
+                val esConectividad = descLower.contains("timeout") ||
+                    descLower.contains("connect") ||
+                    descLower.contains("unreachable") ||
+                    descLower.contains("unknown host") ||
+                    descLower.contains("connection reset") ||
+                    descLower.contains("socket") ||
+                    descLower.contains("network")
+                val esError5xx = descLower.contains("500") ||
+                    descLower.contains("502") ||
+                    descLower.contains("503") ||
+                    descLower.contains("504")
+
+                if (esConectividad || esError5xx) {
+                    ResultadoSubida.ErrorRed(descripcion)
+                } else {
+                    ResultadoSubida.ErrorPermanente(descripcion)
+                }
             }
         }
     }
@@ -218,9 +242,11 @@ object CloudinaryUploadHelper {
 
             var requestId: String? = null
             try {
+                val tipoRecurso = if (esVideo) "video" else "image"
                 val uploadRequest = MediaManager.get()
                     .upload(uri)
                     .unsigned(UPLOAD_PRESET)
+                    .option("resource_type", tipoRecurso)
                     .callback(object : UploadCallback {
                         override fun onStart(reqId: String?) {}
                         override fun onProgress(reqId: String?, bytes: Long, totalBytes: Long) {}

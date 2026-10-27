@@ -14,9 +14,15 @@ import androidx.core.view.WindowInsetsCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.databinding.ActivityDahsboardVeterianrioBinding
+import com.example.petvetericano.offline.ActaColaBottomSheet
+import com.example.petvetericano.offline.ActaLocalRepository
+import com.example.petvetericano.offline.ActaSyncScheduler
 import com.example.petvetericano.models.PeticionPendiente
 import com.example.petvetericano.models.TipoEstado
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.models.PeticionListResponse
+import com.example.petvetericano.offline.NetworkUtils
+import com.example.petvetericano.offline.PeticionesCacheManager
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
@@ -27,6 +33,7 @@ import java.util.Calendar
 
 class dahsboard_veterianrio : AppCompatActivity() {
     private lateinit var binding: ActivityDahsboardVeterianrioBinding
+    private var avisoOfflineMostrado = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,6 +56,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
             fetchDashboardData()
             sincronizarPerfilUsuario()
             sincronizarKitDashboard()
+            actualizarBadgeCola()
         }
 
         // Cargar nombre e iniciales del veterinario inmediatamente
@@ -88,6 +96,40 @@ class dahsboard_veterianrio : AppCompatActivity() {
             startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
         }
 
+        // Cola de actas offline
+        binding.btnActaCola.setOnClickListener {
+            if (!supportFragmentManager.isStateSaved &&
+                supportFragmentManager.findFragmentByTag(ActaColaBottomSheet.TAG) == null
+            ) {
+                val prefs = SharedPreferencesManager(this)
+                val idVet = prefs.getUserId()
+                ActaColaBottomSheet.newInstance(idVet).show(
+                    supportFragmentManager,
+                    ActaColaBottomSheet.TAG
+                )
+            }
+        }
+
+        supportFragmentManager.setFragmentResultListener(
+            ActaColaBottomSheet.RESULT_KEY,
+            this
+        ) { _, _ ->
+            actualizarBadgeCola()
+        }
+
+        if (savedInstanceState == null) {
+            val prefs = SharedPreferencesManager(this)
+            val idVet = prefs.getUserId()
+            if (idVet > 0) {
+                lifecycleScope.launch(Dispatchers.IO) {
+                    ActaSyncScheduler.reactivarObsoletas(this@dahsboard_veterianrio, idVet)
+                    withContext(Dispatchers.Main) {
+                        actualizarBadgeCola()
+                    }
+                }
+            }
+        }
+
         // Mostrar animación de carga inicial
         binding.swipeRefreshLayout.isRefreshing = true
         fetchDashboardData()
@@ -103,6 +145,38 @@ class dahsboard_veterianrio : AppCompatActivity() {
         sincronizarPerfilUsuario()
         actualizarResumenMaletin()
         sincronizarKitDashboard()
+        actualizarBadgeCola()
+    }
+
+    private fun actualizarBadgeCola() {
+        val prefs = SharedPreferencesManager(this)
+        val idVet = prefs.getUserId()
+        if (idVet <= 0) {
+            binding.actaColaContainer.visibility = View.GONE
+            return
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            val totalEnCola = ActaLocalRepository.getInstance(this@dahsboard_veterianrio).contarEnCola(idVet)
+            withContext(Dispatchers.Main) {
+                if (isFinishing || isDestroyed) return@withContext
+
+                if (totalEnCola > 0) {
+                    binding.actaColaContainer.visibility = View.VISIBLE
+                    binding.tvActaColaBadge.text = if (totalEnCola > 99) {
+                        getString(R.string.acta_offline_cola_badge_max)
+                    } else {
+                        totalEnCola.toString()
+                    }
+                    binding.btnActaCola.contentDescription = getString(
+                        R.string.acta_offline_cola_icono_desc,
+                        totalEnCola
+                    )
+                } else {
+                    binding.actaColaContainer.visibility = View.GONE
+                }
+            }
+        }
     }
 
     private fun actualizarResumenMaletin() {
@@ -204,162 +278,225 @@ class dahsboard_veterianrio : AppCompatActivity() {
         }
 
         lifecycleScope.launch(Dispatchers.IO) {
+            val idVet = prefs.getUserId()
+
+            if (!NetworkUtils.hayRedDisponible(this@dahsboard_veterianrio)) {
+                cargarDesdeCacheOFallar(idVet) {
+                    Toast.makeText(this@dahsboard_veterianrio, R.string.acta_offline_error_cargar_dashboard, Toast.LENGTH_SHORT).show()
+                }
+                return@launch
+            }
+
             try {
                 val response = RetrofitClient.apiService.listarPeticiones("Bearer $token")
-                withContext(Dispatchers.Main) {
-                    // Detener la animación de recarga
-                    binding.swipeRefreshLayout.isRefreshing = false
-
-                    if (response.isSuccessful && response.body() != null) {
-                        val petitions = response.body()!!
-
-                        val asignadas = petitions.count {
-                            val st = it.estado?.lowercase() ?: ""
-                            st.contains("asignad") || st.contains("evaluaci") || st.contains("urgente") || st.contains("pendiente") || st.contains("borrador")
-                        }
-                        val enTratamiento = petitions.count {
-                            val st = it.estado?.lowercase() ?: ""
-                            (st.contains("proceso") || st.contains("tratamiento") || st.contains("observaci") || st.contains("seguimiento") || st.contains("reasignad")) && !st.contains("transferid")
-                        }
-                        val atendidas = petitions.count {
-                            val st = it.estado?.lowercase() ?: ""
-                            st.contains("atendida") || st.contains("finaliz") || st.contains("alta") || st.contains("fallecid") || st.contains("resuelt")
-                        }
-                        val transferidas = petitions.count {
-                            val st = it.estado?.lowercase() ?: ""
-                            st.contains("transferid")
-                        }
-                        val urgentes = petitions.count {
-                            val st = it.estado?.lowercase() ?: ""
-                            st.contains("urgente")
-                        }
-                        val total = petitions.size
-
-                        binding.tvGraficoAsignadas.text = asignadas.toString()
-                        binding.tvGraficoReasignadas.text = enTratamiento.toString()
-                        binding.tvGraficoAtendidas.text = atendidas.toString()
-                        binding.tvGraficoTransferidas.text = transferidas.toString()
-
-                        // Tarjeta de Maletín de Medicamentos (Listo para conectar cuando esté la API)
-                        // binding.tvTotalMedicamentos.text = totalMedicamentos.toString()
-
-                        configurarGrafico(asignadas, enTratamiento, atendidas, transferidas, total)
-
-                        // 1. Filtrar ÚNICAMENTE las peticiones PENDIENTES (excluir las ya trabajadas o con acta)
-                        val pendientes = petitions.filter { pet ->
-                            val st = pet.estado?.lowercase() ?: ""
-                            val yaTrabajada = (pet.tiene_acta == true) ||
-                                (pet.id_seguimiento != null && pet.id_seguimiento > 0) ||
-                                st.contains("tratamient") ||
-                                st.contains("observaci") ||
-                                st.contains("atendid") ||
-                                st.contains("finaliz") ||
-                                st.contains("alta") ||
-                                st.contains("fallecid") ||
-                                st.contains("resuelt") ||
-                                st.contains("cerrad") ||
-                                st.contains("transferid") ||
-                                st.contains("proceso") ||
-                                st.contains("seguimiento")
-                            !yaTrabajada
-                        }
-
-                        // Ordenar: urgentes primero
-                        val pendientesOrdenadas = pendientes.sortedByDescending { pet ->
-                            val st = pet.estado?.lowercase() ?: ""
-                            val pr = pet.prioridad?.lowercase() ?: ""
-                            st.contains("urgent") || pr.contains("urgent")
-                        }
-
-                        val urgentesPendientes = pendientes.count {
-                            val st = it.estado?.lowercase() ?: ""
-                            val pr = it.prioridad?.lowercase() ?: ""
-                            st.contains("urgent") || pr.contains("urgent")
-                        }
-
-                        if (urgentesPendientes > 0) {
-                            binding.tvCantidadUrgentes.text = "$urgentesPendientes urgentes"
-                            binding.tvCantidadUrgentes.backgroundTintList = ContextCompat.getColorStateList(this@dahsboard_veterianrio, R.color.badge_urgente_bg)
-                            binding.tvCantidadUrgentes.setTextColor(ContextCompat.getColor(this@dahsboard_veterianrio, R.color.badge_urgente_text))
-                        } else {
-                            binding.tvCantidadUrgentes.text = "${pendientes.size} pendientes"
-                            binding.tvCantidadUrgentes.backgroundTintList = ContextCompat.getColorStateList(this@dahsboard_veterianrio, R.color.badge_asignada_bg)
-                            binding.tvCantidadUrgentes.setTextColor(ContextCompat.getColor(this@dahsboard_veterianrio, R.color.badge_asignada_text))
-                        }
-
-                        val listaParaRvActivas = pendientesOrdenadas.map { pet ->
-                            val estadoStr = pet.estado?.lowercase() ?: ""
-                            val prioridadStr = pet.prioridad?.lowercase() ?: ""
-                            val esUrgente = estadoStr.contains("urgent") || prioridadStr.contains("urgent")
-                            val tipo = if (esUrgente) TipoEstado.URGENTE else TipoEstado.ASIGNADA
-
-                            PeticionPendiente(
-                                id_peticion = pet.id_peticion,
-                                titulo = pet.tipo ?: "Desconocido",
-                                paciente = "${pet.numero_radicado ?: ""} — ${pet.ubicacion_direccion ?: "Sin dirección"}",
-                                estado = if (esUrgente && !estadoStr.contains("urgent")) "Urgente (${pet.estado ?: "Asignada"})" else (pet.estado ?: "Asignada"),
-                                tipoEstado = tipo
-                            )
-                        }
-
-                        if (listaParaRvActivas.isEmpty()) {
-                            binding.rvPendientes.visibility = View.GONE
-                            binding.layoutEmptyPendientes.visibility = View.VISIBLE
-                        } else {
-                            binding.rvPendientes.visibility = View.VISIBLE
-                            binding.layoutEmptyPendientes.visibility = View.GONE
-                        }
-
-                        binding.rvPendientes.adapter = PendientesAdapter(listaParaRvActivas) { item ->
-                            if (item.id_peticion > 0) {
-                                val intent = Intent(this@dahsboard_veterianrio, DetallePeticion::class.java).apply {
-                                    putExtra("PETICION_ID", item.id_peticion)
-                                }
-                                startActivity(intent)
-                            }
-                        }
-
-                        // 2. Peticiones transferidas a otro centro (sección separada)
-                        val listaTransferidasRaw = petitions.filter {
-                            val st = it.estado?.lowercase() ?: ""
-                            st.contains("transferid")
-                        }
-
-                        if (listaTransferidasRaw.isNotEmpty()) {
-                            binding.cardTransferidas.visibility = android.view.View.VISIBLE
-                            binding.tvCantidadTransferidas.text = "${listaTransferidasRaw.size} transferido(s)"
-
-                            val listaTransferidasRv = listaTransferidasRaw.take(5).map { pet ->
-                                PeticionPendiente(
-                                    id_peticion = pet.id_peticion,
-                                    titulo = pet.tipo ?: "Desconocido",
-                                    paciente = "${pet.numero_radicado ?: ""} — ${pet.ubicacion_direccion ?: "Sin dirección"}",
-                                    estado = pet.estado ?: "Transferido a otro centro",
-                                    tipoEstado = TipoEstado.TRANSFERIDA
-                                )
-                            }
-
-                            binding.rvTransferidas.adapter = PendientesAdapter(listaTransferidasRv) { item ->
-                                if (item.id_peticion > 0) {
-                                    val intent = Intent(this@dahsboard_veterianrio, DetallePeticion::class.java).apply {
-                                        putExtra("PETICION_ID", item.id_peticion)
-                                    }
-                                    startActivity(intent)
-                                }
-                            }
-                        } else {
-                            binding.cardTransferidas.visibility = android.view.View.GONE
-                        }
-                    } else {
-                        Toast.makeText(this@dahsboard_veterianrio, "Error al cargar dashboard", Toast.LENGTH_SHORT).show()
+                if (response.isSuccessful && response.body() != null) {
+                    val body = response.body()!!
+                    if (idVet > 0 && body.isNotEmpty()) {
+                        PeticionesCacheManager.guardar(this@dahsboard_veterianrio, idVet, body)
+                    }
+                    withContext(Dispatchers.Main) {
+                        binding.swipeRefreshLayout.isRefreshing = false
+                        procesarListaPeticiones(body)
+                    }
+                } else if (response.code() == 401) {
+                    withContext(Dispatchers.Main) {
+                        binding.swipeRefreshLayout.isRefreshing = false
+                        Toast.makeText(this@dahsboard_veterianrio, R.string.acta_offline_error_cargar_dashboard, Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    cargarDesdeCacheOFallar(idVet) {
+                        Toast.makeText(this@dahsboard_veterianrio, R.string.acta_offline_error_cargar_dashboard, Toast.LENGTH_SHORT).show()
                     }
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    binding.swipeRefreshLayout.isRefreshing = false
-                    Toast.makeText(this@dahsboard_veterianrio, "Error: ${e.message}", Toast.LENGTH_SHORT).show()
+                cargarDesdeCacheOFallar(idVet) {
+                    val mensaje = e.message
+                    val texto = if (!mensaje.isNullOrBlank()) {
+                        getString(R.string.acta_offline_error_generico_con_detalle, mensaje)
+                    } else {
+                        getString(R.string.acta_offline_error_cargar_dashboard)
+                    }
+                    Toast.makeText(this@dahsboard_veterianrio, texto, Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+    }
+
+    private suspend fun cargarDesdeCacheOFallar(idVet: Int, mensajeError: () -> Unit) {
+        val cached = if (idVet > 0) {
+            PeticionesCacheManager.obtenerTodas(this@dahsboard_veterianrio, idVet)
+        } else {
+            emptyList()
+        }
+        withContext(Dispatchers.Main) {
+            binding.swipeRefreshLayout.isRefreshing = false
+            if (cached.isNotEmpty()) {
+                procesarListaPeticiones(cached)
+                mostrarAvisoModoSinConexion()
+            } else {
+                mensajeError()
+            }
+        }
+    }
+
+    private fun mostrarAvisoModoSinConexion() {
+        if (!avisoOfflineMostrado) {
+            avisoOfflineMostrado = true
+            Toast.makeText(this, R.string.acta_offline_detalle_modo_sin_conexion, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun procesarListaPeticiones(petitions: List<PeticionListResponse>) {
+        val asignadas = petitions.count {
+            val st = it.estado?.lowercase() ?: ""
+            st.contains("asignad") || st.contains("evaluaci") || st.contains("urgente") || st.contains("pendiente") || st.contains("borrador")
+        }
+        val enTratamiento = petitions.count {
+            val st = it.estado?.lowercase() ?: ""
+            (st.contains("proceso") || st.contains("tratamiento") || st.contains("observaci") || st.contains("seguimiento") || st.contains("reasignad")) && !st.contains("transferid")
+        }
+        val atendidas = petitions.count {
+            val st = it.estado?.lowercase() ?: ""
+            st.contains("atendida") || st.contains("finaliz") || st.contains("alta") || st.contains("fallecid") || st.contains("resuelt")
+        }
+        val transferidas = petitions.count {
+            val st = it.estado?.lowercase() ?: ""
+            st.contains("transferid")
+        }
+        val urgentes = petitions.count {
+            val st = it.estado?.lowercase() ?: ""
+            st.contains("urgente")
+        }
+        val total = petitions.size
+
+        binding.tvGraficoAsignadas.text = asignadas.toString()
+        binding.tvGraficoReasignadas.text = enTratamiento.toString()
+        binding.tvGraficoAtendidas.text = atendidas.toString()
+        binding.tvGraficoTransferidas.text = transferidas.toString()
+
+        // Tarjeta de Maletín de Medicamentos (Listo para conectar cuando esté la API)
+        // binding.tvTotalMedicamentos.text = totalMedicamentos.toString()
+
+        configurarGrafico(asignadas, enTratamiento, atendidas, transferidas, total)
+
+        // 1. Filtrar ÚNICAMENTE las peticiones PENDIENTES (excluir las ya trabajadas o con acta)
+        val pendientes = petitions.filter { pet ->
+            val st = pet.estado?.lowercase() ?: ""
+            val yaTrabajada = (pet.tiene_acta == true) ||
+                (pet.id_seguimiento != null && pet.id_seguimiento > 0) ||
+                st.contains("tratamient") ||
+                st.contains("observaci") ||
+                st.contains("atendid") ||
+                st.contains("finaliz") ||
+                st.contains("alta") ||
+                st.contains("fallecid") ||
+                st.contains("resuelt") ||
+                st.contains("cerrad") ||
+                st.contains("transferid") ||
+                st.contains("proceso") ||
+                st.contains("seguimiento")
+            !yaTrabajada
+        }
+
+        // Ordenar: urgentes primero
+        val pendientesOrdenadas = pendientes.sortedByDescending { pet ->
+            val st = pet.estado?.lowercase() ?: ""
+            val pr = pet.prioridad?.lowercase() ?: ""
+            st.contains("urgent") || pr.contains("urgent")
+        }
+
+        val urgentesPendientes = pendientes.count {
+            val st = it.estado?.lowercase() ?: ""
+            val pr = it.prioridad?.lowercase() ?: ""
+            st.contains("urgent") || pr.contains("urgent")
+        }
+
+        if (urgentesPendientes > 0) {
+            binding.tvCantidadUrgentes.text = "$urgentesPendientes urgentes"
+            binding.tvCantidadUrgentes.backgroundTintList = ContextCompat.getColorStateList(this@dahsboard_veterianrio, R.color.badge_urgente_bg)
+            binding.tvCantidadUrgentes.setTextColor(ContextCompat.getColor(this@dahsboard_veterianrio, R.color.badge_urgente_text))
+        } else {
+            binding.tvCantidadUrgentes.text = "${pendientes.size} pendientes"
+            binding.tvCantidadUrgentes.backgroundTintList = ContextCompat.getColorStateList(this@dahsboard_veterianrio, R.color.badge_asignada_bg)
+            binding.tvCantidadUrgentes.setTextColor(ContextCompat.getColor(this@dahsboard_veterianrio, R.color.badge_asignada_text))
+        }
+
+        val listaParaRvActivas = pendientesOrdenadas.map { pet ->
+            val estadoStr = pet.estado?.lowercase() ?: ""
+            val prioridadStr = pet.prioridad?.lowercase() ?: ""
+            val esUrgente = estadoStr.contains("urgent") || prioridadStr.contains("urgent")
+            val tipo = if (esUrgente) TipoEstado.URGENTE else TipoEstado.ASIGNADA
+
+            PeticionPendiente(
+                id_peticion = pet.id_peticion,
+                titulo = pet.tipo ?: "Desconocido",
+                paciente = "${pet.numero_radicado ?: ""} — ${pet.ubicacion_direccion ?: "Sin dirección"}",
+                estado = if (esUrgente && !estadoStr.contains("urgent")) "Urgente (${pet.estado ?: "Asignada"})" else (pet.estado ?: "Asignada"),
+                tipoEstado = tipo
+            )
+        }
+
+        if (listaParaRvActivas.isEmpty()) {
+            binding.rvPendientes.visibility = View.GONE
+            binding.layoutEmptyPendientes.visibility = View.VISIBLE
+        } else {
+            binding.rvPendientes.visibility = View.VISIBLE
+            binding.layoutEmptyPendientes.visibility = View.GONE
+        }
+
+        binding.rvPendientes.adapter = PendientesAdapter(listaParaRvActivas) { item ->
+            if (item.id_peticion > 0) {
+                val intent = Intent(this@dahsboard_veterianrio, DetallePeticion::class.java).apply {
+                    putExtra("PETICION_ID", item.id_peticion)
+                    putExtra("PETICION_ESTADO", item.estado)
+                    putExtra("PETICION_TIPO", item.titulo)
+                    val partes = item.paciente.split(" — ", limit = 2)
+                    val rad = partes.getOrNull(0)?.trim()?.ifEmpty { null }
+                    val dir = partes.getOrNull(1)?.trim()?.ifEmpty { null }
+                    if (!rad.isNullOrBlank()) putExtra("PETICION_RADICADO", rad)
+                    if (!dir.isNullOrBlank() && dir != "Sin dirección") putExtra("DIRECCION_ACTUAL", dir)
+                }
+                startActivity(intent)
+            }
+        }
+
+        // 2. Peticiones transferidas a otro centro (sección separada)
+        val listaTransferidasRaw = petitions.filter {
+            val st = it.estado?.lowercase() ?: ""
+            st.contains("transferid")
+        }
+
+        if (listaTransferidasRaw.isNotEmpty()) {
+            binding.cardTransferidas.visibility = android.view.View.VISIBLE
+            binding.tvCantidadTransferidas.text = "${listaTransferidasRaw.size} transferido(s)"
+
+            val listaTransferidasRv = listaTransferidasRaw.take(5).map { pet ->
+                PeticionPendiente(
+                    id_peticion = pet.id_peticion,
+                    titulo = pet.tipo ?: "Desconocido",
+                    paciente = "${pet.numero_radicado ?: ""} — ${pet.ubicacion_direccion ?: "Sin dirección"}",
+                    estado = pet.estado ?: "Transferido a otro centro",
+                    tipoEstado = TipoEstado.TRANSFERIDA
+                )
+            }
+
+            binding.rvTransferidas.adapter = PendientesAdapter(listaTransferidasRv) { item ->
+                if (item.id_peticion > 0) {
+                    val intent = Intent(this@dahsboard_veterianrio, DetallePeticion::class.java).apply {
+                        putExtra("PETICION_ID", item.id_peticion)
+                        putExtra("PETICION_ESTADO", item.estado)
+                        putExtra("PETICION_TIPO", item.titulo)
+                        val partes = item.paciente.split(" — ", limit = 2)
+                        val rad = partes.getOrNull(0)?.trim()?.ifEmpty { null }
+                        val dir = partes.getOrNull(1)?.trim()?.ifEmpty { null }
+                        if (!rad.isNullOrBlank()) putExtra("PETICION_RADICADO", rad)
+                        if (!dir.isNullOrBlank() && dir != "Sin dirección") putExtra("DIRECCION_ACTUAL", dir)
+                    }
+                    startActivity(intent)
+                }
+            }
+        } else {
+            binding.cardTransferidas.visibility = android.view.View.GONE
         }
     }
 

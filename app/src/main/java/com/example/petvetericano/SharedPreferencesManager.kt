@@ -2,6 +2,7 @@ package com.example.petvetericano
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.petvetericano.offline.PeticionesCacheManager
 
 class SharedPreferencesManager(context: Context) {
     private val appContext: Context = context.applicationContext
@@ -163,6 +164,14 @@ class SharedPreferencesManager(context: Context) {
         return prefs.getString("access_token", "") ?: ""
     }
 
+    fun saveRefreshToken(token: String) {
+        prefs.edit().putString("REFRESH_TOKEN", token).apply()
+    }
+
+    fun getRefreshToken(): String {
+        return prefs.getString("REFRESH_TOKEN", "") ?: ""
+    }
+
     fun setLanguage(lang: String) {
         prefs.edit().putString("APP_LANGUAGE", lang).apply()
     }
@@ -174,6 +183,7 @@ class SharedPreferencesManager(context: Context) {
         val currentUserId = getUserId()
         if (currentUserId > 0) {
             MaletinManager.limpiarCacheUsuario(appContext, currentUserId)
+            PeticionesCacheManager.limpiarCacheVeterinario(appContext, currentUserId)
         }
         prefs.edit().clear().apply()
         try {

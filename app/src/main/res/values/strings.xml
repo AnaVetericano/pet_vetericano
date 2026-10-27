@@ -335,7 +335,7 @@
     <string name="cd_descripcion">Descripción</string>
     <string name="lbl_descripcion_y_reporte">Descripción y reporte</string>
     <string name="cd_fotografia">Fotografía</string>
-    <string name="lbl_fotografia_adjunta">Fotografía adjunta</string>
+    <string name="lbl_fotografia_adjunta">Evidencia adjunta</string>
     <string name="cd_foto_de_la_peticion">Foto de la petición</string>
     <string name="cd_ubicacion">Ubicación</string>
     <string name="lbl_ubicacion_del_caso">Ubicación del caso</string>

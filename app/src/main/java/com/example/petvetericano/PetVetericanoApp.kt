@@ -2,6 +2,7 @@ package com.example.petvetericano
 
 import android.app.Application
 import androidx.appcompat.app.AppCompatDelegate
+import com.example.petvetericano.network.RetrofitClient
 
 /**
  * Clase principal de Application para PetVetericano.
@@ -12,6 +13,7 @@ class PetVetericanoApp : Application() {
 
     override fun onCreate() {
         super.onCreate()
+        RetrofitClient.init(this)
         aplicarModoOscuroGlobal()
     }
 

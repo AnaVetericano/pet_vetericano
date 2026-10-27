@@ -122,6 +122,9 @@ class inicio_sesion : AppCompatActivity() {
                         prefs.saveUserLastName(datos.apellido ?: "")
                         prefs.saveProfileImagePath(datos.fotoPerfil ?: datos.foto ?: "")
                         prefs.saveAccessToken(datos.tokens.access)
+                        if (!datos.tokens.refresh.isNullOrEmpty()) {
+                            prefs.saveRefreshToken(datos.tokens.refresh)
+                        }
                         prefs.saveUserId(datos.idUsuario)
                         prefs.saveUserRole(datos.idRol)
 

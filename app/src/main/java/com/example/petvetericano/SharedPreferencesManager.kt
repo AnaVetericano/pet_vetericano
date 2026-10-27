@@ -164,6 +164,14 @@ class SharedPreferencesManager(context: Context) {
         return prefs.getString("access_token", "") ?: ""
     }
 
+    fun saveRefreshToken(token: String) {
+        prefs.edit().putString("REFRESH_TOKEN", token).apply()
+    }
+
+    fun getRefreshToken(): String {
+        return prefs.getString("REFRESH_TOKEN", "") ?: ""
+    }
+
     fun setLanguage(lang: String) {
         prefs.edit().putString("APP_LANGUAGE", lang).apply()
     }

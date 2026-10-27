@@ -171,6 +171,10 @@ class SharedPreferencesManager(context: Context) {
 
     // Limpiar sesión completa
     fun clearSession() {
+        val currentUserId = getUserId()
+        if (currentUserId > 0) {
+            MaletinManager.limpiarCacheUsuario(appContext, currentUserId)
+        }
         prefs.edit().clear().apply()
         try {
             val legacyFile = java.io.File(appContext.filesDir, "profile_picture.jpg")

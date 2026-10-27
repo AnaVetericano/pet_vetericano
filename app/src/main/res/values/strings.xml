@@ -553,4 +553,24 @@
     <string name="acta_offline_dialog_ya_enviada_titulo">Acta ya enviada</string>
     <string name="acta_offline_dialog_ya_enviada_mensaje">El acta %1$s ya fue enviada correctamente.</string>
     <string name="acta_offline_dialog_en_cola_boton">Entendido</string>
+    <!-- Acta Offline: Cola de actas (Tarea B2-1) -->
+    <string name="acta_offline_cola_icono_desc">Actas sin enviar: %1$d</string>
+    <string name="acta_offline_cola_titulo">Actas sin enviar</string>
+    <string name="acta_offline_cola_reenviar_todas">Reenviar todas</string>
+    <string name="acta_offline_cola_reenviar">Reenviar</string>
+    <string name="acta_offline_cola_revisar">Revisar</string>
+    <string name="acta_offline_cola_radicado">Radicado %1$s</string>
+    <string name="acta_offline_cola_radicado_sin">Acta sin radicado</string>
+    <string name="acta_offline_cola_estado_pendiente">En cola</string>
+    <string name="acta_offline_cola_estado_enviando">Enviando</string>
+    <string name="acta_offline_cola_estado_error">Error, se reintentará</string>
+    <string name="acta_offline_cola_estado_revision">Requiere revisión</string>
+    <string name="acta_offline_cola_estado_sesion">Sesión vencida</string>
+    <string name="acta_offline_cola_detalle_error">Último error: %1$s</string>
+    <string name="acta_offline_cola_vacio">No hay actas sin enviar</string>
+    <string name="acta_offline_cola_ya_en_proceso">Esta acta ya se está enviando</string>
+    <string name="acta_offline_cola_reenvio_ok">Reenvío iniciado</string>
+    <string name="acta_offline_cola_reenvio_todas_ok">Reenviando %1$d actas</string>
+    <string name="acta_offline_cola_requiere_revision_msg">Esta acta necesita correcciones. Toca Revisar</string>
+    <string name="acta_offline_cola_no_encontrada">El acta ya no está en la cola</string>
 </resources>

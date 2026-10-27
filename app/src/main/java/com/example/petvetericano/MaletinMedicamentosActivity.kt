@@ -8,7 +8,9 @@ import android.view.View
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.NestedScrollView
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.databinding.ActivityMaletinMedicamentosBinding
 import com.example.petvetericano.models.MedicamentoMaletin
@@ -26,6 +28,7 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
 
     private var categoriaSeleccionada: String = "Todos"
     private var queryBusqueda: String = ""
+    private var listaMedicamentosActual: List<MedicamentoMaletin> = emptyList()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,15 +43,34 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
         configurarBuscador()
         configurarSwipeRefresh()
         configurarFab()
-        actualizarDatosVista()
 
-        // Sincronización automática con backend al entrar
+        // 1. Cargar inmediatamente datos locales reactivos desde StateFlow (0 ms, sin parpadeo)
+        observarMedicamentosFlow()
+
+        // 2. Sincronización silenciosa en segundo plano al abrir la pantalla
         sincronizarMaletin(forzar = false)
     }
 
     override fun onResume() {
         super.onResume()
-        actualizarDatosVista()
+        // Sincronización silenciosa en segundo plano al regresar (por si hubo cambios o consumos)
+        sincronizarMaletin(forzar = false)
+    }
+
+    /**
+     * Observa de forma reactiva el flujo de medicamentos del maletín.
+     * Cualquier cambio (sincronización remota, consumo en visita, reposición)
+     * se refleja visualmente de manera automática sin necesidad de recargar o deslizar.
+     */
+    private fun observarMedicamentosFlow() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                maletinManager.medicamentosFlow.collect { medicamentos ->
+                    listaMedicamentosActual = medicamentos
+                    actualizarDatosVista(medicamentos)
+                }
+            }
+        }
     }
 
     private fun configurarToolbar() {
@@ -116,7 +138,7 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
                 R.id.chipCatCorticoides -> "Corticoides"
                 else -> "Todos"
             }
-            filtrarLista()
+            filtrarLista(listaMedicamentosActual)
         }
     }
 
@@ -125,30 +147,44 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
                 queryBusqueda = s?.toString()?.trim() ?: ""
-                filtrarLista()
+                filtrarLista(listaMedicamentosActual)
             }
             override fun afterTextChanged(s: Editable?) {}
         })
     }
 
-    private fun actualizarDatosVista() {
-        val totalRefs = maletinManager.getTotalMedicamentosDisponibles()
-        binding.tvTotalReferenciasHeader.text = "$totalRefs"
+    private fun actualizarDatosVista(medicamentos: List<MedicamentoMaletin>) {
+        val disponiblesCount = medicamentos.count { it.saldoDisponibleInt > 0 }
+        binding.tvTotalReferenciasHeader.text = "$disponiblesCount"
         binding.tvEstadoGeneralBadge.text = maletinManager.getEstadoStock()
+
+        // Banner proactivo de alerta visual cuando hay medicamentos en estado crítico
+        val criticos = medicamentos.filter { it.esCritico }
+        if (criticos.isNotEmpty()) {
+            binding.cardAlertaReposicionProactiva.visibility = View.VISIBLE
+            binding.tvAlertaCriticosTitulo.text = "¡${criticos.size} medicamento(s) en stock crítico!"
+            val nombres = criticos.take(2).joinToString(", ") { "${it.nombre} (${it.saldoDisponibleInt}/${it.cuotaAsignada ?: it.cantidadInicial.toInt()})" }
+            val resto = if (criticos.size > 2) " y ${criticos.size - 2} más" else ""
+            binding.tvAlertaCriticosSubtitulo.text = "$nombres$resto requieren reposición urgente de farmacia CBA."
+            binding.btnReponerDesdeBanner.setOnClickListener {
+                abrirPantallaSolicitudesKit()
+            }
+        } else {
+            binding.cardAlertaReposicionProactiva.visibility = View.GONE
+        }
 
         val ultSync = maletinManager.getUltimoTimestampSync()
         if (ultSync > 0L) {
             val fechaFmt = android.text.format.DateFormat.format("dd/MM/yyyy HH:mm", ultSync)
             binding.tvEstadoSincronizacion.text = "Sincronizado: $fechaFmt • Disponible offline"
         } else {
-            binding.tvEstadoSincronizacion.text = "Sin sincronización previa • Tira hacia abajo para actualizar"
+            binding.tvEstadoSincronizacion.text = "Actualizando datos del maletín..."
         }
 
-        filtrarLista()
+        filtrarLista(medicamentos)
     }
 
-    private fun filtrarLista() {
-        val todos = maletinManager.getMedicamentos()
+    private fun filtrarLista(todos: List<MedicamentoMaletin>) {
         val filtrados = todos.filter { med ->
             val coincideCategoria = if (categoriaSeleccionada == "Todos") {
                 true
@@ -189,6 +225,10 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
         }
     }
 
+    /**
+     * Sincroniza el maletín con el servidor.
+     * Si [forzar] es false, se ejecuta silenciosamente sin mostrar el spinner visual de recarga.
+     */
     private fun sincronizarMaletin(forzar: Boolean) {
         val prefs = SharedPreferencesManager(this)
         val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
@@ -197,7 +237,9 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
             return
         }
 
-        binding.swipeRefreshMaletin.isRefreshing = true
+        if (forzar) {
+            binding.swipeRefreshMaletin.isRefreshing = true
+        }
 
         lifecycleScope.launch(Dispatchers.IO) {
             // Sincronizar consumos pendientes offline si existen
@@ -206,8 +248,9 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
             val resultado = maletinManager.sincronizarDesdeServidor(token)
 
             withContext(Dispatchers.Main) {
-                binding.swipeRefreshMaletin.isRefreshing = false
-                actualizarDatosVista()
+                if (forzar) {
+                    binding.swipeRefreshMaletin.isRefreshing = false
+                }
 
                 resultado.onSuccess {
                     if (forzar) {
@@ -230,6 +273,13 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
     private fun mostrarDetalleMedicamento(med: MedicamentoMaletin) {
         val mensaje = buildString {
             append("• Stock vigente disponible: ").append(med.saldoDisponibleInt).append(" ").append(med.unidadMedida).append("\n")
+            if (med.cuotaAsignada != null) {
+                append("• Cuota asignada de referencia: ").append(med.cuotaAsignada).append(" ").append(med.unidadMedida).append("\n")
+                val faltante = med.unidadesFaltantesParaCuota
+                if (faltante > 0) {
+                    append("• Faltan para completar cuota: ").append(faltante).append(" ").append(med.unidadMedida).append("\n")
+                }
+            }
             if (med.saldoVencido > 0) {
                 append("⚠️ Stock vencido (no apto): ").append(med.saldoVencido).append(" ").append(med.unidadMedida).append("\n")
             }
@@ -240,7 +290,7 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
             if (med.lotes.isNotEmpty()) {
                 append("Lotes asignados en kit:\n")
                 med.lotes.forEach { lote ->
-                    val estadoLote = if (lote.vencido) "❌ VENCIDO" else "✓ Vigente"
+                    val estadoLote = if (lote.vencido) "❌ VENCIDO" else "✅ Vigente"
                     append("  - Lote #").append(lote.idInventario)
                         .append(": ").append(lote.cantidadActual).append(" uds")
                         .append(" (Vence: ").append(lote.fechaVencimiento ?: "N/D").append(" - ").append(estadoLote).append(")\n")

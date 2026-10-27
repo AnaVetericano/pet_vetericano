@@ -11,7 +11,9 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.content.ContextCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.databinding.ActivityDahsboardVeterianrioBinding
 import com.example.petvetericano.offline.ActaColaBottomSheet
@@ -135,6 +137,15 @@ class dahsboard_veterianrio : AppCompatActivity() {
         fetchDashboardData()
         sincronizarPerfilUsuario()
         actualizarResumenMaletin()
+
+        // Observar reactivamente el maletín para actualizar el contador automáticamente
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                MaletinManager.getInstance(this@dahsboard_veterianrio).medicamentosFlow.collect {
+                    actualizarResumenMaletin()
+                }
+            }
+        }
     }
 
     override fun onResume() {

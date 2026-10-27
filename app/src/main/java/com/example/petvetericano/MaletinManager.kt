@@ -11,12 +11,16 @@ import com.example.petvetericano.network.RetrofitClient
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.withContext
 
 /**
  * Gestor del inventario del Maletín de Medicamentos asignado al veterinario (Kit Móvil).
  * Conecta con el backend Django (/api/inventario/kit/), mantiene la caché offline
  * para trabajo en campo sin conectividad y gestiona la cola de consumos pendientes.
+ * Expone un flujo reactivo (StateFlow) para actualización visual instantánea sin recarga manual.
  */
 class MaletinManager(context: Context) {
 
@@ -25,6 +29,13 @@ class MaletinManager(context: Context) {
 
     private val prefs: SharedPreferences
         get() = getPrefs(appContext)
+
+    private val _medicamentosFlow = MutableStateFlow<List<MedicamentoMaletin>>(emptyList())
+    val medicamentosFlow: StateFlow<List<MedicamentoMaletin>> = _medicamentosFlow.asStateFlow()
+
+    init {
+        _medicamentosFlow.value = getMedicamentos()
+    }
 
     companion object {
         private const val KEY_MEDICAMENTOS = "MALETIN_MEDICAMENTOS_LIST"
@@ -54,6 +65,7 @@ class MaletinManager(context: Context) {
                 .clear()
                 .apply()
             synchronized(this) {
+                instance?._medicamentosFlow?.value = emptyList()
                 instance = null
             }
         }
@@ -61,6 +73,10 @@ class MaletinManager(context: Context) {
 
     fun limpiarCacheUsuario(context: Context) {
         limpiarCacheUsuario(context, null)
+    }
+
+    fun refrescarCacheLocal() {
+        _medicamentosFlow.value = getMedicamentos()
     }
 
     /**
@@ -81,11 +97,12 @@ class MaletinManager(context: Context) {
     }
 
     /**
-     * Guarda la lista de medicamentos en caché local.
+     * Guarda la lista de medicamentos en caché local y notifica a los observadores reactivos.
      */
     fun guardarMedicamentos(lista: List<MedicamentoMaletin>) {
         val json = gson.toJson(lista)
         prefs.edit().putString(KEY_MEDICAMENTOS, json).apply()
+        _medicamentosFlow.value = lista
     }
 
     /**
@@ -156,7 +173,7 @@ class MaletinManager(context: Context) {
                     }
 
                     guardarMedicamentos(listaDesdeSnapshot)
-                    prefs.edit().putLong(KEY_ULTIMA_SYNC, snapshot.timestamp * 1000).apply()
+                    prefs.edit().putLong(KEY_ULTIMA_SYNC, System.currentTimeMillis()).apply()
 
                     Result.success(listaDesdeSnapshot)
                 } else {
@@ -228,6 +245,17 @@ class MaletinManager(context: Context) {
     }
 
     /**
+     * Retorna la lista de medicamentos que están en nivel crítico o reorden.
+     */
+    fun getMedicamentosParaReposicion(): List<MedicamentoMaletin> {
+        return getMedicamentos().filter {
+            it.nivelSemaforo == com.example.petvetericano.models.NivelSemaforoStock.CRITICO ||
+                    it.nivelSemaforo == com.example.petvetericano.models.NivelSemaforoStock.REORDEN ||
+                    it.nivelSemaforo == com.example.petvetericano.models.NivelSemaforoStock.AGOTADO
+        }
+    }
+
+    /**
      * Calcula el estado general del maletín para el Dashboard y badges M3.
      */
     fun getEstadoStock(): String {
@@ -235,11 +263,13 @@ class MaletinManager(context: Context) {
         if (meds.isEmpty()) return "Sin asignación"
 
         val vencidos = meds.count { it.saldoVencido > 0 }
+        val criticos = meds.count { it.esCritico }
         val agotados = meds.count { it.cantidadDisponible <= 0 }
-        val bajos = meds.count { it.cantidadDisponible > 0 && it.cantidadDisponible < 5 }
+        val bajos = meds.count { it.nivelSemaforo == com.example.petvetericano.models.NivelSemaforoStock.REORDEN }
 
         return when {
             vencidos > 0 -> "$vencidos vencidos"
+            criticos > 0 -> "$criticos en nivel crítico"
             agotados > 0 -> "$agotados agotados"
             bajos > 0 -> "$bajos stock bajo"
             else -> "Stock disponible"

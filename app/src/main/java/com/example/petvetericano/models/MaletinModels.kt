@@ -4,6 +4,17 @@ import java.io.Serializable
 import java.util.UUID
 
 /**
+ * Estados semánticos oficiales para el semáforo clínico de existencias del maletín.
+ */
+enum class NivelSemaforoStock(val etiqueta: String) {
+    OPTIMO("Óptimo"),
+    REORDEN("Stock bajo"),
+    CRITICO("Crítico"),
+    AGOTADO("Agotado"),
+    VENCIDO("Vencido")
+}
+
+/**
  * Modelo de datos para los medicamentos asignados al maletín del veterinario.
  * Compatible con la respuesta del backend Django (/api/inventario/kit/mi-kit/ y snapshot-movil)
  * y con las vistas locales de Android.
@@ -33,6 +44,48 @@ data class MedicamentoMaletin(
 
     val tieneLotesVencidos: Boolean
         get() = saldoVencido > 0 || lotes.any { it.vencido }
+
+    /**
+     * Cuota de referencia asignada al veterinario para su kit de campo.
+     */
+    val cuotaAsignada: Int?
+        get() = if (cantidadInicial > 0) cantidadInicial.toInt() else null
+
+    /**
+     * Nivel del semáforo clínico según la Regla Híbrida CBA:
+     * - CRÍTICO: Stock <= 15% de la cuota O <= 1 unidad
+     * - REORDEN: Stock <= 40% de la cuota
+     * - ÓPTIMO: Stock > 40% de la cuota
+     * - AGOTADO: Stock <= 0
+     * - VENCIDO: Solo tiene lotes vencidos
+     */
+    val nivelSemaforo: NivelSemaforoStock
+        get() {
+            if (tieneLotesVencidos && saldoDisponibleInt == 0) return NivelSemaforoStock.VENCIDO
+            if (cantidadDisponible <= 0.0) return NivelSemaforoStock.AGOTADO
+
+            val cuota = if (cantidadInicial > 0) cantidadInicial else 1.0
+            val umbralCritico = maxOf(1.0, kotlin.math.ceil(0.15 * cuota))
+            val umbralReorden = cuota * 0.40
+
+            return when {
+                cantidadDisponible <= umbralCritico -> NivelSemaforoStock.CRITICO
+                cantidadDisponible <= umbralReorden -> NivelSemaforoStock.REORDEN
+                else -> NivelSemaforoStock.OPTIMO
+            }
+        }
+
+    val unidadesFaltantesParaCuota: Int
+        get() = maxOf(0, (cantidadInicial - cantidadDisponible).toInt())
+
+    val esCritico: Boolean
+        get() = nivelSemaforo == NivelSemaforoStock.CRITICO || nivelSemaforo == NivelSemaforoStock.AGOTADO
+
+    val esReorden: Boolean
+        get() = nivelSemaforo == NivelSemaforoStock.REORDEN
+
+    val necesitaReposicion: Boolean
+        get() = esCritico || esReorden || unidadesFaltantesParaCuota > 0
 
     companion object {
         /**

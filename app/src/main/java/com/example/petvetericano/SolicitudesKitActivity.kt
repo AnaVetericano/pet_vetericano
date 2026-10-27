@@ -1,5 +1,6 @@
 package com.example.petvetericano
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
@@ -33,6 +34,11 @@ class SolicitudesKitActivity : AppCompatActivity() {
 
     private var medicamentosDisponibles: List<OpcionMedicamentoSolicitud> = emptyList()
     private var medicamentoSeleccionado: OpcionMedicamentoSolicitud? = null
+
+    // Control de solicitudes en trámite para evitar colisiones SOLICITUD_DUPLICADA
+    private var solicitudesPendientes: List<SolicitudKitResponse> = emptyList()
+    private var medicamentosEnTramiteIds: Set<Int> = emptySet()
+    private var mapaMedTramiteInfo: Map<Int, Pair<Int, Int>> = emptyMap() // idMedicamento -> (idSolicitud, cantidad)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -68,6 +74,7 @@ class SolicitudesKitActivity : AppCompatActivity() {
                         binding.swipeRefreshSolicitudes.visibility = View.GONE
                         binding.scrollNuevaSolicitud.visibility = View.VISIBLE
                         actualizarSelectorMedicamentos()
+                        prepararFormularioNuevaSolicitud()
                     }
                 }
             }
@@ -88,8 +95,99 @@ class SolicitudesKitActivity : AppCompatActivity() {
         binding.rvSolicitudes.adapter = adapter
     }
 
+    private fun prepararFormularioNuevaSolicitud() {
+        val medsRepo = maletinManager.getMedicamentosParaReposicion()
+        val enTramite = medsRepo.filter { it.idMedicamentoInt in medicamentosEnTramiteIds }
+        val nuevosFaltantes = medsRepo.filter { it.idMedicamentoInt !in medicamentosEnTramiteIds }
+
+        when {
+            nuevosFaltantes.isNotEmpty() -> {
+                binding.cardSugeridosContainer.visibility = View.VISIBLE
+                binding.cardSugeridosContainer.setCardBackgroundColor(Color.parseColor("#FEF3C7"))
+                binding.cardSugeridosContainer.strokeColor = Color.parseColor("#FDE68A")
+                binding.tvSugeridosTitulo.text = "⚠️ ${nuevosFaltantes.size} medicamento(s) requieren radicar reposición:"
+                binding.tvSugeridosTitulo.setTextColor(Color.parseColor("#92400E"))
+
+                val sb = StringBuilder()
+                sb.append("Fármacos a solicitar para completar cuota física:\n")
+                nuevosFaltantes.forEach {
+                    val cuota = it.cuotaAsignada ?: it.cantidadInicial.toInt()
+                    sb.append("• ${it.nombre}: Stock actual ${it.saldoDisponibleInt} / Cuota $cuota (Faltan: ${it.unidadesFaltantesParaCuota} ${it.unidadMedida})\n")
+                }
+
+                if (enTramite.isNotEmpty()) {
+                    sb.append("\n⏳ Ya en trámite ante Farmacia CBA (${enTramite.size} fármaco(s)):\n")
+                    enTramite.forEach {
+                        val tramite = mapaMedTramiteInfo[it.idMedicamentoInt]
+                        val numSol = tramite?.first?.let { id -> "Solicitud #$id" } ?: "En trámite"
+                        val cantSol = tramite?.second?.let { cant -> "$cant uds pedidas" } ?: ""
+                        sb.append("• ${it.nombre}: $numSol ($cantSol, pendiente de entrega)\n")
+                    }
+                }
+
+                binding.tvSugeridosDetalle.text = sb.toString().trimEnd()
+                binding.tvSugeridosDetalle.setTextColor(Color.parseColor("#78350F"))
+                binding.btnSolicitarReposicionTotal.text = "Radicar Reposición (${nuevosFaltantes.size} fármaco${if (nuevosFaltantes.size > 1) "s" else ""})"
+                binding.btnSolicitarReposicionTotal.isEnabled = true
+                binding.tilMotivoTotal.helperText = "${nuevosFaltantes.size} medicamento(s) listos para radicar reposición."
+                if (binding.etMotivoTotal.text.isNullOrBlank()) {
+                    binding.etMotivoTotal.setText("Reposición de existencias para completar cuota de maletín de campo CBA.")
+                }
+            }
+
+            enTramite.isNotEmpty() -> {
+                binding.cardSugeridosContainer.visibility = View.VISIBLE
+                binding.cardSugeridosContainer.setCardBackgroundColor(Color.parseColor("#EFF6FF"))
+                binding.cardSugeridosContainer.strokeColor = Color.parseColor("#BFDBFE")
+                binding.tvSugeridosTitulo.text = "⏳ Reposición en trámite ante Farmacia CBA"
+                binding.tvSugeridosTitulo.setTextColor(Color.parseColor("#1E40AF"))
+
+                val sb = StringBuilder()
+                sb.append("Los medicamentos con stock bajo ya cuentan con una solicitud radicada pendiente de entrega:\n\n")
+                enTramite.forEach {
+                    val tramite = mapaMedTramiteInfo[it.idMedicamentoInt]
+                    val numSol = tramite?.first?.let { id -> "#$id" } ?: ""
+                    val cantSol = tramite?.second?.let { cant -> "$cant uds" } ?: ""
+                    sb.append("• ${it.nombre}: Solicitud $numSol ($cantSol) en estado PENDIENTE\n")
+                }
+                sb.append("\nTan pronto el gestor de farmacia despache la entrega, tu maletín se actualizará automáticamente.")
+
+                binding.tvSugeridosDetalle.text = sb.toString().trimEnd()
+                binding.tvSugeridosDetalle.setTextColor(Color.parseColor("#1E3A8A"))
+                val primeraSol = enTramite.firstNotNullOfOrNull { mapaMedTramiteInfo[it.idMedicamentoInt]?.first }
+                binding.btnSolicitarReposicionTotal.text = if (primeraSol != null) "Reposición en trámite (Solicitud #$primeraSol)" else "Reposición ya en trámite"
+                binding.btnSolicitarReposicionTotal.isEnabled = false
+                binding.tilMotivoTotal.helperText = "Ya tienes solicitudes en curso para cubrir las cuotas faltantes."
+            }
+
+            else -> {
+                binding.cardSugeridosContainer.visibility = View.VISIBLE
+                binding.cardSugeridosContainer.setCardBackgroundColor(Color.parseColor("#ECFDF5"))
+                binding.cardSugeridosContainer.strokeColor = Color.parseColor("#A7F3D0")
+                binding.tvSugeridosTitulo.text = "✅ Cuotas al día"
+                binding.tvSugeridosTitulo.setTextColor(Color.parseColor("#065F46"))
+                binding.tvSugeridosDetalle.text = "Todas las referencias de tu maletín cumplen actualmente su cuota física asignada."
+                binding.tvSugeridosDetalle.setTextColor(Color.parseColor("#047857"))
+                binding.btnSolicitarReposicionTotal.text = "Maletín con cuota completa"
+                binding.btnSolicitarReposicionTotal.isEnabled = false
+                binding.tilMotivoTotal.helperText = "Tu maletín tiene actualmente todas sus cuotas completas."
+                if (binding.etMotivoTotal.text.isNullOrBlank()) {
+                    binding.etMotivoTotal.setText("Reposición preventiva de stock.")
+                }
+            }
+        }
+
+        if (binding.etMotivoPuntual.text.isNullOrBlank()) {
+            binding.etMotivoPuntual.setText("Reposición de medicamento para atención de campo.")
+        }
+    }
+
     private fun configurarFormularioNuevaSolicitud() {
-        // Botón 1: Reposición Total Automática
+        // Validación reactiva al cambiar tipo de solicitud puntual
+        binding.chipTipoReposicion.setOnCheckedChangeListener { _, _ -> validarMedicamentoSeleccionado() }
+        binding.chipTipoDevolucion.setOnCheckedChangeListener { _, _ -> validarMedicamentoSeleccionado() }
+
+        // Botón 1: Reposición Focalizada de Cuotas Faltantes (evita medicamentos ya en trámite)
         binding.btnSolicitarReposicionTotal.setOnClickListener {
             val motivo = binding.etMotivoTotal.text.toString().trim()
             if (motivo.isEmpty()) {
@@ -98,18 +196,37 @@ class SolicitudesKitActivity : AppCompatActivity() {
             }
             binding.tilMotivoTotal.error = null
 
+            val medsFaltantes = maletinManager.getMedicamentosParaReposicion()
+            val nuevosFaltantes = medsFaltantes.filter { it.idMedicamentoInt !in medicamentosEnTramiteIds }
+
+            if (nuevosFaltantes.isEmpty()) {
+                Toast.makeText(this, "Todos los medicamentos bajo cuota ya tienen una solicitud en trámite", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
+            val resumenFaltantes = nuevosFaltantes.joinToString("\n") {
+                val cuota = it.cuotaAsignada ?: it.cantidadInicial.toInt()
+                "• ${it.nombre}: stock actual ${it.saldoDisponibleInt} / cuota $cuota (Faltan: ${it.unidadesFaltantesParaCuota})"
+            }
+
             MaterialAlertDialogBuilder(this)
                 .setIcon(R.drawable.ic_sync)
-                .setTitle("¿Solicitar reposición total?")
-                .setMessage("El gestor de inventario recibirá tu petición para dotar todas las referencias que tengas por debajo de su cantidad asignada.")
+                .setTitle("¿Solicitar reposición de cuotas?")
+                .setMessage("El gestor de Farmacia CBA recibirá tu petición para abastecer las referencias con stock faltante:\n\n$resumenFaltantes")
                 .setPositiveButton("Confirmar y enviar") { dialog, _ ->
                     dialog.dismiss()
+                    val itemsInput = nuevosFaltantes.map {
+                        ItemSolicitudInput(
+                            idMedicamento = it.idMedicamentoInt,
+                            cantidad = it.unidadesFaltantesParaCuota.coerceAtLeast(1)
+                        )
+                    }
                     enviarSolicitud(
                         CrearSolicitudKitRequest(
                             tipoSolicitud = "REPOSICION",
                             motivo = motivo,
-                            esReposicionTotal = true,
-                            items = null
+                            esReposicionTotal = false,
+                            items = itemsInput
                         )
                     )
                 }
@@ -126,6 +243,15 @@ class SolicitudesKitActivity : AppCompatActivity() {
             }
             binding.tilMedSolicitud.error = null
 
+            val esReposicion = binding.chipTipoReposicion.isChecked
+            val tipo = if (esReposicion) "REPOSICION" else "DEVOLUCION"
+
+            if (esReposicion && medicamentosEnTramiteIds.contains(med.idMedicamento)) {
+                val tramite = mapaMedTramiteInfo[med.idMedicamento]
+                binding.tilMedSolicitud.error = "⏳ Ya existe la Solicitud #${tramite?.first} en trámite para este fármaco."
+                return@setOnClickListener
+            }
+
             val cantidad = binding.etCantidadSolicitud.text.toString().toIntOrNull()
             if (cantidad == null || cantidad <= 0) {
                 binding.tilCantidadSolicitud.error = "Ingresa una cantidad entera mayor a 0"
@@ -139,9 +265,6 @@ class SolicitudesKitActivity : AppCompatActivity() {
                 return@setOnClickListener
             }
             binding.tilMotivoPuntual.error = null
-
-            val esReposicion = binding.chipTipoReposicion.isChecked
-            val tipo = if (esReposicion) "REPOSICION" else "DEVOLUCION"
 
             if (tipo == "DEVOLUCION" && cantidad > med.saldoDisponible) {
                 binding.tilCantidadSolicitud.error = "No puedes devolver más de lo que tienes en el maletín (${med.saldoDisponible} uds)"
@@ -161,6 +284,21 @@ class SolicitudesKitActivity : AppCompatActivity() {
                     )
                 )
             )
+        }
+    }
+
+    private fun validarMedicamentoSeleccionado() {
+        val med = medicamentoSeleccionado ?: return
+        val tramite = mapaMedTramiteInfo[med.idMedicamento]
+        val esReposicion = binding.chipTipoReposicion.isChecked
+
+        if (esReposicion && tramite != null) {
+            val (solId, cant) = tramite
+            binding.tilMedSolicitud.error = "⏳ Ya existe la Solicitud #$solId en trámite ($cant uds) para este fármaco."
+            binding.btnEnviarSolicitudPuntual.isEnabled = false
+        } else {
+            binding.tilMedSolicitud.error = null
+            binding.btnEnviarSolicitudPuntual.isEnabled = true
         }
     }
 
@@ -208,17 +346,39 @@ class SolicitudesKitActivity : AppCompatActivity() {
             withContext(Dispatchers.Main) {
                 medicamentosDisponibles = listaOpciones
                 val nombres = listaOpciones.map { item ->
-                    if (item.saldoDisponible > 0) {
-                        "${item.nombre} (En maletín: ${item.saldoDisponible})"
-                    } else {
-                        "${item.nombre} (Sin existencias en maletín)"
+                    val medMal = maletinMap[item.idMedicamento]
+                    val cuota = medMal?.cuotaAsignada ?: medMal?.cantidadInicial?.toInt()
+                    val tramite = mapaMedTramiteInfo[item.idMedicamento]
+                    val tramiteTag = if (tramite != null) " [⏳ En trámite #${tramite.first}]" else ""
+                    when {
+                        cuota != null -> "${item.nombre}$tramiteTag (En maletín: ${item.saldoDisponible} / cuota $cuota)"
+                        item.saldoDisponible > 0 -> "${item.nombre}$tramiteTag (En maletín: ${item.saldoDisponible})"
+                        else -> "${item.nombre}$tramiteTag (Sin existencias en maletín)"
                     }
                 }
                 val arrayAdapter = ArrayAdapter(this@SolicitudesKitActivity, android.R.layout.simple_dropdown_item_1line, nombres)
                 binding.autoCompleteMedSolicitud.setAdapter(arrayAdapter)
 
                 binding.autoCompleteMedSolicitud.setOnItemClickListener { _, _, position, _ ->
-                    medicamentoSeleccionado = medicamentosDisponibles.getOrNull(position)
+                    val med = medicamentosDisponibles.getOrNull(position)
+                    medicamentoSeleccionado = med
+                    if (med != null) {
+                        val medMal = maletinMap[med.idMedicamento]
+                        val cuota = medMal?.cuotaAsignada ?: medMal?.cantidadInicial?.toInt()
+                        if (medMal != null && cuota != null) {
+                            val faltante = medMal.unidadesFaltantesParaCuota
+                            if (faltante > 0) {
+                                binding.etCantidadSolicitud.setText(faltante.toString())
+                                binding.tilCantidadSolicitud.helperText = "Stock: ${medMal.saldoDisponibleInt} | Cuota: $cuota | Faltan para completar: $faltante ${medMal.unidadMedida}"
+                            } else {
+                                binding.etCantidadSolicitud.setText("1")
+                                binding.tilCantidadSolicitud.helperText = "Stock: ${medMal.saldoDisponibleInt} (Cuota asignada completa)"
+                            }
+                        } else {
+                            binding.tilCantidadSolicitud.helperText = null
+                        }
+                        validarMedicamentoSeleccionado()
+                    }
                 }
             }
         }
@@ -246,12 +406,34 @@ class SolicitudesKitActivity : AppCompatActivity() {
                         val lista = response.body()!!.results
                         adapter.updateList(lista)
 
+                        // Identificar solicitudes PENDIENTE de REPOSICION para controlar medicamentos en trámite
+                        solicitudesPendientes = lista.filter {
+                            it.estado.equals("PENDIENTE", ignoreCase = true) &&
+                            it.tipoSolicitud.equals("REPOSICION", ignoreCase = true)
+                        }
+
+                        val mapaTramite = mutableMapOf<Int, Pair<Int, Int>>()
+                        for (sol in solicitudesPendientes) {
+                            for (det in sol.detalles) {
+                                if (!mapaTramite.containsKey(det.idMedicamento)) {
+                                    mapaTramite[det.idMedicamento] = Pair(sol.idSolicitud, det.cantidadSolicitada)
+                                }
+                            }
+                        }
+                        mapaMedTramiteInfo = mapaTramite
+                        medicamentosEnTramiteIds = mapaTramite.keys
+
                         if (lista.isEmpty()) {
                             binding.layoutEmptySolicitudes.visibility = View.VISIBLE
                             binding.rvSolicitudes.visibility = View.GONE
                         } else {
                             binding.layoutEmptySolicitudes.visibility = View.GONE
                             binding.rvSolicitudes.visibility = View.VISIBLE
+                        }
+
+                        if (binding.tabLayoutSolicitudes.selectedTabPosition == 1) {
+                            prepararFormularioNuevaSolicitud()
+                            actualizarSelectorMedicamentos()
                         }
                     } else {
                         Toast.makeText(this@SolicitudesKitActivity, "No se pudieron obtener las solicitudes (${response.code()})", Toast.LENGTH_SHORT).show()
@@ -281,6 +463,9 @@ class SolicitudesKitActivity : AppCompatActivity() {
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
                 val response = RetrofitClient.apiService.crearSolicitudKit(authHeader, request)
 
+                // Sincronizar maletín en segundo plano para que el StateFlow emita de inmediato
+                maletinManager.sincronizarDesdeServidor(token)
+
                 withContext(Dispatchers.Main) {
                     binding.swipeRefreshSolicitudes.isRefreshing = false
                     if (response.isSuccessful && response.body() != null) {
@@ -288,19 +473,43 @@ class SolicitudesKitActivity : AppCompatActivity() {
                         MaterialAlertDialogBuilder(this@SolicitudesKitActivity)
                             .setIcon(R.drawable.ic_check)
                             .setTitle("Solicitud registrada con éxito")
-                            .setMessage("Tu solicitud #${body.idSolicitud} ha sido radicada ante el Gestor de Farmacia con estado PENDIENTE.")
+                            .setMessage("Tu solicitud #${body.idSolicitud} ha sido radicada ante el Gestor de Farmacia CBA con estado PENDIENTE.")
                             .setPositiveButton("Ver mis solicitudes") { _, _ ->
                                 binding.tabLayoutSolicitudes.getTabAt(0)?.select()
                             }
                             .show()
+
+                        cargarSolicitudes()
                     } else {
                         val errStr = response.errorBody()?.string() ?: ""
-                        MaterialAlertDialogBuilder(this@SolicitudesKitActivity)
+                        var titulo = "No se pudo registrar la solicitud"
+                        var detalle = errStr
+                        var esDuplicada = false
+
+                        try {
+                            val json = org.json.JSONObject(errStr)
+                            if (json.optString("error") == "SOLICITUD_DUPLICADA") {
+                                esDuplicada = true
+                                titulo = "Solicitud ya en trámite"
+                            }
+                            detalle = json.optString("detalle", errStr)
+                        } catch (_: Exception) {}
+
+                        val builder = MaterialAlertDialogBuilder(this@SolicitudesKitActivity)
                             .setIcon(R.drawable.warning_icon4)
-                            .setTitle("No se pudo registrar la solicitud")
-                            .setMessage("El servidor respondió: $errStr")
-                            .setPositiveButton("Entendido", null)
-                            .show()
+                            .setTitle(titulo)
+                            .setMessage(detalle)
+
+                        if (esDuplicada) {
+                            builder.setPositiveButton("Ver mis solicitudes") { _, _ ->
+                                binding.tabLayoutSolicitudes.getTabAt(0)?.select()
+                            }
+                            builder.setNegativeButton("Cerrar", null)
+                            cargarSolicitudes()
+                        } else {
+                            builder.setPositiveButton("Entendido", null)
+                        }
+                        builder.show()
                     }
                 }
             } catch (e: Exception) {

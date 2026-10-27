@@ -30,6 +30,8 @@ import com.example.petvetericano.models.AnimalRapidoRequest
 import com.example.petvetericano.models.ExamenSeleccionadoActa
 import com.example.petvetericano.models.MedicamentoAplicadoActa
 import com.example.petvetericano.models.MedicamentoMaletin
+import com.example.petvetericano.models.CrearSolicitudKitRequest
+import com.example.petvetericano.models.ItemSolicitudInput
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.example.petvetericano.models.FuncionarioActaRequest
 import com.example.petvetericano.models.LugarAtencionActa
@@ -2988,17 +2990,56 @@ class ActaAtencionActivity : AppCompatActivity() {
                             }
                             mensajeExito += "\n\n⚠️ Advertencia de stock en farmacia:\n$descConflictos"
                         }
-                        MaterialAlertDialogBuilder(this@ActaAtencionActivity)
-                            .setIcon(R.drawable.ic_check)
-                            .setTitle("Atención registrada con éxito")
-                            .setMessage(mensajeExito)
-                            .setCancelable(false)
-                            .setPositiveButton("Finalizar") { dialog, _ ->
-                                dialog.dismiss()
-                                setResult(Activity.RESULT_OK)
-                                finish()
+                        val maletin = MaletinManager.getInstance(this@ActaAtencionActivity)
+                        val medsCriticos = maletin.getMedicamentos().filter { it.esCritico }
+
+                        if (medsCriticos.isNotEmpty()) {
+                            val resumenCriticos = medsCriticos.joinToString("\n") { m ->
+                                val cuotaTxt = m.cuotaAsignada?.let { "/ $it" } ?: ""
+                                "• ${m.nombre}: ${m.saldoDisponibleInt} $cuotaTxt ${m.unidadMedida} (${m.nivelSemaforo.etiqueta})"
                             }
-                            .show()
+                            val mensajeProactivo = "$mensajeExito\n\n⚠️ Stock crítico en tu maletín:\n$resumenCriticos\n\n¿Deseas enviar una Solicitud de Reposición automática a la administración de Farmacia CBA?"
+
+                            MaterialAlertDialogBuilder(this@ActaAtencionActivity)
+                                .setIcon(R.drawable.ic_sync)
+                                .setTitle("Atención registrada con éxito")
+                                .setMessage(mensajeProactivo)
+                                .setCancelable(false)
+                                .setPositiveButton("Solicitar Reposición (1 Clic)") { dialog, _ ->
+                                    dialog.dismiss()
+                                    val items = medsCriticos.map { m ->
+                                        ItemSolicitudInput(
+                                            idMedicamento = m.idMedicamentoInt,
+                                            cantidad = m.unidadesFaltantesParaCuota.coerceAtLeast(1)
+                                        )
+                                    }
+                                    val reqRepo = CrearSolicitudKitRequest(
+                                        tipoSolicitud = "REPOSICION",
+                                        motivo = "Reposición proactiva tras atención clínica en campo (visita #${if (peticionId > 0) peticionId else idSeg})",
+                                        esReposicionTotal = false,
+                                        items = items
+                                    )
+                                    enviarSolicitudReposicionRapida(reqRepo)
+                                }
+                                .setNegativeButton("Finalizar") { dialog, _ ->
+                                    dialog.dismiss()
+                                    setResult(Activity.RESULT_OK)
+                                    finish()
+                                }
+                                .show()
+                        } else {
+                            MaterialAlertDialogBuilder(this@ActaAtencionActivity)
+                                .setIcon(R.drawable.ic_check)
+                                .setTitle("Atención registrada con éxito")
+                                .setMessage(mensajeExito)
+                                .setCancelable(false)
+                                .setPositiveButton("Finalizar") { dialog, _ ->
+                                    dialog.dismiss()
+                                    setResult(Activity.RESULT_OK)
+                                    finish()
+                                }
+                                .show()
+                        }
                     }
                 } else if (postCode == 408 || postCode == 429 || postCode >= 500) {
                     encolarActaYFinalizar()
@@ -4252,5 +4293,56 @@ class ActaAtencionActivity : AppCompatActivity() {
             .show()
 
         return true
+    }
+
+    private fun enviarSolicitudReposicionRapida(request: CrearSolicitudKitRequest) {
+        val prefs = SharedPreferencesManager(this)
+        val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
+        if (token.isEmpty()) {
+            Toast.makeText(this, "Atención registrada. Inicia sesión para solicitar reposición.", Toast.LENGTH_SHORT).show()
+            setResult(Activity.RESULT_OK)
+            finish()
+            return
+        }
+
+        setLoadingState(true)
+        lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
+                val resp = RetrofitClient.apiService.crearSolicitudKit(authHeader, request)
+                MaletinManager.getInstance(this@ActaAtencionActivity).sincronizarDesdeServidor(token)
+
+                withContext(Dispatchers.Main) {
+                    setLoadingState(false)
+                    if (resp.isSuccessful) {
+                        val body = resp.body()
+                        Toast.makeText(
+                            this@ActaAtencionActivity,
+                            "✅ Solicitud de reposición #${body?.idSolicitud ?: ""} radicada ante Farmacia CBA",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    } else {
+                        Toast.makeText(
+                            this@ActaAtencionActivity,
+                            "Atención registrada. Podrás tramitar la reposición desde el Maletín.",
+                            Toast.LENGTH_LONG
+                        ).show()
+                    }
+                    setResult(Activity.RESULT_OK)
+                    finish()
+                }
+            } catch (_: Exception) {
+                withContext(Dispatchers.Main) {
+                    setLoadingState(false)
+                    Toast.makeText(
+                        this@ActaAtencionActivity,
+                        "Atención registrada. Podrás tramitar la reposición desde el Maletín.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                    setResult(Activity.RESULT_OK)
+                    finish()
+                }
+            }
+        }
     }
 }

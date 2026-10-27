@@ -111,7 +111,7 @@
             </FrameLayout>
         </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-        <!-- Pestaña 2: Crear Nueva Solicitud -->
+        <!-- Pestaña 2: Crear Nueva Solicitud (Asistente Inteligente) -->
         <ScrollView
             android:id="@+id/scrollNuevaSolicitud"
             android:layout_width="match_parent"
@@ -174,7 +174,7 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito_bold"
-                                    android:text="Reposición Total del Kit"
+                                    android:text="Reposición de Cuota de Campo"
                                     android:textColor="@color/text_primary"
                                     android:textSize="16sp" />
 
@@ -182,28 +182,61 @@
                                     android:layout_width="wrap_content"
                                     android:layout_height="wrap_content"
                                     android:fontFamily="@font/nunito"
-                                    android:text="Completar existencias faltantes"
+                                    android:text="Completar existencias faltantes de maletín"
                                     android:textColor="@color/text_secondary"
                                     android:textSize="12sp" />
                             </LinearLayout>
                         </LinearLayout>
 
-                        <TextView
+                        <!-- Desglose de Medicamentos Sugeridos por Cuota -->
+                        <com.google.android.material.card.MaterialCardView
+                            android:id="@+id/cardSugeridosContainer"
+                            style="?attr/materialCardViewFilledStyle"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="10dp"
-                            android:fontFamily="@font/nunito"
-                            android:text="El sistema calculará automáticamente las cantidades necesarias de cada medicamento para completar tu dotación de referencia asignada por la administración."
-                            android:textColor="@color/text_secondary"
-                            android:textSize="13sp" />
+                            android:layout_marginTop="12dp"
+                            android:layout_marginBottom="6dp"
+                            app:cardBackgroundColor="#FEF3C7"
+                            app:cardCornerRadius="12dp"
+                            app:cardElevation="0dp"
+                            app:strokeColor="#FDE68A"
+                            app:strokeWidth="1dp">
+
+                            <LinearLayout
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:orientation="vertical"
+                                android:padding="12dp">
+
+                                <TextView
+                                    android:id="@+id/tvSugeridosTitulo"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:fontFamily="@font/nunito_bold"
+                                    android:text="Medicamentos por debajo de su cuota:"
+                                    android:textColor="#92400E"
+                                    android:textSize="13sp" />
+
+                                <TextView
+                                    android:id="@+id/tvSugeridosDetalle"
+                                    android:layout_width="wrap_content"
+                                    android:layout_height="wrap_content"
+                                    android:layout_marginTop="4dp"
+                                    android:fontFamily="@font/nunito"
+                                    android:lineSpacingExtra="2dp"
+                                    android:textColor="#78350F"
+                                    android:textSize="12sp"
+                                    tools:text="• Ketamina: Stock 1 / Cuota 2 (Faltan: 1)\n• Meloxicam: Stock 2 / Cuota 10 (Faltan: 8)" />
+                            </LinearLayout>
+                        </com.google.android.material.card.MaterialCardView>
 
                         <com.google.android.material.textfield.TextInputLayout
                             android:id="@+id/tilMotivoTotal"
                             style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:hint="Motivo de la reposición total"
+                            android:layout_marginTop="8dp"
+                            android:hint="Motivo de la reposición"
                             app:boxCornerRadiusBottomEnd="12dp"
                             app:boxCornerRadiusBottomStart="12dp"
                             app:boxCornerRadiusTopEnd="12dp"
@@ -215,7 +248,7 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/nunito"
-                                android:text="Reposición de dotación de campo"
+                                android:text="Reposición de dotación de campo CBA"
                                 android:textColor="@color/text_primary"
                                 android:textSize="14sp" />
                         </com.google.android.material.textfield.TextInputLayout>
@@ -223,10 +256,10 @@
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnSolicitarReposicionTotal"
                             android:layout_width="match_parent"
-                            android:layout_height="48dp"
+                            android:layout_height="50dp"
                             android:layout_marginTop="12dp"
                             android:fontFamily="@font/nunito_bold"
-                            android:text="Solicitar reposición total"
+                            android:text="Radicar Reposición al CBA"
                             android:textAllCaps="false"
                             app:cornerRadius="12dp"
                             app:icon="@drawable/ic_check" />
@@ -255,7 +288,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/nunito_bold"
-                            android:text="Solicitud Específica / Devolución"
+                            android:text="Solicitud Adicional o Devolución"
                             android:textColor="@color/text_primary"
                             android:textSize="16sp" />
 
@@ -264,7 +297,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="2dp"
                             android:fontFamily="@font/nunito"
-                            android:text="Pide un medicamento puntual o devuelve sobrantes"
+                            android:text="Pide un medicamento específico o devuelve dosis al CBA"
                             android:textColor="@color/text_secondary"
                             android:textSize="12sp" />
 
@@ -336,7 +369,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/nunito_bold"
                                 android:inputType="number"
-                                android:text="5"
+                                android:text="1"
                                 android:textColor="@color/text_primary" />
                         </com.google.android.material.textfield.TextInputLayout>
 
@@ -359,23 +392,21 @@
                                 android:layout_width="match_parent"
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/nunito"
-                                android:hint="Ej. Se agotó en jornada de campo"
+                                android:text="Reposición de medicamento para atención de campo"
                                 android:textColor="@color/text_primary"
                                 android:textSize="14sp" />
                         </com.google.android.material.textfield.TextInputLayout>
 
-                        <!-- Botón Enviar -->
                         <com.google.android.material.button.MaterialButton
                             android:id="@+id/btnEnviarSolicitudPuntual"
-                            style="?attr/materialButtonOutlinedStyle"
                             android:layout_width="match_parent"
                             android:layout_height="48dp"
                             android:layout_marginTop="16dp"
                             android:fontFamily="@font/nunito_bold"
-                            android:text="Enviar solicitud al gestor"
+                            android:text="Enviar Solicitud Puntual"
                             android:textAllCaps="false"
                             app:cornerRadius="12dp"
-                            app:icon="@drawable/ic_medical_bag" />
+                            app:icon="@drawable/ic_check" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 

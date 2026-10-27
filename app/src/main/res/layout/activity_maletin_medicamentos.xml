@@ -155,6 +155,79 @@
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
+                <!-- Banner Proactivo de Alerta de Reposición Inteligente -->
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardAlertaReposicionProactiva"
+                    style="?attr/materialCardViewFilledStyle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginHorizontal="16dp"
+                    android:layout_marginBottom="12dp"
+                    android:visibility="gone"
+                    app:cardBackgroundColor="#FEF2F2"
+                    app:cardCornerRadius="16dp"
+                    app:cardElevation="0dp"
+                    app:strokeColor="#FECACA"
+                    app:strokeWidth="1dp"
+                    tools:visibility="visible">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="14dp">
+
+                        <ImageView
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:src="@drawable/warning_icon4"
+                            app:tint="#DC2626"
+                            android:layout_marginEnd="12dp"
+                            android:contentDescription="Alerta stock crítico" />
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:id="@+id/tvAlertaCriticosTitulo"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/nunito_bold"
+                                android:text="¡Stock crítico en maletín!"
+                                android:textColor="#991B1B"
+                                android:textSize="14sp" />
+
+                            <TextView
+                                android:id="@+id/tvAlertaCriticosSubtitulo"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginTop="2dp"
+                                android:fontFamily="@font/nunito"
+                                android:text="Medicamentos por debajo del umbral mínimo de seguridad."
+                                android:textColor="#B91C1C"
+                                android:textSize="11sp" />
+                        </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnReponerDesdeBanner"
+                            style="@style/Widget.Material3.Button.TonalButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minHeight="38dp"
+                            android:layout_marginStart="8dp"
+                            android:fontFamily="@font/nunito_bold"
+                            android:text="Reponer"
+                            android:textColor="#FFFFFF"
+                            app:backgroundTint="#DC2626"
+                            app:cornerRadius="10dp"
+                            android:textSize="11sp" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
                 <!-- Barra de Búsqueda M3 -->
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilBuscarMedicamento"
@@ -179,19 +252,21 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/nunito"
+                        android:imeOptions="actionSearch"
                         android:inputType="text"
+                        android:maxLines="1"
                         android:textColor="@color/text_primary"
                         android:textSize="14sp" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Filtros Rápidos por Categoría M3 -->
+                <!-- Filtros Rápidos por Categoría Médica M3 -->
                 <HorizontalScrollView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
                     android:clipToPadding="false"
                     android:paddingHorizontal="16dp"
-                    android:scrollbars="none"
-                    android:layout_marginBottom="8dp">
+                    android:scrollbars="none">
 
                     <com.google.android.material.chip.ChipGroup
                         android:id="@+id/chipGroupCategorias"
@@ -252,20 +327,21 @@
                     </com.google.android.material.chip.ChipGroup>
                 </HorizontalScrollView>
 
-                <!-- Lista de Medicamentos -->
+                <!-- Listado de Medicamentos -->
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvMedicamentos"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:nestedScrollingEnabled="false"
-                    tools:itemCount="4"
+                    tools:itemCount="5"
                     tools:listitem="@layout/item_medicamento_maletin" />
 
-                <!-- Vista de Estado Vacío M3 -->
+                <!-- Estado Vacío -->
                 <LinearLayout
                     android:id="@+id/layoutEmptyMedicamentos"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="32dp"
                     android:gravity="center"
                     android:orientation="vertical"
                     android:padding="32dp"
@@ -274,25 +350,25 @@
                     <ImageView
                         android:layout_width="64dp"
                         android:layout_height="64dp"
-                        android:src="@drawable/ic_pill"
+                        android:src="@drawable/ic_medical_bag"
                         app:tint="@color/text_secondary"
-                        android:contentDescription="@string/cd_sin_resultados" />
+                        android:contentDescription="@string/cd_maletin" />
 
                     <TextView
                         android:id="@+id/tvEmptyTitulo"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="16dp"
                         android:fontFamily="@font/nunito_bold"
                         android:text="@string/lbl_no_se_encontraron_medicamentos"
                         android:textColor="@color/text_primary"
-                        android:textSize="16sp" />
+                        android:textSize="17sp" />
 
                     <TextView
                         android:id="@+id/tvEmptySubtitulo"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="6dp"
                         android:fontFamily="@font/nunito"
                         android:gravity="center"
                         android:text="@string/lbl_intenta_con_otro_termino_de"
@@ -301,22 +377,20 @@
 
                     <com.google.android.material.button.MaterialButton
                         android:id="@+id/btnEmptySolicitarDotacion"
-                        style="?attr/materialButtonOutlinedStyle"
+                        style="@style/Widget.Material3.Button.TonalButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:fontFamily="@font/nunito_bold"
                         android:text="Solicitar dotación inicial"
-                        android:visibility="gone"
-                        app:cornerRadius="12dp"
-                        app:icon="@drawable/ic_medical_bag" />
+                        android:visibility="gone" />
                 </LinearLayout>
 
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 
-    <!-- Extended Floating Action Button M3 para Solicitar Kit -->
+    <!-- FAB: Solicitar Reposición de Kit -->
     <com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton
         android:id="@+id/fabSolicitarReposicion"
         android:layout_width="wrap_content"
@@ -324,10 +398,10 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:fontFamily="@font/nunito_bold"
-        android:text="Solicitudes kit"
+        android:text="Solicitar reposición"
         android:textColor="@color/white"
         app:backgroundTint="@color/primary"
-        app:icon="@drawable/ic_medical_bag"
+        app:icon="@drawable/ic_sync"
         app:iconTint="@color/white" />
 
 </androidx.coordinatorlayout.widget.CoordinatorLayout>

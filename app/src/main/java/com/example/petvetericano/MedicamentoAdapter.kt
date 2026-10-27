@@ -3,6 +3,7 @@ package com.example.petvetericano
 import android.content.res.ColorStateList
 import android.graphics.Color
 import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
@@ -91,6 +92,11 @@ class MedicamentoAdapter(
                     binding.progressBarStock.setIndicatorColor(red)
                     binding.tvStockCantidad.setTextColor(red)
                     binding.tvStockCantidad.text = "⚠️ Crítico: $dispInt ${item.unidadMedida} restante"
+
+                    binding.tvSemaforoBadge.visibility = View.VISIBLE
+                    binding.tvSemaforoBadge.text = "🔴 CRÍTICO"
+                    binding.tvSemaforoBadge.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FEE2E2"))
+                    binding.tvSemaforoBadge.setTextColor(Color.parseColor("#B91C1C"))
                 }
                 NivelSemaforoStock.REORDEN -> {
                     val amber = Color.parseColor("#D97706")
@@ -98,6 +104,11 @@ class MedicamentoAdapter(
                     binding.tvStockCantidad.setTextColor(amber)
                     val baseRef = item.cuotaAsignada ?: item.cantidadInicial.toInt()
                     binding.tvStockCantidad.text = "Stock bajo: $dispInt / $baseRef ${item.unidadMedida}"
+
+                    binding.tvSemaforoBadge.visibility = View.VISIBLE
+                    binding.tvSemaforoBadge.text = "🟠 REORDEN"
+                    binding.tvSemaforoBadge.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FEF3C7"))
+                    binding.tvSemaforoBadge.setTextColor(Color.parseColor("#B45309"))
                 }
                 NivelSemaforoStock.OPTIMO -> {
                     val green = Color.parseColor("#059669")
@@ -109,19 +120,50 @@ class MedicamentoAdapter(
                     } else {
                         "$dispInt / $baseRef ${item.unidadMedida}"
                     }
+
+                    binding.tvSemaforoBadge.visibility = View.VISIBLE
+                    binding.tvSemaforoBadge.text = "🟢 ÓPTIMO"
+                    binding.tvSemaforoBadge.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#D1FAE5"))
+                    binding.tvSemaforoBadge.setTextColor(Color.parseColor("#065F46"))
                 }
                 NivelSemaforoStock.AGOTADO -> {
                     val red = Color.parseColor("#EF4444")
                     binding.progressBarStock.setIndicatorColor(red)
                     binding.tvStockCantidad.setTextColor(red)
                     binding.tvStockCantidad.text = "Agotado (0 ${item.unidadMedida})"
+
+                    binding.tvSemaforoBadge.visibility = View.VISIBLE
+                    binding.tvSemaforoBadge.text = "⚪ AGOTADO"
+                    binding.tvSemaforoBadge.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#F3F4F6"))
+                    binding.tvSemaforoBadge.setTextColor(Color.parseColor("#6B7280"))
                 }
                 NivelSemaforoStock.VENCIDO -> {
                     val gray = Color.parseColor("#9CA3AF")
                     binding.progressBarStock.setIndicatorColor(gray)
                     binding.tvStockCantidad.setTextColor(gray)
                     binding.tvStockCantidad.text = "Vencido / No apto"
+
+                    binding.tvSemaforoBadge.visibility = View.VISIBLE
+                    binding.tvSemaforoBadge.text = "❌ VENCIDO"
+                    binding.tvSemaforoBadge.backgroundTintList = ColorStateList.valueOf(Color.parseColor("#FEE2E2"))
+                    binding.tvSemaforoBadge.setTextColor(Color.parseColor("#991B1B"))
                 }
+            }
+
+            // Configurar texto de cuota de referencia y unidades faltantes
+            val cuota = item.cuotaAsignada
+            if (cuota != null) {
+                val faltantes = item.unidadesFaltantesParaCuota
+                if (faltantes > 0) {
+                    binding.tvCuotaReferencia.text = "Cuota asignada: $cuota ${item.unidadMedida} • Faltan: $faltantes para completar"
+                    binding.tvCuotaReferencia.setTextColor(Color.parseColor("#D97706"))
+                } else {
+                    binding.tvCuotaReferencia.text = "Cuota asignada: $cuota ${item.unidadMedida} • Cuota al 100%"
+                    binding.tvCuotaReferencia.setTextColor(Color.parseColor("#059669"))
+                }
+                binding.tvCuotaReferencia.visibility = View.VISIBLE
+            } else {
+                binding.tvCuotaReferencia.visibility = View.GONE
             }
 
             // Estilo visual del badge según categoría médica

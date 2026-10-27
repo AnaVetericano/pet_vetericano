@@ -1,5 +1,6 @@
 package com.example.petvetericano
 
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.ArrayAdapter
@@ -92,19 +93,41 @@ class SolicitudesKitActivity : AppCompatActivity() {
     private fun prepararFormularioNuevaSolicitud() {
         val medsRepo = maletinManager.getMedicamentosParaReposicion()
         if (medsRepo.isNotEmpty()) {
-            binding.tilMotivoTotal.helperText = "${medsRepo.size} medicamento(s) en tu maletín están por debajo de su cuota de referencia."
+            binding.cardSugeridosContainer.visibility = View.VISIBLE
+            binding.cardSugeridosContainer.setCardBackgroundColor(Color.parseColor("#FEF3C7"))
+            binding.cardSugeridosContainer.strokeColor = Color.parseColor("#FDE68A")
+            binding.tvSugeridosTitulo.text = "⚠️ ${medsRepo.size} medicamento(s) requieren reposición de cuota:"
+            binding.tvSugeridosTitulo.setTextColor(Color.parseColor("#92400E"))
+            binding.tvSugeridosDetalle.text = medsRepo.joinToString("\n") {
+                val cuota = it.cuotaAsignada ?: it.cantidadInicial.toInt()
+                val faltan = it.unidadesFaltantesParaCuota
+                "• ${it.nombre}: Stock actual ${it.saldoDisponibleInt} / Cuota $cuota (Faltan: $faltan ${it.unidadMedida})"
+            }
+            binding.tvSugeridosDetalle.setTextColor(Color.parseColor("#78350F"))
+            binding.btnSolicitarReposicionTotal.text = "Radicar Reposición (${medsRepo.size} fármacos)"
+            binding.btnSolicitarReposicionTotal.isEnabled = true
+            binding.tilMotivoTotal.helperText = "${medsRepo.size} medicamento(s) detectados por debajo de su cuota."
             if (binding.etMotivoTotal.text.isNullOrBlank()) {
                 binding.etMotivoTotal.setText("Reposición de existencias para completar cuota de maletín de campo CBA.")
             }
         } else {
+            binding.cardSugeridosContainer.visibility = View.VISIBLE
+            binding.cardSugeridosContainer.setCardBackgroundColor(Color.parseColor("#ECFDF5"))
+            binding.cardSugeridosContainer.strokeColor = Color.parseColor("#A7F3D0")
+            binding.tvSugeridosTitulo.text = "✅ Cuotas al día"
+            binding.tvSugeridosTitulo.setTextColor(Color.parseColor("#065F46"))
+            binding.tvSugeridosDetalle.text = "Todas las referencias de tu maletín cumplen actualmente su cuota física asignada."
+            binding.tvSugeridosDetalle.setTextColor(Color.parseColor("#047857"))
+            binding.btnSolicitarReposicionTotal.text = "Maletín con cuota completa"
+            binding.btnSolicitarReposicionTotal.isEnabled = false
             binding.tilMotivoTotal.helperText = "Tu maletín tiene actualmente todas sus cuotas completas."
             if (binding.etMotivoTotal.text.isNullOrBlank()) {
-                binding.etMotivoTotal.setText("Reposición de stock para atención clínica.")
+                binding.etMotivoTotal.setText("Reposición preventiva de stock.")
             }
         }
 
         if (binding.etMotivoPuntual.text.isNullOrBlank()) {
-            binding.etMotivoPuntual.setText("Reposición de medicamento consumido en atención en campo.")
+            binding.etMotivoPuntual.setText("Reposición de medicamento para atención de campo.")
         }
     }
 
@@ -121,7 +144,8 @@ class SolicitudesKitActivity : AppCompatActivity() {
             val medsFaltantes = maletinManager.getMedicamentosParaReposicion()
             val resumenFaltantes = if (medsFaltantes.isNotEmpty()) {
                 medsFaltantes.joinToString("\n") {
-                    "• ${it.nombre}: stock actual ${it.saldoDisponibleInt} / cuota ${it.cuotaAsignada ?: "N/D"}"
+                    val cuota = it.cuotaAsignada ?: it.cantidadInicial.toInt()
+                    "• ${it.nombre}: stock actual ${it.saldoDisponibleInt} / cuota $cuota (Faltan: ${it.unidadesFaltantesParaCuota})"
                 }
             } else {
                 "Todas las cuotas asignadas están al día."
@@ -129,8 +153,8 @@ class SolicitudesKitActivity : AppCompatActivity() {
 
             MaterialAlertDialogBuilder(this)
                 .setIcon(R.drawable.ic_sync)
-                .setTitle("¿Solicitar reposición total?")
-                .setMessage("El gestor de Farmacia CBA recibirá tu petición para abastecer todas las referencias por debajo de su cuota:\n\n$resumenFaltantes")
+                .setTitle("¿Solicitar reposición de cuotas?")
+                .setMessage("El gestor de Farmacia CBA recibirá tu petición para abastecer las referencias con stock faltante:\n\n$resumenFaltantes")
                 .setPositiveButton("Confirmar y enviar") { dialog, _ ->
                     dialog.dismiss()
                     enviarSolicitud(
@@ -238,7 +262,7 @@ class SolicitudesKitActivity : AppCompatActivity() {
                 medicamentosDisponibles = listaOpciones
                 val nombres = listaOpciones.map { item ->
                     val medMal = maletinMap[item.idMedicamento]
-                    val cuota = medMal?.cuotaAsignada
+                    val cuota = medMal?.cuotaAsignada ?: medMal?.cantidadInicial?.toInt()
                     when {
                         cuota != null -> "${item.nombre} (En maletín: ${item.saldoDisponible} / cuota $cuota)"
                         item.saldoDisponible > 0 -> "${item.nombre} (En maletín: ${item.saldoDisponible})"
@@ -253,11 +277,12 @@ class SolicitudesKitActivity : AppCompatActivity() {
                     medicamentoSeleccionado = med
                     if (med != null) {
                         val medMal = maletinMap[med.idMedicamento]
-                        if (medMal != null && medMal.cuotaAsignada != null) {
+                        val cuota = medMal?.cuotaAsignada ?: medMal?.cantidadInicial?.toInt()
+                        if (medMal != null && cuota != null) {
                             val faltante = medMal.unidadesFaltantesParaCuota
                             if (faltante > 0) {
                                 binding.etCantidadSolicitud.setText(faltante.toString())
-                                binding.tilCantidadSolicitud.helperText = "Stock: ${medMal.saldoDisponibleInt} | Cuota: ${medMal.cuotaAsignada} | Faltan para completar: $faltante ${medMal.unidadMedida}"
+                                binding.tilCantidadSolicitud.helperText = "Stock: ${medMal.saldoDisponibleInt} | Cuota: $cuota | Faltan para completar: $faltante ${medMal.unidadMedida}"
                             } else {
                                 binding.etCantidadSolicitud.setText("1")
                                 binding.tilCantidadSolicitud.helperText = "Stock: ${medMal.saldoDisponibleInt} (Cuota asignada completa)"

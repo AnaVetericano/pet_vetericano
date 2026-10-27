@@ -158,6 +158,21 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
         binding.tvTotalReferenciasHeader.text = "$disponiblesCount"
         binding.tvEstadoGeneralBadge.text = maletinManager.getEstadoStock()
 
+        // Banner proactivo de alerta visual cuando hay medicamentos en estado crítico
+        val criticos = medicamentos.filter { it.esCritico }
+        if (criticos.isNotEmpty()) {
+            binding.cardAlertaReposicionProactiva.visibility = View.VISIBLE
+            binding.tvAlertaCriticosTitulo.text = "¡${criticos.size} medicamento(s) en stock crítico!"
+            val nombres = criticos.take(2).joinToString(", ") { "${it.nombre} (${it.saldoDisponibleInt}/${it.cuotaAsignada ?: it.cantidadInicial.toInt()})" }
+            val resto = if (criticos.size > 2) " y ${criticos.size - 2} más" else ""
+            binding.tvAlertaCriticosSubtitulo.text = "$nombres$resto requieren reposición urgente de farmacia CBA."
+            binding.btnReponerDesdeBanner.setOnClickListener {
+                abrirPantallaSolicitudesKit()
+            }
+        } else {
+            binding.cardAlertaReposicionProactiva.visibility = View.GONE
+        }
+
         val ultSync = maletinManager.getUltimoTimestampSync()
         if (ultSync > 0L) {
             val fechaFmt = android.text.format.DateFormat.format("dd/MM/yyyy HH:mm", ultSync)
@@ -260,6 +275,10 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
             append("• Stock vigente disponible: ").append(med.saldoDisponibleInt).append(" ").append(med.unidadMedida).append("\n")
             if (med.cuotaAsignada != null) {
                 append("• Cuota asignada de referencia: ").append(med.cuotaAsignada).append(" ").append(med.unidadMedida).append("\n")
+                val faltante = med.unidadesFaltantesParaCuota
+                if (faltante > 0) {
+                    append("• Faltan para completar cuota: ").append(faltante).append(" ").append(med.unidadMedida).append("\n")
+                }
             }
             if (med.saldoVencido > 0) {
                 append("⚠️ Stock vencido (no apto): ").append(med.saldoVencido).append(" ").append(med.unidadMedida).append("\n")

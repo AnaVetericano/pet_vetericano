@@ -19,7 +19,7 @@
         android:orientation="vertical"
         android:padding="16dp">
 
-        <!-- Fila Superior: Icono, Nombres y Badge de Categoría -->
+        <!-- Fila Superior: Icono, Nombres y Badges -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -70,19 +70,42 @@
                     tools:text="5 mg/ml • Frasco ampolla 20 ml" />
             </LinearLayout>
 
-            <!-- Badge de Categoría -->
-            <TextView
-                android:id="@+id/tvCategoriaBadge"
+            <!-- Columna de Badges (Semáforo + Categoría) -->
+            <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_rounded_badge"
-                android:backgroundTint="@color/badge_alta_bg"
-                android:fontFamily="@font/nunito_bold"
-                android:paddingHorizontal="8dp"
-                android:paddingVertical="4dp"
-                android:textColor="@color/badge_alta_text"
-                android:textSize="10sp"
-                tools:text="AINE / Analgésico" />
+                android:gravity="end"
+                android:orientation="vertical">
+
+                <!-- Badge Semáforo Clínico -->
+                <TextView
+                    android:id="@+id/tvSemaforoBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_rounded_badge"
+                    android:backgroundTint="#FEE2E2"
+                    android:fontFamily="@font/nunito_bold"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:textColor="#B91C1C"
+                    android:textSize="10sp"
+                    android:layout_marginBottom="4dp"
+                    tools:text="🔴 CRÍTICO" />
+
+                <!-- Badge de Categoría Farmacológica -->
+                <TextView
+                    android:id="@+id/tvCategoriaBadge"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:background="@drawable/bg_rounded_badge"
+                    android:backgroundTint="@color/badge_alta_bg"
+                    android:fontFamily="@font/nunito_bold"
+                    android:paddingHorizontal="8dp"
+                    android:paddingVertical="3dp"
+                    android:textColor="@color/badge_alta_text"
+                    android:textSize="10sp"
+                    tools:text="AINE / Analgésico" />
+            </LinearLayout>
         </LinearLayout>
 
         <!-- Divisor sutil -->
@@ -123,11 +146,22 @@
             android:id="@+id/progressBarStock"
             android:layout_width="match_parent"
             android:layout_height="6dp"
-            android:layout_marginBottom="12dp"
+            android:layout_marginBottom="6dp"
             app:indicatorColor="@color/primary"
             app:trackColor="@color/card_stroke"
             app:trackCornerRadius="4dp"
             tools:progress="85" />
+
+        <!-- Indicador de Cuota de Referencia y Faltante -->
+        <TextView
+            android:id="@+id/tvCuotaReferencia"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            android:fontFamily="@font/nunito_bold"
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp"
+            tools:text="Cuota asignada: 20 unidades • Faltan: 2 unidades para cuota completa" />
 
         <!-- Fila de Metadatos: Lote, Vencimiento y Vía -->
         <LinearLayout

@@ -285,6 +285,17 @@ data class FuncionarioItemResponse(
     val identificacion: String?
 )
 
+data class SeguimientoResumenResponse(
+    @SerializedName("id_seguimiento")
+    val idSeguimiento: Int? = null,
+
+    @SerializedName("id_peticion")
+    val idPeticion: Int? = null,
+
+    @SerializedName("numero_radicado")
+    val numeroRadicado: String? = null
+)
+
 data class CrearActaResponse(
     @SerializedName("mensaje")
     val mensaje: String?,
@@ -373,6 +384,7 @@ data class AnimalCardState(
     val nombre: String = "",
     val especie: String = "",
     val raza: String = "",
+    val idRaza: Int? = null,
     val sexo: String = "",
     val color: String = "",
     val edadNumero: String = "1",

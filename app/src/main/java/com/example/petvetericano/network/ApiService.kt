@@ -75,6 +75,13 @@ interface ApiService {
         @Header("Authorization") token: String
     ): Response<List<com.example.petvetericano.models.PeticionListResponse>>
 
+    @GET("peticiones/seguimiento/listar/")
+    suspend fun listarSeguimientosVisita(
+        @Header("Authorization") token: String,
+        @Query("id_peticion") idPeticion: Int? = null,
+        @Query("numero_radicado") numeroRadicado: String? = null
+    ): Response<List<com.example.petvetericano.models.SeguimientoResumenResponse>>
+
     @POST("peticiones/seguimiento/crear/")
     suspend fun crearSeguimientoPeticionVisita(
         @Header("Authorization") token: String,

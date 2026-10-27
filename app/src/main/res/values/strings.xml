@@ -516,4 +516,41 @@
     <string name="helper_recomendado_ingresa_tu_matricula_profesional">Recomendado: Ingresa tu matrícula profesional para validar actas</string>
     <string name="hint_cedula_documento_de_identidad_d">Cédula / Documento de identidad (D.I.)</string>
     <string name="helper_ej_18_609_007">Ej: 18.609.007</string>
+    <!-- Acta Offline: Diálogos y Toasts de Borrador (Tareas 3a + 3b) -->
+    <string name="acta_offline_dialog_borrador_titulo">Borrador encontrado</string>
+    <string name="acta_offline_dialog_borrador_mensaje">Tienes un borrador guardado de esta petición (Paso %1$d de 3, actualizado el %2$s). ¿Deseas continuar donde lo dejaste o empezar de nuevo?</string>
+    <string name="acta_offline_dialog_borrador_continuar">Continuar borrador</string>
+    <string name="acta_offline_dialog_borrador_descartar">Empezar de nuevo</string>
+    <string name="acta_offline_dialog_atencion_mensaje">Esta acta no pudo enviarse: %1$s. Corrígela y vuelve a enviarla.</string>
+    <string name="acta_offline_toast_borrador_restaurado">Borrador restaurado en el Paso %1$d</string>
+    <string name="acta_offline_toast_borrador_descartado">Borrador anterior descartado</string>
+
+    <!-- Acta Offline: Notificaciones (Tarea 5) -->
+    <string name="acta_offline_channel_nombre">Sincronización de Actas en Campo</string>
+    <string name="acta_offline_channel_descripcion">Notificaciones sobre el envío automático de actas registradas sin conexión</string>
+    <string name="acta_offline_notif_exito_titulo">Acta sincronizada exitosamente</string>
+    <string name="acta_offline_notif_exito_texto">El acta %1$s (Petición #%2$d) fue registrada correctamente en el sistema.</string>
+    <string name="acta_offline_notif_stock_alerta_titulo">Acta enviada con alerta de stock</string>
+    <string name="acta_offline_notif_stock_alerta_texto">El acta %1$s se guardó correctamente, pero se registró alerta de stock en: %2$s.</string>
+    <string name="acta_offline_notif_atencion_datos_titulo">Un acta requiere revisión</string>
+    <string name="acta_offline_notif_atencion_datos_texto">El acta %1$s no pudo sincronizarse: %2$s. Toca para revisarla y reenviar.</string>
+    <string name="acta_offline_notif_atencion_sesion_titulo">Inicia sesión para sincronizar tus actas</string>
+    <string name="acta_offline_notif_atencion_sesion_texto">Tu sesión expiró mientras había actas pendientes de envío. Toca para iniciar sesión y reanudar.</string>
+
+    <!-- Acta Offline: Errores de sincronización (Tarea 4a) -->
+    <string name="acta_offline_error_datos_generico">Revisa los datos del acta y vuelve a enviarla</string>
+    <string name="acta_offline_error_sesion">Tu sesión expiró. Inicia sesión para reanudar el envío</string>
+    <string name="acta_offline_error_evidencia_faltante">Falta uno de los archivos adjuntos (foto o video) en el dispositivo</string>
+    <string name="acta_offline_error_evidencia_subida">No se pudieron subir las fotos o videos del acta</string>
+    <string name="acta_offline_error_reintentos">No se pudo enviar el acta después de varios intentos</string>
+
+    <!-- Acta Offline: envío híbrido (Tarea 4b) -->
+    <string name="acta_offline_dialog_encolada_titulo">Acta guardada sin conexión</string>
+    <string name="acta_offline_dialog_encolada_mensaje">No hay conexión estable en este momento. El acta %1$s quedó guardada de forma segura en el dispositivo y se enviará automáticamente en segundo plano apenas vuelva internet.</string>
+    <string name="acta_offline_dialog_encolada_boton">Entendido</string>
+    <string name="acta_offline_dialog_en_cola_titulo">Acta en cola de envío</string>
+    <string name="acta_offline_dialog_en_cola_mensaje">El acta %1$s ya está guardada y se enviará automáticamente cuando haya conexión estable. No se puede editar mientras tanto.</string>
+    <string name="acta_offline_dialog_ya_enviada_titulo">Acta ya enviada</string>
+    <string name="acta_offline_dialog_ya_enviada_mensaje">El acta %1$s ya fue enviada correctamente.</string>
+    <string name="acta_offline_dialog_en_cola_boton">Entendido</string>
 </resources>

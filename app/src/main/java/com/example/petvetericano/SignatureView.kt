@@ -2,12 +2,15 @@ package com.example.petvetericano
 
 import android.content.Context
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
 import android.graphics.Paint
 import android.graphics.Path
+import android.graphics.Rect
 import android.util.AttributeSet
 import android.util.Base64
+import android.util.Log
 import android.view.MotionEvent
 import android.view.View
 import java.io.ByteArrayOutputStream
@@ -33,9 +36,18 @@ class SignatureView @JvmOverloads constructor(
     }
 
     private var hasSignature = false
+    private var restoredBitmap: Bitmap? = null
+    private var hasDrawnNewStrokes = false
+    private var originalDataUri: String? = null
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        restoredBitmap?.let { bitmap ->
+            if (!bitmap.isRecycled && width > 0 && height > 0) {
+                val destRect = Rect(0, 0, width, height)
+                canvas.drawBitmap(bitmap, null, destRect, null)
+            }
+        }
         canvas.drawPath(path, paint)
     }
 
@@ -50,6 +62,7 @@ class SignatureView @JvmOverloads constructor(
             MotionEvent.ACTION_DOWN -> {
                 path.moveTo(x, y)
                 hasSignature = true
+                hasDrawnNewStrokes = true
                 invalidate()
                 return true
             }
@@ -66,28 +79,85 @@ class SignatureView @JvmOverloads constructor(
     }
 
     /**
-     * Limpia el trazo de la firma
+     * Restaura una firma previa a partir de una cadena data URI en Base64
+     * con formato "data:image/png;base64,..."
+     */
+    fun restoreFromBase64(dataUri: String?) {
+        if (dataUri.isNullOrBlank()) {
+            clear()
+            return
+        }
+        try {
+            val base64Clean = if (dataUri.contains(",")) {
+                dataUri.substringAfter(",")
+            } else {
+                dataUri
+            }
+            val bytes = Base64.decode(base64Clean, Base64.DEFAULT)
+            val decoded = BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+            if (decoded != null) {
+                restoredBitmap?.recycle()
+                restoredBitmap = decoded
+                originalDataUri = if (dataUri.startsWith("data:image/")) dataUri else "data:image/png;base64,$dataUri"
+                hasSignature = true
+                hasDrawnNewStrokes = false
+                path.reset()
+                invalidate()
+            }
+        } catch (e: Exception) {
+            Log.e("SignatureView", "Error restaurando firma Base64", e)
+        }
+    }
+
+    /**
+     * Limpia el trazo de la firma y el bitmap restaurado
      */
     fun clear() {
         path.reset()
+        restoredBitmap?.recycle()
+        restoredBitmap = null
+        originalDataUri = null
         hasSignature = false
+        hasDrawnNewStrokes = false
         invalidate()
     }
 
     /**
-     * Indica si se ha realizado al menos un trazo
+     * Indica si se ha realizado al menos un trazo o restaurado una firma válida
      */
     fun isSigned(): Boolean = hasSignature
+
+    /**
+     * Alias de isSigned para compatibilidad de nomenclatura
+     */
+    fun hasSignature(): Boolean = hasSignature
 
     /**
      * Convierte la firma dibujada en una cadena Base64 PNG compatible con Django TextField
      */
     fun toBase64(): String? {
-        if (!hasSignature || width <= 0 || height <= 0) return null
+        if (!hasSignature) return null
 
-        val bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888)
+        // Si la firma proviene de una restauración y el usuario no realizó nuevos trazos,
+        // devolvemos la cadena original garantizando fidelidad e independencia del ciclo de vida de la vista.
+        if (!hasDrawnNewStrokes && !originalDataUri.isNullOrEmpty()) {
+            return originalDataUri
+        }
+
+        val targetWidth = if (width > 0) width else restoredBitmap?.width ?: 0
+        val targetHeight = if (height > 0) height else restoredBitmap?.height ?: 0
+        if (targetWidth <= 0 || targetHeight <= 0) return null
+
+        val bitmap = Bitmap.createBitmap(targetWidth, targetHeight, Bitmap.Config.ARGB_8888)
         val canvas = Canvas(bitmap)
         canvas.drawColor(Color.WHITE)
+
+        restoredBitmap?.let { rBitmap ->
+            if (!rBitmap.isRecycled) {
+                val destRect = Rect(0, 0, targetWidth, targetHeight)
+                canvas.drawBitmap(rBitmap, null, destRect, null)
+            }
+        }
         canvas.drawPath(path, paint)
 
         val outputStream = ByteArrayOutputStream()

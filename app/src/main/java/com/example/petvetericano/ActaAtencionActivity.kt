@@ -53,6 +53,9 @@ import android.media.ExifInterface
 import android.media.MediaMetadataRetriever
 import java.io.FileOutputStream
 import android.net.Uri
+import android.os.Handler
+import android.os.Looper
+import android.util.Log
 import android.widget.ImageView
 import androidx.core.content.FileProvider
 import com.cloudinary.android.MediaManager
@@ -60,14 +63,24 @@ import com.cloudinary.android.callback.ErrorInfo
 import com.cloudinary.android.callback.UploadCallback
 import com.bumptech.glide.Glide
 import com.example.petvetericano.databinding.ItemActaMediaAdjuntoBinding
+import com.example.petvetericano.offline.ActaFormSnapshotMapper
+import com.example.petvetericano.offline.ActaLocalEntity
+import com.example.petvetericano.offline.ActaLocalRepository
+import com.example.petvetericano.offline.ActaRequestBuilder
+import com.example.petvetericano.offline.EstadoSincronizacionActa
+import com.example.petvetericano.offline.EvidenciaLocalItem
+import com.google.gson.Gson
 import java.io.File
+import java.util.WeakHashMap
 import kotlin.coroutines.resume
 import kotlinx.coroutines.suspendCancellableCoroutine
 
 data class MediaAdjunto(
     val uri: Uri,
     val esVideo: Boolean,
-    val nombre: String = ""
+    val nombre: String = "",
+    val localPath: String = "",
+    var remoteUrl: String? = null
 )
 
 class ActaAtencionActivity : AppCompatActivity() {
@@ -103,9 +116,11 @@ class ActaAtencionActivity : AppCompatActivity() {
         ActivityResultContracts.TakePicture()
     ) { success ->
         if (success && tempCameraUri != null) {
-            tempCameraFile?.let { optimizarImagen(it) }
-            selectedMediaList.add(MediaAdjunto(tempCameraUri!!, esVideo = false, "Foto de campo"))
+            val optFile = tempCameraFile?.let { optimizarImagen(it) }
+            val rutaLocal = optFile?.absolutePath ?: tempCameraFile?.absolutePath.orEmpty()
+            selectedMediaList.add(MediaAdjunto(tempCameraUri!!, esVideo = false, "Foto de campo", localPath = rutaLocal))
             actualizarVistaMultimedia()
+            programarGuardado()
             Toast.makeText(this, "Foto capturada y optimizada 📷", Toast.LENGTH_SHORT).show()
         }
     }
@@ -116,8 +131,9 @@ class ActaAtencionActivity : AppCompatActivity() {
         uri?.let {
             val localUri = copiarUriALocal(it, esVideo = false)
             if (localUri != null) {
-                selectedMediaList.add(MediaAdjunto(localUri, esVideo = false, "Foto seleccionada"))
+                selectedMediaList.add(MediaAdjunto(localUri, esVideo = false, "Foto seleccionada", localPath = ultimaRutaLocalCopiada))
                 actualizarVistaMultimedia()
+                programarGuardado()
                 Toast.makeText(this, "Foto adjunta al acta 📷", Toast.LENGTH_SHORT).show()
             }
         }
@@ -137,8 +153,10 @@ class ActaAtencionActivity : AppCompatActivity() {
                     .setPositiveButton("Aceptar", null)
                     .show()
             } else {
-                selectedMediaList.add(MediaAdjunto(tempCameraUri!!, esVideo = true, "Video de campo"))
+                val rutaLocal = tempCameraFile?.absolutePath.orEmpty()
+                selectedMediaList.add(MediaAdjunto(tempCameraUri!!, esVideo = true, "Video de campo", localPath = rutaLocal))
                 actualizarVistaMultimedia()
+                programarGuardado()
                 Toast.makeText(this, "Video grabado correctamente 🎥", Toast.LENGTH_SHORT).show()
             }
         }
@@ -150,8 +168,9 @@ class ActaAtencionActivity : AppCompatActivity() {
         uri?.let {
             val localUri = copiarUriALocal(it, esVideo = true)
             if (localUri != null) {
-                selectedMediaList.add(MediaAdjunto(localUri, esVideo = true, "Video seleccionado"))
+                selectedMediaList.add(MediaAdjunto(localUri, esVideo = true, "Video seleccionado", localPath = ultimaRutaLocalCopiada))
                 actualizarVistaMultimedia()
+                programarGuardado()
                 Toast.makeText(this, "Video adjunto al acta 🎥", Toast.LENGTH_SHORT).show()
             }
         }
@@ -201,9 +220,50 @@ class ActaAtencionActivity : AppCompatActivity() {
     )
     private val unidadesEdad = arrayOf("Años", "Meses", "Semanas")
 
+    // Gestión de borrador offline en SQLite
+    private lateinit var actaLocalRepository: ActaLocalRepository
+    private var entidadBorradorActual: ActaLocalEntity? = null
+    private val dbWriteLock = Any()
+    private val guardadoHandler = Handler(Looper.getMainLooper())
+    private val guardadoDebounceRunnable = Runnable {
+        ejecutarGuardadoDebounce()
+    }
+    private var isInitialSetup = true
+    private var isRestaurandoBorrador = false
+    private var actualizandoCatalogos = false
+    private var mostrandoDialogoBorrador = false
+    private var usuarioHaEditado = false
+    private var huboInteraccionUsuario = false
+    private var actaEnviadaExitosamente = false
+    private var ultimaRutaLocalCopiada: String = ""
+    private val estadoRestauradoPorTarjeta = WeakHashMap<ItemAnimalFormularioBinding, AnimalCardState>()
+    private val medicamentosPersistidosPrevios = mutableListOf<MedicamentoAplicadoActa>()
+
+    private inner class DebugBuildConfig {
+        val DEBUG: Boolean
+            get() = (applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE) != 0
+    }
+    private val BuildConfig = DebugBuildConfig()
+
+    private val resolverIdRaza: (String, String) -> Int? = { especieRaw, razaRaw ->
+        val especie = if (especieRaw.trim().equals("Seleccionar", ignoreCase = true)) "" else especieRaw.trim()
+        val raza = if (razaRaw.trim().equals("Seleccionar", ignoreCase = true)) "" else razaRaw.trim().ifEmpty { "Mestizo" }
+        val razaObj = listaRazasBackend.firstOrNull {
+            it.nombre.equals(raza, ignoreCase = true) &&
+                (it.nombreEspecie.isNullOrEmpty() || it.nombreEspecie.equals(especie, ignoreCase = true))
+        } ?: listaRazasBackend.firstOrNull {
+            it.nombre.equals(raza, ignoreCase = true)
+        } ?: listaRazasBackend.firstOrNull {
+            it.nombreEspecie?.equals(especie, ignoreCase = true) == true
+        }
+        razaObj?.idRaza
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        isInitialSetup = true
+        actaLocalRepository = ActaLocalRepository.getInstance(this)
 
         binding = ActivityActaAtencionBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -243,6 +303,8 @@ class ActaAtencionActivity : AppCompatActivity() {
             latitudVisita = savedInstanceState.getDouble("KEY_LATITUD_VISITA", latitudVisita)
             longitudVisita = savedInstanceState.getDouble("KEY_LONGITUD_VISITA", longitudVisita)
             pendingMediaEsVideo = savedInstanceState.getBoolean("KEY_PENDING_MEDIA_ES_VIDEO", false)
+            usuarioHaEditado = savedInstanceState.getBoolean("KEY_USUARIO_HA_EDITADO", false)
+            huboInteraccionUsuario = savedInstanceState.getBoolean("KEY_HUBO_INTERACCION_USUARIO", false)
 
             tempCameraUri = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                 savedInstanceState.getParcelable("KEY_TEMP_CAMERA_URI", Uri::class.java)
@@ -256,10 +318,16 @@ class ActaAtencionActivity : AppCompatActivity() {
             }
             val urisList = savedInstanceState.getStringArrayList("KEY_MEDIA_URIS")
             val isVideoList = savedInstanceState.getBooleanArray("KEY_MEDIA_IS_VIDEO")
+            val localPathsList = savedInstanceState.getStringArrayList("KEY_MEDIA_LOCAL_PATHS")
+            val nombresList = savedInstanceState.getStringArrayList("KEY_MEDIA_NOMBRES")
+            val remoteUrlsList = savedInstanceState.getStringArrayList("KEY_MEDIA_REMOTE_URLS")
             if (urisList != null && isVideoList != null && urisList.size == isVideoList.size) {
                 selectedMediaList.clear()
                 for (i in urisList.indices) {
-                    selectedMediaList.add(MediaAdjunto(Uri.parse(urisList[i]), isVideoList[i], "Adjunto"))
+                    val path = localPathsList?.getOrNull(i).orEmpty()
+                    val nom = nombresList?.getOrNull(i).orEmpty()
+                    val rem = remoteUrlsList?.getOrNull(i)?.takeIf { it.isNotEmpty() }
+                    selectedMediaList.add(MediaAdjunto(Uri.parse(urisList[i]), isVideoList[i], nom, path, rem))
                 }
             }
             actualizarVistaMultimedia()
@@ -287,6 +355,8 @@ class ActaAtencionActivity : AppCompatActivity() {
             if (!medsGuardados.isNullOrEmpty()) {
                 medicamentosAplicadosList.clear()
                 medicamentosAplicadosList.addAll(medsGuardados)
+                medicamentosPersistidosPrevios.clear()
+                medicamentosPersistidosPrevios.addAll(medsGuardados)
                 actualizarVistaMedicamentosAplicados()
             }
 
@@ -307,6 +377,14 @@ class ActaAtencionActivity : AppCompatActivity() {
             } else {
                 agregarFormularioAnimal()
             }
+
+            val idVet = obtenerIdVeterinarioActual()
+            if (peticionId != -1 && idVet != -1) {
+                val existente = actaLocalRepository.obtenerPorPeticionYVeterinario(peticionId, idVet)
+                if (existente != null && (existente.estadoSincronizacion == EstadoSincronizacionActa.BORRADOR || existente.estadoSincronizacion == EstadoSincronizacionActa.REQUIERE_ATENCION)) {
+                    entidadBorradorActual = existente.copy(estadoSincronizacion = EstadoSincronizacionActa.BORRADOR)
+                }
+            }
         } else {
             // Agregar por defecto al menos un formulario de paciente al iniciar por primera vez
             agregarFormularioAnimal()
@@ -317,6 +395,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         binding.btnAddAnimal.setOnClickListener {
             agregarFormularioAnimal()
+            programarGuardado()
         }
 
         binding.btnSiguiente.setOnClickListener {
@@ -325,6 +404,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                     if (validarPaso1()) {
                         currentStep = 2
                         updateStepper()
+                        guardarBorradorEnCambioDePaso()
                     }
                 }
                 2 -> {
@@ -342,6 +422,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                             autocompletarDatosRescateDesdeSeresSintientes(forzarSobrescritura = false)
                         }
                         updateStepper()
+                        guardarBorradorEnCambioDePaso()
                     }
                 }
                 3 -> {
@@ -356,8 +437,32 @@ class ActaAtencionActivity : AppCompatActivity() {
             if (currentStep > 1) {
                 currentStep--
                 updateStepper()
+                guardarBorradorEnCambioDePaso()
             }
         }
+
+        setupListenersGuardadoBorrador()
+        isInitialSetup = false
+        if (savedInstanceState == null) {
+            verificarBorradorExistenteAlAbrir()
+        }
+    }
+
+    override fun onPause() {
+        if (!actaEnviadaExitosamente) {
+            guardarBorradorSincrono(incluirFirmas = true)
+        }
+        super.onPause()
+    }
+
+    override fun onUserInteraction() {
+        super.onUserInteraction()
+        huboInteraccionUsuario = true
+    }
+
+    override fun onDestroy() {
+        guardadoHandler.removeCallbacks(guardadoDebounceRunnable)
+        super.onDestroy()
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
@@ -367,33 +472,24 @@ class ActaAtencionActivity : AppCompatActivity() {
         outState.putDouble("KEY_LATITUD_VISITA", latitudVisita)
         outState.putDouble("KEY_LONGITUD_VISITA", longitudVisita)
         outState.putBoolean("KEY_PENDING_MEDIA_ES_VIDEO", pendingMediaEsVideo)
+        outState.putBoolean("KEY_USUARIO_HA_EDITADO", usuarioHaEditado)
+        outState.putBoolean("KEY_HUBO_INTERACCION_USUARIO", huboInteraccionUsuario)
 
         tempCameraUri?.let { outState.putParcelable("KEY_TEMP_CAMERA_URI", it) }
         tempCameraFile?.let { outState.putString("KEY_TEMP_CAMERA_FILE", it.absolutePath) }
         val urisList = ArrayList(selectedMediaList.map { it.uri.toString() })
         val isVideoList = ArrayList(selectedMediaList.map { it.esVideo })
+        val localPathsList = ArrayList(selectedMediaList.map { it.localPath })
+        val nombresList = ArrayList(selectedMediaList.map { it.nombre })
+        val remoteUrlsList = ArrayList(selectedMediaList.map { it.remoteUrl.orEmpty() })
         outState.putStringArrayList("KEY_MEDIA_URIS", urisList)
         outState.putBooleanArray("KEY_MEDIA_IS_VIDEO", isVideoList.toBooleanArray())
+        outState.putStringArrayList("KEY_MEDIA_LOCAL_PATHS", localPathsList)
+        outState.putStringArrayList("KEY_MEDIA_NOMBRES", nombresList)
+        outState.putStringArrayList("KEY_MEDIA_REMOTE_URLS", remoteUrlsList)
 
         // 1. Guardar estado completo de todas las tarjetas dinámicas de pacientes
-        val animalStates = ArrayList<AnimalCardState>()
-        for (itemBinding in animalBindingsList) {
-            animalStates.add(
-                AnimalCardState(
-                    nombre = itemBinding.etPacienteNombreCard.text?.toString() ?: "",
-                    especie = itemBinding.autoCompleteEspecieCard.text?.toString() ?: "",
-                    raza = itemBinding.autoCompleteRazaCard.text?.toString() ?: "",
-                    sexo = itemBinding.autoCompleteSexoCard.text?.toString() ?: "",
-                    color = itemBinding.autoCompleteColorCard.text?.toString() ?: "",
-                    edadNumero = itemBinding.etEdadNumero.text?.toString() ?: "1",
-                    edadUnidad = itemBinding.autoCompleteEdadUnidad.text?.toString() ?: "Años",
-                    edadTexto = itemBinding.etPacienteEdadCard.text?.toString() ?: "",
-                    peso = itemBinding.etPacientePesoCard.text?.toString() ?: "",
-                    esterilizado = itemBinding.autoCompleteEsterilizadoCard.text?.toString() ?: "No",
-                    descripcion = itemBinding.etPacienteDescripcionCard.text?.toString() ?: ""
-                )
-            )
-        }
+        val animalStates = ArrayList(extraerEstadosAnimales())
         outState.putSerializable("KEY_ANIMAL_STATES", animalStates)
 
         // 2. Guardar lista de exámenes clínicos complementarios agregados (Paso 3)
@@ -504,10 +600,12 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         binding.btnClearSignatureNotificador.setOnClickListener {
             binding.signatureNotificador.clear()
+            programarGuardado()
         }
 
         binding.btnClearSignatureNotificado.setOnClickListener {
             binding.signatureNotificado.clear()
+            programarGuardado()
         }
     }
 
@@ -560,6 +658,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                 binding.tvFirma1Titulo.text = "Firma del funcionario / notificador"
                 binding.tvFirma2Titulo.text = "Firma del ciudadano notificado"
             }
+            programarGuardado()
         }
 
         // Botón para sincronizar manualmente en cualquier momento
@@ -570,6 +669,7 @@ class ActaAtencionActivity : AppCompatActivity() {
     }
 
     private fun autocompletarDatosRescateDesdeSeresSintientes(forzarSobrescritura: Boolean) {
+        if (isRestaurandoBorrador && !forzarSobrescritura) return
         // 1. Persona que entrega / atiende
         val nombrePropietario = binding.etPropietarioNombre.text.toString().trim()
         if (forzarSobrescritura || binding.etPersonaAtiendeRescatista.text.isNullOrEmpty()) {
@@ -693,6 +793,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                     label.text = "NO"
                     label.setTextColor(colorSecundario)
                 }
+                programarGuardado()
             }
         }
     }
@@ -874,6 +975,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                 binding.tvEstadoDesparasitacion.text = "No aplicada"
                 binding.tvEstadoDesparasitacion.setTextColor(ContextCompat.getColor(this, R.color.text_secondary))
             }
+            programarGuardado()
         }
     }
 
@@ -1010,6 +1112,7 @@ class ActaAtencionActivity : AppCompatActivity() {
             )
 
             renderizarExamenesAgregados()
+            programarGuardado()
 
             // Limpiar campos para permitir ingresar un nuevo examen rápidamente
             binding.autoCompleteTipoPrueba.setText("", false)
@@ -1040,6 +1143,7 @@ class ActaAtencionActivity : AppCompatActivity() {
             itemBinding.btnEliminarExamenItem.setOnClickListener {
                 examenesAgregadosList.remove(item)
                 renderizarExamenesAgregados()
+                programarGuardado()
             }
 
             binding.containerExamenesAgregados.addView(itemBinding.root)
@@ -1074,10 +1178,13 @@ class ActaAtencionActivity : AppCompatActivity() {
             nombresExamenes.add("Otro examen específico")
         }
 
+        val seleccionPrevia = binding.autoCompleteTipoPrueba.text.toString().trim()
         val adapterPruebas = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, nombresExamenes)
         binding.autoCompleteTipoPrueba.setAdapter(adapterPruebas)
-        if (binding.autoCompleteTipoPrueba.text.isNullOrEmpty()) {
+        if (seleccionPrevia.isEmpty()) {
             binding.autoCompleteTipoPrueba.setText(nombresExamenes[0], false)
+        } else {
+            binding.autoCompleteTipoPrueba.setText(seleccionPrevia, false)
         }
     }
 
@@ -1128,18 +1235,39 @@ class ActaAtencionActivity : AppCompatActivity() {
             } catch (_: Exception) {}
 
             withContext(Dispatchers.Main) {
-                // Actualizar dropdown de exámenes clínicos en el Paso 3
-                actualizarDropdownExamenes()
+                actualizandoCatalogos = true
+                try {
+                    // Actualizar dropdown de exámenes clínicos en el Paso 3
+                    actualizarDropdownExamenes()
 
-                // Actualizar especies y razas de cada formulario de animal instanciado
-                for (itemBinding in animalBindingsList) {
-                    val especieActual = itemBinding.autoCompleteEspecieCard.text.toString().trim()
-                    val razaActual = itemBinding.autoCompleteRazaCard.text.toString().trim()
-                    actualizarOpcionesEspecies(itemBinding)
-                    if (especieActual.isNotEmpty() && !especieActual.equals("Seleccionar", ignoreCase = true)) {
-                        itemBinding.autoCompleteEspecieCard.setText(especieActual, false)
-                        actualizarOpcionesRazas(itemBinding, especieActual, razaActual)
+                    // Actualizar especies y razas de cada formulario de animal instanciado
+                    for (itemBinding in animalBindingsList) {
+                        val estadoPendiente = estadoRestauradoPorTarjeta[itemBinding]
+                        val especieActual = itemBinding.autoCompleteEspecieCard.text.toString().trim().let {
+                            if (it.isEmpty() || it.equals("Seleccionar", ignoreCase = true)) {
+                                estadoPendiente?.especie.orEmpty()
+                            } else {
+                                it
+                            }
+                        }
+                        val razaActual = itemBinding.autoCompleteRazaCard.text.toString().trim().let {
+                            if (it.isEmpty() || it.equals("Seleccionar", ignoreCase = true)) {
+                                estadoPendiente?.raza.orEmpty()
+                            } else {
+                                it
+                            }
+                        }
+                        actualizarOpcionesEspecies(itemBinding)
+                        if (especieActual.isNotEmpty() && !especieActual.equals("Seleccionar", ignoreCase = true)) {
+                            itemBinding.autoCompleteEspecieCard.setText(especieActual, false)
+                            itemBinding.tilPacienteRaza.isEnabled = true
+                            itemBinding.autoCompleteRazaCard.isEnabled = true
+                            itemBinding.tilPacienteRaza.helperText = null
+                            actualizarOpcionesRazas(itemBinding, especieActual, razaActual)
+                        }
                     }
+                } finally {
+                    actualizandoCatalogos = false
                 }
             }
         }
@@ -1291,6 +1419,9 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         itemBinding.autoCompleteEspecieCard.setOnItemClickListener { _, _, position, _ ->
             val especieSeleccionada = itemBinding.autoCompleteEspecieCard.adapter?.getItem(position)?.toString() ?: ""
+            if (!isRestaurandoBorrador && !actualizandoCatalogos) {
+                estadoRestauradoPorTarjeta.remove(itemBinding)
+            }
             if (especieSeleccionada.isNotEmpty() && !especieSeleccionada.equals("Seleccionar", ignoreCase = true)) {
                 itemBinding.tilPacienteEspecie.error = null
                 itemBinding.tilPacienteRaza.isEnabled = true
@@ -1307,13 +1438,18 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
         itemBinding.autoCompleteEspecieCard.addTextChangedListener {
             val especieActual = it?.toString().orEmpty().trim()
+            val razaPendiente = if (isRestaurandoBorrador || actualizandoCatalogos) {
+                estadoRestauradoPorTarjeta[itemBinding]?.raza
+            } else {
+                null
+            }
             if (especieActual.isNotEmpty() && !especieActual.equals("Seleccionar", ignoreCase = true)) {
                 itemBinding.tilPacienteEspecie.error = null
                 itemBinding.tilPacienteRaza.isEnabled = true
                 itemBinding.autoCompleteRazaCard.isEnabled = true
                 itemBinding.tilPacienteRaza.helperText = null
-                actualizarOpcionesRazas(itemBinding, especieActual)
-            } else {
+                actualizarOpcionesRazas(itemBinding, especieActual, razaPendiente)
+            } else if (!actualizandoCatalogos) {
                 itemBinding.tilPacienteRaza.isEnabled = false
                 itemBinding.autoCompleteRazaCard.isEnabled = false
                 itemBinding.autoCompleteRazaCard.setText("", false)
@@ -1323,6 +1459,11 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         itemBinding.autoCompleteRazaCard.setOnItemClickListener { _, _, position, _ ->
             val razaSeleccionada = itemBinding.autoCompleteRazaCard.adapter?.getItem(position)?.toString() ?: ""
+            if (!isRestaurandoBorrador && !actualizandoCatalogos) {
+                estadoRestauradoPorTarjeta[itemBinding]?.let { previo ->
+                    estadoRestauradoPorTarjeta[itemBinding] = previo.copy(raza = razaSeleccionada)
+                }
+            }
             if (razaSeleccionada.isNotEmpty() && !razaSeleccionada.equals("Seleccionar", ignoreCase = true)) {
                 itemBinding.tilPacienteRaza.error = null
             }
@@ -1424,9 +1565,11 @@ class ActaAtencionActivity : AppCompatActivity() {
                 .setMessage("Se eliminarán los datos registrados de este paciente en el acta actual.")
                 .setPositiveButton("Eliminar") { dialog, _ ->
                     dialog.dismiss()
+                    estadoRestauradoPorTarjeta.remove(itemBinding)
                     binding.containerAnimales.removeView(itemBinding.root)
                     animalBindingsList.remove(itemBinding)
                     actualizarNumeracionYBotonesEliminar()
+                    programarGuardado()
                 }
                 .setNegativeButton("Cancelar") { dialog, _ ->
                     dialog.dismiss()
@@ -1436,6 +1579,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         // Si tenemos un estado previo a restaurar (ej. tras tomar foto, grabar video o recreación)
         if (initialState != null) {
+            estadoRestauradoPorTarjeta[itemBinding] = initialState
             if (initialState.nombre.isNotEmpty()) {
                 itemBinding.etPacienteNombreCard.setText(initialState.nombre)
             }
@@ -1457,6 +1601,7 @@ class ActaAtencionActivity : AppCompatActivity() {
             }
             if (initialState.edadUnidad.isNotEmpty()) {
                 itemBinding.autoCompleteEdadUnidad.setText(initialState.edadUnidad, false)
+                sincronizarEdadTexto()
             }
             if (initialState.edadTexto.isNotEmpty()) {
                 itemBinding.etPacienteEdadCard.setText(initialState.edadTexto)
@@ -1470,6 +1615,23 @@ class ActaAtencionActivity : AppCompatActivity() {
             if (initialState.descripcion.isNotEmpty()) {
                 itemBinding.etPacienteDescripcionCard.setText(initialState.descripcion)
             }
+        }
+
+        val camposAnimal = listOf(
+            itemBinding.etPacienteNombreCard,
+            itemBinding.autoCompleteEspecieCard,
+            itemBinding.autoCompleteRazaCard,
+            itemBinding.autoCompleteSexoCard,
+            itemBinding.autoCompleteColorCard,
+            itemBinding.etEdadNumero,
+            itemBinding.autoCompleteEdadUnidad,
+            itemBinding.etPacienteEdadCard,
+            itemBinding.etPacientePesoCard,
+            itemBinding.autoCompleteEsterilizadoCard,
+            itemBinding.etPacienteDescripcionCard
+        )
+        for (campo in camposAnimal) {
+            campo.addTextChangedListener { programarGuardado() }
         }
 
         binding.containerAnimales.addView(itemBinding.root)
@@ -1743,6 +1905,7 @@ class ActaAtencionActivity : AppCompatActivity() {
             }
 
             actualizarVistaMedicamentosAplicados()
+            programarGuardado()
             bottomSheet.dismiss()
             Toast.makeText(this, "Medicamento aplicado y descontado del maletín", Toast.LENGTH_SHORT).show()
         }
@@ -1779,6 +1942,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                             MaletinManager.getInstance(this).devolverStock(item.idMedicamento, item.cantidad)
                             medicamentosAplicadosList.remove(item)
                             actualizarVistaMedicamentosAplicados()
+                            programarGuardado()
                             Toast.makeText(this, "Stock devuelto al maletín", Toast.LENGTH_SHORT).show()
                         }
                         .setNegativeButton("Cancelar", null)
@@ -2186,6 +2350,8 @@ class ActaAtencionActivity : AppCompatActivity() {
             return
         }
 
+        val entidadGuardada = volcarVistasASqliteSincrono(incluirFirmas = true)
+
         // Construcción de la lista de animales adaptada a AnimalRapidoSerializer de Django
         val listaAnimales = mutableListOf<AnimalRapidoRequest>()
         for (itemBinding in animalBindingsList) {
@@ -2507,8 +2673,12 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                     for ((idx, media) in selectedMediaList.withIndex()) {
                         val numActual = idx + 1
-                        val secureUrl = subirACloudinary(media, numActual, totalMedia)
+                        val urlExistente = media.remoteUrl?.takeIf { it.startsWith("http") }
+                        val secureUrl = urlExistente ?: subirACloudinary(media, numActual, totalMedia)
                         if (secureUrl != null) {
+                            if (urlExistente == null) {
+                                persistirRemoteUrlEvidencia(media, secureUrl)
+                            }
                             if (media.esVideo) {
                                 urlsVideos.add(secureUrl)
                             } else {
@@ -2592,6 +2762,16 @@ class ActaAtencionActivity : AppCompatActivity() {
                     sincronizacionOffline = false
                 )
 
+                if (BuildConfig.DEBUG && entidadGuardada != null) {
+                    val requestDesdeEntidad = ActaRequestBuilder.build(
+                        entity = entidadGuardada,
+                        fotosUrls = urlsFotos,
+                        videosUrls = urlsVideos,
+                        sincronizacionOffline = false
+                    )
+                    verificarParidadRequest(request, requestDesdeEntidad)
+                }
+
                 // 1. Enviar el Acta completa de atención en campo (POST /api/peticiones/seguimiento/crear/)
                 val response = RetrofitClient.apiService.crearSeguimientoPeticionVisita("Bearer $token", request)
 
@@ -2600,6 +2780,8 @@ class ActaAtencionActivity : AppCompatActivity() {
                     val idSeg = body.idSeguimiento ?: 0
                     val alertasFarmacia = body.alertasFarmacia
                     val tieneConflictos = alertasFarmacia?.conflictosStock?.isNotEmpty() == true
+
+                    marcarEnvioOnlineExitosoYLimpiarBorrador()
 
                     // 2. Cierre y actualización del estado de la petición en el backend (PATCH /api/peticiones/{id}/estado/)
                     if (peticionId != -1) {
@@ -2850,7 +3032,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     private fun lanzarCapturaFoto() {
         try {
-            val file = File(filesDir, "acta_foto_${System.currentTimeMillis()}.jpg")
+            val file = File(obtenerDirectorioEvidenciasActa(), "acta_foto_${System.currentTimeMillis()}.jpg")
             file.parentFile?.mkdirs()
             file.createNewFile()
             tempCameraFile = file
@@ -2867,7 +3049,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     private fun lanzarGrabacionVideo() {
         try {
-            val file = File(filesDir, "acta_video_${System.currentTimeMillis()}.mp4")
+            val file = File(obtenerDirectorioEvidenciasActa(), "acta_video_${System.currentTimeMillis()}.mp4")
             file.parentFile?.mkdirs()
             file.createNewFile()
             tempCameraFile = file
@@ -2883,10 +3065,11 @@ class ActaAtencionActivity : AppCompatActivity() {
     }
 
     private fun copiarUriALocal(uri: Uri, esVideo: Boolean): Uri? {
+        ultimaRutaLocalCopiada = ""
         return try {
             val extension = if (esVideo) ".mp4" else ".jpg"
             val prefix = if (esVideo) "acta_video_" else "acta_foto_"
-            val localFile = File(filesDir, "${prefix}${System.currentTimeMillis()}${extension}")
+            val localFile = File(obtenerDirectorioEvidenciasActa(), "${prefix}${System.currentTimeMillis()}${extension}")
             localFile.parentFile?.mkdirs()
             contentResolver.openInputStream(uri)?.use { input ->
                 localFile.outputStream().use { output ->
@@ -2912,6 +3095,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                 }
             }
 
+            ultimaRutaLocalCopiada = localFile.absolutePath
             FileProvider.getUriForFile(
                 this,
                 "${applicationContext.packageName}.fileprovider",
@@ -2975,7 +3159,7 @@ class ActaAtencionActivity : AppCompatActivity() {
             }
 
             // 4. Guardar archivo comprimido como JPEG al 85%
-            val tempFile = File(filesDir, "opt_${System.currentTimeMillis()}_${archivo.name}")
+            val tempFile = File(archivo.parentFile ?: filesDir, "opt_${System.currentTimeMillis()}_${archivo.name}")
             FileOutputStream(tempFile).use { out ->
                 finalBitmap.compress(Bitmap.CompressFormat.JPEG, 85, out)
             }
@@ -3061,6 +3245,7 @@ class ActaAtencionActivity : AppCompatActivity() {
             binding.btnVerMediaDesdePaso3.setOnClickListener {
                 currentStep = 2
                 updateStepper()
+                guardarBorradorEnCambioDePaso()
             }
 
             binding.containerMediaThumbnails.removeAllViews()
@@ -3092,7 +3277,14 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                 itemBinding.btnEliminarMedia.setOnClickListener {
                     selectedMediaList.remove(media)
+                    if (media.localPath.isNotBlank()) {
+                        val archivo = File(media.localPath)
+                        if (archivo.exists() && archivo.absolutePath.contains("acta_offline")) {
+                            archivo.delete()
+                        }
+                    }
                     actualizarVistaMultimedia()
+                    programarGuardado()
                 }
 
                 binding.containerMediaThumbnails.addView(itemBinding.root)
@@ -3140,4 +3332,534 @@ class ActaAtencionActivity : AppCompatActivity() {
                 if (cont.isActive) cont.resume(null)
             }
         }
+
+    // ========================================================
+    // PERSISTENCIA OFFLINE DE BORRADOR Y PARIDAD (TAREA 3C)
+    // ========================================================
+    private fun obtenerIdVeterinarioActual(): Int {
+        val prefs = SharedPreferencesManager(this)
+        var idVet = prefs.getUserId()
+        if (idVet == -1) {
+            idVet = intent.getIntExtra("ID_USUARIO", -1)
+        }
+        return idVet
+    }
+
+    private fun obtenerDirectorioEvidenciasActa(): File {
+        val idDir = if (peticionId > 0) peticionId.toString() else "temp"
+        val dir = File(filesDir, "acta_offline/$idDir")
+        if (!dir.exists()) {
+            dir.mkdirs()
+        }
+        return dir
+    }
+
+    private fun setupListenersGuardadoBorrador() {
+        val camposTexto = listOf(
+            binding.etFechaAtencion,
+            binding.etRadicado,
+            binding.etSolicitudAtencion,
+            binding.autoCompleteQuienReporta,
+            binding.etQuienReportaOtro,
+            binding.etLugarAtencion,
+            binding.etPropietarioNombre,
+            binding.etPropietarioCedula,
+            binding.etPropietarioTelefono,
+            binding.etPropietarioEmail,
+            binding.etPropietarioBarrio,
+            binding.etPropietarioDireccion,
+            binding.etFrecuenciaCardiaca,
+            binding.etFrecuenciaRespiratoria,
+            binding.etMucosas,
+            binding.etAnamnesis,
+            binding.etTratamiento,
+            binding.autoCompleteTipoPrueba,
+            binding.etPruebasComplementarias,
+            binding.etResultadoPruebas,
+            binding.autoCompleteEstadoCierre,
+            binding.etCompromisos,
+            binding.etFundamentoLegal,
+            binding.etPlazoDias,
+            binding.etObservaciones,
+            binding.etFuncionarioNombre,
+            binding.etFuncionarioCargo,
+            binding.etFuncionarioIdentificacion,
+            binding.etFuncionarioMatricula,
+            binding.etNotificadoNombre,
+            binding.etNotificadoIdentificacion,
+            binding.autoCompleteMotivoRescate,
+            binding.etPersonaAtiendeRescatista,
+            binding.etPersonaAtiendeCedula,
+            binding.etPersonaAtiendeTelefono,
+            binding.etBarrioRescate,
+            binding.etTestigo1Nombre,
+            binding.etTestigo1Cedula,
+            binding.etTestigo1Telefono,
+            binding.etTestigo2Nombre,
+            binding.etTestigo2Cedula,
+            binding.etTestigo2Telefono,
+            binding.etObservacionesRescate,
+            binding.etVeterinarioReceptor,
+            binding.etFechaRecepcion,
+            binding.etHoraRecepcion,
+            binding.etObservacionesRecepcion
+        )
+        for (campo in camposTexto) {
+            campo.addTextChangedListener { programarGuardado() }
+        }
+    }
+
+    private fun programarGuardado() {
+        if (!huboInteraccionUsuario || isInitialSetup || isRestaurandoBorrador || actualizandoCatalogos || mostrandoDialogoBorrador || actaEnviadaExitosamente) {
+            return
+        }
+        usuarioHaEditado = true
+        guardadoHandler.removeCallbacks(guardadoDebounceRunnable)
+        guardadoHandler.postDelayed(guardadoDebounceRunnable, 400L)
+    }
+
+    private fun ejecutarGuardadoDebounce() {
+        if (!huboInteraccionUsuario || isInitialSetup || isRestaurandoBorrador || actualizandoCatalogos || mostrandoDialogoBorrador || actaEnviadaExitosamente || !usuarioHaEditado) {
+            return
+        }
+        val entidad = construirEntidadDesdeVistas(incluirFirmas = false) ?: return
+        lifecycleScope.launch(Dispatchers.IO) {
+            guardarEntidadEnDb(entidad)
+        }
+    }
+
+    private fun guardarBorradorEnCambioDePaso() {
+        if (!huboInteraccionUsuario || isInitialSetup || isRestaurandoBorrador || actualizandoCatalogos || mostrandoDialogoBorrador || actaEnviadaExitosamente) {
+            return
+        }
+        val hayFirmaDibujada = binding.signatureNotificador.hasSignature() || binding.signatureNotificado.hasSignature()
+        if (!usuarioHaEditado && !hayFirmaDibujada) {
+            return
+        }
+        usuarioHaEditado = true
+        guardarBorradorSincrono(incluirFirmas = true)
+    }
+
+    private fun guardarBorradorSincrono(incluirFirmas: Boolean): ActaLocalEntity? {
+        guardadoHandler.removeCallbacks(guardadoDebounceRunnable)
+        if (!huboInteraccionUsuario || isInitialSetup || isRestaurandoBorrador || actualizandoCatalogos || mostrandoDialogoBorrador || actaEnviadaExitosamente) {
+            return null
+        }
+        val hayFirmaDibujada = binding.signatureNotificador.hasSignature() || binding.signatureNotificado.hasSignature()
+        if (!usuarioHaEditado && !hayFirmaDibujada) {
+            return null
+        }
+        usuarioHaEditado = true
+        val entidad = construirEntidadDesdeVistas(incluirFirmas = incluirFirmas) ?: return null
+        return guardarEntidadEnDb(entidad)
+    }
+
+    private fun volcarVistasASqliteSincrono(incluirFirmas: Boolean): ActaLocalEntity? {
+        guardadoHandler.removeCallbacks(guardadoDebounceRunnable)
+        if (actaEnviadaExitosamente) return null
+        usuarioHaEditado = true
+        val entidad = construirEntidadDesdeVistas(incluirFirmas = incluirFirmas) ?: return null
+        return guardarEntidadEnDb(entidad)
+    }
+
+    private fun construirEntidadDesdeVistas(incluirFirmas: Boolean): ActaLocalEntity? {
+        val idVet = obtenerIdVeterinarioActual()
+        if (peticionId <= 0 || idVet <= 0) return null
+
+        normalizarClientUuidMedicamentos()
+
+        val estadosAnimales = extraerEstadosAnimales()
+        val animalesJson = ActaFormSnapshotMapper.serializarAnimales(estadosAnimales, resolverIdRaza)
+        val medicamentosJson = ActaFormSnapshotMapper.serializarMedicamentos(medicamentosAplicadosList)
+        val examenesJson = ActaFormSnapshotMapper.serializarExamenes(examenesAgregadosList)
+        val evidenciasJson = ActaFormSnapshotMapper.serializarEvidencias(serializarEvidenciasActuales())
+
+        val previo = entidadBorradorActual
+        val ahora = System.currentTimeMillis()
+        val base = previo?.copy(
+            idPeticion = peticionId,
+            idVeterinario = idVet,
+            estadoSincronizacion = previo.estadoSincronizacion,
+            pasoActual = currentStep,
+            actualizadoEn = ahora
+        ) ?: ActaLocalEntity(
+            idPeticion = peticionId,
+            idVeterinario = idVet,
+            estadoSincronizacion = EstadoSincronizacionActa.BORRADOR,
+            pasoActual = currentStep,
+            actualizadoEn = ahora
+        )
+
+        return ActaFormSnapshotMapper.capturar(
+            binding = binding,
+            baseEntity = base,
+            pasoActual = currentStep,
+            latitudVisita = latitudVisita,
+            longitudVisita = longitudVisita,
+            animalesJson = animalesJson,
+            medicamentosJson = medicamentosJson,
+            examenesJson = examenesJson,
+            evidenciasJson = evidenciasJson,
+            incluirFirmas = incluirFirmas
+        )
+    }
+
+    private fun guardarEntidadEnDb(entidad: ActaLocalEntity): ActaLocalEntity {
+        return synchronized(dbWriteLock) {
+            val idFila = actaLocalRepository.guardarBorrador(entidad)
+            val persistida = if (idFila > 0L) entidad.copy(idLocal = idFila) else entidad
+            entidadBorradorActual = persistida
+            persistida
+        }
+    }
+
+    private fun extraerEstadosAnimales(): List<AnimalCardState> {
+        return animalBindingsList.map { b ->
+            AnimalCardState(
+                nombre = b.etPacienteNombreCard.text.toString().trim(),
+                especie = b.autoCompleteEspecieCard.text.toString().trim(),
+                raza = b.autoCompleteRazaCard.text.toString().trim(),
+                sexo = b.autoCompleteSexoCard.text.toString().trim(),
+                color = b.autoCompleteColorCard.text.toString().trim(),
+                edadNumero = b.etEdadNumero.text.toString().trim(),
+                edadUnidad = b.autoCompleteEdadUnidad.text.toString().trim(),
+                edadTexto = b.etPacienteEdadCard.text.toString().trim(),
+                peso = b.etPacientePesoCard.text.toString().trim(),
+                esterilizado = b.autoCompleteEsterilizadoCard.text.toString().trim(),
+                descripcion = b.etPacienteDescripcionCard.text.toString().trim()
+            )
+        }
+    }
+
+    private fun normalizarClientUuidMedicamentos() {
+        for (i in medicamentosAplicadosList.indices) {
+            val item = medicamentosAplicadosList[i]
+            val unidadesEnteras = item.cantidad.toInt().coerceAtLeast(1)
+            val uuidActual = item.clientUuid
+            val registroPrevio = if (uuidActual.isNotBlank()) {
+                medicamentosPersistidosPrevios.firstOrNull { it.clientUuid == uuidActual }
+            } else {
+                null
+            }
+
+            val uuidFinal = when {
+                uuidActual.isBlank() -> java.util.UUID.randomUUID().toString()
+                registroPrevio != null &&
+                    (registroPrevio.idMedicamento != item.idMedicamento ||
+                        registroPrevio.cantidad.toInt().coerceAtLeast(1) != unidadesEnteras) ->
+                    java.util.UUID.randomUUID().toString()
+                else -> uuidActual
+            }
+
+            val actualizado = if (uuidFinal != uuidActual) item.copy(clientUuid = uuidFinal) else item
+            medicamentosAplicadosList[i] = actualizado
+        }
+        medicamentosPersistidosPrevios.clear()
+        medicamentosPersistidosPrevios.addAll(medicamentosAplicadosList)
+    }
+
+    private fun serializarEvidenciasActuales(): List<EvidenciaLocalItem> {
+        return selectedMediaList.mapNotNull { media ->
+            val ruta = media.localPath.ifBlank {
+                val f = File(obtenerDirectorioEvidenciasActa(), media.nombre)
+                if (f.exists()) f.absolutePath else ""
+            }
+            if (ruta.isBlank()) {
+                null
+            } else {
+                EvidenciaLocalItem(
+                    localPath = ruta,
+                    esVideo = media.esVideo,
+                    etiqueta = media.nombre,
+                    remoteUrl = media.remoteUrl
+                )
+            }
+        }
+    }
+
+    private fun persistirRemoteUrlEvidencia(media: MediaAdjunto, secureUrl: String) {
+        media.remoteUrl = secureUrl
+        val nuevoJson = ActaFormSnapshotMapper.serializarEvidencias(serializarEvidenciasActuales())
+        synchronized(dbWriteLock) {
+            val actual = entidadBorradorActual
+                ?: actaLocalRepository.obtenerPorPeticionYVeterinario(peticionId, obtenerIdVeterinarioActual())
+            if (actual != null && actual.idLocal > 0L) {
+                actaLocalRepository.actualizarEvidenciasJson(actual.idLocal, nuevoJson)
+                entidadBorradorActual = actual.copy(
+                    evidenciasJson = nuevoJson,
+                    actualizadoEn = System.currentTimeMillis()
+                )
+            }
+        }
+    }
+
+    private fun verificarBorradorExistenteAlAbrir() {
+        val idVet = obtenerIdVeterinarioActual()
+        if (peticionId <= 0 || idVet <= 0) return
+
+        val existente = synchronized(dbWriteLock) {
+            actaLocalRepository.obtenerPorPeticionYVeterinario(peticionId, idVet)
+        } ?: return
+
+        if (existente.estadoSincronizacion != EstadoSincronizacionActa.BORRADOR &&
+            existente.estadoSincronizacion != EstadoSincronizacionActa.REQUIERE_ATENCION
+        ) {
+            return
+        }
+
+        entidadBorradorActual = existente
+        mostrandoDialogoBorrador = true
+
+        val sdfFechaHora = SimpleDateFormat("dd/MM/yyyy HH:mm", Locale.getDefault())
+        val fechaFormateada = sdfFechaHora.format(Date(existente.actualizadoEn))
+        val mensaje = if (existente.estadoSincronizacion == EstadoSincronizacionActa.REQUIERE_ATENCION) {
+            getString(
+                R.string.acta_offline_dialog_atencion_mensaje,
+                existente.ultimoError.orEmpty()
+            )
+        } else {
+            getString(
+                R.string.acta_offline_dialog_borrador_mensaje,
+                existente.pasoActual,
+                fechaFormateada
+            )
+        }
+
+        val icono = ContextCompat.getDrawable(this, R.drawable.ic_info_circle)?.mutate()?.apply {
+            setTint(ContextCompat.getColor(this@ActaAtencionActivity, R.color.primary))
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .apply {
+                if (icono != null) {
+                    setIcon(icono)
+                }
+            }
+            .setTitle(R.string.acta_offline_dialog_borrador_titulo)
+            .setMessage(mensaje)
+            .setCancelable(false)
+            .setPositiveButton(R.string.acta_offline_dialog_borrador_continuar) { dialog, _ ->
+                dialog.dismiss()
+                mostrandoDialogoBorrador = false
+                restaurarBorrador(existente)
+                Toast.makeText(
+                    this,
+                    getString(R.string.acta_offline_toast_borrador_restaurado, existente.pasoActual.coerceIn(1, 3)),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            .setNegativeButton(R.string.acta_offline_dialog_borrador_descartar) { dialog, _ ->
+                dialog.dismiss()
+                mostrandoDialogoBorrador = false
+                descartarBorrador(existente)
+                Toast.makeText(
+                    this,
+                    getString(R.string.acta_offline_toast_borrador_descartado),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+            .show()
+    }
+
+    private fun restaurarBorrador(entidad: ActaLocalEntity) {
+        guardadoHandler.removeCallbacks(guardadoDebounceRunnable)
+        isRestaurandoBorrador = true
+        try {
+            entidadBorradorActual = entidad
+            latitudVisita = entidad.latitudVisita
+            longitudVisita = entidad.longitudVisita
+
+            ActaFormSnapshotMapper.restaurar(binding, entidad)
+            sincronizarLabelsSwitches()
+
+            if (entidad.lugarAtencion.isNotBlank()) {
+                binding.tvLugarAtencionInfo.text = entidad.lugarAtencion
+            }
+
+            estadoRestauradoPorTarjeta.clear()
+            binding.containerAnimales.removeAllViews()
+            animalBindingsList.clear()
+            val animalesRestaurados = ActaFormSnapshotMapper.deserializarAnimales(entidad.animalesJson)
+            if (animalesRestaurados.isNotEmpty()) {
+                for (estadoAnimal in animalesRestaurados) {
+                    agregarFormularioAnimal(estadoAnimal)
+                }
+            } else {
+                agregarFormularioAnimal()
+            }
+
+            medicamentosAplicadosList.clear()
+            medicamentosPersistidosPrevios.clear()
+            val medsRestaurados = ActaFormSnapshotMapper.deserializarMedicamentos(entidad.medicamentosJson)
+            for (med in medsRestaurados) {
+                val uuidNormalizado = med.clientUuid.ifBlank { java.util.UUID.randomUUID().toString() }
+                val medConUuid = if (med.clientUuid == uuidNormalizado) med else med.copy(clientUuid = uuidNormalizado)
+                medicamentosAplicadosList.add(medConUuid)
+                medicamentosPersistidosPrevios.add(medConUuid)
+            }
+            actualizarVistaMedicamentosAplicados()
+
+            examenesAgregadosList.clear()
+            examenesAgregadosList.addAll(ActaFormSnapshotMapper.deserializarExamenes(entidad.examenesJson))
+            renderizarExamenesAgregados()
+
+            selectedMediaList.clear()
+            val evidenciasRestauradas = ActaFormSnapshotMapper.deserializarEvidencias(entidad.evidenciasJson)
+            for (ev in evidenciasRestauradas) {
+                val archivoLocal = File(ev.localPath)
+                if (archivoLocal.exists()) {
+                    val uriLocal: Uri = try {
+                        FileProvider.getUriForFile(
+                            this,
+                            "${applicationContext.packageName}.fileprovider",
+                            archivoLocal
+                        )
+                    } catch (_: Exception) {
+                        Uri.fromFile(archivoLocal)
+                    }
+                    val etiquetaEvidencia = ev.etiqueta.ifBlank { archivoLocal.name }
+                    selectedMediaList.add(
+                        MediaAdjunto(
+                            uri = uriLocal,
+                            esVideo = ev.esVideo,
+                            nombre = etiquetaEvidencia,
+                            localPath = archivoLocal.absolutePath,
+                            remoteUrl = ev.remoteUrl
+                        )
+                    )
+                }
+            }
+            actualizarVistaMultimedia()
+
+            currentStep = entidad.pasoActual.coerceIn(1, 3)
+            updateStepper()
+
+            usuarioHaEditado = true
+        } finally {
+            isRestaurandoBorrador = false
+        }
+    }
+
+    private fun descartarBorrador(entidad: ActaLocalEntity) {
+        guardadoHandler.removeCallbacks(guardadoDebounceRunnable)
+
+        val medsDescontados = ActaFormSnapshotMapper.deserializarMedicamentos(entidad.medicamentosJson)
+        val maletinManager = MaletinManager.getInstance(this)
+        for (med in medsDescontados) {
+            if (med.cantidad > 0.0) {
+                maletinManager.devolverStock(med.idMedicamento, med.cantidad)
+            }
+        }
+        medicamentosAplicadosList.clear()
+        medicamentosPersistidosPrevios.clear()
+        actualizarVistaMedicamentosAplicados()
+
+        limpiarArchivosLocalesBorrador(entidad)
+
+        synchronized(dbWriteLock) {
+            if (entidad.idLocal > 0L) {
+                actaLocalRepository.eliminar(entidad.idLocal)
+            } else {
+                val actual = actaLocalRepository.obtenerPorPeticionYVeterinario(
+                    entidad.idPeticion,
+                    entidad.idVeterinario
+                )
+                if (actual != null) {
+                    actaLocalRepository.eliminar(actual.idLocal)
+                }
+            }
+            entidadBorradorActual = null
+        }
+
+        usuarioHaEditado = false
+        huboInteraccionUsuario = false
+    }
+
+    private fun limpiarArchivosLocalesBorrador(entidad: ActaLocalEntity?) {
+        try {
+            val raizArchivos = filesDir.canonicalPath
+            val evidencias = entidad?.let { ActaFormSnapshotMapper.deserializarEvidencias(it.evidenciasJson) }.orEmpty()
+            for (ev in evidencias) {
+                if (ev.localPath.isNotBlank()) {
+                    val f = File(ev.localPath)
+                    if (f.exists() && f.canonicalPath.startsWith(raizArchivos)) {
+                        f.delete()
+                    }
+                }
+            }
+            for (media in selectedMediaList) {
+                if (media.localPath.isNotBlank()) {
+                    val f = File(media.localPath)
+                    if (f.exists() && f.canonicalPath.startsWith(raizArchivos)) {
+                        f.delete()
+                    }
+                }
+            }
+            val dirActa = obtenerDirectorioEvidenciasActa()
+            if (dirActa.exists() && dirActa.canonicalPath.startsWith(raizArchivos)) {
+                dirActa.deleteRecursively()
+            }
+        } catch (_: Exception) {}
+    }
+
+    private fun marcarEnvioOnlineExitosoYLimpiarBorrador() {
+        actaEnviadaExitosamente = true
+        guardadoHandler.removeCallbacks(guardadoDebounceRunnable)
+        val actual = synchronized(dbWriteLock) {
+            entidadBorradorActual
+                ?: actaLocalRepository.obtenerPorPeticionYVeterinario(peticionId, obtenerIdVeterinarioActual())
+        }
+        limpiarArchivosLocalesBorrador(actual)
+        synchronized(dbWriteLock) {
+            if (actual != null && actual.idLocal > 0L) {
+                actaLocalRepository.eliminar(actual.idLocal)
+            }
+            entidadBorradorActual = null
+        }
+    }
+
+    private fun verificarParidadRequest(
+        requestVistas: SeguimientoPeticionVisitaRequest,
+        requestEntidad: SeguimientoPeticionVisitaRequest
+    ) {
+        try {
+            val gson = Gson()
+            val treeVistas = gson.toJsonTree(requestVistas)
+            val treeEntidad = gson.toJsonTree(requestEntidad)
+            if (treeVistas == treeEntidad) return
+
+            val objVistas = treeVistas.asJsonObject
+            val objEntidad = treeEntidad.asJsonObject
+            val todasLasClaves = (objVistas.keySet() + objEntidad.keySet()).toSortedSet()
+            val diferencias = mutableListOf<String>()
+
+            for (clave in todasLasClaves) {
+                val valVista = objVistas.get(clave)
+                val valEntidad = objEntidad.get(clave)
+                if (valVista != valEntidad) {
+                    val esFirma = clave.contains("firma", ignoreCase = true)
+                    val strVista = truncarValorParidad(valVista?.toString(), esFirma)
+                    val strEntidad = truncarValorParidad(valEntidad?.toString(), esFirma)
+                    diferencias.add("$clave -> vistas=$strVista | sqlite=$strEntidad")
+                }
+            }
+
+            if (diferencias.isNotEmpty()) {
+                Log.e(
+                    "ActaParityCheck",
+                    "Diferencias detectadas (${diferencias.size}): ${diferencias.joinToString(" ;; ")}"
+                )
+            }
+        } catch (e: Exception) {
+            Log.e("ActaParityCheck", "Error verificando paridad: ${e.message}")
+        }
+    }
+
+    private fun truncarValorParidad(valor: String?, esFirma: Boolean): String {
+        if (valor == null) return "null"
+        if (esFirma) {
+            return "len=${valor.length},head=${valor.take(24)}..."
+        }
+        return if (valor.length > 120) "${valor.take(120)}...(len=${valor.length})" else valor
+    }
 }

@@ -235,6 +235,7 @@ class ActaAtencionActivity : AppCompatActivity() {
     private var usuarioHaEditado = false
     private var huboInteraccionUsuario = false
     private var actaEnviadaExitosamente = false
+    private var edicionBloqueadaPorEstado = false
     private var ultimaRutaLocalCopiada: String = ""
     private val estadoRestauradoPorTarjeta = WeakHashMap<ItemAnimalFormularioBinding, AnimalCardState>()
     private val medicamentosPersistidosPrevios = mutableListOf<MedicamentoAplicadoActa>()
@@ -281,6 +282,19 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
 
         peticionId = intent.getIntExtra("PETICION_ID", -1)
+        if (peticionId == -1 && savedInstanceState != null) {
+            peticionId = savedInstanceState.getInt("KEY_PETICION_ID", -1)
+        }
+
+        val idVetAlAbrir = obtenerIdVeterinarioActual()
+        if (peticionId > 0 && idVetAlAbrir > 0) {
+            val existenteAlAbrir = synchronized(dbWriteLock) {
+                actaLocalRepository.obtenerPorPeticionYVeterinario(peticionId, idVetAlAbrir)
+            }
+            if (existenteAlAbrir != null && verificarFilaBloqueadaAlAbrir(existenteAlAbrir)) {
+                return
+            }
+        }
 
         setupToolbar()
         setupUI(savedInstanceState)
@@ -380,9 +394,20 @@ class ActaAtencionActivity : AppCompatActivity() {
 
             val idVet = obtenerIdVeterinarioActual()
             if (peticionId != -1 && idVet != -1) {
-                val existente = actaLocalRepository.obtenerPorPeticionYVeterinario(peticionId, idVet)
+                val existente = synchronized(dbWriteLock) {
+                    actaLocalRepository.obtenerPorPeticionYVeterinario(peticionId, idVet)
+                }
                 if (existente != null && (existente.estadoSincronizacion == EstadoSincronizacionActa.BORRADOR || existente.estadoSincronizacion == EstadoSincronizacionActa.REQUIERE_ATENCION)) {
-                    entidadBorradorActual = existente.copy(estadoSincronizacion = EstadoSincronizacionActa.BORRADOR)
+                    entidadBorradorActual = if (existente.estadoSincronizacion == EstadoSincronizacionActa.REQUIERE_ATENCION) {
+                        existente.copy(
+                            estadoSincronizacion = EstadoSincronizacionActa.BORRADOR,
+                            ultimoError = null,
+                            ultimoCodigoHttp = null,
+                            reintentos = 0
+                        )
+                    } else {
+                        existente
+                    }
                 }
             }
         } else {
@@ -449,6 +474,10 @@ class ActaAtencionActivity : AppCompatActivity() {
     }
 
     override fun onPause() {
+        if (edicionBloqueadaPorEstado) {
+            super.onPause()
+            return
+        }
         if (!actaEnviadaExitosamente) {
             guardarBorradorSincrono(incluirFirmas = true)
         }
@@ -457,6 +486,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     override fun onUserInteraction() {
         super.onUserInteraction()
+        if (edicionBloqueadaPorEstado) return
         huboInteraccionUsuario = true
     }
 
@@ -467,6 +497,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
+        if (edicionBloqueadaPorEstado) return
         outState.putInt("KEY_CURRENT_STEP", currentStep)
         outState.putInt("KEY_PETICION_ID", peticionId)
         outState.putDouble("KEY_LATITUD_VISITA", latitudVisita)
@@ -501,6 +532,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
         super.onRestoreInstanceState(savedInstanceState)
+        if (edicionBloqueadaPorEstado) return
         sincronizarLabelsSwitches()
     }
 
@@ -3410,7 +3442,7 @@ class ActaAtencionActivity : AppCompatActivity() {
     }
 
     private fun programarGuardado() {
-        if (!huboInteraccionUsuario || isInitialSetup || isRestaurandoBorrador || actualizandoCatalogos || mostrandoDialogoBorrador || actaEnviadaExitosamente) {
+        if (edicionBloqueadaPorEstado || !huboInteraccionUsuario || isInitialSetup || isRestaurandoBorrador || actualizandoCatalogos || mostrandoDialogoBorrador || actaEnviadaExitosamente) {
             return
         }
         usuarioHaEditado = true
@@ -3419,7 +3451,7 @@ class ActaAtencionActivity : AppCompatActivity() {
     }
 
     private fun ejecutarGuardadoDebounce() {
-        if (!huboInteraccionUsuario || isInitialSetup || isRestaurandoBorrador || actualizandoCatalogos || mostrandoDialogoBorrador || actaEnviadaExitosamente || !usuarioHaEditado) {
+        if (edicionBloqueadaPorEstado || !huboInteraccionUsuario || isInitialSetup || isRestaurandoBorrador || actualizandoCatalogos || mostrandoDialogoBorrador || actaEnviadaExitosamente || !usuarioHaEditado) {
             return
         }
         val entidad = construirEntidadDesdeVistas(incluirFirmas = false) ?: return
@@ -3429,7 +3461,7 @@ class ActaAtencionActivity : AppCompatActivity() {
     }
 
     private fun guardarBorradorEnCambioDePaso() {
-        if (!huboInteraccionUsuario || isInitialSetup || isRestaurandoBorrador || actualizandoCatalogos || mostrandoDialogoBorrador || actaEnviadaExitosamente) {
+        if (edicionBloqueadaPorEstado || !huboInteraccionUsuario || isInitialSetup || isRestaurandoBorrador || actualizandoCatalogos || mostrandoDialogoBorrador || actaEnviadaExitosamente) {
             return
         }
         val hayFirmaDibujada = binding.signatureNotificador.hasSignature() || binding.signatureNotificado.hasSignature()
@@ -3442,7 +3474,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     private fun guardarBorradorSincrono(incluirFirmas: Boolean): ActaLocalEntity? {
         guardadoHandler.removeCallbacks(guardadoDebounceRunnable)
-        if (!huboInteraccionUsuario || isInitialSetup || isRestaurandoBorrador || actualizandoCatalogos || mostrandoDialogoBorrador || actaEnviadaExitosamente) {
+        if (edicionBloqueadaPorEstado || !huboInteraccionUsuario || isInitialSetup || isRestaurandoBorrador || actualizandoCatalogos || mostrandoDialogoBorrador || actaEnviadaExitosamente) {
             return null
         }
         val hayFirmaDibujada = binding.signatureNotificador.hasSignature() || binding.signatureNotificado.hasSignature()
@@ -3456,7 +3488,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     private fun volcarVistasASqliteSincrono(incluirFirmas: Boolean): ActaLocalEntity? {
         guardadoHandler.removeCallbacks(guardadoDebounceRunnable)
-        if (actaEnviadaExitosamente) return null
+        if (edicionBloqueadaPorEstado || actaEnviadaExitosamente) return null
         usuarioHaEditado = true
         val entidad = construirEntidadDesdeVistas(incluirFirmas = incluirFirmas) ?: return null
         return guardarEntidadEnDb(entidad)
@@ -3476,10 +3508,20 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         val previo = entidadBorradorActual
         val ahora = System.currentTimeMillis()
-        val base = previo?.copy(
+        val previoNormalizado = if (previo?.estadoSincronizacion == EstadoSincronizacionActa.REQUIERE_ATENCION) {
+            previo.copy(
+                estadoSincronizacion = EstadoSincronizacionActa.BORRADOR,
+                ultimoError = null,
+                ultimoCodigoHttp = null,
+                reintentos = 0
+            )
+        } else {
+            previo
+        }
+        val base = previoNormalizado?.copy(
             idPeticion = peticionId,
             idVeterinario = idVet,
-            estadoSincronizacion = previo.estadoSincronizacion,
+            estadoSincronizacion = EstadoSincronizacionActa.BORRADOR,
             pasoActual = currentStep,
             actualizadoEn = ahora
         ) ?: ActaLocalEntity(
@@ -3506,6 +3548,18 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     private fun guardarEntidadEnDb(entidad: ActaLocalEntity): ActaLocalEntity {
         return synchronized(dbWriteLock) {
+            if (edicionBloqueadaPorEstado) {
+                Log.w("ActaAtencionActivity", "Guardado abortado: edición bloqueada por estado para petición ${entidad.idPeticion}")
+                return@synchronized entidad
+            }
+            val filaExistente = actaLocalRepository.obtenerPorPeticionYVeterinario(entidad.idPeticion, entidad.idVeterinario)
+            if (filaExistente != null && esFilaBloqueadaParaEscritura(filaExistente)) {
+                Log.w(
+                    "ActaAtencionActivity",
+                    "Guardado abortado por candado defensivo: la fila local para petición ${entidad.idPeticion} está en estado ${filaExistente.estadoSincronizacion} o idSeguimientoRemoto=${filaExistente.idSeguimientoRemoto}"
+                )
+                return@synchronized entidad
+            }
             val idFila = actaLocalRepository.guardarBorrador(entidad)
             val persistida = if (idFila > 0L) entidad.copy(idLocal = idFila) else entidad
             entidadBorradorActual = persistida
@@ -3581,9 +3635,17 @@ class ActaAtencionActivity : AppCompatActivity() {
         media.remoteUrl = secureUrl
         val nuevoJson = ActaFormSnapshotMapper.serializarEvidencias(serializarEvidenciasActuales())
         synchronized(dbWriteLock) {
+            if (edicionBloqueadaPorEstado) {
+                Log.w("ActaAtencionActivity", "persistirRemoteUrlEvidencia abortado: edición bloqueada por estado")
+                return
+            }
             val actual = entidadBorradorActual
                 ?: actaLocalRepository.obtenerPorPeticionYVeterinario(peticionId, obtenerIdVeterinarioActual())
             if (actual != null && actual.idLocal > 0L) {
+                if (esFilaBloqueadaParaEscritura(actual)) {
+                    Log.w("ActaAtencionActivity", "persistirRemoteUrlEvidencia abortado por candado defensivo: fila bloqueada")
+                    return
+                }
                 actaLocalRepository.actualizarEvidenciasJson(actual.idLocal, nuevoJson)
                 entidadBorradorActual = actual.copy(
                     evidenciasJson = nuevoJson,
@@ -3594,12 +3656,17 @@ class ActaAtencionActivity : AppCompatActivity() {
     }
 
     private fun verificarBorradorExistenteAlAbrir() {
+        if (edicionBloqueadaPorEstado) return
         val idVet = obtenerIdVeterinarioActual()
         if (peticionId <= 0 || idVet <= 0) return
 
         val existente = synchronized(dbWriteLock) {
             actaLocalRepository.obtenerPorPeticionYVeterinario(peticionId, idVet)
         } ?: return
+
+        if (esFilaBloqueadaParaEscritura(existente)) {
+            return
+        }
 
         if (existente.estadoSincronizacion != EstadoSincronizacionActa.BORRADOR &&
             existente.estadoSincronizacion != EstadoSincronizacionActa.REQUIERE_ATENCION
@@ -3662,14 +3729,25 @@ class ActaAtencionActivity : AppCompatActivity() {
     }
 
     private fun restaurarBorrador(entidad: ActaLocalEntity) {
+        if (edicionBloqueadaPorEstado || esFilaBloqueadaParaEscritura(entidad)) return
         guardadoHandler.removeCallbacks(guardadoDebounceRunnable)
         isRestaurandoBorrador = true
         try {
-            entidadBorradorActual = entidad
-            latitudVisita = entidad.latitudVisita
-            longitudVisita = entidad.longitudVisita
+            val entidadNormalizada = if (entidad.estadoSincronizacion == EstadoSincronizacionActa.REQUIERE_ATENCION) {
+                entidad.copy(
+                    estadoSincronizacion = EstadoSincronizacionActa.BORRADOR,
+                    ultimoError = null,
+                    ultimoCodigoHttp = null,
+                    reintentos = 0
+                )
+            } else {
+                entidad
+            }
+            entidadBorradorActual = entidadNormalizada
+            latitudVisita = entidadNormalizada.latitudVisita
+            longitudVisita = entidadNormalizada.longitudVisita
 
-            ActaFormSnapshotMapper.restaurar(binding, entidad)
+            ActaFormSnapshotMapper.restaurar(binding, entidadNormalizada)
             sincronizarLabelsSwitches()
 
             if (entidad.lugarAtencion.isNotBlank()) {
@@ -3741,6 +3819,27 @@ class ActaAtencionActivity : AppCompatActivity() {
     }
 
     private fun descartarBorrador(entidad: ActaLocalEntity) {
+        if (edicionBloqueadaPorEstado) {
+            Log.w("ActaAtencionActivity", "descartarBorrador abortado: edición bloqueada por estado")
+            return
+        }
+
+        val filaActual = synchronized(dbWriteLock) {
+            actaLocalRepository.obtenerPorPeticionYVeterinario(
+                entidad.idPeticion,
+                entidad.idVeterinario
+            )
+        }
+
+        if (filaActual != null && esFilaBloqueadaParaEscritura(filaActual)) {
+            Log.w("ActaAtencionActivity", "descartarBorrador abortado por candado defensivo: fila bloqueada en BD")
+            return
+        }
+        if (esFilaBloqueadaParaEscritura(entidad)) {
+            Log.w("ActaAtencionActivity", "descartarBorrador abortado: entidad bloqueada por estado")
+            return
+        }
+
         guardadoHandler.removeCallbacks(guardadoDebounceRunnable)
 
         val medsDescontados = ActaFormSnapshotMapper.deserializarMedicamentos(entidad.medicamentosJson)
@@ -3759,14 +3858,8 @@ class ActaAtencionActivity : AppCompatActivity() {
         synchronized(dbWriteLock) {
             if (entidad.idLocal > 0L) {
                 actaLocalRepository.eliminar(entidad.idLocal)
-            } else {
-                val actual = actaLocalRepository.obtenerPorPeticionYVeterinario(
-                    entidad.idPeticion,
-                    entidad.idVeterinario
-                )
-                if (actual != null) {
-                    actaLocalRepository.eliminar(actual.idLocal)
-                }
+            } else if (filaActual != null) {
+                actaLocalRepository.eliminar(filaActual.idLocal)
             }
             entidadBorradorActual = null
         }
@@ -3861,5 +3954,68 @@ class ActaAtencionActivity : AppCompatActivity() {
             return "len=${valor.length},head=${valor.take(24)}..."
         }
         return if (valor.length > 120) "${valor.take(120)}...(len=${valor.length})" else valor
+    }
+
+    private fun esFilaBloqueadaParaEscritura(fila: ActaLocalEntity): Boolean {
+        val estado = fila.estadoSincronizacion
+        return estado == EstadoSincronizacionActa.PENDIENTE_ENVIO ||
+            estado == EstadoSincronizacionActa.ENVIANDO ||
+            estado == EstadoSincronizacionActa.ERROR_REINTENTABLE ||
+            estado == EstadoSincronizacionActa.ENVIADA ||
+            fila.idSeguimientoRemoto != null
+    }
+
+    private fun verificarFilaBloqueadaAlAbrir(existente: ActaLocalEntity): Boolean {
+        val estado = existente.estadoSincronizacion
+        val esEnCola = (estado == EstadoSincronizacionActa.PENDIENTE_ENVIO ||
+            estado == EstadoSincronizacionActa.ENVIANDO ||
+            estado == EstadoSincronizacionActa.ERROR_REINTENTABLE) ||
+            (existente.idSeguimientoRemoto != null && estado != EstadoSincronizacionActa.ENVIADA)
+
+        val esYaEnviada = estado == EstadoSincronizacionActa.ENVIADA
+
+        if (!esEnCola && !esYaEnviada) {
+            return false
+        }
+
+        edicionBloqueadaPorEstado = true
+        guardadoHandler.removeCallbacks(guardadoDebounceRunnable)
+
+        val radicado = existente.nroRadicadoAtencion.ifBlank {
+            binding.etRadicado.text?.toString()?.trim()?.ifEmpty { null } ?: "RAD-VIS"
+        }
+
+        val tituloRes = if (esEnCola) {
+            R.string.acta_offline_dialog_en_cola_titulo
+        } else {
+            R.string.acta_offline_dialog_ya_enviada_titulo
+        }
+
+        val mensajeRes = if (esEnCola) {
+            R.string.acta_offline_dialog_en_cola_mensaje
+        } else {
+            R.string.acta_offline_dialog_ya_enviada_mensaje
+        }
+
+        val icono = ContextCompat.getDrawable(this, R.drawable.ic_info_circle)?.mutate()?.apply {
+            setTint(ContextCompat.getColor(this@ActaAtencionActivity, R.color.primary))
+        }
+
+        MaterialAlertDialogBuilder(this)
+            .apply {
+                if (icono != null) {
+                    setIcon(icono)
+                }
+            }
+            .setTitle(tituloRes)
+            .setMessage(getString(mensajeRes, radicado))
+            .setCancelable(false)
+            .setPositiveButton(R.string.acta_offline_dialog_en_cola_boton) { dialog, _ ->
+                dialog.dismiss()
+                finish()
+            }
+            .show()
+
+        return true
     }
 }

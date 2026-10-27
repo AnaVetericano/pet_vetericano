@@ -4,18 +4,45 @@ import android.content.res.ColorStateList
 import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
+import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.RecyclerView
 import com.example.petvetericano.databinding.ItemMedicamentoMaletinBinding
 import com.example.petvetericano.models.MedicamentoMaletin
+import com.example.petvetericano.models.NivelSemaforoStock
 
 class MedicamentoAdapter(
     private var medicamentos: List<MedicamentoMaletin>,
     private val onItemClick: (MedicamentoMaletin) -> Unit
 ) : RecyclerView.Adapter<MedicamentoAdapter.MedicamentoViewHolder>() {
 
+    class MedicamentoDiffCallback(
+        private val oldList: List<MedicamentoMaletin>,
+        private val newList: List<MedicamentoMaletin>
+    ) : DiffUtil.Callback() {
+        override fun getOldListSize(): Int = oldList.size
+        override fun getNewListSize(): Int = newList.size
+        override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            return oldList[oldItemPosition].idMedicamentoInt == newList[newItemPosition].idMedicamentoInt
+        }
+        override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean {
+            val oldItem = oldList[oldItemPosition]
+            val newItem = newList[newItemPosition]
+            return oldItem.cantidadDisponible == newItem.cantidadDisponible &&
+                    oldItem.cuotaAsignada == newItem.cuotaAsignada &&
+                    oldItem.saldoDisponibleInt == newItem.saldoDisponibleInt &&
+                    oldItem.saldoVencido == newItem.saldoVencido &&
+                    oldItem.nivelSemaforo == newItem.nivelSemaforo &&
+                    oldItem.lote == newItem.lote &&
+                    oldItem.fechaVencimiento == newItem.fechaVencimiento
+        }
+    }
+
     fun updateList(newList: List<MedicamentoMaletin>) {
+        val diffCallback = MedicamentoDiffCallback(this.medicamentos, newList)
+        val diffResult = DiffUtil.calculateDiff(diffCallback)
         this.medicamentos = newList
-        notifyDataSetChanged()
+        diffResult.dispatchUpdatesTo(this)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): MedicamentoViewHolder {
@@ -47,38 +74,53 @@ class MedicamentoAdapter(
             binding.tvVencimiento.text = "Vence: ${item.fechaVencimiento.ifEmpty { "Vigente" }}"
             binding.tvVia.text = item.viaRecomendada
 
-            // Stock disponible y vencido en M3
             val dispInt = item.saldoDisponibleInt
             val vencInt = item.saldoVencido
-            val formatStock = if (vencInt > 0) {
-                "$dispInt disp. ($vencInt vencidas)"
-            } else if (item.cantidadInicial > 0) {
-                "$dispInt / ${item.cantidadInicial.toInt()} ${item.unidadMedida}"
-            } else {
-                "$dispInt ${item.unidadMedida}"
-            }
-            binding.tvStockCantidad.text = formatStock
 
-            val ratio = if (item.cantidadInicial > 0) (item.cantidadDisponible / item.cantidadInicial).toFloat() else 1f
-            val percent = (ratio * 100).toInt().coerceIn(0, 100)
+            val maxRef = item.cuotaAsignada?.toFloat()?.takeIf { it > 0f }
+                ?: item.cantidadInicial.toFloat().takeIf { it > 0f }
+                ?: 1f
+            val ratio = (item.cantidadDisponible.toFloat() / maxRef).coerceIn(0f, 1f)
+            val percent = (ratio * 100).toInt()
             binding.progressBarStock.progress = percent
 
-            // Dinamismo de color según el estado semántico M3 de existencias
-            when {
-                dispInt <= 0 -> {
-                    val red = Color.parseColor("#EF4444")
+            // Dinamismo semántico oficial de colores (Semáforo Híbrido CBA)
+            when (item.nivelSemaforo) {
+                NivelSemaforoStock.CRITICO -> {
+                    val red = Color.parseColor("#DC2626")
                     binding.progressBarStock.setIndicatorColor(red)
                     binding.tvStockCantidad.setTextColor(red)
+                    binding.tvStockCantidad.text = "⚠️ Crítico: $dispInt ${item.unidadMedida} restante"
                 }
-                dispInt < 5 -> {
+                NivelSemaforoStock.REORDEN -> {
                     val amber = Color.parseColor("#D97706")
                     binding.progressBarStock.setIndicatorColor(amber)
                     binding.tvStockCantidad.setTextColor(amber)
+                    val baseRef = item.cuotaAsignada ?: item.cantidadInicial.toInt()
+                    binding.tvStockCantidad.text = "Stock bajo: $dispInt / $baseRef ${item.unidadMedida}"
                 }
-                else -> {
-                    val green = Color.parseColor("#10B981")
+                NivelSemaforoStock.OPTIMO -> {
+                    val green = Color.parseColor("#059669")
                     binding.progressBarStock.setIndicatorColor(green)
-                    binding.tvStockCantidad.setTextColor(androidx.core.content.ContextCompat.getColor(binding.root.context, R.color.text_primary))
+                    binding.tvStockCantidad.setTextColor(ContextCompat.getColor(binding.root.context, R.color.text_primary))
+                    val baseRef = item.cuotaAsignada ?: item.cantidadInicial.toInt()
+                    binding.tvStockCantidad.text = if (vencInt > 0) {
+                        "$dispInt disp. ($vencInt vencidas)"
+                    } else {
+                        "$dispInt / $baseRef ${item.unidadMedida}"
+                    }
+                }
+                NivelSemaforoStock.AGOTADO -> {
+                    val red = Color.parseColor("#EF4444")
+                    binding.progressBarStock.setIndicatorColor(red)
+                    binding.tvStockCantidad.setTextColor(red)
+                    binding.tvStockCantidad.text = "Agotado (0 ${item.unidadMedida})"
+                }
+                NivelSemaforoStock.VENCIDO -> {
+                    val gray = Color.parseColor("#9CA3AF")
+                    binding.progressBarStock.setIndicatorColor(gray)
+                    binding.tvStockCantidad.setTextColor(gray)
+                    binding.tvStockCantidad.text = "Vencido / No apto"
                 }
             }
 
@@ -92,22 +134,22 @@ class MedicamentoAdapter(
 
         private fun configurarBadgeCategoria(categoria: String) {
             val (bgColor, textColor) = when {
-                categoria.contains("Analgésico", ignoreCase = true) || categoria.contains("AINE", ignoreCase = true) -> {
+                categoria.contains("Analg", ignoreCase = true) || categoria.contains("AINE", ignoreCase = true) -> {
                     Pair(Color.parseColor("#EFF6FF"), Color.parseColor("#1D4ED8")) // Azul M3
                 }
-                categoria.contains("Antibiótico", ignoreCase = true) -> {
+                categoria.contains("Antibi", ignoreCase = true) -> {
                     Pair(Color.parseColor("#FEF3C7"), Color.parseColor("#B45309")) // Ámbar M3
                 }
-                categoria.contains("Anestésico", ignoreCase = true) -> {
+                categoria.contains("Anest", ignoreCase = true) -> {
                     Pair(Color.parseColor("#F3E8FF"), Color.parseColor("#7E22CE")) // Púrpura M3
                 }
-                categoria.contains("Corticoide", ignoreCase = true) -> {
+                categoria.contains("Cortico", ignoreCase = true) -> {
                     Pair(Color.parseColor("#FEE2E2"), Color.parseColor("#B91C1C")) // Rojo suave M3
                 }
-                categoria.contains("Antiparasitario", ignoreCase = true) -> {
+                categoria.contains("Antiparasit", ignoreCase = true) -> {
                     Pair(Color.parseColor("#ECFDF5"), Color.parseColor("#047857")) // Verde esmeralda M3
                 }
-                categoria.contains("Fluido", ignoreCase = true) -> {
+                categoria.contains("Fluid", ignoreCase = true) -> {
                     Pair(Color.parseColor("#F0FDFA"), Color.parseColor("#0F766E")) // Teal M3
                 }
                 else -> {

@@ -68,6 +68,7 @@ class SolicitudesKitActivity : AppCompatActivity() {
                         binding.swipeRefreshSolicitudes.visibility = View.GONE
                         binding.scrollNuevaSolicitud.visibility = View.VISIBLE
                         actualizarSelectorMedicamentos()
+                        prepararFormularioNuevaSolicitud()
                     }
                 }
             }
@@ -88,8 +89,27 @@ class SolicitudesKitActivity : AppCompatActivity() {
         binding.rvSolicitudes.adapter = adapter
     }
 
+    private fun prepararFormularioNuevaSolicitud() {
+        val medsRepo = maletinManager.getMedicamentosParaReposicion()
+        if (medsRepo.isNotEmpty()) {
+            binding.tilMotivoTotal.helperText = "${medsRepo.size} medicamento(s) en tu maletín están por debajo de su cuota de referencia."
+            if (binding.etMotivoTotal.text.isNullOrBlank()) {
+                binding.etMotivoTotal.setText("Reposición de existencias para completar cuota de maletín de campo CBA.")
+            }
+        } else {
+            binding.tilMotivoTotal.helperText = "Tu maletín tiene actualmente todas sus cuotas completas."
+            if (binding.etMotivoTotal.text.isNullOrBlank()) {
+                binding.etMotivoTotal.setText("Reposición de stock para atención clínica.")
+            }
+        }
+
+        if (binding.etMotivoPuntual.text.isNullOrBlank()) {
+            binding.etMotivoPuntual.setText("Reposición de medicamento consumido en atención en campo.")
+        }
+    }
+
     private fun configurarFormularioNuevaSolicitud() {
-        // Botón 1: Reposición Total Automática
+        // Botón 1: Reposición Total Automática (hasta completar cuotas)
         binding.btnSolicitarReposicionTotal.setOnClickListener {
             val motivo = binding.etMotivoTotal.text.toString().trim()
             if (motivo.isEmpty()) {
@@ -98,10 +118,19 @@ class SolicitudesKitActivity : AppCompatActivity() {
             }
             binding.tilMotivoTotal.error = null
 
+            val medsFaltantes = maletinManager.getMedicamentosParaReposicion()
+            val resumenFaltantes = if (medsFaltantes.isNotEmpty()) {
+                medsFaltantes.joinToString("\n") {
+                    "• ${it.nombre}: stock actual ${it.saldoDisponibleInt} / cuota ${it.cuotaAsignada ?: "N/D"}"
+                }
+            } else {
+                "Todas las cuotas asignadas están al día."
+            }
+
             MaterialAlertDialogBuilder(this)
                 .setIcon(R.drawable.ic_sync)
                 .setTitle("¿Solicitar reposición total?")
-                .setMessage("El gestor de inventario recibirá tu petición para dotar todas las referencias que tengas por debajo de su cantidad asignada.")
+                .setMessage("El gestor de Farmacia CBA recibirá tu petición para abastecer todas las referencias por debajo de su cuota:\n\n$resumenFaltantes")
                 .setPositiveButton("Confirmar y enviar") { dialog, _ ->
                     dialog.dismiss()
                     enviarSolicitud(
@@ -208,17 +237,35 @@ class SolicitudesKitActivity : AppCompatActivity() {
             withContext(Dispatchers.Main) {
                 medicamentosDisponibles = listaOpciones
                 val nombres = listaOpciones.map { item ->
-                    if (item.saldoDisponible > 0) {
-                        "${item.nombre} (En maletín: ${item.saldoDisponible})"
-                    } else {
-                        "${item.nombre} (Sin existencias en maletín)"
+                    val medMal = maletinMap[item.idMedicamento]
+                    val cuota = medMal?.cuotaAsignada
+                    when {
+                        cuota != null -> "${item.nombre} (En maletín: ${item.saldoDisponible} / cuota $cuota)"
+                        item.saldoDisponible > 0 -> "${item.nombre} (En maletín: ${item.saldoDisponible})"
+                        else -> "${item.nombre} (Sin existencias en maletín)"
                     }
                 }
                 val arrayAdapter = ArrayAdapter(this@SolicitudesKitActivity, android.R.layout.simple_dropdown_item_1line, nombres)
                 binding.autoCompleteMedSolicitud.setAdapter(arrayAdapter)
 
                 binding.autoCompleteMedSolicitud.setOnItemClickListener { _, _, position, _ ->
-                    medicamentoSeleccionado = medicamentosDisponibles.getOrNull(position)
+                    val med = medicamentosDisponibles.getOrNull(position)
+                    medicamentoSeleccionado = med
+                    if (med != null) {
+                        val medMal = maletinMap[med.idMedicamento]
+                        if (medMal != null && medMal.cuotaAsignada != null) {
+                            val faltante = medMal.unidadesFaltantesParaCuota
+                            if (faltante > 0) {
+                                binding.etCantidadSolicitud.setText(faltante.toString())
+                                binding.tilCantidadSolicitud.helperText = "Stock: ${medMal.saldoDisponibleInt} | Cuota: ${medMal.cuotaAsignada} | Faltan para completar: $faltante ${medMal.unidadMedida}"
+                            } else {
+                                binding.etCantidadSolicitud.setText("1")
+                                binding.tilCantidadSolicitud.helperText = "Stock: ${medMal.saldoDisponibleInt} (Cuota asignada completa)"
+                            }
+                        } else {
+                            binding.tilCantidadSolicitud.helperText = null
+                        }
+                    }
                 }
             }
         }
@@ -280,6 +327,9 @@ class SolicitudesKitActivity : AppCompatActivity() {
             try {
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
                 val response = RetrofitClient.apiService.crearSolicitudKit(authHeader, request)
+
+                // Sincronizar maletín en segundo plano para que el StateFlow emita de inmediato
+                maletinManager.sincronizarDesdeServidor(token)
 
                 withContext(Dispatchers.Main) {
                     binding.swipeRefreshSolicitudes.isRefreshing = false

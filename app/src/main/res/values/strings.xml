@@ -430,6 +430,7 @@
     <string name="lbl_todos">Todos</string>
     <string name="lbl_analgesicos_aine">Analgésicos / AINE</string>
     <string name="lbl_antibioticos">Antibióticos</string>
+    <string name="lbl_anestesicos">Anestésicos</string>
     <string name="lbl_antiparasitarios">Antiparasitarios</string>
     <string name="lbl_fluidoterapia">Fluidoterapia</string>
     <string name="lbl_corticoides">Corticoides</string>

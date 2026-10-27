@@ -20,9 +20,11 @@ import kotlinx.coroutines.withContext
  */
 class MaletinManager(context: Context) {
 
-    private val prefs: SharedPreferences =
-        context.applicationContext.getSharedPreferences("PetVetericanoMaletinPrefs", Context.MODE_PRIVATE)
+    private val appContext: Context = context.applicationContext
     private val gson = Gson()
+
+    private val prefs: SharedPreferences
+        get() = getPrefs(appContext)
 
     companion object {
         private const val KEY_MEDICAMENTOS = "MALETIN_MEDICAMENTOS_LIST"
@@ -34,9 +36,31 @@ class MaletinManager(context: Context) {
 
         fun getInstance(context: Context): MaletinManager {
             return instance ?: synchronized(this) {
-                instance ?: MaletinManager(context).also { instance = it }
+                instance ?: MaletinManager(context.applicationContext).also { instance = it }
             }
         }
+
+        fun getPrefs(context: Context): SharedPreferences {
+            val userId = SharedPreferencesManager(context).getUserId()
+            val suffix = if (userId > 0) userId.toString() else "default"
+            return context.applicationContext.getSharedPreferences("PetVetericanoMaletinPrefs_$suffix", Context.MODE_PRIVATE)
+        }
+
+        fun limpiarCacheUsuario(context: Context, userId: Int? = null) {
+            val targetId = userId ?: SharedPreferencesManager(context).getUserId()
+            val suffix = if (targetId > 0) targetId.toString() else "default"
+            context.applicationContext.getSharedPreferences("PetVetericanoMaletinPrefs_$suffix", Context.MODE_PRIVATE)
+                .edit()
+                .clear()
+                .apply()
+            synchronized(this) {
+                instance = null
+            }
+        }
+    }
+
+    fun limpiarCacheUsuario(context: Context) {
+        limpiarCacheUsuario(context, null)
     }
 
     /**
@@ -120,10 +144,10 @@ class MaletinManager(context: Context) {
                         MedicamentoMaletin(
                             id = stockItem.idMedicamento.toString(),
                             nombre = stockItem.nombre,
-                            categoria = anterior?.categoria ?: "General",
+                            categoria = anterior?.categoria ?: MedicamentoMaletin.categorizarPorNombre(stockItem.nombre),
                             unidadMedida = anterior?.unidadMedida ?: "unidades",
                             cantidadDisponible = stockItem.saldoDisponible.toDouble(),
-                            cantidadInicial = maxOf(anterior?.cantidadInicial ?: 0.0, stockItem.saldoDisponible.toDouble()),
+                            cantidadInicial = if ((anterior?.cantidadInicial ?: 0.0) > 0) anterior!!.cantidadInicial else maxOf(stockItem.saldoDisponible.toDouble(), 1.0),
                             lote = anterior?.lote ?: "Lote activo",
                             fechaVencimiento = anterior?.fechaVencimiento ?: "Vigente",
                             viaRecomendada = anterior?.viaRecomendada ?: "Clínica",

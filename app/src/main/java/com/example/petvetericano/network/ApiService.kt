@@ -137,6 +137,11 @@ interface ApiService {
     @GET("medicamentos/")
     suspend fun obtenerMedicamentos(): Response<Any>
 
+    @GET("medicamentos-catalogo/")
+    suspend fun obtenerCatalogoMedicamentos(
+        @Header("Authorization") token: String? = null
+    ): Response<List<com.example.petvetericano.models.MedicamentoCatalogoItem>>
+
     @GET("dashboard/")
     suspend fun obtenerDashboard(): Response<DashboardResponse>
 

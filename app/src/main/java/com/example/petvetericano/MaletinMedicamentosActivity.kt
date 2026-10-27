@@ -110,6 +110,7 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
             categoriaSeleccionada = when (checkedIds.firstOrNull()) {
                 R.id.chipCatAine -> "Analgésicos / AINE"
                 R.id.chipCatAntibioticos -> "Antibióticos"
+                R.id.chipCatAnestesicos -> "Anestésicos"
                 R.id.chipCatAntiparasitarios -> "Antiparasitarios"
                 R.id.chipCatFluidos -> "Fluidoterapia"
                 R.id.chipCatCorticoides -> "Corticoides"

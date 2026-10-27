@@ -20,6 +20,7 @@ import com.example.petvetericano.offline.ActaSyncScheduler
 import com.example.petvetericano.models.PeticionPendiente
 import com.example.petvetericano.models.TipoEstado
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.offline.PeticionesCacheManager
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
@@ -276,6 +277,13 @@ class dahsboard_veterianrio : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val response = RetrofitClient.apiService.listarPeticiones("Bearer $token")
+                if (response.isSuccessful && response.body() != null) {
+                    val idVet = prefs.getUserId()
+                    val body = response.body()!!
+                    if (idVet > 0 && body.isNotEmpty()) {
+                        PeticionesCacheManager.guardar(this@dahsboard_veterianrio, idVet, body)
+                    }
+                }
                 withContext(Dispatchers.Main) {
                     // Detener la animación de recarga
                     binding.swipeRefreshLayout.isRefreshing = false
@@ -384,6 +392,13 @@ class dahsboard_veterianrio : AppCompatActivity() {
                             if (item.id_peticion > 0) {
                                 val intent = Intent(this@dahsboard_veterianrio, DetallePeticion::class.java).apply {
                                     putExtra("PETICION_ID", item.id_peticion)
+                                    putExtra("PETICION_ESTADO", item.estado)
+                                    putExtra("PETICION_TIPO", item.titulo)
+                                    val partes = item.paciente.split(" — ", limit = 2)
+                                    val rad = partes.getOrNull(0)?.trim()?.ifEmpty { null }
+                                    val dir = partes.getOrNull(1)?.trim()?.ifEmpty { null }
+                                    if (!rad.isNullOrBlank()) putExtra("PETICION_RADICADO", rad)
+                                    if (!dir.isNullOrBlank() && dir != "Sin dirección") putExtra("DIRECCION_ACTUAL", dir)
                                 }
                                 startActivity(intent)
                             }
@@ -413,6 +428,13 @@ class dahsboard_veterianrio : AppCompatActivity() {
                                 if (item.id_peticion > 0) {
                                     val intent = Intent(this@dahsboard_veterianrio, DetallePeticion::class.java).apply {
                                         putExtra("PETICION_ID", item.id_peticion)
+                                        putExtra("PETICION_ESTADO", item.estado)
+                                        putExtra("PETICION_TIPO", item.titulo)
+                                        val partes = item.paciente.split(" — ", limit = 2)
+                                        val rad = partes.getOrNull(0)?.trim()?.ifEmpty { null }
+                                        val dir = partes.getOrNull(1)?.trim()?.ifEmpty { null }
+                                        if (!rad.isNullOrBlank()) putExtra("PETICION_RADICADO", rad)
+                                        if (!dir.isNullOrBlank() && dir != "Sin dirección") putExtra("DIRECCION_ACTUAL", dir)
                                     }
                                     startActivity(intent)
                                 }

@@ -75,7 +75,10 @@ import com.example.petvetericano.offline.ActaSyncScheduler
 import com.example.petvetericano.offline.CloudinaryUploadHelper
 import com.example.petvetericano.offline.EstadoSincronizacionActa
 import com.example.petvetericano.offline.EvidenciaLocalItem
+import com.example.petvetericano.offline.NetworkUtils
+import com.example.petvetericano.offline.PeticionesCacheManager
 import com.example.petvetericano.offline.ResultadoSubida
+import kotlinx.coroutines.withTimeoutOrNull
 import com.google.gson.Gson
 import java.io.File
 import java.io.IOException
@@ -3023,15 +3026,26 @@ class ActaAtencionActivity : AppCompatActivity() {
 
     private fun verificarSiPeticionYaAtendida() {
         if (peticionId == -1) return
+        if (!NetworkUtils.hayRedDisponible(this)) return
+
         val prefs = SharedPreferencesManager(this)
         val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
         if (token.isEmpty()) return
 
         lifecycleScope.launch(Dispatchers.IO) {
             try {
-                val response = RetrofitClient.apiService.listarPeticiones("Bearer $token")
+                val response = withTimeoutOrNull(3000L) {
+                    RetrofitClient.apiService.listarPeticiones("Bearer $token")
+                } ?: return@launch
+
                 if (response.isSuccessful) {
-                    val peticion = response.body()?.firstOrNull { it.id_peticion == peticionId }
+                    val body = response.body()
+                    val idVet = obtenerIdVeterinarioActual()
+                    if (!body.isNullOrEmpty() && idVet > 0) {
+                        PeticionesCacheManager.guardar(this@ActaAtencionActivity, idVet, body)
+                    }
+
+                    val peticion = body?.firstOrNull { it.id_peticion == peticionId }
                     val estado = peticion?.estado.orEmpty().lowercase()
                     val yaAtendida = peticion?.tiene_acta == true ||
                         estado.contains("tratamiento") ||
@@ -3045,10 +3059,10 @@ class ActaAtencionActivity : AppCompatActivity() {
                         withContext(Dispatchers.Main) {
                             MaterialAlertDialogBuilder(this@ActaAtencionActivity)
                                 .setIcon(R.drawable.ic_info_circle)
-                                .setTitle("Petición ya atendida")
-                                .setMessage("Esta petición ya cuenta con un Acta de Seres Sintientes registrada.\n\nEl sistema no permite crear actas adicionales para el mismo caso para proteger la trazabilidad médica.")
+                                .setTitle(R.string.acta_offline_dialog_ya_atendida_titulo)
+                                .setMessage(R.string.acta_offline_dialog_ya_atendida_acta_mensaje)
                                 .setCancelable(false)
-                                .setPositiveButton("Regresar") { _, _ ->
+                                .setPositiveButton(R.string.acta_offline_dialog_boton_regresar) { _, _ ->
                                     finish()
                                 }
                                 .show()
@@ -3056,7 +3070,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                     }
                 }
             } catch (_: Exception) {
-                // Si ocurre error de red, la validación estricta del backend protegerá el registro
+                // Si ocurre error de red o timeout, la validación estricta del backend protegerá el registro
             }
         }
     }
@@ -3989,18 +4003,7 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
     }
 
-    private fun hayRedDisponible(): Boolean {
-        return try {
-            val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
-                ?: return true
-            val activeNetwork = connectivityManager.activeNetwork ?: return false
-            val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
-            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
-                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
-        } catch (_: Exception) {
-            true
-        }
-    }
+    private fun hayRedDisponible(): Boolean = NetworkUtils.hayRedDisponible(this)
 
     private suspend fun encolarActaYFinalizar(idSeguimientoRemotoPrevio: Int? = null) {
         withContext(NonCancellable + Dispatchers.IO) {

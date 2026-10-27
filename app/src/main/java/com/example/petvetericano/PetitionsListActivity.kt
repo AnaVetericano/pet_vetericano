@@ -15,6 +15,7 @@ import com.example.petvetericano.adapters.PetitionAdapter
 import com.example.petvetericano.databinding.ActivityPetitionsListBinding
 import com.example.petvetericano.models.Petition
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.offline.PeticionesCacheManager
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -64,6 +65,13 @@ class PetitionsListActivity : AppCompatActivity() {
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val response = RetrofitClient.apiService.listarPeticiones("Bearer $token")
+                if (response.isSuccessful && response.body() != null) {
+                    val idVet = prefs.getUserId()
+                    val body = response.body()!!
+                    if (idVet > 0 && body.isNotEmpty()) {
+                        PeticionesCacheManager.guardar(this@PetitionsListActivity, idVet, body)
+                    }
+                }
                 withContext(Dispatchers.Main) {
                     if (response.isSuccessful && response.body() != null) {
                         val listaOriginal = response.body()!!
@@ -186,6 +194,11 @@ class PetitionsListActivity : AppCompatActivity() {
         binding.recyclerPeticiones.adapter = PetitionAdapter(filtradas) { petition ->
             val intent = Intent(this@PetitionsListActivity, DetallePeticion::class.java).apply {
                 putExtra("PETICION_ID", petition.priorityType)
+                putExtra("DIRECCION_ACTUAL", petition.location)
+                putExtra("PETICION_RADICADO", petition.code)
+                putExtra("PETICION_ESTADO", petition.status)
+                putExtra("PETICION_TIPO", petition.title)
+                putExtra("PETICION_FECHA", petition.time)
             }
             startActivity(intent)
         }

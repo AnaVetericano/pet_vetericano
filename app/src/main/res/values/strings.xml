@@ -574,4 +574,31 @@
     <string name="acta_offline_cola_requiere_revision_msg">Esta acta necesita correcciones. Toca Corregir</string>
     <string name="acta_offline_cola_no_encontrada">El acta ya no está en la cola</string>
     <string name="acta_offline_cola_badge_max">99+</string>
+    <!-- Tarea 1b-A: Peticiones offline y DetallePeticion -->
+    <string name="acta_offline_detalle_sin_datos">No hay información disponible para esta petición sin conexión</string>
+    <string name="acta_offline_detalle_modo_sin_conexion">Modo sin conexión: mostrando datos guardados</string>
+    <string name="acta_offline_requiere_conexion">Esta acción requiere conexión a internet</string>
+    <string name="acta_offline_error_cargar_detalle">No se pudo cargar la información</string>
+    <string name="acta_offline_peticion_no_encontrada">No se encontró la petición</string>
+    <string name="acta_offline_id_peticion_invalido">Error: ID de petición no válido</string>
+    <string name="acta_offline_sin_direccion">No hay dirección disponible para esta petición</string>
+    <string name="acta_offline_sin_motivo">Sin motivo</string>
+    <string name="acta_offline_sin_observaciones">Sin observaciones registradas.</string>
+    <string name="acta_offline_ubicacion_no_registrada">Ubicación no registrada</string>
+    <string name="acta_offline_sin_estado">Sin estado</string>
+    <string name="acta_offline_fecha_pendiente">Pendiente</string>
+    <string name="acta_offline_btn_atender">Atender</string>
+    <string name="acta_offline_btn_atencion_registrada">Atención registrada</string>
+    <string name="acta_offline_dialog_ya_atendida_titulo">Petición ya atendida</string>
+    <string name="acta_offline_dialog_ya_atendida_mensaje">Esta petición ya fue atendida en campo y cuenta con un Acta de Seres Sintientes registrada.\n\nPara garantizar la trazabilidad legal y evitar duplicados, cada petición admite una única acta de atención.</string>
+    <string name="acta_offline_dialog_ya_atendida_acta_mensaje">Esta petición ya cuenta con un Acta de Seres Sintientes registrada.\n\nEl sistema no permite crear actas adicionales para el mismo caso para proteger la trazabilidad médica.</string>
+    <string name="acta_offline_dialog_boton_aceptar">Aceptar</string>
+    <string name="acta_offline_dialog_boton_regresar">Regresar</string>
+    <string name="acta_offline_dialog_cancelar">Cancelar</string>
+    <string name="acta_offline_dialog_corregir_dir_titulo">Corregir dirección</string>
+    <string name="acta_offline_dialog_corregir_dir_mensaje">¿Deseas abrir el mapa para corregir y actualizar la dirección geográfica de esta petición?</string>
+    <string name="acta_offline_dialog_corregir_dir_positivo">Sí, abrir mapa</string>
+    <string name="acta_offline_reproducir_video_error">No se pudo reproducir el video</string>
+    <string name="acta_offline_direccion_actualizada_ok">Dirección actualizada correctamente</string>
+    <string name="acta_offline_na">N/A</string>
 </resources>

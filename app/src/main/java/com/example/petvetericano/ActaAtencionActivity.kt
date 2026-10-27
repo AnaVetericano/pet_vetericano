@@ -37,10 +37,14 @@ import com.example.petvetericano.models.SeguimientoPeticionVisitaRequest
 import com.example.petvetericano.network.RetrofitClient
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import org.json.JSONObject
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -2395,6 +2399,13 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         val entidadGuardada = volcarVistasASqliteSincrono(incluirFirmas = true)
 
+        if (!hayRedDisponible()) {
+            lifecycleScope.launch {
+                encolarActaYFinalizar()
+            }
+            return
+        }
+
         // Construcción de la lista de animales adaptada a AnimalRapidoSerializer de Django
         val listaAnimales = mutableListOf<AnimalRapidoRequest>()
         for (itemBinding in animalBindingsList) {
@@ -2726,7 +2737,15 @@ class ActaAtencionActivity : AppCompatActivity() {
                                 urlsFotos.add(urlExistente)
                             }
                         } else {
-                            when (val res = subirACloudinary(media, numActual, totalMedia)) {
+                            val timeoutMs = if (media.esVideo) 120_000L else 45_000L
+                            val res = withTimeoutOrNull(timeoutMs) {
+                                subirACloudinary(media, numActual, totalMedia)
+                            }
+                            if (res == null) {
+                                falloRedEvidencias = true
+                                break
+                            }
+                            when (res) {
                                 is ResultadoSubida.Exito -> {
                                     val secureUrl = res.secureUrl
                                     persistirRemoteUrlEvidencia(media, secureUrl)
@@ -3967,6 +3986,19 @@ class ActaAtencionActivity : AppCompatActivity() {
                     actualizadoEn = System.currentTimeMillis()
                 )
             }
+        }
+    }
+
+    private fun hayRedDisponible(): Boolean {
+        return try {
+            val connectivityManager = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager
+                ?: return true
+            val activeNetwork = connectivityManager.activeNetwork ?: return false
+            val capabilities = connectivityManager.getNetworkCapabilities(activeNetwork) ?: return false
+            capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+        } catch (_: Exception) {
+            true
         }
     }
 

@@ -199,7 +199,6 @@ class editar_perfil : AppCompatActivity() {
         } else {
             ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivProfile, fotoOriginal)
         }
-        actualizarVisibilidadBotonEliminarFoto()
     }
 
     private fun sincronizarConApi() {
@@ -247,15 +246,10 @@ class editar_perfil : AppCompatActivity() {
         return fotoPendienteUri != null || (!fotoEliminada && fotoOriginal.isNotEmpty())
     }
 
-    private fun actualizarVisibilidadBotonEliminarFoto() {
-        binding.btnDeletePhoto.visibility = if (tieneFotoVisible()) View.VISIBLE else View.GONE
-    }
-
     private fun previsualizarFotoSeleccionada(uri: Uri) {
         fotoPendienteUri = uri
         fotoEliminada = false
         ProfilePhotoHelper.previsualizarUri(this, binding.ivProfile, uri)
-        actualizarVisibilidadBotonEliminarFoto()
         actualizarEstadoBotones()
         Snackbar.make(
             binding.root,
@@ -268,7 +262,6 @@ class editar_perfil : AppCompatActivity() {
         fotoPendienteUri = null
         fotoEliminada = true
         ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivProfile, "")
-        actualizarVisibilidadBotonEliminarFoto()
         actualizarEstadoBotones()
         Snackbar.make(
             binding.root,
@@ -313,7 +306,6 @@ class editar_perfil : AppCompatActivity() {
         fotoPendienteUri = null
         fotoEliminada = false
         ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivProfile, fotoOriginal)
-        actualizarVisibilidadBotonEliminarFoto()
         cargandoInicial = false
         actualizarEstadoBotones()
         Snackbar.make(binding.root, "Cambios descartados", Snackbar.LENGTH_SHORT).show()
@@ -516,7 +508,6 @@ class editar_perfil : AppCompatActivity() {
                     fotoEliminada = false
                     guardando = false
                     actualizarEstadoBotones()
-                    actualizarVisibilidadBotonEliminarFoto()
                     ProfilePhotoHelper.cargarFotoPerfil(this@editar_perfil, binding.ivProfile, fotoOriginal)
                     Snackbar.make(binding.root, "Perfil actualizado", Snackbar.LENGTH_SHORT).show()
                     binding.root.postDelayed({ irAMenuInicial() }, 900)
@@ -566,11 +557,17 @@ class editar_perfil : AppCompatActivity() {
 
     private fun setupMenuListeners() {
         binding.btnCamera.setOnClickListener {
-            pickImageLauncher.launch("image/*")
+            ProfilePhotoHelper.mostrarMenuOpcionesFoto(
+                context = this,
+                anchorView = binding.btnCamera,
+                tieneFoto = tieneFotoVisible(),
+                onCambiarFoto = { pickImageLauncher.launch("image/*") },
+                onEliminarFoto = { eliminarFoto() }
+            )
         }
 
-        binding.btnDeletePhoto.setOnClickListener {
-            eliminarFoto()
+        binding.ivProfile.setOnClickListener {
+            binding.btnCamera.performClick()
         }
 
         binding.etName.doOnTextChanged { _, _, _, _ ->

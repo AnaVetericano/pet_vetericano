@@ -80,30 +80,6 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/btnDeletePhoto"
-                    style="?attr/materialCardViewFilledStyle"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
-                    android:layout_gravity="top|end"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:visibility="gone"
-                    app:cardBackgroundColor="@color/radix_tomato_solid"
-                    app:cardCornerRadius="19dp"
-                    app:cardElevation="4dp"
-                    app:strokeColor="@color/card_background"
-                    app:strokeWidth="2dp">
-
-                    <ImageView
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:contentDescription="@string/cd_eliminar_foto_de_perfil"
-                        android:padding="9dp"
-                        android:src="@drawable/ic_delete"
-                        app:tint="@color/white" />
-                </com.google.android.material.card.MaterialCardView>
-
-                <com.google.android.material.card.MaterialCardView
                     android:id="@+id/btnChangePhoto"
                     style="?attr/materialCardViewFilledStyle"
                     android:layout_width="38dp"

@@ -67,6 +67,54 @@ object ProfilePhotoHelper {
     /**
      * Previsualiza en pantalla un Uri local seleccionado de la galería antes de guardar cambios.
      */
+    /**
+     * Muestra el menú contextual compacto (PopupMenu) anclado al botón de cámara para cambiar o eliminar la foto.
+     * Si el usuario no tiene foto actualmente, abre directamente la galería para simplificar la interacción.
+     */
+    fun mostrarMenuOpcionesFoto(
+        context: Context,
+        anchorView: View,
+        tieneFoto: Boolean,
+        onCambiarFoto: () -> Unit,
+        onEliminarFoto: () -> Unit
+    ) {
+        if (!tieneFoto) {
+            onCambiarFoto()
+            return
+        }
+
+        val popup = androidx.appcompat.widget.PopupMenu(context, anchorView)
+        val itemCambiar = popup.menu.add(0, 1, 0, "Cambiar foto")
+        val itemEliminar = popup.menu.add(0, 2, 1, "Eliminar foto")
+
+        itemCambiar.setIcon(R.drawable.camera)
+        itemEliminar.setIcon(R.drawable.ic_delete)
+
+        try {
+            val fieldMPopup = popup.javaClass.getDeclaredField("mPopup")
+            fieldMPopup.isAccessible = true
+            val menuPopupHelper = fieldMPopup.get(popup)
+            menuPopupHelper.javaClass
+                .getDeclaredMethod("setForceShowIcon", Boolean::class.java)
+                .invoke(menuPopupHelper, true)
+        } catch (_: Exception) { }
+
+        popup.setOnMenuItemClickListener { item ->
+            when (item.itemId) {
+                1 -> {
+                    onCambiarFoto()
+                    true
+                }
+                2 -> {
+                    onEliminarFoto()
+                    true
+                }
+                else -> false
+            }
+        }
+        popup.show()
+    }
+
     fun previsualizarUri(context: Context, imageView: ImageView, uri: Uri) {
         try {
             Glide.with(context)

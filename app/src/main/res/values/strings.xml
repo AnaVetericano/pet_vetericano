@@ -616,4 +616,18 @@
     <string name="acta_offline_error_cargar_dashboard">Error al cargar dashboard</string>
     <string name="acta_offline_error_cargar_peticiones">Error al cargar peticiones</string>
     <string name="acta_offline_error_generico_con_detalle">Error: %1$s</string>
+    <!-- Reportes Offline (Tarea B1) -->
+    <string name="reporte_offline_channel_nombre">Sincronización de Reportes Ciudadanos</string>
+    <string name="reporte_offline_channel_descripcion">Notificaciones sobre el envío automático de reportes registrados sin conexión</string>
+    <string name="reporte_offline_notif_exito_titulo">Reporte sincronizado exitosamente</string>
+    <string name="reporte_offline_notif_exito_texto">El reporte con radicado %1$s (Petición #%2$d) fue registrado correctamente en el sistema.</string>
+    <string name="reporte_offline_notif_atencion_titulo">Un reporte requiere tu atención</string>
+    <string name="reporte_offline_notif_atencion_texto">El reporte #%1$d no pudo sincronizarse: %2$s. Toca para revisarlo.</string>
+    <string name="reporte_offline_notif_atencion_sesion_titulo">Inicia sesión para sincronizar tus reportes</string>
+    <string name="reporte_offline_notif_atencion_sesion_texto">Tu sesión expiró mientras había reportes ciudadanos pendientes de envío. Toca para iniciar sesión y reanudar.</string>
+    <string name="reporte_offline_error_evidencia_faltante">Uno de los archivos de evidencia ya no existe en el dispositivo.</string>
+    <string name="reporte_offline_error_evidencia_subida">No se pudo subir la evidencia multimedia a los servidores.</string>
+    <string name="reporte_offline_error_datos_servidor">El servidor rechazó los datos del reporte. Requiere verificación.</string>
+    <string name="reporte_offline_error_max_reintentos">Se superó el límite de intentos de envío automático.</string>
+    <string name="reporte_offline_notif_exito_texto_sin_radicado">El reporte ciudadano fue registrado correctamente en el sistema.</string>
 </resources>

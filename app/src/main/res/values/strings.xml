@@ -657,4 +657,17 @@
     <string name="reporte_offline_enviado_sin_conexion">Recibimos tu reporte. Lo guardamos en tu teléfono y se enviará en segundo plano en cuanto tengas conexión. Te avisaremos.</string>
     <string name="reporte_offline_enviando_reporte">Enviando tu reporte…</string>
     <string name="reporte_offline_requiere_atencion_mensaje">Guardamos tu reporte, pero necesita tu atención. Te avisaremos por notificación.</string>
+    <!-- Tarea B3+B4: Mis reportes y Aviso de notificaciones -->
+    <string name="reporte_offline_mis_reportes_titulo">Mis reportes</string>
+    <string name="reporte_offline_mis_reportes_subtitulo">Revisa el estado de tus solicitudes</string>
+    <string name="reporte_offline_mis_reportes_vacio">No tienes reportes registrados</string>
+    <string name="reporte_offline_mis_reportes_estado_pendiente">Pendiente de envío</string>
+    <string name="reporte_offline_mis_reportes_estado_enviado">Enviado</string>
+    <string name="reporte_offline_mis_reportes_estado_atencion">Requiere atención</string>
+    <string name="reporte_offline_mis_reportes_radicado">Reporte %1$s</string>
+    <string name="reporte_offline_mis_reportes_cd_atras">Volver</string>
+    <string name="notif_aviso_dialog_titulo">¿Activar notificaciones?</string>
+    <string name="notif_aviso_dialog_mensaje">Activa las notificaciones para avisarte cuando tu reporte sea enviado o requiera tu atención.</string>
+    <string name="notif_aviso_btn_activar">Activar</string>
+    <string name="notif_aviso_btn_ahora_no">Ahora no</string>
 </resources>

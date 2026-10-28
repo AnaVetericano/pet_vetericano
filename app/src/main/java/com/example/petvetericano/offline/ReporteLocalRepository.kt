@@ -203,7 +203,7 @@ class ReporteLocalRepository private constructor(context: Context) {
     /**
      * Lista todos los reportes de un usuario ordenados de más reciente a más antiguo.
      */
-    fun listarPorUsuario(idUsuario: Int): List<ReporteLocalEntity> {
+    fun listarPorUsuario(idUsuario: Int, limite: Int? = null): List<ReporteLocalEntity> {
         val db = dbHelper.readableDatabase
         val cursor = db.query(
             ReporteLocalDbHelper.TABLE_REPORTES,
@@ -212,7 +212,8 @@ class ReporteLocalRepository private constructor(context: Context) {
             arrayOf(idUsuario.toString()),
             null,
             null,
-            "${ReporteLocalDbHelper.COL_CREADO_EN} DESC, ${ReporteLocalDbHelper.COL_ID_LOCAL} DESC"
+            "${ReporteLocalDbHelper.COL_CREADO_EN} DESC, ${ReporteLocalDbHelper.COL_ID_LOCAL} DESC",
+            limite?.toString()
         )
         val lista = mutableListOf<ReporteLocalEntity>()
         cursor.use {

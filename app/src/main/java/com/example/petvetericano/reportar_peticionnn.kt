@@ -160,13 +160,18 @@ class reportar_peticionnn : AppCompatActivity() {
         binding = ActivityReportarPeticionnnBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val initPaddingLeft = binding.main.paddingLeft
+        val initPaddingTop = binding.main.paddingTop
+        val initPaddingRight = binding.main.paddingRight
+        val initPaddingBottom = binding.main.paddingBottom
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(
-                systemBars.left,
-                systemBars.top,
-                systemBars.right,
-                systemBars.bottom
+                initPaddingLeft + systemBars.left,
+                initPaddingTop + systemBars.top,
+                initPaddingRight + systemBars.right,
+                initPaddingBottom + systemBars.bottom
             )
             insets
         }

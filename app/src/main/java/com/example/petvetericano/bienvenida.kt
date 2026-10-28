@@ -1,6 +1,16 @@
 package com.example.petvetericano
 
+import android.Manifest
 import android.content.Intent
+import android.view.Gravity
+import android.widget.FrameLayout
+import android.widget.ImageView
+import android.widget.TextView
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
+import com.example.petvetericano.offline.AvisoNotificacionesHelper
+import com.google.android.material.card.MaterialCardView
 import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
@@ -18,6 +28,11 @@ import kotlinx.coroutines.launch
 class bienvenida : AppCompatActivity() {
 
     private lateinit var binding: ActivityBienvenidaBinding
+    private var avisoNotificacionesEvaluado = false
+
+    private val requestNotificationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { _ -> }
 
     private val eventosCarouselAdapter by lazy {
         EventosCarouselAdapter(emptyList()) { evento -> confirmarPostulacionCarrusel(evento) }
@@ -37,6 +52,8 @@ class bienvenida : AppCompatActivity() {
             cargarDashboard()
             configurarEventos()
             configurarCarrusel()
+            configurarAccesoMisReportes()
+            evaluarAvisoNotificaciones(savedInstanceState)
         } else {
             // Si no hay token, redirigimos al login
             val intent = Intent(this, inicio_sesion::class.java).apply {
@@ -212,6 +229,112 @@ class bienvenida : AppCompatActivity() {
                 postularseDesdeCarrusel(evento)
             }
             .show()
+    }
+
+    private fun evaluarAvisoNotificaciones(savedInstanceState: Bundle?) {
+        if (savedInstanceState == null && !avisoNotificacionesEvaluado) {
+            avisoNotificacionesEvaluado = true
+            AvisoNotificacionesHelper.mostrarAvisoSiCorresponde(this) {
+                requestNotificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+    }
+
+    private fun configurarAccesoMisReportes() {
+        val container = binding.cardReportarPeticion.parent as? LinearLayout ?: return
+        val indexCardReportar = container.indexOfChild(binding.cardReportarPeticion)
+        val insertIndex = if (indexCardReportar >= 0 && indexCardReportar + 2 <= container.childCount) {
+            indexCardReportar + 2
+        } else {
+            container.childCount
+        }
+
+        val cardMisReportes = MaterialCardView(this).apply {
+            id = View.generateViewId()
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = (16 * resources.displayMetrics.density).toInt()
+            }
+            radius = 16 * resources.displayMetrics.density
+            cardElevation = 0f
+            strokeWidth = (1 * resources.displayMetrics.density).toInt()
+            setStrokeColor(ContextCompat.getColorStateList(this@bienvenida, R.color.card_stroke))
+            setCardBackgroundColor(ContextCompat.getColorStateList(this@bienvenida, R.color.card_background))
+            isClickable = true
+            isFocusable = true
+
+            val content = LinearLayout(this@bienvenida).apply {
+                orientation = LinearLayout.HORIZONTAL
+                gravity = Gravity.CENTER_VERTICAL
+                val p16 = (16 * resources.displayMetrics.density).toInt()
+                setPadding(p16, p16, p16, p16)
+
+                val iconContainer = MaterialCardView(this@bienvenida).apply {
+                    val size = (44 * resources.displayMetrics.density).toInt()
+                    layoutParams = LinearLayout.LayoutParams(size, size)
+                    radius = 22 * resources.displayMetrics.density
+                    cardElevation = 0f
+                    strokeWidth = 0
+                    setCardBackgroundColor(ContextCompat.getColorStateList(this@bienvenida, R.color.primary_light))
+
+                    val ivIcon = ImageView(this@bienvenida).apply {
+                        val iconSize = (24 * resources.displayMetrics.density).toInt()
+                        layoutParams = FrameLayout.LayoutParams(iconSize, iconSize, Gravity.CENTER)
+                        setImageResource(R.drawable.outline_document_search_24)
+                        imageTintList = ContextCompat.getColorStateList(this@bienvenida, R.color.blue)
+                        contentDescription = getString(R.string.reporte_offline_mis_reportes_titulo)
+                    }
+                    addView(ivIcon)
+                }
+                addView(iconContainer)
+
+                val textLayout = LinearLayout(this@bienvenida).apply {
+                    orientation = LinearLayout.VERTICAL
+                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
+                        marginStart = (14 * resources.displayMetrics.density).toInt()
+                        marginEnd = (8 * resources.displayMetrics.density).toInt()
+                    }
+
+                    val tvTitulo = TextView(this@bienvenida).apply {
+                        text = getString(R.string.reporte_offline_mis_reportes_titulo)
+                        setTextColor(ContextCompat.getColor(this@bienvenida, R.color.text_primary))
+                        textSize = 16f
+                        typeface = ResourcesCompat.getFont(this@bienvenida, R.font.nunito_display)
+                        paint.isFakeBoldText = true
+                    }
+                    val tvSubtitulo = TextView(this@bienvenida).apply {
+                        text = getString(R.string.reporte_offline_mis_reportes_subtitulo)
+                        setTextColor(ContextCompat.getColor(this@bienvenida, R.color.text_muted))
+                        textSize = 12f
+                        typeface = ResourcesCompat.getFont(this@bienvenida, R.font.nunito)
+                        val mTop = (2 * resources.displayMetrics.density).toInt()
+                        setPadding(0, mTop, 0, 0)
+                    }
+                    addView(tvTitulo)
+                    addView(tvSubtitulo)
+                }
+                addView(textLayout)
+
+                val ivChevron = ImageView(this@bienvenida).apply {
+                    val cSize = (20 * resources.displayMetrics.density).toInt()
+                    layoutParams = LinearLayout.LayoutParams(cSize, cSize)
+                    setImageResource(R.drawable.outline_arrow_back_ios_24)
+                    rotation = 180f
+                    imageTintList = ContextCompat.getColorStateList(this@bienvenida, R.color.text_muted)
+                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
+                }
+                addView(ivChevron)
+            }
+            addView(content)
+
+            setOnClickListener {
+                startActivity(Intent(this@bienvenida, MisReportesActivity::class.java))
+            }
+        }
+
+        container.addView(cardMisReportes, insertIndex)
     }
 
     private fun postularseDesdeCarrusel(evento: VoluntariadoEventos) {

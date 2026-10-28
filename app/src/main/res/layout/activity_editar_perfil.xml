@@ -61,6 +61,24 @@
                 </com.google.android.material.card.MaterialCardView>
 
                 <com.google.android.material.imageview.ShapeableImageView
+                    android:id="@+id/btnDeletePhoto"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
+                    android:layout_gravity="top|end"
+                    android:layout_margin="4dp"
+                    android:background="@drawable/bg_circle"
+                    android:backgroundTint="@color/radix_tomato_solid"
+                    android:clickable="true"
+                    android:contentDescription="@string/cd_eliminar_foto_de_perfil"
+                    android:elevation="3dp"
+                    android:focusable="true"
+                    android:padding="11dp"
+                    android:src="@drawable/ic_delete"
+                    android:visibility="gone"
+                    app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+                    app:tint="@color/white" />
+
+                <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/btnCamera"
                     android:layout_width="44dp"
                     android:layout_height="44dp"

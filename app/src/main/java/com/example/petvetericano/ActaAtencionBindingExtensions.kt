@@ -226,13 +226,17 @@ val ActivityActaAtencionBinding.etFuncionarioMatricula: TextInputEditText get() 
 
 // Firmas
 val ActivityActaAtencionBinding.tvFirmasSeccionTitulo: TextView get() = layoutPaso3.tvFirmasSeccionTitulo
+val ActivityActaAtencionBinding.cardFirmaNotificador: MaterialCardView get() = layoutPaso3.cardFirmaNotificador
 val ActivityActaAtencionBinding.tvFirma1Titulo: TextView get() = layoutPaso3.tvFirma1Titulo
 val ActivityActaAtencionBinding.btnClearSignatureNotificador: MaterialButton get() = layoutPaso3.btnClearSignatureNotificador
 val ActivityActaAtencionBinding.signatureNotificador: SignatureView get() = layoutPaso3.signatureNotificador
 val ActivityActaAtencionBinding.tvFirma1DetalleProfesional: TextView get() = layoutPaso3.tvFirma1DetalleProfesional
+val ActivityActaAtencionBinding.tvErrorFirmaNotificador: TextView get() = layoutPaso3.tvErrorFirmaNotificador
+val ActivityActaAtencionBinding.cardFirmaNotificado: MaterialCardView get() = layoutPaso3.cardFirmaNotificado
 val ActivityActaAtencionBinding.tvFirma2Titulo: TextView get() = layoutPaso3.tvFirma2Titulo
 val ActivityActaAtencionBinding.btnClearSignatureNotificado: MaterialButton get() = layoutPaso3.btnClearSignatureNotificado
 val ActivityActaAtencionBinding.signatureNotificado: SignatureView get() = layoutPaso3.signatureNotificado
+val ActivityActaAtencionBinding.tvErrorFirmaNotificado: TextView get() = layoutPaso3.tvErrorFirmaNotificado
 
 // Resumen Multimedia Paso 3
 val ActivityActaAtencionBinding.cardResumenMultimediaPaso3: MaterialCardView get() = layoutPaso3.cardResumenMultimediaPaso3

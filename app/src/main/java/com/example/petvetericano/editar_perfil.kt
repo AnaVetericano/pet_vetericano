@@ -46,6 +46,7 @@ class editar_perfil : AppCompatActivity() {
     private var fotoOriginal = ""
     private var cargandoInicial = true
     private var fotoPendienteUri: Uri? = null
+    private var fotoEliminada = false
     private var guardando = false
 
     private val pickImageLauncher = registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -189,13 +190,16 @@ class editar_perfil : AppCompatActivity() {
         cargandoInicial = false
         actualizarEstadoBotones()
 
-        // Mostrar foto previsualizada si hay una pendiente; de lo contrario la guardada en servidor o la default
+        // Mostrar foto previsualizada si hay una pendiente; si fue eliminada, mostrar la por defecto; de lo contrario la guardada
         val uriPendiente = fotoPendienteUri
         if (uriPendiente != null) {
             ProfilePhotoHelper.previsualizarUri(this, binding.ivProfile, uriPendiente)
+        } else if (fotoEliminada) {
+            ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivProfile, "")
         } else {
             ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivProfile, fotoOriginal)
         }
+        actualizarVisibilidadBotonEliminarFoto()
     }
 
     private fun sincronizarConApi() {
@@ -239,13 +243,36 @@ class editar_perfil : AppCompatActivity() {
         }
     }
 
+    private fun tieneFotoVisible(): Boolean {
+        return fotoPendienteUri != null || (!fotoEliminada && fotoOriginal.isNotEmpty())
+    }
+
+    private fun actualizarVisibilidadBotonEliminarFoto() {
+        binding.btnDeletePhoto.visibility = if (tieneFotoVisible()) View.VISIBLE else View.GONE
+    }
+
     private fun previsualizarFotoSeleccionada(uri: Uri) {
         fotoPendienteUri = uri
+        fotoEliminada = false
         ProfilePhotoHelper.previsualizarUri(this, binding.ivProfile, uri)
+        actualizarVisibilidadBotonEliminarFoto()
         actualizarEstadoBotones()
         Snackbar.make(
             binding.root,
             "Vista previa lista. Presiona \"Guardar Cambios\" para confirmar.",
+            Snackbar.LENGTH_SHORT
+        ).show()
+    }
+
+    private fun eliminarFoto() {
+        fotoPendienteUri = null
+        fotoEliminada = true
+        ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivProfile, "")
+        actualizarVisibilidadBotonEliminarFoto()
+        actualizarEstadoBotones()
+        Snackbar.make(
+            binding.root,
+            "Foto eliminada. Se mostrará la imagen por defecto.",
             Snackbar.LENGTH_SHORT
         ).show()
     }
@@ -255,10 +282,11 @@ class editar_perfil : AppCompatActivity() {
         val actualNombre = normalizarTextoPersona(binding.etName.text?.toString() ?: "", MAX_LENGTH_NOMBRE)
         val actualApellido = normalizarTextoPersona(binding.etLastName.text?.toString() ?: "", MAX_LENGTH_APELLIDO)
         val actualTelefono = normalizarTelefono(binding.etPhone.text?.toString() ?: "")
+        val cambioFoto = fotoPendienteUri != null || (fotoEliminada && fotoOriginal.isNotEmpty())
         return actualNombre != nombreOriginal ||
                 actualApellido != apellidoOriginal ||
                 actualTelefono != telefonoOriginal ||
-                fotoPendienteUri != null
+                cambioFoto
     }
 
     private fun actualizarEstadoBotones() {
@@ -283,7 +311,9 @@ class editar_perfil : AppCompatActivity() {
         binding.tilLastName.error = null
         binding.tilPhone.error = null
         fotoPendienteUri = null
+        fotoEliminada = false
         ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivProfile, fotoOriginal)
+        actualizarVisibilidadBotonEliminarFoto()
         cargandoInicial = false
         actualizarEstadoBotones()
         Snackbar.make(binding.root, "Cambios descartados", Snackbar.LENGTH_SHORT).show()
@@ -322,6 +352,8 @@ class editar_perfil : AppCompatActivity() {
         if (fotoPendienteUri != null) {
             val estadoFotoAnterior = if (fotoOriginal.isNotEmpty()) "Foto actual" else "Sin foto"
             cambios.add(CambioPerfilItem("Foto de perfil", estadoFotoAnterior, "Nueva imagen seleccionada"))
+        } else if (fotoEliminada && fotoOriginal.isNotEmpty()) {
+            cambios.add(CambioPerfilItem("Foto de perfil", "Foto actual", "Eliminar (usar imagen por defecto)"))
         }
 
         ProfilePhotoHelper.mostrarDialogoGuardarCambiosMD3(
@@ -433,12 +465,18 @@ class editar_perfil : AppCompatActivity() {
                     return@launch
                 }
 
+                val fotoParaEnviar = when {
+                    uriParaSubir != null -> fotoBase64
+                    fotoEliminada -> ""
+                    else -> fotoOriginal.takeIf { it.isNotEmpty() }
+                }
+
                 val request = ActualizarPerfilRequest(
                     nombre = nuevoNombre,
                     apellido = nuevoApellido,
                     email = prefs.getUserEmail().take(MAX_LENGTH_EMAIL),
                     telefono = nuevoTelefono,
-                    fotoPerfil = fotoBase64
+                    fotoPerfil = fotoParaEnviar
                 )
 
                 val respuesta = RetrofitClient.apiService.actualizarPerfil(request)
@@ -460,7 +498,10 @@ class editar_perfil : AppCompatActivity() {
                     prefs.saveUserData(nombreGuardado, prefs.getUserEmail(), telefonoGuardado)
                     prefs.saveUserLastName(apellidoGuardado)
 
-                    if (uriParaSubir != null || !body?.fotoPerfil.isNullOrEmpty()) {
+                    if (fotoEliminada) {
+                        prefs.saveProfileImagePath("")
+                        fotoOriginal = ""
+                    } else if (uriParaSubir != null || !body?.fotoPerfil.isNullOrEmpty()) {
                         val nuevaFotoRemota = body?.fotoPerfil?.trim()?.takeIf { it.isNotEmpty() }
                             ?: fotoBase64
                             ?: fotoOriginal
@@ -472,8 +513,10 @@ class editar_perfil : AppCompatActivity() {
                     apellidoOriginal = apellidoGuardado
                     telefonoOriginal = telefonoGuardado
                     fotoPendienteUri = null
+                    fotoEliminada = false
                     guardando = false
                     actualizarEstadoBotones()
+                    actualizarVisibilidadBotonEliminarFoto()
                     ProfilePhotoHelper.cargarFotoPerfil(this@editar_perfil, binding.ivProfile, fotoOriginal)
                     Snackbar.make(binding.root, "Perfil actualizado", Snackbar.LENGTH_SHORT).show()
                     binding.root.postDelayed({ irAMenuInicial() }, 900)
@@ -524,6 +567,10 @@ class editar_perfil : AppCompatActivity() {
     private fun setupMenuListeners() {
         binding.btnCamera.setOnClickListener {
             pickImageLauncher.launch("image/*")
+        }
+
+        binding.btnDeletePhoto.setOnClickListener {
+            eliminarFoto()
         }
 
         binding.etName.doOnTextChanged { _, _, _, _ ->

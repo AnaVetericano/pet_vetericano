@@ -2021,6 +2021,7 @@
 
     <!-- Firma del Notificador / Rescatista -->
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardFirmaNotificador"
         style="?attr/materialCardViewOutlinedStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -2091,11 +2092,25 @@
                 android:text="@string/lbl_medico_veterinario_zootecnista"
                 android:textColor="@color/text_secondary"
                 android:textSize="11sp" />
+
+            <!-- Indicador visual de error obligatorio -->
+            <TextView
+                android:id="@+id/tvErrorFirmaNotificador"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="@font/nunito_bold"
+                android:gravity="center"
+                android:text="* Debe capturar la firma del médico veterinario"
+                android:textColor="@color/error"
+                android:textSize="11sp"
+                android:visibility="gone" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
     <!-- Firma del Notificado / Testigo -->
     <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardFirmaNotificado"
         style="?attr/materialCardViewOutlinedStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -2154,6 +2169,19 @@
                 android:layout_width="match_parent"
                 android:layout_height="130dp"
                 android:background="@color/input_background" />
+
+            <!-- Indicador visual de error obligatorio -->
+            <TextView
+                android:id="@+id/tvErrorFirmaNotificado"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:fontFamily="@font/nunito_bold"
+                android:gravity="center"
+                android:text="* Debe capturar la firma del solicitante o ciudadano notificado"
+                android:textColor="@color/error"
+                android:textSize="11sp"
+                android:visibility="gone" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 

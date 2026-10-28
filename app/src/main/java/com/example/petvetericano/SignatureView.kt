@@ -40,6 +40,11 @@ class SignatureView @JvmOverloads constructor(
     private var hasDrawnNewStrokes = false
     private var originalDataUri: String? = null
 
+    /**
+     * Callback para notificar cambios en el estado de la firma (nuevo trazo, borrado o restauración).
+     */
+    var onSignatureChangeListener: (() -> Unit)? = null
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         restoredBitmap?.let { bitmap ->
@@ -64,6 +69,7 @@ class SignatureView @JvmOverloads constructor(
                 hasSignature = true
                 hasDrawnNewStrokes = true
                 invalidate()
+                onSignatureChangeListener?.invoke()
                 return true
             }
             MotionEvent.ACTION_MOVE -> {
@@ -103,6 +109,7 @@ class SignatureView @JvmOverloads constructor(
                 hasDrawnNewStrokes = false
                 path.reset()
                 invalidate()
+                onSignatureChangeListener?.invoke()
             }
         } catch (e: Exception) {
             Log.e("SignatureView", "Error restaurando firma Base64", e)
@@ -120,6 +127,7 @@ class SignatureView @JvmOverloads constructor(
         hasSignature = false
         hasDrawnNewStrokes = false
         invalidate()
+        onSignatureChangeListener?.invoke()
     }
 
     /**

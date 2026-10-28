@@ -300,10 +300,16 @@
     <string name="hint_cedula">Cédula</string>
     <string name="hint_matricula_profesional_comvezcol">Matrícula Profesional (COMVEZCOL) *</string>
     <string name="lbl_firmas_digitales_del_acta">Firmas digitales del acta</string>
-    <string name="lbl_firma_del_funcionario_notificador">Firma del funcionario / notificador</string>
+    <string name="lbl_firma_del_funcionario_notificador">Firma del funcionario / veterinario *</string>
     <string name="lbl_limpiar">Limpiar</string>
     <string name="lbl_medico_veterinario_zootecnista">Médico Veterinario Zootecnista</string>
-    <string name="lbl_firma_del_ciudadano_notificado">Firma del ciudadano notificado</string>
+    <string name="lbl_firma_del_ciudadano_notificado">Firma del solicitante / ciudadano notificado *</string>
+    <string name="alerta_firma_veterinario_titulo">Firma del veterinario requerida</string>
+    <string name="alerta_firma_veterinario_mensaje">Por favor capture la firma del médico veterinario antes de registrar el acta de seres sintientes.</string>
+    <string name="alerta_firma_solicitante_titulo">Firma del solicitante requerida</string>
+    <string name="alerta_firma_solicitante_mensaje">Por favor capture la firma del solicitante o ciudadano notificado antes de registrar el acta de seres sintientes.</string>
+    <string name="alerta_firmas_ambas_titulo">Firmas obligatorias requeridas</string>
+    <string name="alerta_firmas_ambas_mensaje">Debe registrar tanto la firma del médico veterinario como la del solicitante antes de registrar el acta de seres sintientes.</string>
     <string name="lbl_cierre_del_caso_y_resolucion">Cierre del caso y resolución</string>
     <string name="lbl_evidencias_adjuntas_al_acta_0">Evidencias adjuntas al acta: 0</string>
     <string name="btn_ver_en_paso_2">Ver en Paso 2</string>
@@ -504,6 +510,7 @@
     <string name="lbl_portugues_brasil">Português (Brasil)</string>
     <string name="lbl_perfil_profesional">Perfil Profesional</string>
     <string name="cd_cambiar_foto_de_perfil">Cambiar foto de perfil</string>
+    <string name="cd_eliminar_foto_de_perfil">Eliminar foto de perfil</string>
     <string name="lbl_medico_veterinario_oficial">Médico Veterinario Oficial</string>
     <string name="lbl_informacion_del_funcionario">Información del funcionario</string>
     <string name="hint_nombres">Nombres</string>

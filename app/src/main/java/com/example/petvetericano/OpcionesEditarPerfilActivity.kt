@@ -1,6 +1,7 @@
-package com.example.petvetericano
+﻿package com.example.petvetericano
 
 import android.net.Uri
+import android.view.View
 import android.os.Bundle
 import android.text.InputFilter
 import android.util.Log
@@ -55,6 +56,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
     private var matriculaOriginal: String = ""
     private var fotoOriginal: String = ""
     private var fotoPendienteUri: Uri? = null
+    private var fotoEliminada: Boolean = false
     private var guardando: Boolean = false
 
     // Selector para previsualizar foto de perfil desde la galería; se guarda al presionar "Guardar Cambios"
@@ -77,7 +79,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (fotoPendienteUri != null && !guardando) {
+                if (tieneCambiosFotoPendiente() && !guardando) {
                     mostrarConfirmacionSalirSinGuardar()
                 } else {
                     isEnabled = false
@@ -88,7 +90,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
         // Acción de clic para el botón de regreso
         binding.btnBack.setOnClickListener {
-            if (fotoPendienteUri != null && !guardando) {
+            if (tieneCambiosFotoPendiente() && !guardando) {
                 mostrarConfirmacionSalirSinGuardar()
             } else {
                 finish()
@@ -98,6 +100,11 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         // Acción de clic para cambiar foto de perfil
         binding.btnChangePhoto.setOnClickListener {
             pickImageLauncher.launch("image/*")
+        }
+
+        // Acción de clic para eliminar foto de perfil (restaurando imagen por defecto)
+        binding.btnDeletePhoto.setOnClickListener {
+            eliminarFoto()
         }
 
         // Acción de clic para guardar la información ingresada (con diálogo MD3 de confirmación)
@@ -285,9 +292,12 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         val uriPendiente = fotoPendienteUri
         if (uriPendiente != null) {
             ProfilePhotoHelper.previsualizarUri(this, binding.ivEditProfile, uriPendiente)
+        } else if (fotoEliminada) {
+            ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivEditProfile, "")
         } else {
             ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivEditProfile, fotoOriginal)
         }
+        actualizarVisibilidadBotonEliminarFoto()
     }
 
     private fun actualizarEncabezadoUsuario() {
@@ -301,9 +311,23 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         binding.tvProfileUserName.text = nombreCompleto.ifEmpty { "Médico Veterinario" }
     }
 
+    private fun tieneFotoVisible(): Boolean {
+        return fotoPendienteUri != null || (!fotoEliminada && fotoOriginal.isNotEmpty())
+    }
+
+    private fun tieneCambiosFotoPendiente(): Boolean {
+        return fotoPendienteUri != null || (fotoEliminada && fotoOriginal.isNotEmpty())
+    }
+
+    private fun actualizarVisibilidadBotonEliminarFoto() {
+        binding.btnDeletePhoto.visibility = if (tieneFotoVisible()) View.VISIBLE else View.GONE
+    }
+
     private fun previsualizarFotoSeleccionada(uri: Uri) {
         fotoPendienteUri = uri
+        fotoEliminada = false
         ProfilePhotoHelper.previsualizarUri(this, binding.ivEditProfile, uri)
+        actualizarVisibilidadBotonEliminarFoto()
         Snackbar.make(
             binding.root,
             "Vista previa lista. Presiona \"Guardar Cambios\" para confirmar.",
@@ -311,15 +335,29 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         ).show()
     }
 
+    private fun eliminarFoto() {
+        fotoPendienteUri = null
+        fotoEliminada = true
+        ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivEditProfile, "")
+        actualizarVisibilidadBotonEliminarFoto()
+        Snackbar.make(
+            binding.root,
+            "Foto eliminada. Se mostrará la imagen por defecto.",
+            Snackbar.LENGTH_SHORT
+        ).show()
+    }
+
     private fun mostrarConfirmacionSalirSinGuardar() {
         MaterialAlertDialogBuilder(this)
             .setTitle("¿Descartar cambios?")
-            .setMessage("Seleccionaste una nueva foto de perfil que aún no has guardado.")
+            .setMessage("Tienes cambios en tu foto de perfil que aún no has guardado.")
             .setNegativeButton("Seguir editando") { dialog, _ -> dialog.dismiss() }
             .setPositiveButton("Descartar") { dialog, _ ->
                 dialog.dismiss()
                 fotoPendienteUri = null
+                fotoEliminada = false
                 ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivEditProfile, fotoOriginal)
+                actualizarVisibilidadBotonEliminarFoto()
                 finish()
             }
             .show()
@@ -469,6 +507,8 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         if (fotoPendienteUri != null) {
             val estadoFotoAnterior = if (fotoOriginal.isNotEmpty()) "Foto actual" else "Sin foto"
             cambios.add(CambioPerfilItem("Foto de perfil", estadoFotoAnterior, "Nueva imagen seleccionada"))
+        } else if (fotoEliminada && fotoOriginal.isNotEmpty()) {
+            cambios.add(CambioPerfilItem("Foto de perfil", "Foto actual", "Eliminar (usar imagen por defecto)"))
         }
 
         if (cambios.isEmpty()) {
@@ -522,6 +562,12 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                     return@launch
                 }
 
+                val fotoParaEnviar = when {
+                    uriParaSubir != null -> fotoBase64
+                    fotoEliminada -> ""
+                    else -> fotoOriginal.takeIf { it.isNotEmpty() }
+                }
+
                 // La cédula (identificacion) no se envía para modificación ya que es un dato sensible bloqueado
                 val request = ActualizarPerfilRequest(
                     nombre = newName,
@@ -530,7 +576,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                     telefono = newPhone,
                     identificacion = null,
                     matriculaProfesional = newMatricula.ifEmpty { null },
-                    fotoPerfil = fotoBase64
+                    fotoPerfil = fotoParaEnviar
                 )
                 val response = RetrofitClient.apiService.actualizarPerfil(request)
                 if (response.isSuccessful) {
@@ -561,7 +607,10 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                     }
                     prefs.saveUserMatriculaProfesional(matriculaGuardada)
 
-                    if (uriParaSubir != null || !body?.fotoPerfil.isNullOrEmpty()) {
+                    if (fotoEliminada) {
+                        prefs.saveProfileImagePath("")
+                        fotoOriginal = ""
+                    } else if (uriParaSubir != null || !body?.fotoPerfil.isNullOrEmpty()) {
                         val nuevaFotoRemota = body?.fotoPerfil?.trim()?.takeIf { it.isNotEmpty() }
                             ?: fotoBase64
                             ?: fotoOriginal
@@ -575,9 +624,16 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                     telefonoOriginal = telefonoGuardado
                     matriculaOriginal = matriculaGuardada
                     fotoPendienteUri = null
+                    fotoEliminada = false
                     guardando = false
                     actualizarEncabezadoUsuario()
+                    actualizarVisibilidadBotonEliminarFoto()
                     binding.tvRolBadge.text = TITULO_PROFESIONAL_FIJO
+                    ProfilePhotoHelper.cargarFotoPerfil(
+                        this@OpcionesEditarPerfilActivity,
+                        binding.ivEditProfile,
+                        fotoOriginal
+                    )
 
                     Toast.makeText(this@OpcionesEditarPerfilActivity, "Perfil profesional actualizado con éxito", Toast.LENGTH_SHORT).show()
                     finish()
@@ -651,13 +707,14 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                     val fotoRemota = perfil.fotoPerfil?.trim() ?: ""
                     prefs.saveProfileImagePath(fotoRemota)
                     fotoOriginal = fotoRemota
-                    if (fotoPendienteUri == null) {
+                    if (fotoPendienteUri == null && !fotoEliminada) {
                         ProfilePhotoHelper.cargarFotoPerfil(
                             this@OpcionesEditarPerfilActivity,
                             binding.ivEditProfile,
                             fotoOriginal
                         )
                     }
+                    actualizarVisibilidadBotonEliminarFoto()
 
                     binding.tvRolBadge.text = TITULO_PROFESIONAL_FIJO
                     actualizarEncabezadoUsuario()

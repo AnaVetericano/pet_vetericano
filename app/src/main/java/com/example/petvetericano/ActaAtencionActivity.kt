@@ -1,4 +1,4 @@
-﻿package com.example.petvetericano
+package com.example.petvetericano
 
 import android.Manifest
 import android.app.Activity
@@ -427,6 +427,15 @@ class ActaAtencionActivity : AppCompatActivity() {
                     }
                 }
             }
+
+            val firmaVetGuardada = savedInstanceState.getString("KEY_FIRMA_NOTIFICADOR")
+            if (!firmaVetGuardada.isNullOrEmpty()) {
+                binding.signatureNotificador.restoreFromBase64(firmaVetGuardada)
+            }
+            val firmaSolGuardada = savedInstanceState.getString("KEY_FIRMA_NOTIFICADO")
+            if (!firmaSolGuardada.isNullOrEmpty()) {
+                binding.signatureNotificado.restoreFromBase64(firmaSolGuardada)
+            }
         } else {
             // Agregar por defecto al menos un formulario de paciente al iniciar por primera vez
             agregarFormularioAnimal()
@@ -545,6 +554,16 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         // 3. Guardar lista de medicamentos aplicados en campo
         outState.putSerializable("KEY_MEDICAMENTOS_APLICADOS", ArrayList(medicamentosAplicadosList))
+
+        // 4. Guardar firmas digitales en caso de cambio de configuración
+        val fVet = binding.signatureNotificador.toBase64()
+        if (!fVet.isNullOrEmpty()) {
+            outState.putString("KEY_FIRMA_NOTIFICADOR", fVet)
+        }
+        val fSol = binding.signatureNotificado.toBase64()
+        if (!fSol.isNullOrEmpty()) {
+            outState.putString("KEY_FIRMA_NOTIFICADO", fSol)
+        }
     }
 
     override fun onRestoreInstanceState(savedInstanceState: Bundle) {
@@ -649,12 +668,26 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         binding.btnClearSignatureNotificador.setOnClickListener {
             binding.signatureNotificador.clear()
+            limpiarErrorFirmaVeterinario()
             programarGuardado()
         }
 
         binding.btnClearSignatureNotificado.setOnClickListener {
             binding.signatureNotificado.clear()
+            limpiarErrorFirmaSolicitante()
             programarGuardado()
+        }
+
+        binding.signatureNotificador.onSignatureChangeListener = {
+            if (binding.signatureNotificador.hasSignature()) {
+                limpiarErrorFirmaVeterinario()
+            }
+        }
+
+        binding.signatureNotificado.onSignatureChangeListener = {
+            if (binding.signatureNotificado.hasSignature()) {
+                limpiarErrorFirmaSolicitante()
+            }
         }
     }
 
@@ -2415,6 +2448,21 @@ class ActaAtencionActivity : AppCompatActivity() {
             }
         }
 
+        val tieneFirmaVet = binding.signatureNotificador.hasSignature()
+        val tieneFirmaSol = binding.signatureNotificado.hasSignature()
+
+        if (!tieneFirmaVet) {
+            marcarErrorFirmaVeterinario(true)
+        } else {
+            limpiarErrorFirmaVeterinario()
+        }
+
+        if (!tieneFirmaSol) {
+            marcarErrorFirmaSolicitante(true)
+        } else {
+            limpiarErrorFirmaSolicitante()
+        }
+
         if (!valido) {
             MaterialAlertDialogBuilder(this)
                 .setIcon(R.drawable.warning_icon4)
@@ -2422,8 +2470,88 @@ class ActaAtencionActivity : AppCompatActivity() {
                 .setMessage("Por favor complete los campos requeridos (compromisos o datos de rescate) antes de registrar el acta.")
                 .setPositiveButton("Revisar", null)
                 .show()
+            return false
         }
-        return valido
+
+        // Si faltan ambas firmas
+        if (!tieneFirmaVet && !tieneFirmaSol) {
+            MaterialAlertDialogBuilder(this)
+                .setIcon(R.drawable.warning_icon4)
+                .setTitle(getString(R.string.alerta_firmas_ambas_titulo))
+                .setMessage(getString(R.string.alerta_firmas_ambas_mensaje))
+                .setPositiveButton("Revisar") { dialog, _ ->
+                    dialog.dismiss()
+                    binding.scrollForm.smoothScrollTo(0, binding.tvFirmasSeccionTitulo.top)
+                }
+                .show()
+            return false
+        }
+
+        // Si falta la firma del veterinario
+        if (!tieneFirmaVet) {
+            MaterialAlertDialogBuilder(this)
+                .setIcon(R.drawable.warning_icon4)
+                .setTitle(getString(R.string.alerta_firma_veterinario_titulo))
+                .setMessage(getString(R.string.alerta_firma_veterinario_mensaje))
+                .setPositiveButton("Revisar") { dialog, _ ->
+                    dialog.dismiss()
+                    binding.scrollForm.smoothScrollTo(0, binding.cardFirmaNotificador.top)
+                }
+                .show()
+            return false
+        }
+
+        // Si falta la firma del solicitante
+        if (!tieneFirmaSol) {
+            MaterialAlertDialogBuilder(this)
+                .setIcon(R.drawable.warning_icon4)
+                .setTitle(getString(R.string.alerta_firma_solicitante_titulo))
+                .setMessage(getString(R.string.alerta_firma_solicitante_mensaje))
+                .setPositiveButton("Revisar") { dialog, _ ->
+                    dialog.dismiss()
+                    binding.scrollForm.smoothScrollTo(0, binding.cardFirmaNotificado.top)
+                }
+                .show()
+            return false
+        }
+
+        return true
+    }
+
+    private fun marcarErrorFirmaVeterinario(mostrarError: Boolean) {
+        if (mostrarError) {
+            val errorColor = ContextCompat.getColor(this, R.color.error)
+            binding.cardFirmaNotificador.strokeColor = errorColor
+            binding.cardFirmaNotificador.strokeWidth = (1.5f * resources.displayMetrics.density).toInt()
+            binding.tvErrorFirmaNotificador.visibility = View.VISIBLE
+        } else {
+            limpiarErrorFirmaVeterinario()
+        }
+    }
+
+    private fun limpiarErrorFirmaVeterinario() {
+        val normalColor = ContextCompat.getColor(this, R.color.card_stroke)
+        binding.cardFirmaNotificador.strokeColor = normalColor
+        binding.cardFirmaNotificador.strokeWidth = (1f * resources.displayMetrics.density).toInt()
+        binding.tvErrorFirmaNotificador.visibility = View.GONE
+    }
+
+    private fun marcarErrorFirmaSolicitante(mostrarError: Boolean) {
+        if (mostrarError) {
+            val errorColor = ContextCompat.getColor(this, R.color.error)
+            binding.cardFirmaNotificado.strokeColor = errorColor
+            binding.cardFirmaNotificado.strokeWidth = (1.5f * resources.displayMetrics.density).toInt()
+            binding.tvErrorFirmaNotificado.visibility = View.VISIBLE
+        } else {
+            limpiarErrorFirmaSolicitante()
+        }
+    }
+
+    private fun limpiarErrorFirmaSolicitante() {
+        val normalColor = ContextCompat.getColor(this, R.color.card_stroke)
+        binding.cardFirmaNotificado.strokeColor = normalColor
+        binding.cardFirmaNotificado.strokeWidth = (1f * resources.displayMetrics.density).toInt()
+        binding.tvErrorFirmaNotificado.visibility = View.GONE
     }
 
     private fun siNo(valor: Boolean): String = if (valor) "SÍ" else "NO"

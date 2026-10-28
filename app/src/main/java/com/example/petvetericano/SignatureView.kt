@@ -1,10 +1,13 @@
 package com.example.petvetericano
 
 import android.content.Context
+import android.content.res.Configuration
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.ColorMatrix
+import android.graphics.ColorMatrixColorFilter
 import android.graphics.Paint
 import android.graphics.Path
 import android.graphics.Rect
@@ -45,15 +48,63 @@ class SignatureView @JvmOverloads constructor(
      */
     var onSignatureChangeListener: (() -> Unit)? = null
 
+    /**
+     * Determina si la aplicación se encuentra en modo oscuro (por configuración del sistema o ThemePrefs).
+     */
+    fun isDarkMode(): Boolean {
+        val uiModeNight = (resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK) == Configuration.UI_MODE_NIGHT_YES
+        val prefsNight = try {
+            context.getSharedPreferences("ThemePrefs", Context.MODE_PRIVATE).getBoolean("isDarkMode", false)
+        } catch (_: Exception) {
+            false
+        }
+        return uiModeNight || prefsNight
+    }
+
+    /**
+     * Color dinámico para la firma:
+     * - Modo oscuro: Blanco (#FFFFFF) para contraste sobre fondo oscuro.
+     * - Modo blanco: Negro (#0F172A) para contraste sobre fondo blanco.
+     */
+    fun getStrokeColor(): Int {
+        return if (isDarkMode()) Color.WHITE else Color.parseColor("#0F172A")
+    }
+
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
+        val darkMode = isDarkMode()
+
         restoredBitmap?.let { bitmap ->
             if (!bitmap.isRecycled && width > 0 && height > 0) {
                 val destRect = Rect(0, 0, width, height)
-                canvas.drawBitmap(bitmap, null, destRect, null)
+                if (darkMode) {
+                    // Mapeo adaptativo: fondo blanco se adapta a input_background (#162032) y trazo a blanco
+                    val rScale = (22f - 255f) / 255f
+                    val gScale = (32f - 255f) / 255f
+                    val bScale = (50f - 255f) / 255f
+                    val darkFilter = ColorMatrixColorFilter(ColorMatrix(floatArrayOf(
+                        rScale, 0f,     0f,     0f, 255f,
+                        0f,     gScale, 0f,     0f, 255f,
+                        0f,     0f,     bScale, 0f, 255f,
+                        0f,     0f,     0f,     1f, 0f
+                    )))
+                    val filterPaint = Paint().apply { colorFilter = darkFilter }
+                    canvas.drawBitmap(bitmap, null, destRect, filterPaint)
+                } else {
+                    canvas.drawBitmap(bitmap, null, destRect, null)
+                }
             }
         }
+
+        // Color del trazo dinámico según el modo de tema
+        paint.color = getStrokeColor()
         canvas.drawPath(path, paint)
+    }
+
+    override fun onConfigurationChanged(newConfig: Configuration?) {
+        super.onConfigurationChanged(newConfig)
+        paint.color = getStrokeColor()
+        invalidate()
     }
 
     override fun onTouchEvent(event: MotionEvent): Boolean {
@@ -166,7 +217,12 @@ class SignatureView @JvmOverloads constructor(
                 canvas.drawBitmap(rBitmap, null, destRect, null)
             }
         }
-        canvas.drawPath(path, paint)
+
+        // Para actas y documentos oficiales, exportar siempre con trazo negro sobre fondo blanco
+        val exportPaint = Paint(paint).apply {
+            color = Color.parseColor("#0F172A")
+        }
+        canvas.drawPath(path, exportPaint)
 
         val outputStream = ByteArrayOutputStream()
         bitmap.compress(Bitmap.CompressFormat.PNG, 90, outputStream)

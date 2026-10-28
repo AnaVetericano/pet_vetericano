@@ -315,6 +315,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         setupToolbar()
         setupUI(savedInstanceState)
+        setupValidacionesYFiltros()
         setupDropdowns(savedInstanceState)
         setupLugarAtencion()
         setupDesparasitacionSwitch(savedInstanceState)
@@ -689,6 +690,90 @@ class ActaAtencionActivity : AppCompatActivity() {
                 limpiarErrorFirmaSolicitante()
             }
         }
+    }
+
+    private fun setupValidacionesYFiltros() {
+        // --- Paso 1: Información general y solicitante ---
+        binding.etPropietarioNombre.aplicarFiltroSoloLetras(60, "Nombre del solicitante")
+        binding.etPropietarioCedula.aplicarFiltroSoloNumeros(15, "Cédula del solicitante")
+        binding.etPropietarioTelefono.aplicarFiltroSoloNumeros(10, "Teléfono del solicitante")
+        binding.etPropietarioEmail.aplicarFiltroTextoConLimite(80, "Correo electrónico")
+        binding.etPropietarioBarrio.aplicarFiltroTextoConLimite(60, "Barrio")
+        binding.etPropietarioDireccion.aplicarFiltroTextoConLimite(120, "Dirección")
+        binding.etQuienReportaOtro.aplicarFiltroSoloLetras(60, "Quién reporta")
+        binding.etSolicitudAtencion.aplicarFiltroTextoConLimite(100, "Solicitud de atención")
+        binding.etLugarAtencion.aplicarFiltroTextoConLimite(150, "Lugar de atención")
+
+        // Limpieza y validación en tiempo real de errores Paso 1
+        binding.etPropietarioNombre.addTextChangedListener {
+            val texto = it?.toString().orEmpty().trim()
+            if (texto.isNotEmpty() && ActaFieldValidators.esNombreValido(texto)) {
+                binding.tilPropietarioNombre.error = null
+            }
+        }
+        binding.etPropietarioCedula.addTextChangedListener {
+            val ced = it?.toString().orEmpty().trim()
+            if (ced.isNotEmpty() && ActaFieldValidators.esCedulaValida(ced)) {
+                binding.tilPropietarioCedula.error = null
+            }
+        }
+        binding.etPropietarioTelefono.addTextChangedListener {
+            val tel = it?.toString().orEmpty().trim()
+            if (tel.isNotEmpty() && ActaFieldValidators.esTelefonoValido(tel)) {
+                binding.tilPropietarioTelefono.error = null
+            }
+        }
+        binding.etPropietarioEmail.addTextChangedListener {
+            val em = it?.toString().orEmpty().trim()
+            if (em.isNotEmpty()) {
+                if (!ActaFieldValidators.esEmailValido(em)) {
+                    binding.tilPropietarioEmail.error = "Formato de correo no válido (ej: usuario@correo.com)"
+                } else {
+                    binding.tilPropietarioEmail.error = null
+                }
+            } else {
+                binding.tilPropietarioEmail.error = null
+            }
+        }
+
+        // --- Paso 2: Constantes clínicas y anamnesis ---
+        binding.etFrecuenciaCardiaca.aplicarFiltroSoloNumeros(3, "Frecuencia cardíaca")
+        binding.etFrecuenciaRespiratoria.aplicarFiltroSoloNumeros(3, "Frecuencia respiratoria")
+        binding.etMucosas.aplicarFiltroTextoConLimite(60, "Mucosas")
+        binding.etAnamnesis.aplicarFiltroTextoConLimite(1000, "Anamnesis")
+        binding.etTratamiento.aplicarFiltroTextoConLimite(1000, "Tratamiento")
+
+        // --- Paso 3: Compromisos, funcionario, notificado y rescate ---
+        binding.etCompromisos.aplicarFiltroTextoConLimite(1000, "Compromisos")
+        binding.etFundamentoLegal.aplicarFiltroTextoConLimite(250, "Fundamento legal")
+        binding.etPlazoDias.aplicarFiltroSoloNumeros(3, "Plazo en días")
+        binding.etObservaciones.aplicarFiltroTextoConLimite(1000, "Observaciones")
+
+        binding.etFuncionarioNombre.aplicarFiltroSoloLetras(60, "Nombre del funcionario")
+        binding.etFuncionarioCargo.aplicarFiltroSoloLetras(60, "Cargo del funcionario")
+        binding.etFuncionarioIdentificacion.aplicarFiltroSoloNumeros(15, "Identificación del funcionario")
+        binding.etFuncionarioMatricula.aplicarFiltroTextoConLimite(25, "Matrícula profesional")
+
+        binding.etNotificadoNombre.aplicarFiltroSoloLetras(60, "Nombre del notificado")
+        binding.etNotificadoIdentificacion.aplicarFiltroSoloNumeros(15, "Identificación del notificado")
+
+        // Módulo de rescate
+        binding.etPersonaAtiendeRescatista.aplicarFiltroSoloLetras(60, "Persona que atiende")
+        binding.etPersonaAtiendeCedula.aplicarFiltroSoloNumeros(15, "Cédula persona que atiende")
+        binding.etPersonaAtiendeTelefono.aplicarFiltroSoloNumeros(10, "Teléfono persona que atiende")
+        binding.etBarrioRescate.aplicarFiltroTextoConLimite(60, "Barrio rescate")
+
+        binding.etTestigo1Nombre.aplicarFiltroSoloLetras(60, "Nombre Testigo 1")
+        binding.etTestigo1Cedula.aplicarFiltroSoloNumeros(15, "Cédula Testigo 1")
+        binding.etTestigo1Telefono.aplicarFiltroSoloNumeros(10, "Teléfono Testigo 1")
+
+        binding.etTestigo2Nombre.aplicarFiltroSoloLetras(60, "Nombre Testigo 2")
+        binding.etTestigo2Cedula.aplicarFiltroSoloNumeros(15, "Cédula Testigo 2")
+        binding.etTestigo2Telefono.aplicarFiltroSoloNumeros(10, "Teléfono Testigo 2")
+
+        binding.etObservacionesRescate.aplicarFiltroTextoConLimite(1000, "Observaciones rescate")
+        binding.etVeterinarioReceptor.aplicarFiltroSoloLetras(60, "Médico veterinario receptor")
+        binding.etObservacionesRecepcion.aplicarFiltroTextoConLimite(1000, "Observaciones recepción")
     }
 
     private fun setupModuloRescate(savedInstanceState: Bundle? = null) {
@@ -1749,6 +1834,19 @@ class ActaAtencionActivity : AppCompatActivity() {
             }
         }
 
+        // Aplicar filtros de caracteres y límites con Toast en la tarjeta del paciente
+        itemBinding.etPacienteNombreCard.aplicarFiltroTextoConLimite(40, "Nombre del paciente")
+        itemBinding.etEdadNumero.aplicarFiltroSoloNumeros(2, "Edad del paciente")
+        itemBinding.etPacientePesoCard.aplicarFiltroDecimal(6, "Peso del paciente")
+        itemBinding.etPacienteDescripcionCard.aplicarFiltroTextoConLimite(300, "Descripción del paciente")
+
+        itemBinding.etPacienteNombreCard.addTextChangedListener {
+            val nom = it?.toString().orEmpty().trim()
+            if (nom.isNotEmpty()) {
+                itemBinding.tilPacienteNombre.error = null
+            }
+        }
+
         val camposAnimal = listOf(
             itemBinding.etPacienteNombreCard,
             itemBinding.autoCompleteEspecieCard,
@@ -2184,6 +2282,9 @@ class ActaAtencionActivity : AppCompatActivity() {
                 if (quienOtro.isEmpty()) {
                     binding.tilQuienReportaOtro.error = "Especifique quién reporta *"
                     valido = false
+                } else if (!ActaFieldValidators.esNombreValido(quienOtro)) {
+                    binding.tilQuienReportaOtro.error = "Solo debe contener letras (mínimo 3)"
+                    valido = false
                 } else {
                     binding.tilQuienReportaOtro.error = null
                 }
@@ -2206,6 +2307,9 @@ class ActaAtencionActivity : AppCompatActivity() {
         if (nombre.isEmpty()) {
             binding.tilPropietarioNombre.error = "Nombre requerido"
             valido = false
+        } else if (!ActaFieldValidators.esNombreValido(nombre)) {
+            binding.tilPropietarioNombre.error = "El nombre solo debe contener letras (mínimo 3)"
+            valido = false
         } else {
             binding.tilPropietarioNombre.error = null
         }
@@ -2213,6 +2317,9 @@ class ActaAtencionActivity : AppCompatActivity() {
         val cedula = binding.etPropietarioCedula.text.toString().trim()
         if (cedula.isEmpty()) {
             binding.tilPropietarioCedula.error = "Cédula requerida"
+            valido = false
+        } else if (!ActaFieldValidators.esCedulaValida(cedula)) {
+            binding.tilPropietarioCedula.error = "La cédula debe tener entre 6 y 15 dígitos numéricos"
             valido = false
         } else {
             binding.tilPropietarioCedula.error = null
@@ -2222,8 +2329,19 @@ class ActaAtencionActivity : AppCompatActivity() {
         if (telefono.isEmpty()) {
             binding.tilPropietarioTelefono.error = "Teléfono requerido"
             valido = false
+        } else if (!ActaFieldValidators.esTelefonoValido(telefono)) {
+            binding.tilPropietarioTelefono.error = "El teléfono debe tener entre 7 y 10 dígitos numéricos"
+            valido = false
         } else {
             binding.tilPropietarioTelefono.error = null
+        }
+
+        val email = binding.etPropietarioEmail.text.toString().trim()
+        if (email.isNotEmpty() && !ActaFieldValidators.esEmailValido(email)) {
+            binding.tilPropietarioEmail.error = "Formato de correo no válido (ej: usuario@correo.com)"
+            valido = false
+        } else {
+            binding.tilPropietarioEmail.error = null
         }
 
         val barrio = binding.etPropietarioBarrio.text.toString().trim()
@@ -2245,8 +2363,8 @@ class ActaAtencionActivity : AppCompatActivity() {
         if (!valido) {
             MaterialAlertDialogBuilder(this)
                 .setIcon(R.drawable.warning_icon4)
-                .setTitle("Campos incompletos en Paso 1")
-                .setMessage("Por favor diligencie todos los campos obligatorios marcados antes de continuar al siguiente paso.")
+                .setTitle("Campos incompletos o con formato erróneo en Paso 1")
+                .setMessage("Por favor revise los campos señalados (cédula de 6 a 15 dígitos, nombres sin números, correo válido y teléfono) antes de continuar.")
                 .setPositiveButton("Revisar", null)
                 .show()
         }
@@ -2369,6 +2487,9 @@ class ActaAtencionActivity : AppCompatActivity() {
         if (funcionarioNombre.isEmpty()) {
             binding.tilFuncionarioNombre.error = "Nombre del funcionario requerido *"
             valido = false
+        } else if (!ActaFieldValidators.esNombreValido(funcionarioNombre)) {
+            binding.tilFuncionarioNombre.error = "El nombre solo debe contener letras"
+            valido = false
         } else {
             binding.tilFuncionarioNombre.error = null
         }
@@ -2389,6 +2510,30 @@ class ActaAtencionActivity : AppCompatActivity() {
             binding.tilFuncionarioMatricula.error = null
         }
 
+        val funcionarioIdentificacion = binding.etFuncionarioIdentificacion.text.toString().trim()
+        if (funcionarioIdentificacion.isNotEmpty() && !ActaFieldValidators.esCedulaValida(funcionarioIdentificacion)) {
+            binding.tilFuncionarioIdentificacion.error = "La identificación debe tener entre 6 y 15 dígitos"
+            valido = false
+        } else {
+            binding.tilFuncionarioIdentificacion.error = null
+        }
+
+        val notificadoNombre = binding.etNotificadoNombre.text.toString().trim()
+        if (notificadoNombre.isNotEmpty() && !ActaFieldValidators.esNombreValido(notificadoNombre)) {
+            binding.tilNotificadoNombre.error = "El nombre solo debe contener letras"
+            valido = false
+        } else {
+            binding.tilNotificadoNombre.error = null
+        }
+
+        val notificadoIdentificacion = binding.etNotificadoIdentificacion.text.toString().trim()
+        if (notificadoIdentificacion.isNotEmpty() && !ActaFieldValidators.esCedulaValida(notificadoIdentificacion)) {
+            binding.tilNotificadoIdentificacion.error = "La identificación debe tener entre 6 y 15 dígitos"
+            valido = false
+        } else {
+            binding.tilNotificadoIdentificacion.error = null
+        }
+
         // Si el módulo de rescate está activo, validar campos obligatorios del rescate
         if (binding.swRequiereRescate.isChecked) {
             val motivoRescate = binding.autoCompleteMotivoRescate.text.toString().trim()
@@ -2403,13 +2548,27 @@ class ActaAtencionActivity : AppCompatActivity() {
             if (personaAtiende.isEmpty()) {
                 binding.tilPersonaAtiendeRescatista.error = "Persona que atiende requerida *"
                 valido = false
+            } else if (!ActaFieldValidators.esNombreValido(personaAtiende)) {
+                binding.tilPersonaAtiendeRescatista.error = "El nombre solo debe contener letras"
+                valido = false
             } else {
                 binding.tilPersonaAtiendeRescatista.error = null
+            }
+
+            val personaAtiendeCed = binding.etPersonaAtiendeCedula.text.toString().trim()
+            if (personaAtiendeCed.isNotEmpty() && !ActaFieldValidators.esCedulaValida(personaAtiendeCed)) {
+                binding.tilPersonaAtiendeCedula.error = "La cédula debe tener entre 6 y 15 dígitos"
+                valido = false
+            } else {
+                binding.tilPersonaAtiendeCedula.error = null
             }
 
             val personaAtiendeTel = binding.etPersonaAtiendeTelefono.text.toString().trim()
             if (personaAtiendeTel.isEmpty()) {
                 binding.tilPersonaAtiendeTelefono.error = "Teléfono de contacto requerido *"
+                valido = false
+            } else if (!ActaFieldValidators.esTelefonoValido(personaAtiendeTel)) {
+                binding.tilPersonaAtiendeTelefono.error = "El teléfono debe tener entre 7 y 10 dígitos"
                 valido = false
             } else {
                 binding.tilPersonaAtiendeTelefono.error = null
@@ -2427,6 +2586,9 @@ class ActaAtencionActivity : AppCompatActivity() {
             if (testigo1Nombre.isEmpty()) {
                 binding.tilTestigo1Nombre.error = "Nombre del Testigo 1 requerido *"
                 valido = false
+            } else if (!ActaFieldValidators.esNombreValido(testigo1Nombre)) {
+                binding.tilTestigo1Nombre.error = "El nombre solo debe contener letras"
+                valido = false
             } else {
                 binding.tilTestigo1Nombre.error = null
             }
@@ -2435,8 +2597,43 @@ class ActaAtencionActivity : AppCompatActivity() {
             if (testigo1Cedula.isEmpty()) {
                 binding.tilTestigo1Cedula.error = "Cédula del Testigo 1 requerida *"
                 valido = false
+            } else if (!ActaFieldValidators.esCedulaValida(testigo1Cedula)) {
+                binding.tilTestigo1Cedula.error = "La cédula debe tener entre 6 y 15 dígitos"
+                valido = false
             } else {
                 binding.tilTestigo1Cedula.error = null
+            }
+
+            val testigo1Tel = binding.etTestigo1Telefono.text.toString().trim()
+            if (testigo1Tel.isNotEmpty() && !ActaFieldValidators.esTelefonoValido(testigo1Tel)) {
+                binding.tilTestigo1Telefono.error = "El teléfono debe tener entre 7 y 10 dígitos"
+                valido = false
+            } else {
+                binding.tilTestigo1Telefono.error = null
+            }
+
+            val testigo2Nombre = binding.etTestigo2Nombre.text.toString().trim()
+            if (testigo2Nombre.isNotEmpty() && !ActaFieldValidators.esNombreValido(testigo2Nombre)) {
+                binding.tilTestigo2Nombre.error = "El nombre solo debe contener letras"
+                valido = false
+            } else {
+                binding.tilTestigo2Nombre.error = null
+            }
+
+            val testigo2Cedula = binding.etTestigo2Cedula.text.toString().trim()
+            if (testigo2Cedula.isNotEmpty() && !ActaFieldValidators.esCedulaValida(testigo2Cedula)) {
+                binding.tilTestigo2Cedula.error = "La cédula debe tener entre 6 y 15 dígitos"
+                valido = false
+            } else {
+                binding.tilTestigo2Cedula.error = null
+            }
+
+            val testigo2Tel = binding.etTestigo2Telefono.text.toString().trim()
+            if (testigo2Tel.isNotEmpty() && !ActaFieldValidators.esTelefonoValido(testigo2Tel)) {
+                binding.tilTestigo2Telefono.error = "El teléfono debe tener entre 7 y 10 dígitos"
+                valido = false
+            } else {
+                binding.tilTestigo2Telefono.error = null
             }
 
             val obsRescate = binding.etObservacionesRescate.text.toString().trim()

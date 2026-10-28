@@ -130,6 +130,10 @@ class reportar_peticion : AppCompatActivity() {
     }
 
     private fun obtenerIdYAvanzar(nombreBuscado: String) {
+        if (listaTipos.isEmpty()) {
+            Toast.makeText(this, R.string.reporte_offline_error_cargar_tipos, Toast.LENGTH_SHORT).show()
+            return
+        }
         val tipoEncontrado = listaTipos.find { it.nombre.equals(nombreBuscado, ignoreCase = true) }
         val idReal = tipoEncontrado?.id_tipo ?: 1
 

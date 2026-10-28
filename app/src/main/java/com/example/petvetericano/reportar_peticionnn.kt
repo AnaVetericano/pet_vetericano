@@ -2,6 +2,8 @@ package com.example.petvetericano
 
 import android.Manifest
 import android.content.Intent
+import android.content.Context
+import android.provider.MediaStore
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -34,6 +36,18 @@ data class EvidenciaItem(
     val esVideo: Boolean,
     val localFile: File? = null
 )
+
+private const val LIMITE_VIDEO_BYTES = 45L * 1024 * 1024
+
+private class CaptureVideoConLimites : ActivityResultContracts.CaptureVideo() {
+    override fun createIntent(context: Context, input: Uri): Intent {
+        return super.createIntent(context, input).apply {
+            putExtra(MediaStore.EXTRA_DURATION_LIMIT, 15)
+            putExtra(MediaStore.EXTRA_SIZE_LIMIT, LIMITE_VIDEO_BYTES)
+            putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1)
+        }
+    }
+}
 
 class reportar_peticionnn : AppCompatActivity() {
 
@@ -82,22 +96,21 @@ class reportar_peticionnn : AppCompatActivity() {
     }
 
     private val recordVideoLauncher = registerForActivityResult(
-        ActivityResultContracts.CaptureVideo()
+        CaptureVideoConLimites()
     ) { success ->
         if (success && tempCameraUri != null) {
-            if (tempCameraFile != null && tempCameraFile!!.length() > 10L * 1024 * 1024) {
-                val sizeMb = tempCameraFile!!.length() / (1024 * 1024)
+            if (tempCameraFile != null && tempCameraFile!!.length() > LIMITE_VIDEO_BYTES) {
                 tempCameraFile!!.delete()
                 MaterialAlertDialogBuilder(this)
-                    .setTitle("Video excede el límite")
-                    .setMessage("El video grabado pesa ${sizeMb} MB y supera el límite de 10 MB permitido.\n\nPor favor graba un video más breve (máx. 20-30 segundos).")
-                    .setPositiveButton("Aceptar", null)
+                    .setTitle(R.string.reporte_offline_video_pesado_titulo)
+                    .setMessage(R.string.reporte_offline_video_pesado_mensaje)
+                    .setPositiveButton(R.string.btn_aceptar, null)
                     .show()
             } else {
                 selectedMediaList.add(EvidenciaItem(tempCameraUri!!, esVideo = true, localFile = tempCameraFile))
                 actualizarVisualizacionMultimedia()
                 guardarMultimediaEnPrefs()
-                Toast.makeText(this, "Video grabado correctamente 🎥", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.reporte_offline_video_grabado_exito, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -109,19 +122,18 @@ class reportar_peticionnn : AppCompatActivity() {
             val localUri = copiarUriALocal(it, esVideo = true)
             if (localUri != null) {
                 val file = File(localUri.path ?: "")
-                if (file.exists() && file.length() > 10L * 1024 * 1024) {
-                    val sizeMb = file.length() / (1024 * 1024)
+                if (file.exists() && file.length() > LIMITE_VIDEO_BYTES) {
                     file.delete()
                     MaterialAlertDialogBuilder(this)
-                        .setTitle("Video demasiado pesado")
-                        .setMessage("El video seleccionado pesa ${sizeMb} MB y supera el límite de 10 MB permitido.\n\nPor favor selecciona un video más corto o graba un clip breve.")
-                        .setPositiveButton("Aceptar", null)
+                        .setTitle(R.string.reporte_offline_video_pesado_titulo)
+                        .setMessage(R.string.reporte_offline_video_pesado_mensaje)
+                        .setPositiveButton(R.string.btn_aceptar, null)
                         .show()
                 } else {
                     selectedMediaList.add(EvidenciaItem(localUri, esVideo = true, localFile = file))
                     actualizarVisualizacionMultimedia()
                     guardarMultimediaEnPrefs()
-                    Toast.makeText(this, "Video seleccionado 🎥", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, R.string.reporte_offline_video_seleccionado_exito, Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -323,7 +335,7 @@ class reportar_peticionnn : AppCompatActivity() {
             sheetBinding.tvTituloGaleria.text = "Elegir video de la galería"
             sheetBinding.tvSubtituloGaleria.text = "Seleccionar archivo de video guardado"
 
-            sheetBinding.tvSheetInfoNota.text = "Almacenamiento en la nube: Graba clips breves de hasta 20-30 seg (máx. 10 MB)."
+            sheetBinding.tvSheetInfoNota.text = getString(R.string.reporte_offline_sheet_video_nota)
         } else {
             sheetBinding.ivSheetHeaderIcon.setImageResource(R.drawable.camera)
             sheetBinding.tvSheetTitulo.text = "Adjuntar evidencia fotográfica"

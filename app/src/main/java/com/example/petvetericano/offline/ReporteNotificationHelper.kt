@@ -136,10 +136,10 @@ object ReporteNotificationHelper {
         if (!puedeNotificar(context)) return
 
         val titulo = context.getString(R.string.reporte_offline_notif_exito_titulo)
-        val texto = if (nroRadicado.isNullOrBlank() || idPeticion <= 0) {
+        val texto = if (nroRadicado.isNullOrBlank()) {
             context.getString(R.string.reporte_offline_notif_exito_texto_sin_radicado)
         } else {
-            context.getString(R.string.reporte_offline_notif_exito_texto, nroRadicado, idPeticion)
+            context.getString(R.string.reporte_offline_notif_exito_texto, nroRadicado)
         }
         val notifId = (NOTIFICATION_ID_BASE_EXITO + idLocal).toInt()
 

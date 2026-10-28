@@ -619,8 +619,8 @@
     <!-- Reportes Offline (Tarea B1) -->
     <string name="reporte_offline_channel_nombre">Sincronización de Reportes Ciudadanos</string>
     <string name="reporte_offline_channel_descripcion">Notificaciones sobre el envío automático de reportes registrados sin conexión</string>
-    <string name="reporte_offline_notif_exito_titulo">Reporte sincronizado exitosamente</string>
-    <string name="reporte_offline_notif_exito_texto">El reporte con radicado %1$s (Petición #%2$d) fue registrado correctamente en el sistema.</string>
+    <string name="reporte_offline_notif_exito_titulo">Gracias por tu reporte</string>
+    <string name="reporte_offline_notif_exito_texto">Tu reporte %1$s fue enviado correctamente.</string>
     <string name="reporte_offline_notif_atencion_titulo">Un reporte requiere tu atención</string>
     <string name="reporte_offline_notif_atencion_texto">El reporte #%1$d no pudo sincronizarse: %2$s. Toca para revisarlo.</string>
     <string name="reporte_offline_notif_atencion_sesion_titulo">Inicia sesión para sincronizar tus reportes</string>
@@ -629,7 +629,7 @@
     <string name="reporte_offline_error_evidencia_subida">No se pudo subir la evidencia multimedia a los servidores.</string>
     <string name="reporte_offline_error_datos_servidor">El servidor rechazó los datos del reporte. Requiere verificación.</string>
     <string name="reporte_offline_error_max_reintentos">Se superó el límite de intentos de envío automático.</string>
-    <string name="reporte_offline_notif_exito_texto_sin_radicado">El reporte ciudadano fue registrado correctamente en el sistema.</string>
+    <string name="reporte_offline_notif_exito_texto_sin_radicado">Tu reporte fue enviado correctamente.</string>
     <string name="reporte_offline_error_cargar_tipos">No se pudieron cargar los tipos de reporte. Intenta más tarde.</string>
     <string name="reporte_offline_error_descripcion_vacia">Ingresa una descripción de la incidencia</string>
     <string name="reporte_offline_direccion_coordenadas">Coordenadas: %1$.7f, %2$.7f</string>
@@ -646,4 +646,13 @@
     <string name="reporte_offline_error_guardar_reporte">No se pudo guardar el reporte. Intenta de nuevo.</string>
     <string name="reporte_offline_gracias_usuario">Gracias, %1$s</string>
     <string name="reporte_offline_enviado_mensaje">Reporte guardado. Se enviará automáticamente en cuanto haya conexión y te avisaremos.</string>
+    <!-- Tarea B2.1: Ajustes reporte ciudadano -->
+    <string name="reporte_offline_video_pesado_titulo">Video demasiado pesado</string>
+    <string name="reporte_offline_video_pesado_mensaje">El video es demasiado pesado. Graba hasta 15 segundos o elige uno más corto.</string>
+    <string name="reporte_offline_sheet_video_nota">Almacenamiento en la nube: Graba clips breves de hasta 15 segundos.</string>
+    <string name="reporte_offline_video_grabado_exito">Video grabado correctamente</string>
+    <string name="reporte_offline_video_seleccionado_exito">Video seleccionado correctamente</string>
+    <string name="reporte_offline_enviado_sin_conexion">Recibimos tu reporte. Lo guardamos en tu teléfono y se enviará en segundo plano en cuanto tengas conexión. Te avisaremos.</string>
+    <string name="reporte_offline_enviando_reporte">Enviando tu reporte…</string>
+    <string name="reporte_offline_requiere_atencion_mensaje">Guardamos tu reporte, pero necesita tu atención. Te avisaremos por notificación.</string>
 </resources>

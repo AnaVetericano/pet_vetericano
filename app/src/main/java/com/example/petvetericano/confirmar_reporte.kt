@@ -1,6 +1,9 @@
 package com.example.petvetericano
 
+import android.content.Context
 import android.content.Intent
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
 import android.location.Geocoder
 import android.os.Bundle
 import android.widget.Toast
@@ -85,10 +88,16 @@ class confirmar_reporte : AppCompatActivity() {
                 direccionResuelta = dirFinal
 
                 val prefsReportes = getSharedPreferences("MisReportesPrefs", MODE_PRIVATE)
-                val idTipoFinal = intent.getIntExtra(
-                    "ID_TIPO_SELECCIONADO",
-                    prefsReportes.getInt("ID_TIPO_SELECCIONADO", 1)
-                )
+                val idTipoPrefs = if (prefsReportes.contains("ID_TIPO_SELECCIONADO")) {
+                    prefsReportes.getInt("ID_TIPO_SELECCIONADO", -1)
+                } else {
+                    -1
+                }
+                val idTipoFinal = if (idTipoPrefs > 0) {
+                    idTipoPrefs
+                } else {
+                    intent.getIntExtra("ID_TIPO_SELECCIONADO", 1)
+                }
 
                 val evidenciasList = mutableListOf<Pair<String, Boolean>>()
                 for (i in rutasArchivos.indices) {
@@ -113,9 +122,12 @@ class confirmar_reporte : AppCompatActivity() {
                     getSharedPreferences("ReporteOfflineMultimedia", MODE_PRIVATE).edit().clear().apply()
                     getSharedPreferences("ReporteOffline", MODE_PRIVATE).edit().clear().apply()
 
+                    val hayConexion = hayConexionInternet()
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(this@confirmar_reporte, R.string.reporte_offline_guardado_exitoso, Toast.LENGTH_SHORT).show()
-                        val nuevoIntent = Intent(this@confirmar_reporte, reporte_enviado::class.java)
+                        val nuevoIntent = Intent(this@confirmar_reporte, reporte_enviado::class.java).apply {
+                            putExtra("ID_LOCAL", idLocal)
+                            putExtra("HAY_CONEXION", hayConexion)
+                        }
                         startActivity(nuevoIntent)
                         finish()
                     }
@@ -160,5 +172,12 @@ class confirmar_reporte : AppCompatActivity() {
                 else -> getString(R.string.reporte_offline_evidencias_formato, cantidad)
             }
         }
+    }
+    private fun hayConexionInternet(): Boolean {
+        val cm = getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return false
+        val activeNetwork = cm.activeNetwork ?: return false
+        val capabilities = cm.getNetworkCapabilities(activeNetwork) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
     }
 }

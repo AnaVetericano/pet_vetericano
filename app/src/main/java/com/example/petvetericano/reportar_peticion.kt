@@ -10,6 +10,8 @@ import com.example.petvetericano.databinding.ActivityReportarPeticionBinding
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.json.JSONArray
+import org.json.JSONObject
 
 import com.example.petvetericano.network.RetrofitClient
 import com.example.petvetericano.models.TipoPeticionResponse
@@ -18,8 +20,11 @@ class reportar_peticion : AppCompatActivity() {
 
     private lateinit var binding: ActivityReportarPeticionBinding
 
-    // Lista para guardar los tipos que vienen de la base de datos
+    // Lista para guardar los tipos que vienen de la base de datos o caché
     private var listaTipos: List<TipoPeticionResponse> = emptyList()
+
+    private val PREFS_CACHE = "ReporteTiposCachePrefs"
+    private val KEY_CACHE = "ReporteTiposCache"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,7 +36,7 @@ class reportar_peticion : AppCompatActivity() {
             startActivity(Intent(this, bienvenida::class.java))
         }
 
-        // 1. Descargar los tipos desde la API al abrir la pantalla
+        // 1. Descargar los tipos desde la API al abrir la pantalla o usar caché
         cargarTiposDesdeApi()
 
         // 2. Configurar clics buscando el ID correspondiente de la lista obtenida
@@ -47,7 +52,7 @@ class reportar_peticion : AppCompatActivity() {
             obtenerIdYAvanzar("Animal en condicion de calle")
         }
 
-        // 3. Configurar clic para la nueva tarjeta "Otros"
+        // 3. Configurar clic para la tarjeta "Otros"
         binding.cardOtros.setOnClickListener {
             obtenerIdYAvanzar("Otros")
         }
@@ -58,18 +63,70 @@ class reportar_peticion : AppCompatActivity() {
             try {
                 val response = RetrofitClient.apiService.obtenerTiposPeticion()
                 if (response.isSuccessful && response.body() != null) {
-                    listaTipos = response.body()!!
+                    val remotos = response.body()!!
+                    listaTipos = remotos
+                    guardarEnCache(remotos)
                 } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(this@reportar_peticion, "No se pudieron cargar los tipos", Toast.LENGTH_SHORT).show()
-                    }
+                    cargarDeCacheOFallar()
                 }
             } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@reportar_peticion, "Error de red al cargar tipos", Toast.LENGTH_SHORT).show()
-                }
+                cargarDeCacheOFallar()
             }
         }
+    }
+
+    private fun guardarEnCache(tipos: List<TipoPeticionResponse>) {
+        try {
+            val jsonArray = JSONArray()
+            for (item in tipos) {
+                val obj = JSONObject().apply {
+                    put("id_tipo", item.id_tipo)
+                    put("nombre", item.nombre)
+                }
+                jsonArray.put(obj)
+            }
+            getSharedPreferences(PREFS_CACHE, MODE_PRIVATE)
+                .edit()
+                .putString(KEY_CACHE, jsonArray.toString())
+                .apply()
+        } catch (_: Exception) {
+        }
+    }
+
+    private suspend fun cargarDeCacheOFallar() {
+        val cached = obtenerTiposDeCache()
+        if (cached.isNotEmpty()) {
+            listaTipos = cached
+        } else {
+            withContext(Dispatchers.Main) {
+                Toast.makeText(
+                    this@reportar_peticion,
+                    getString(R.string.reporte_offline_error_cargar_tipos),
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+
+    private fun obtenerTiposDeCache(): List<TipoPeticionResponse> {
+        val raw = getSharedPreferences(PREFS_CACHE, MODE_PRIVATE)
+            .getString(KEY_CACHE, null) ?: return emptyList()
+        val list = mutableListOf<TipoPeticionResponse>()
+        try {
+            val jsonArray = JSONArray(raw)
+            for (i in 0 until jsonArray.length()) {
+                val obj = jsonArray.getJSONObject(i)
+                list.add(
+                    TipoPeticionResponse(
+                        id_tipo = obj.getInt("id_tipo"),
+                        nombre = obj.getString("nombre"),
+                        descripcion = null
+                    )
+                )
+            }
+        } catch (_: Exception) {
+        }
+        return list
     }
 
     private fun obtenerIdYAvanzar(nombreBuscado: String) {

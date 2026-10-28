@@ -22,9 +22,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.addTextChangedListener
 import com.bumptech.glide.Glide
-import com.cloudinary.android.MediaManager
-import com.cloudinary.android.callback.ErrorInfo
-import com.cloudinary.android.callback.UploadCallback
 import com.example.petvetericano.databinding.ActivityReportarPeticionnnBinding
 import com.example.petvetericano.databinding.BottomSheetAdjuntarEvidenciaBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -47,10 +44,6 @@ class reportar_peticionnn : AppCompatActivity() {
     private val KEY_BORRADOR = "borrador_descripcion"
     private val KEY_PATHS = "borrador_paths_v2"
     private val KEY_IS_VIDEO = "borrador_is_video_v2"
-
-    // Datos de Cloudinary
-    private val CLOUD_NAME = "aefeig5y"
-    private val UPLOAD_PRESET = "preset_android"
 
     // Evidencias multimedia seleccionadas (hasta 2)
     private val selectedMediaList = mutableListOf<EvidenciaItem>()
@@ -190,7 +183,6 @@ class reportar_peticionnn : AppCompatActivity() {
             }
         }
 
-        initCloudinary()
         setupUI()
 
         // Recuperar texto de descripción
@@ -267,16 +259,6 @@ class reportar_peticionnn : AppCompatActivity() {
         editor.putString(KEY_PATHS, paths.joinToString(";"))
         editor.putString(KEY_IS_VIDEO, isVideo.joinToString(";"))
         editor.apply()
-    }
-
-    private fun initCloudinary() {
-        val config = HashMap<String, String>()
-        config["cloud_name"] = CLOUD_NAME
-        try {
-            MediaManager.init(this, config)
-        } catch (_: Exception) {
-            // MediaManager ya inicializado
-        }
     }
 
     private fun setupUI() {
@@ -616,7 +598,7 @@ class reportar_peticionnn : AppCompatActivity() {
         val descripcion = binding.etDescripcion.text.toString().trim()
 
         if (descripcion.isEmpty()) {
-            binding.tilDescripcion.error = "Ingresa una descripción de la incidencia"
+            binding.tilDescripcion.error = getString(R.string.reporte_offline_error_descripcion_vacia)
             return
         }
 
@@ -626,71 +608,16 @@ class reportar_peticionnn : AppCompatActivity() {
         val longitud = intent.getDoubleExtra("LONGITUD", 0.0)
         val tipoReporte = intent.getStringExtra("TIPO_REPORTE")
 
-        if (selectedMediaList.isNotEmpty()) {
-            subirArchivosYContinuar(descripcion, latitud, longitud, tipoReporte)
-        } else {
-            navegarAConfirmar(descripcion, latitud, longitud, tipoReporte, arrayListOf())
+        val rutas = ArrayList<String>()
+        val banderasVideo = BooleanArray(selectedMediaList.size)
+        for ((i, item) in selectedMediaList.withIndex()) {
+            val path = item.localFile?.absolutePath
+                ?: (item.uri.path?.let { File(filesDir, File(it).name).absolutePath } ?: "")
+            rutas.add(path)
+            banderasVideo[i] = item.esVideo
         }
-    }
 
-    private fun subirArchivosYContinuar(
-        descripcion: String,
-        latitud: Double,
-        longitud: Double,
-        tipoReporte: String?
-    ) {
-        val urlsSubidas = mutableListOf<String>()
-        var subidasCompletadas = 0
-        val totalArchivos = selectedMediaList.size
-
-        binding.btnContinue.isEnabled = false
-        binding.btnContinue.text = "Subiendo evidencias..."
-        Toast.makeText(this, "Subiendo evidencias a la nube...", Toast.LENGTH_SHORT).show()
-
-        for (item in selectedMediaList) {
-            MediaManager.get()
-                .upload(item.uri)
-                .unsigned(UPLOAD_PRESET)
-                .callback(object : UploadCallback {
-                    override fun onStart(requestId: String?) {}
-
-                    override fun onProgress(requestId: String?, bytes: Long, totalBytes: Long) {}
-
-                    override fun onSuccess(requestId: String?, resultData: Map<*, *>?) {
-                        val url = resultData?.get("secure_url") as? String
-                        if (url != null) {
-                            urlsSubidas.add(url)
-                        }
-
-                        subidasCompletadas++
-
-                        if (subidasCompletadas == totalArchivos) {
-                            binding.btnContinue.isEnabled = true
-                            binding.btnContinue.text = "Continuar"
-                            navegarAConfirmar(
-                                descripcion,
-                                latitud,
-                                longitud,
-                                tipoReporte,
-                                ArrayList(urlsSubidas)
-                            )
-                        }
-                    }
-
-                    override fun onError(requestId: String?, error: ErrorInfo?) {
-                        binding.btnContinue.isEnabled = true
-                        binding.btnContinue.text = "Continuar"
-                        Toast.makeText(
-                            applicationContext,
-                            "Error al subir: ${error?.description}",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-
-                    override fun onReschedule(requestId: String?, error: ErrorInfo?) {}
-                })
-                .dispatch()
-        }
+        navegarAConfirmar(descripcion, latitud, longitud, tipoReporte, rutas, banderasVideo)
     }
 
     private fun navegarAConfirmar(
@@ -698,7 +625,8 @@ class reportar_peticionnn : AppCompatActivity() {
         latitud: Double,
         longitud: Double,
         tipoReporte: String?,
-        urlsArchivos: ArrayList<String>
+        rutasArchivos: ArrayList<String>,
+        banderasVideo: BooleanArray
     ) {
         val referencia = intent.getStringExtra("PUNTO_REFERENCIA")
         val idTipoRecibido = intent.getIntExtra("ID_TIPO_SELECCIONADO", 1)
@@ -706,7 +634,8 @@ class reportar_peticionnn : AppCompatActivity() {
         val intent = Intent(this, confirmar_reporte::class.java).apply {
             putExtra("TIPO_REPORTE", tipoReporte)
             putExtra("DESCRIPCION", descripcion)
-            putStringArrayListExtra("URLS_ARCHIVOS", urlsArchivos)
+            putStringArrayListExtra("RUTAS_ARCHIVOS", rutasArchivos)
+            putExtra("ES_VIDEO", banderasVideo)
             putExtra("LATITUD", latitud)
             putExtra("LONGITUD", longitud)
             putExtra("PUNTO_REFERENCIA", referencia)

@@ -7,18 +7,18 @@ import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityConfirmarReporteBinding
-import com.example.petvetericano.models.confirmarpeticion
-import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.offline.ReporteEncolador
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.util.Locale
-import kotlin.Int
 
 class confirmar_reporte : AppCompatActivity() {
 
     private lateinit var binding: ActivityConfirmarReporteBinding
-    private var urlsArchivos: ArrayList<String>? = null
+    private var rutasArchivos: ArrayList<String> = arrayListOf()
+    private var esVideoBanderas: BooleanArray = booleanArrayOf()
+    private var direccionResuelta: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -26,21 +26,17 @@ class confirmar_reporte : AppCompatActivity() {
         binding = ActivityConfirmarReporteBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Obtener cantidad de fotos
+        rutasArchivos = intent.getStringArrayListExtra("RUTAS_ARCHIVOS") ?: arrayListOf()
+        esVideoBanderas = intent.getBooleanArrayExtra("ES_VIDEO") ?: booleanArrayOf()
+
         obtenerCantidadFotos()
 
-        // ==========================================
-        // RECIBIR DATOS DEL REPORTE
-        // ==========================================
         val descripcionRecibida = intent.getStringExtra("DESCRIPCION")
-        binding.descri.text = descripcionRecibida ?: "Sin descripción"
+        binding.descri.text = descripcionRecibida ?: getString(R.string.acta_offline_sin_observaciones)
 
         val tipoReporte = intent.getStringExtra("TIPO_REPORTE")
-        binding.tvTipoReporte.text = tipoReporte ?: "Sin tipo"
+        binding.tvTipoReporte.text = tipoReporte ?: getString(R.string.reporte_offline_tipo_predeterminado)
 
-        // ==========================================
-        // OBTENER UBICACIÓN CON FORMATO DE 7 DECIMALES
-        // ==========================================
         val latitudCruda = intent.getDoubleExtra("LATITUD", 0.0)
         val longitudCruda = intent.getDoubleExtra("LONGITUD", 0.0)
 
@@ -48,28 +44,18 @@ class confirmar_reporte : AppCompatActivity() {
         val longitud = String.format(Locale.US, "%.7f", longitudCruda).toDouble()
 
         if (latitud != 0.0 && longitud != 0.0) {
-            try {
-                val geocoder = Geocoder(this, Locale.getDefault())
-                val direcciones = geocoder.getFromLocation(latitud, longitud, 1)
-
-                if (!direcciones.isNullOrEmpty()) {
-                    val direccionReal = direcciones[0].getAddressLine(0)
-                    binding.ubicacionedit.text = direccionReal
-                } else {
-                    // Texto de respaldo si el mapa no sabe qué calle es
-                    binding.ubicacionedit.text = "Dirección no encontrada (Usar coordenadas)"
+            binding.ubicacionedit.text = getString(R.string.reporte_offline_cargando_direccion)
+            lifecycleScope.launch(Dispatchers.IO) {
+                val dir = resolverDireccion(latitud, longitud)
+                direccionResuelta = dir
+                withContext(Dispatchers.Main) {
+                    binding.ubicacionedit.text = dir
                 }
-            } catch (e: Exception) {
-                // Texto de respaldo si falla el internet o el Geocoder crashea
-                binding.ubicacionedit.text = "Dirección no encontrada (Usar coordenadas)"
             }
         } else {
-            binding.ubicacionedit.text = "Ubicación no seleccionada"
+            binding.ubicacionedit.text = getString(R.string.reporte_offline_ubicacion_no_seleccionada)
         }
 
-        // ==========================================
-        // CAMBIAR PANTALLAS (Botones de edición)
-        // ==========================================
         binding.btndev.setOnClickListener {
             finish()
         }
@@ -90,126 +76,88 @@ class confirmar_reporte : AppCompatActivity() {
             startActivity(Intent(this, reportar_peticionnn::class.java))
         }
 
-        // ==========================================
-        // BOTÓN CONFIRMAR REPORTE
-        // ==========================================
         binding.btnenvR.setOnClickListener {
-            getSharedPreferences("ReporteOffline", MODE_PRIVATE).edit().clear().apply()
-            getSharedPreferences("MapaOffline", MODE_PRIVATE).edit().clear().apply()
-            getSharedPreferences("ReporteOfflineMultimedia", MODE_PRIVATE).edit().clear().apply()
-
-            val tipo = binding.tvTipoReporte.text.toString()
-            val lugar = binding.ubicacionedit.text.toString()
-
             binding.btnenvR.isEnabled = false
-            Toast.makeText(this, "Guardando reporte...", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.reporte_offline_guardando_reporte, Toast.LENGTH_SHORT).show()
 
             lifecycleScope.launch(Dispatchers.IO) {
-                try {
-                    val sessionManager = SharedPreferencesManager(this@confirmar_reporte)
-                    val tokenGuardado = sessionManager.getAccessToken()
-                    val idUsuarioLogueado = sessionManager.getUserId()
+                val dirFinal = direccionResuelta ?: resolverDireccion(latitud, longitud)
+                direccionResuelta = dirFinal
 
-                    if (!tokenGuardado.isNullOrEmpty()) {
-                        RetrofitClient.authToken = tokenGuardado
-                    }
+                val prefsReportes = getSharedPreferences("MisReportesPrefs", MODE_PRIVATE)
+                val idTipoFinal = intent.getIntExtra(
+                    "ID_TIPO_SELECCIONADO",
+                    prefsReportes.getInt("ID_TIPO_SELECCIONADO", 1)
+                )
 
-                    val prefsReportes = getSharedPreferences("MisReportesPrefs", MODE_PRIVATE)
-                    val idTipoFinal = intent.getIntExtra(
-                        "ID_TIPO_SELECCIONADO",
-                        prefsReportes.getInt("ID_TIPO_SELECCIONADO", 1)
-                    )
+                val evidenciasList = mutableListOf<Pair<String, Boolean>>()
+                for (i in rutasArchivos.indices) {
+                    val esVideo = if (i < esVideoBanderas.size) esVideoBanderas[i] else false
+                    evidenciasList.add(Pair(rutasArchivos[i], esVideo))
+                }
 
-                    val responsableFinal = if (idUsuarioLogueado != -1) idUsuarioLogueado else 1
-                    val urlFotoCloudinary = if (!urlsArchivos.isNullOrEmpty()) urlsArchivos!![0] else null
+                val idLocal = ReporteEncolador.encolar(
+                    context = this@confirmar_reporte,
+                    idTipo = idTipoFinal,
+                    tipoNombre = tipoReporte ?: getString(R.string.reporte_offline_tipo_predeterminado),
+                    descripcion = descripcionRecibida ?: "",
+                    direccion = dirFinal,
+                    latitud = latitud,
+                    longitud = longitud,
+                    evidencias = evidenciasList
+                )
 
-                    val nuevaPeticion = confirmarpeticion(
-                        id_tipo = idTipoFinal,
-                        id_estado = 1,
-                        responsable = responsableFinal,
-                        descripcion = descripcionRecibida ?: "Sin descripción",
-                        prioridad = null,
-                        direccion = lugar,
-                        latitud = latitud,
-                        longitud = longitud,
-                        foto = urlFotoCloudinary,
-                        fotos = urlsArchivos
-                    )
+                if (idLocal != null && idLocal > 0L) {
+                    getSharedPreferences("MisReportesPrefs", MODE_PRIVATE).edit().clear().apply()
+                    getSharedPreferences("MapaOffline", MODE_PRIVATE).edit().clear().apply()
+                    getSharedPreferences("ReporteOfflineMultimedia", MODE_PRIVATE).edit().clear().apply()
+                    getSharedPreferences("ReporteOffline", MODE_PRIVATE).edit().clear().apply()
 
-                    val response = RetrofitClient.apiService.enviarPeticion(nuevaPeticion)
-
-                    if (response.isSuccessful) {
-                        val body = response.body()
-                        val idPeticionCreada = body?.id_peticion ?: -1
-                        var radicadoReal = body?.numero_radicado?.takeIf { it.isNotBlank() }
-                            ?: if (idPeticionCreada > 0) {
-                                String.format(Locale.US, "PET-2026-%05d", idPeticionCreada)
-                            } else {
-                                null
-                            }
-
-                        // Respaldo: si por alguna razón no vino en el body directo, consultar la última petición real en la BD
-                        if (radicadoReal.isNullOrBlank() && !tokenGuardado.isNullOrEmpty()) {
-                            try {
-                                val listResp = RetrofitClient.apiService.listarPeticiones("Bearer $tokenGuardado")
-                                if (listResp.isSuccessful) {
-                                    val ultima = listResp.body()?.firstOrNull()
-                                    if (ultima != null) {
-                                        radicadoReal = ultima.numero_radicado?.takeIf { it.isNotBlank() }
-                                            ?: String.format(Locale.US, "PET-2026-%05d", ultima.id_peticion)
-                                    }
-                                }
-                            } catch (_: Exception) {
-                            }
-                        }
-
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(this@confirmar_reporte, "Reporte enviado correctamente", Toast.LENGTH_SHORT).show()
-
-                            val nuevoIntent = Intent(this@confirmar_reporte, reporte_enviado::class.java).apply {
-                                putExtra("ID_PETICION", idPeticionCreada)
-                                putExtra("NUMERO_RADICADO", radicadoReal)
-                                putExtra("TIPO_REPORTES", tipo)
-                                putExtra("LATITUD", latitud)
-                                putExtra("LONGITUD", longitud)
-                                putExtra("DESCRIPCION", descripcionRecibida)
-                                putStringArrayListExtra("URLS_ARCHIVOS", urlsArchivos)
-                            }
-                            startActivity(nuevoIntent)
-                            finish()
-                        }
-                    } else {
-                        val errorBody = response.errorBody()?.string()
-                        android.util.Log.e("API_ERROR", "Error: $errorBody")
-
-                        withContext(Dispatchers.Main) {
-                            Toast.makeText(this@confirmar_reporte, "Error al guardar el reporte", Toast.LENGTH_LONG).show()
-                            binding.btnenvR.isEnabled = true
-                        }
-                    }
-                } catch (e: Exception) {
-                    android.util.Log.e("API_FALLO", "Fallo la conexión", e)
                     withContext(Dispatchers.Main) {
-                        Toast.makeText(this@confirmar_reporte, "Fallo de conexión. Revisa tu internet.", Toast.LENGTH_LONG).show()
+                        Toast.makeText(this@confirmar_reporte, R.string.reporte_offline_guardado_exitoso, Toast.LENGTH_SHORT).show()
+                        val nuevoIntent = Intent(this@confirmar_reporte, reporte_enviado::class.java)
+                        startActivity(nuevoIntent)
+                        finish()
+                    }
+                } else {
+                    withContext(Dispatchers.Main) {
                         binding.btnenvR.isEnabled = true
+                        Toast.makeText(this@confirmar_reporte, R.string.reporte_offline_error_guardar_reporte, Toast.LENGTH_LONG).show()
                     }
                 }
             }
         }
     }
 
+    private fun resolverDireccion(latitud: Double, longitud: Double): String {
+        if (latitud == 0.0 && longitud == 0.0) {
+            return getString(R.string.reporte_offline_ubicacion_no_seleccionada)
+        }
+        return try {
+            val geocoder = Geocoder(this, Locale.getDefault())
+            val direcciones = geocoder.getFromLocation(latitud, longitud, 1)
+            if (!direcciones.isNullOrEmpty() && !direcciones[0].getAddressLine(0).isNullOrBlank()) {
+                direcciones[0].getAddressLine(0)
+            } else {
+                getString(R.string.reporte_offline_direccion_coordenadas, latitud, longitud)
+            }
+        } catch (_: Exception) {
+            getString(R.string.reporte_offline_direccion_coordenadas, latitud, longitud)
+        }
+    }
+
     private fun obtenerCantidadFotos() {
-        urlsArchivos = intent.getStringArrayListExtra("URLS_ARCHIVOS")
-        val cantidad = urlsArchivos?.size ?: 0
+        val cantidad = rutasArchivos.size
         if (cantidad == 0) {
-            binding.numfoto.text = "Sin evidencias"
+            binding.numfoto.text = getString(R.string.reporte_offline_sin_evidencias)
         } else {
-            val hayVideo = urlsArchivos?.any { it.contains(".mp4") || it.contains("/video/") } == true
+            val hayVideo = esVideoBanderas.any { it } ||
+                rutasArchivos.any { it.endsWith(".mp4", ignoreCase = true) }
             binding.numfoto.text = when {
-                cantidad == 1 && hayVideo -> "1 video"
-                cantidad == 1 && !hayVideo -> "1 foto"
-                cantidad == 2 && hayVideo -> "1 foto y 1 video"
-                else -> "$cantidad evidencias"
+                cantidad == 1 && hayVideo -> getString(R.string.reporte_offline_un_video)
+                cantidad == 1 && !hayVideo -> getString(R.string.reporte_offline_una_foto)
+                cantidad == 2 && hayVideo -> getString(R.string.reporte_offline_foto_y_video)
+                else -> getString(R.string.reporte_offline_evidencias_formato, cantidad)
             }
         }
     }

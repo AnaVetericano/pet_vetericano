@@ -3,14 +3,9 @@ package com.example.petvetericano
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
 import androidx.appcompat.app.AppCompatActivity
-import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityReporteEnviadoBinding
-import com.example.petvetericano.network.RetrofitClient
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import java.util.Locale
 
 class reporte_enviado : AppCompatActivity() {
 
@@ -22,29 +17,18 @@ class reporte_enviado : AppCompatActivity() {
         binding = ActivityReporteEnviadoBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Obtener los datos guardados del usuario
         val prefs = SharedPreferencesManager(this)
+        val nombreUsuario = prefs.getUserName().trim()
 
-        val nombreUsuario = prefs.getUserName()
-
-        // Mostrar el nombre
-        binding.textView4.text = "Gracias, $nombreUsuario"
-
-        // Mostrar el número de radicado real e incremental (ej. PET-2026-00081)
-        val numeroRadicado = intent.getStringExtra("NUMERO_RADICADO")
-        val idPeticion = intent.getIntExtra("ID_PETICION", -1)
-
-        val radicadoFinal = when {
-            !numeroRadicado.isNullOrBlank() -> numeroRadicado
-            idPeticion > 0 -> String.format(Locale.US, "PET-2026-%05d", idPeticion)
-            else -> null
-        }
-
-        if (radicadoFinal != null) {
-            binding.textView9.text = radicadoFinal
+        if (nombreUsuario.isNotEmpty()) {
+            binding.textView4.text = getString(R.string.reporte_offline_gracias_usuario, nombreUsuario)
         } else {
-            cargarUltimoRadicadoReal(prefs)
+            binding.textView4.text = getString(R.string.lbl_gracias)
         }
+
+        binding.textView5.text = getString(R.string.reporte_offline_enviado_mensaje)
+        binding.textView6.visibility = View.GONE
+        binding.cardReporteNumber.visibility = View.GONE
 
         binding.contcba.setOnClickListener {
             realizarLlamada("3218905214")
@@ -66,33 +50,10 @@ class reporte_enviado : AppCompatActivity() {
         }
     }
 
-    private fun cargarUltimoRadicadoReal(prefs: SharedPreferencesManager) {
-        val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
-        if (token.isEmpty()) return
-
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val response = RetrofitClient.apiService.listarPeticiones("Bearer $token")
-                if (response.isSuccessful) {
-                    val ultimaPeticion = response.body()?.firstOrNull()
-                    if (ultimaPeticion != null) {
-                        val radicado = ultimaPeticion.numero_radicado?.takeIf { it.isNotBlank() }
-                            ?: String.format(Locale.US, "PET-2026-%05d", ultimaPeticion.id_peticion)
-                        withContext(Dispatchers.Main) {
-                            binding.textView9.text = radicado
-                        }
-                    }
-                }
-            } catch (_: Exception) {
-            }
-        }
-    }
-
     private fun realizarLlamada(numeroTelefono: String) {
         val intent = Intent(Intent.ACTION_DIAL).apply {
             data = Uri.parse("tel:$numeroTelefono")
         }
-
         startActivity(intent)
     }
 }

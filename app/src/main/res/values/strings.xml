@@ -630,4 +630,20 @@
     <string name="reporte_offline_error_datos_servidor">El servidor rechazó los datos del reporte. Requiere verificación.</string>
     <string name="reporte_offline_error_max_reintentos">Se superó el límite de intentos de envío automático.</string>
     <string name="reporte_offline_notif_exito_texto_sin_radicado">El reporte ciudadano fue registrado correctamente en el sistema.</string>
+    <string name="reporte_offline_error_cargar_tipos">No se pudieron cargar los tipos de reporte. Intenta más tarde.</string>
+    <string name="reporte_offline_error_descripcion_vacia">Ingresa una descripción de la incidencia</string>
+    <string name="reporte_offline_direccion_coordenadas">Coordenadas: %1$.7f, %2$.7f</string>
+    <string name="reporte_offline_ubicacion_no_seleccionada">Ubicación no seleccionada</string>
+    <string name="reporte_offline_tipo_predeterminado">Reporte ciudadano</string>
+    <string name="reporte_offline_cargando_direccion">Determinando dirección…</string>
+    <string name="reporte_offline_sin_evidencias">Sin evidencias</string>
+    <string name="reporte_offline_un_video">1 video</string>
+    <string name="reporte_offline_una_foto">1 foto</string>
+    <string name="reporte_offline_foto_y_video">1 foto y 1 video</string>
+    <string name="reporte_offline_evidencias_formato">%1$d evidencias</string>
+    <string name="reporte_offline_guardando_reporte">Guardando reporte…</string>
+    <string name="reporte_offline_guardado_exitoso">Reporte guardado para envío automático</string>
+    <string name="reporte_offline_error_guardar_reporte">No se pudo guardar el reporte. Intenta de nuevo.</string>
+    <string name="reporte_offline_gracias_usuario">Gracias, %1$s</string>
+    <string name="reporte_offline_enviado_mensaje">Reporte guardado. Se enviará automáticamente en cuanto haya conexión y te avisaremos.</string>
 </resources>

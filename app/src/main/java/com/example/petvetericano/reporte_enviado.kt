@@ -4,6 +4,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityReporteEnviadoBinding
@@ -34,11 +35,13 @@ class reporte_enviado : AppCompatActivity() {
             binding.textView4.text = getString(R.string.lbl_gracias)
         }
 
+        binding.cardReporteNumber.visibility = View.GONE
+
         val idLocal = intent.getLongExtra("ID_LOCAL", -1L)
         val hayConexion = intent.getBooleanExtra("HAY_CONEXION", false)
 
-        if (hayConexion && idLocal > 0L) {
-            iniciarSeguimientoEnvio(idLocal)
+        if (idLocal > 0L) {
+            verificarYProcesarReporte(idLocal, hayConexion, prefs)
         } else {
             mostrarEstadoSinConexion()
         }
@@ -48,18 +51,49 @@ class reporte_enviado : AppCompatActivity() {
         }
 
         binding.regremen.setOnClickListener {
-            val role = prefs.getUserRole()
-            val intent = if (role == inicio_sesion.ROL_VETERINARIO) {
-                Intent(this, dahsboard_veterianrio::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                }
-            } else {
-                Intent(this, bienvenida::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                }
+            volverAlMenuPrincipal()
+        }
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                volverAlMenuPrincipal()
             }
-            startActivity(intent)
-            finish()
+        })
+    }
+
+    private fun volverAlMenuPrincipal() {
+        val prefs = SharedPreferencesManager(this)
+        val role = prefs.getUserRole()
+        val intent = if (role == inicio_sesion.ROL_VETERINARIO) {
+            Intent(this, dahsboard_veterianrio::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+        } else {
+            Intent(this, bienvenida::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+        }
+        startActivity(intent)
+        finish()
+    }
+
+    private fun verificarYProcesarReporte(idLocal: Long, hayConexion: Boolean, prefs: SharedPreferencesManager) {
+        lifecycleScope.launch {
+            val repo = ReporteLocalRepository.getInstance(this@reporte_enviado)
+            val reporte = withContext(Dispatchers.IO) {
+                repo.obtenerPorId(idLocal)
+            }
+            val currentUserId = prefs.getUserId()
+            if (reporte == null || reporte.idUsuario != currentUserId) {
+                volverAlMenuPrincipal()
+                return@launch
+            }
+
+            if (hayConexion) {
+                iniciarSeguimientoEnvio(idLocal)
+            } else {
+                mostrarEstadoSinConexion()
+            }
         }
     }
 
@@ -104,6 +138,7 @@ class reporte_enviado : AppCompatActivity() {
 
         lifecycleScope.launch {
             val repo = ReporteLocalRepository.getInstance(this@reporte_enviado)
+            val prefs = SharedPreferencesManager(this@reporte_enviado)
             var resuelto = false
             val tiempoInicio = System.currentTimeMillis()
             val tiempoMaximoMs = 90_000L
@@ -114,6 +149,11 @@ class reporte_enviado : AppCompatActivity() {
                 }
 
                 if (reporte != null) {
+                    if (reporte.idUsuario != prefs.getUserId()) {
+                        volverAlMenuPrincipal()
+                        return@launch
+                    }
+
                     when (reporte.estado) {
                         EstadoReporteLocal.ENVIADO -> {
                             resuelto = true

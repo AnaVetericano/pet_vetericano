@@ -19,6 +19,7 @@ import androidx.core.graphics.drawable.toBitmap
 import com.example.petvetericano.R
 import com.example.petvetericano.bienvenida
 import com.example.petvetericano.inicio_sesion
+import com.example.petvetericano.reporte_enviado
 
 /**
  * Helper centralizado para la emisión de notificaciones de sincronización offline de reportes ciudadanos.
@@ -143,18 +144,21 @@ object ReporteNotificationHelper {
         }
         val notifId = (NOTIFICATION_ID_BASE_EXITO + idLocal).toInt()
 
-        val intent = Intent(context, bienvenida::class.java).apply {
+        val intent = Intent(context, reporte_enviado::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+            putExtra("ID_LOCAL", idLocal)
+            putExtra("HAY_CONEXION", true)
         }
         val pendingIntent = PendingIntent.getActivity(
             context,
-            (REQUEST_CODE_BASE_EXITO + idLocal).toInt(),
+            notifId,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
         val builder = construirBaseBuilder(context, titulo, texto)
             .setContentIntent(pendingIntent)
+            .setAutoCancel(true)
 
         obtenerBitmapDrawable(context, R.drawable.ic_check)?.let {
             builder.setLargeIcon(it)

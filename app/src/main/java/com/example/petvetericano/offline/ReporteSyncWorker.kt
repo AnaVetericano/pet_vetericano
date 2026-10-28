@@ -202,7 +202,7 @@ class ReporteSyncWorker(
         return if (response.isSuccessful) {
             val body = response.body()
             val idRemoto = body?.id_peticion ?: -1
-            val radicado = body?.numero_radicado?.takeIf { it.isNotBlank() }
+            val radicado = body?.numero_radicado?.trim()?.takeIf { it.isNotEmpty() }
             val enviadoEnMs = System.currentTimeMillis()
 
             repo.marcarEnviado(idLocal, idRemoto, radicado, enviadoEnMs)
@@ -309,13 +309,14 @@ class ReporteSyncWorker(
         }
 
         if (duplicado != null) {
-            Log.i(TAG, "Duplicado detectado en backend: idPeticion=${duplicado.id_peticion}, radicado=${duplicado.numero_radicado}")
-            repo.marcarEnviado(idLocal, duplicado.id_peticion, duplicado.numero_radicado)
+            val radicadoDuplicado = duplicado.numero_radicado?.trim()?.takeIf { it.isNotEmpty() }
+            Log.i(TAG, "Duplicado detectado en backend: idPeticion=${duplicado.id_peticion}, radicado=$radicadoDuplicado")
+            repo.marcarEnviado(idLocal, duplicado.id_peticion, radicadoDuplicado)
             eliminarArchivosEvidencia(evidenciasLocales)
             ReporteNotificationHelper.notificarExito(
                 applicationContext,
                 idLocal,
-                duplicado.numero_radicado,
+                radicadoDuplicado,
                 duplicado.id_peticion
             )
             return Result.success()

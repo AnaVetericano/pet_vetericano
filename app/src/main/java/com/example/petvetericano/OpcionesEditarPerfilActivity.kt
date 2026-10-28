@@ -97,14 +97,19 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
             }
         }
 
-        // Acción de clic para cambiar foto de perfil
+        // Acción de clic para cambiar o eliminar foto de perfil (PopupMenu compacto)
         binding.btnChangePhoto.setOnClickListener {
-            pickImageLauncher.launch("image/*")
+            ProfilePhotoHelper.mostrarMenuOpcionesFoto(
+                context = this,
+                anchorView = binding.btnChangePhoto,
+                tieneFoto = tieneFotoVisible(),
+                onCambiarFoto = { pickImageLauncher.launch("image/*") },
+                onEliminarFoto = { eliminarFoto() }
+            )
         }
 
-        // Acción de clic para eliminar foto de perfil (restaurando imagen por defecto)
-        binding.btnDeletePhoto.setOnClickListener {
-            eliminarFoto()
+        binding.ivEditProfile.setOnClickListener {
+            binding.btnChangePhoto.performClick()
         }
 
         // Acción de clic para guardar la información ingresada (con diálogo MD3 de confirmación)
@@ -297,7 +302,6 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         } else {
             ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivEditProfile, fotoOriginal)
         }
-        actualizarVisibilidadBotonEliminarFoto()
     }
 
     private fun actualizarEncabezadoUsuario() {
@@ -319,15 +323,10 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         return fotoPendienteUri != null || (fotoEliminada && fotoOriginal.isNotEmpty())
     }
 
-    private fun actualizarVisibilidadBotonEliminarFoto() {
-        binding.btnDeletePhoto.visibility = if (tieneFotoVisible()) View.VISIBLE else View.GONE
-    }
-
     private fun previsualizarFotoSeleccionada(uri: Uri) {
         fotoPendienteUri = uri
         fotoEliminada = false
         ProfilePhotoHelper.previsualizarUri(this, binding.ivEditProfile, uri)
-        actualizarVisibilidadBotonEliminarFoto()
         Snackbar.make(
             binding.root,
             "Vista previa lista. Presiona \"Guardar Cambios\" para confirmar.",
@@ -339,7 +338,6 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         fotoPendienteUri = null
         fotoEliminada = true
         ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivEditProfile, "")
-        actualizarVisibilidadBotonEliminarFoto()
         Snackbar.make(
             binding.root,
             "Foto eliminada. Se mostrará la imagen por defecto.",
@@ -357,7 +355,6 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                 fotoPendienteUri = null
                 fotoEliminada = false
                 ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivEditProfile, fotoOriginal)
-                actualizarVisibilidadBotonEliminarFoto()
                 finish()
             }
             .show()
@@ -627,7 +624,6 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                     fotoEliminada = false
                     guardando = false
                     actualizarEncabezadoUsuario()
-                    actualizarVisibilidadBotonEliminarFoto()
                     binding.tvRolBadge.text = TITULO_PROFESIONAL_FIJO
                     ProfilePhotoHelper.cargarFotoPerfil(
                         this@OpcionesEditarPerfilActivity,
@@ -714,7 +710,6 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                             fotoOriginal
                         )
                     }
-                    actualizarVisibilidadBotonEliminarFoto()
 
                     binding.tvRolBadge.text = TITULO_PROFESIONAL_FIJO
                     actualizarEncabezadoUsuario()

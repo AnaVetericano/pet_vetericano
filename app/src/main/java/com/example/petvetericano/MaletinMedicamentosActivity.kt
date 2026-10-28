@@ -155,8 +155,23 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
 
     private fun actualizarDatosVista(medicamentos: List<MedicamentoMaletin>) {
         val disponiblesCount = medicamentos.count { it.saldoDisponibleInt > 0 }
+        val unidadesVigentesTotal = medicamentos.sumOf { it.saldoDisponibleInt }
+        val unidadesVencidasTotal = medicamentos.sumOf { it.saldoVencido }
+        val unidadesGranTotal = unidadesVigentesTotal + unidadesVencidasTotal
+
         binding.tvTotalReferenciasHeader.text = "$disponiblesCount"
+        binding.tvTotalUnidadesHeader.text = "$unidadesGranTotal"
         binding.tvEstadoGeneralBadge.text = maletinManager.getEstadoStock()
+
+        if (unidadesVencidasTotal > 0) {
+            binding.tvDetalleVencidasHeader.visibility = View.VISIBLE
+            binding.tvDetalleVencidasHeader.text = "• $unidadesVigentesTotal unidades vigentes • ⚠️ $unidadesVencidasTotal vencidas"
+        } else if (unidadesGranTotal > 0) {
+            binding.tvDetalleVencidasHeader.visibility = View.VISIBLE
+            binding.tvDetalleVencidasHeader.text = "• 100% stock vigente y apto para atención clínica"
+        } else {
+            binding.tvDetalleVencidasHeader.visibility = View.GONE
+        }
 
         // Banner proactivo de alerta visual cuando hay medicamentos en estado crítico
         val criticos = medicamentos.filter { it.esCritico }

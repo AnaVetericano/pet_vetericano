@@ -431,6 +431,8 @@
     <string name="cd_maletin">Maletín</string>
     <string name="lbl_medicamentos_en_maletin">Medicamentos en Maletín</string>
     <string name="lbl_referencias_activas">referencias activas</string>
+    <string name="lbl_medicamentos_total">Medicamentos</string>
+    <string name="lbl_unidades_en_total">Unidades en total</string>
     <string name="lbl_los_consumos_se_descuentan_automaticamente">Los consumos se descuentan automáticamente cuando suministras dosis desde el Acta de Atención en campo.</string>
     <string name="hint_buscar_medicamento_o_principio_activo">Buscar medicamento o principio activo...</string>
     <string name="lbl_todos">Todos</string>

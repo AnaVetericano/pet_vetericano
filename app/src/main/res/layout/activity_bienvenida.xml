@@ -39,6 +39,20 @@
             android:text="@string/lbl_gracias_por_ayudar"
             android:textColor="@color/text_secondary"
             android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/tvRolCiudadano"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:background="@drawable/bg_rounded_badge"
+            android:backgroundTint="#F1F5F9"
+            android:fontFamily="@font/nunito_bold"
+            android:paddingHorizontal="8dp"
+            android:paddingVertical="2dp"
+            android:text="👤 Rol: Ciudadano / Peticionario"
+            android:textColor="@color/text_secondary"
+            android:textSize="11sp" />
     </LinearLayout>
 
     <ScrollView

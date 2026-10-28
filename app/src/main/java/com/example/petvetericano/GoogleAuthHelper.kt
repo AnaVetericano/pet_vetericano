@@ -803,6 +803,11 @@ object GoogleAuthHelper {
         prefs.saveUserId(datos.idUsuario)
         prefs.saveUserRole(datos.idRol)
 
+        val rolStr = if (datos.idRol == inicio_sesion.ROL_VETERINARIO) "Médico Veterinario" else "Ciudadano"
+        val nombreMostrar = datos.nombre?.trim().orEmpty()
+        val saludo = if (nombreMostrar.isNotEmpty()) "¡Hola, $rolStr $nombreMostrar! Bienvenido." else "¡Hola, $rolStr! Bienvenido."
+        Toast.makeText(activity, saludo, Toast.LENGTH_SHORT).show()
+
         encolarSincronizacionActasPendientes(activity.applicationContext, datos.idUsuario)
 
         val destino = if (datos.idRol == inicio_sesion.ROL_VETERINARIO) {

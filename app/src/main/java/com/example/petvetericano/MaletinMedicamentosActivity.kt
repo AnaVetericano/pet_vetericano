@@ -242,8 +242,9 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
         }
 
         lifecycleScope.launch(Dispatchers.IO) {
-            // Sincronizar consumos pendientes offline si existen
+            // Sincronizar consumos y solicitudes acumuladas offline si existen
             maletinManager.sincronizarConsumosPendientes(token)
+            maletinManager.sincronizarSolicitudesOffline(token)
 
             val resultado = maletinManager.sincronizarDesdeServidor(token)
 

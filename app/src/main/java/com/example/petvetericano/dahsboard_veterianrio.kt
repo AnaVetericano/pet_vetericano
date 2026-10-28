@@ -1,4 +1,4 @@
-package com.example.petvetericano
+﻿package com.example.petvetericano
 
 import android.content.Intent
 import android.graphics.Color
@@ -202,7 +202,9 @@ class dahsboard_veterianrio : AppCompatActivity() {
         if (token.isEmpty()) return
 
         lifecycleScope.launch(Dispatchers.IO) {
-            MaletinManager.getInstance(this@dahsboard_veterianrio).sincronizarDesdeServidor(token)
+            val maletin = MaletinManager.getInstance(this@dahsboard_veterianrio)
+            maletin.sincronizarSolicitudesOffline(token)
+            maletin.sincronizarDesdeServidor(token)
             withContext(Dispatchers.Main) {
                 actualizarResumenMaletin()
             }

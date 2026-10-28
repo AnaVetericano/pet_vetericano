@@ -7,7 +7,9 @@ import com.example.petvetericano.models.KitItemResponse
 import com.example.petvetericano.models.MedicamentoMaletin
 import com.example.petvetericano.models.SincronizarOfflineRequest
 import com.example.petvetericano.models.SincronizarOfflineResponse
+import com.example.petvetericano.models.SolicitudKitOffline
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.offline.NetworkUtils
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import kotlinx.coroutines.Dispatchers
@@ -41,6 +43,7 @@ class MaletinManager(context: Context) {
         private const val KEY_MEDICAMENTOS = "MALETIN_MEDICAMENTOS_LIST"
         private const val KEY_ULTIMA_SYNC = "MALETIN_ULTIMA_SINCRONIZACION"
         private const val KEY_CONSUMOS_PENDIENTES = "MALETIN_CONSUMOS_PENDIENTES"
+        private const val KEY_SOLICITUDES_OFFLINE_QUEUE = "MALETIN_SOLICITUDES_OFFLINE_QUEUE"
 
         @Volatile
         private var instance: MaletinManager? = null
@@ -347,5 +350,84 @@ class MaletinManager(context: Context) {
         } catch (e: Exception) {
             Result.failure(e)
         }
+    }
+
+    // =========================================================================
+    // COLA DE SOLICITUDES DE KIT OFFLINE (BANDEJA DE SALIDA)
+    // =========================================================================
+
+    fun getSolicitudesOffline(): List<SolicitudKitOffline> {
+        val json = prefs.getString(KEY_SOLICITUDES_OFFLINE_QUEUE, null)
+        return if (!json.isNullOrEmpty()) {
+            try {
+                val type = object : TypeToken<List<SolicitudKitOffline>>() {}.type
+                gson.fromJson<List<SolicitudKitOffline>>(json, type) ?: emptyList()
+            } catch (_: Exception) {
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+
+    private fun guardarSolicitudesOffline(lista: List<SolicitudKitOffline>) {
+        val json = gson.toJson(lista)
+        prefs.edit().putString(KEY_SOLICITUDES_OFFLINE_QUEUE, json).apply()
+    }
+
+    fun encolarSolicitudOffline(solicitud: SolicitudKitOffline) {
+        val actuales = getSolicitudesOffline().toMutableList()
+        if (actuales.none { it.clientUuid == solicitud.clientUuid }) {
+            actuales.add(solicitud)
+            guardarSolicitudesOffline(actuales)
+        }
+    }
+
+    fun removerSolicitudOffline(clientUuid: String) {
+        val actuales = getSolicitudesOffline().toMutableList()
+        actuales.removeAll { it.clientUuid == clientUuid }
+        guardarSolicitudesOffline(actuales)
+    }
+
+    fun limpiarSolicitudesOffline() {
+        guardarSolicitudesOffline(emptyList())
+    }
+
+    /**
+     * Sincroniza automáticamente las solicitudes acumuladas sin conexión ante Farmacia CBA.
+     * Retorna la cantidad de solicitudes radicadas exitosamente en el servidor.
+     */
+    suspend fun sincronizarSolicitudesOffline(token: String): Int = withContext(Dispatchers.IO) {
+        val cola = getSolicitudesOffline()
+        if (cola.isEmpty() || token.isBlank()) return@withContext 0
+
+        val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
+        var enviadas = 0
+        val colaRestante = cola.toMutableList()
+
+        for (item in cola) {
+            try {
+                val resp = RetrofitClient.apiService.crearSolicitudKit(authHeader, item.toCrearSolicitudKitRequest())
+                if (resp.isSuccessful) {
+                    enviadas++
+                    colaRestante.removeAll { it.clientUuid == item.clientUuid }
+                } else {
+                    val err = resp.errorBody()?.string() ?: ""
+                    // Si ya existe duplicada o conflicto terminal, remover para evitar bucle
+                    if (err.contains("SOLICITUD_DUPLICADA") || resp.code() == 400 || resp.code() == 409) {
+                        colaRestante.removeAll { it.clientUuid == item.clientUuid }
+                    }
+                }
+            } catch (_: Exception) {
+                // Sigue sin red disponible; conservar en cola
+                break
+            }
+        }
+
+        guardarSolicitudesOffline(colaRestante)
+        if (enviadas > 0) {
+            sincronizarDesdeServidor(token)
+        }
+        return@withContext enviadas
     }
 }

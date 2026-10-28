@@ -11,8 +11,10 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.databinding.ActivitySolicitudesKitBinding
 import com.example.petvetericano.models.CrearSolicitudKitRequest
 import com.example.petvetericano.models.ItemSolicitudInput
+import com.example.petvetericano.models.SolicitudKitOffline
 import com.example.petvetericano.models.SolicitudKitResponse
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.offline.NetworkUtils
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.tabs.TabLayout
 import kotlinx.coroutines.Dispatchers
@@ -396,53 +398,84 @@ class SolicitudesKitActivity : AppCompatActivity() {
         binding.swipeRefreshSolicitudes.isRefreshing = true
 
         lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
-                val response = RetrofitClient.apiService.listarSolicitudesKit(authHeader)
+            val hayRed = NetworkUtils.hayRedDisponible(this@SolicitudesKitActivity)
 
-                withContext(Dispatchers.Main) {
-                    binding.swipeRefreshSolicitudes.isRefreshing = false
+            // 1. Si hay red, sincronizar automáticamente solicitudes en cola offline
+            if (hayRed) {
+                try {
+                    val enviadas = maletinManager.sincronizarSolicitudesOffline(token)
+                    if (enviadas > 0) {
+                        withContext(Dispatchers.Main) {
+                            Toast.makeText(
+                                this@SolicitudesKitActivity,
+                                "🚀 Se radicaron $enviadas solicitud(es) que estaban en cola offline",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                } catch (_: Exception) {}
+            }
+
+            // 2. Traer solicitudes del servidor si hay red
+            var listaServidor: List<SolicitudKitResponse> = emptyList()
+            if (hayRed) {
+                try {
+                    val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
+                    val response = RetrofitClient.apiService.listarSolicitudesKit(authHeader)
                     if (response.isSuccessful && response.body() != null) {
-                        val lista = response.body()!!.results
-                        adapter.updateList(lista)
+                        listaServidor = response.body()!!.results
+                    }
+                } catch (_: Exception) {}
+            }
 
-                        // Identificar solicitudes PENDIENTE de REPOSICION para controlar medicamentos en trámite
-                        solicitudesPendientes = lista.filter {
-                            it.estado.equals("PENDIENTE", ignoreCase = true) &&
-                            it.tipoSolicitud.equals("REPOSICION", ignoreCase = true)
-                        }
+            withContext(Dispatchers.Main) {
+                binding.swipeRefreshSolicitudes.isRefreshing = false
 
-                        val mapaTramite = mutableMapOf<Int, Pair<Int, Int>>()
-                        for (sol in solicitudesPendientes) {
-                            for (det in sol.detalles) {
-                                if (!mapaTramite.containsKey(det.idMedicamento)) {
-                                    mapaTramite[det.idMedicamento] = Pair(sol.idSolicitud, det.cantidadSolicitada)
-                                }
-                            }
-                        }
-                        mapaMedTramiteInfo = mapaTramite
-                        medicamentosEnTramiteIds = mapaTramite.keys
+                // 3. Mapear solicitudes que esperan red en cola offline local
+                val colaOffline = maletinManager.getSolicitudesOffline()
+                val offlineComoResponse = colaOffline.map { it.toSolicitudKitResponse() }
 
-                        if (lista.isEmpty()) {
-                            binding.layoutEmptySolicitudes.visibility = View.VISIBLE
-                            binding.rvSolicitudes.visibility = View.GONE
-                        } else {
-                            binding.layoutEmptySolicitudes.visibility = View.GONE
-                            binding.rvSolicitudes.visibility = View.VISIBLE
-                        }
+                // Lista unificada: en cola offline primero + servidor
+                val listaTotal = offlineComoResponse + listaServidor
+                adapter.updateList(listaTotal)
 
-                        if (binding.tabLayoutSolicitudes.selectedTabPosition == 1) {
-                            prepararFormularioNuevaSolicitud()
-                            actualizarSelectorMedicamentos()
+                // Identificar solicitudes PENDIENTE de REPOSICION para controlar medicamentos en trámite
+                solicitudesPendientes = listaServidor.filter {
+                    it.estado.equals("PENDIENTE", ignoreCase = true) &&
+                    it.tipoSolicitud.equals("REPOSICION", ignoreCase = true)
+                }
+
+                val mapaTramite = mutableMapOf<Int, Pair<Int, Int>>()
+                // Del servidor
+                for (sol in solicitudesPendientes) {
+                    for (det in sol.detalles) {
+                        if (!mapaTramite.containsKey(det.idMedicamento)) {
+                            mapaTramite[det.idMedicamento] = Pair(sol.idSolicitud, det.cantidadSolicitada)
                         }
-                    } else {
-                        Toast.makeText(this@SolicitudesKitActivity, "No se pudieron obtener las solicitudes (${response.code()})", Toast.LENGTH_SHORT).show()
                     }
                 }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    binding.swipeRefreshSolicitudes.isRefreshing = false
-                    Toast.makeText(this@SolicitudesKitActivity, "Error de red: ${e.localizedMessage ?: e.message}", Toast.LENGTH_SHORT).show()
+                // De la cola offline local
+                for (off in colaOffline) {
+                    for (item in off.items) {
+                        if (!mapaTramite.containsKey(item.idMedicamento)) {
+                            mapaTramite[item.idMedicamento] = Pair(-1, item.cantidad)
+                        }
+                    }
+                }
+                mapaMedTramiteInfo = mapaTramite
+                medicamentosEnTramiteIds = mapaTramite.keys
+
+                if (listaTotal.isEmpty()) {
+                    binding.layoutEmptySolicitudes.visibility = View.VISIBLE
+                    binding.rvSolicitudes.visibility = View.GONE
+                } else {
+                    binding.layoutEmptySolicitudes.visibility = View.GONE
+                    binding.rvSolicitudes.visibility = View.VISIBLE
+                }
+
+                if (binding.tabLayoutSolicitudes.selectedTabPosition == 1) {
+                    prepararFormularioNuevaSolicitud()
+                    actualizarSelectorMedicamentos()
                 }
             }
         }
@@ -453,6 +486,12 @@ class SolicitudesKitActivity : AppCompatActivity() {
         val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
         if (token.isEmpty()) {
             Toast.makeText(this, "Sesión expirada", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Si no hay red, guardar directamente en la cola offline del teléfono
+        if (!NetworkUtils.hayRedDisponible(this)) {
+            encolarSolicitudOfflineLocal(request)
             return
         }
 
@@ -513,15 +552,66 @@ class SolicitudesKitActivity : AppCompatActivity() {
                     }
                 }
             } catch (e: Exception) {
+                // Si la red falló durante el envío, guardar en cola offline
                 withContext(Dispatchers.Main) {
                     binding.swipeRefreshSolicitudes.isRefreshing = false
-                    Toast.makeText(this@SolicitudesKitActivity, "Error al enviar: ${e.localizedMessage ?: e.message}", Toast.LENGTH_SHORT).show()
+                    encolarSolicitudOfflineLocal(request)
                 }
             }
         }
     }
 
+    private fun encolarSolicitudOfflineLocal(request: CrearSolicitudKitRequest) {
+        val medsMap = maletinManager.getMedicamentos().associateBy { it.idMedicamentoInt }
+        val nombres = request.items?.map { item ->
+            val nombreMed = medsMap[item.idMedicamento]?.nombre ?: "Medicamento #${item.idMedicamento}"
+            "• $nombreMed: ${item.cantidad} uds"
+        } ?: emptyList()
+
+        val offlineItem = SolicitudKitOffline(
+            tipoSolicitud = request.tipoSolicitud,
+            motivo = request.motivo,
+            items = request.items ?: emptyList(),
+            nombresItems = nombres,
+            esReposicionTotal = request.esReposicionTotal
+        )
+        maletinManager.encolarSolicitudOffline(offlineItem)
+
+        MaterialAlertDialogBuilder(this)
+            .setIcon(R.drawable.ic_sync)
+            .setTitle("📱 Solicitud guardada sin conexión")
+            .setMessage("No hay conexión a internet en este momento.\n\nTu solicitud ha quedado guardada en la bandeja de salida de tu teléfono y se enviará automáticamente a Farmacia CBA apenas recuperes señal.")
+            .setPositiveButton("Ver mis solicitudes") { _, _ ->
+                binding.tabLayoutSolicitudes.getTabAt(0)?.select()
+                cargarSolicitudes()
+            }
+            .setNegativeButton("Entendido") { _, _ ->
+                cargarSolicitudes()
+            }
+            .show()
+    }
+
     private fun confirmarCancelacionSolicitud(solicitud: SolicitudKitResponse) {
+        if (solicitud.estado.equals("EN_COLA_OFFLINE", ignoreCase = true)) {
+            MaterialAlertDialogBuilder(this)
+                .setIcon(R.drawable.warning_icon4)
+                .setTitle("¿Quitar de la cola offline?")
+                .setMessage("Esta solicitud aún no se ha enviado al servidor. Si la quitas, no se radicará.")
+                .setPositiveButton("Sí, quitar de la cola") { dialog, _ ->
+                    dialog.dismiss()
+                    val cola = maletinManager.getSolicitudesOffline()
+                    val target = cola.firstOrNull { it.motivo == solicitud.motivoSolicitud } ?: cola.firstOrNull()
+                    if (target != null) {
+                        maletinManager.removerSolicitudOffline(target.clientUuid)
+                    }
+                    Toast.makeText(this, "Solicitud retirada de la cola offline", Toast.LENGTH_SHORT).show()
+                    cargarSolicitudes()
+                }
+                .setNegativeButton("Conservar", null)
+                .show()
+            return
+        }
+
         MaterialAlertDialogBuilder(this)
             .setIcon(R.drawable.warning_icon4)
             .setTitle("¿Cancelar solicitud #${solicitud.idSolicitud}?")

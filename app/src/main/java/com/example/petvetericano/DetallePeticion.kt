@@ -38,6 +38,7 @@ class DetallePeticion : AppCompatActivity() {
     private var datosCargados: Boolean = false
     private var cargaRemotaExitosa: Boolean = false
     private var primeraVezOnResume: Boolean = true
+    private var abriendoActa: Boolean = false
 
     private val updateStatusLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
@@ -52,6 +53,7 @@ class DetallePeticion : AppCompatActivity() {
     private val actaLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
+        abriendoActa = false
         if (result.resultCode == RESULT_OK) {
             if (peticionId != -1) {
                 obtenerDetallePeticion(peticionId)
@@ -91,6 +93,7 @@ class DetallePeticion : AppCompatActivity() {
 
         // Listener de btnAtender registrado SIEMPRE en onCreate
         binding.btnAtender.setOnClickListener {
+            if (abriendoActa) return@setOnClickListener
             if (!datosCargados) {
                 Toast.makeText(this, getString(R.string.acta_offline_detalle_sin_datos), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
@@ -98,6 +101,7 @@ class DetallePeticion : AppCompatActivity() {
             if (peticionTieneActa == true) {
                 mostrarDialogoPeticionYaAtendida()
             } else {
+                abriendoActa = true
                 abrirActaAtencion()
             }
         }
@@ -173,6 +177,7 @@ class DetallePeticion : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        abriendoActa = false
         if (primeraVezOnResume) {
             primeraVezOnResume = false
             return
@@ -392,7 +397,9 @@ class DetallePeticion : AppCompatActivity() {
     }
 
     private fun abrirActaAtencion() {
+        abriendoActa = true
         val intent = Intent(this, ActaAtencionActivity::class.java).apply {
+            addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP)
             putExtra("PETICION_ID", peticionId)
             putExtra("DIRECCION_ACTUAL", direccionActual)
         }

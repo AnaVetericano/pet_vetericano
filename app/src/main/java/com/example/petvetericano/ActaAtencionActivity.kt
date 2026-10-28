@@ -305,8 +305,9 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
 
         val idVetAlAbrir = obtenerIdVeterinarioActual()
+        var existenteAlAbrir: ActaLocalEntity? = null
         if (peticionId > 0 && idVetAlAbrir > 0) {
-            val existenteAlAbrir = synchronized(dbWriteLock) {
+            existenteAlAbrir = synchronized(dbWriteLock) {
                 actaLocalRepository.obtenerPorPeticionYVeterinario(peticionId, idVetAlAbrir)
             }
             if (existenteAlAbrir != null && verificarFilaBloqueadaAlAbrir(existenteAlAbrir)) {
@@ -498,7 +499,7 @@ class ActaAtencionActivity : AppCompatActivity() {
         isInitialSetup = false
         ActaFieldValidators.suprimirToasts = false
         if (savedInstanceState == null) {
-            verificarBorradorExistenteAlAbrir()
+            verificarBorradorExistenteAlAbrir(existenteAlAbrir)
         }
     }
 
@@ -4156,14 +4157,12 @@ class ActaAtencionActivity : AppCompatActivity() {
         }
     }
 
-    private fun verificarBorradorExistenteAlAbrir() {
+    private fun verificarBorradorExistenteAlAbrir(borradorPrecargado: ActaLocalEntity?) {
         if (edicionBloqueadaPorEstado) return
         val idVet = obtenerIdVeterinarioActual()
         if (peticionId <= 0 || idVet <= 0) return
 
-        val existente = synchronized(dbWriteLock) {
-            actaLocalRepository.obtenerPorPeticionYVeterinario(peticionId, idVet)
-        } ?: return
+        val existente = borradorPrecargado ?: return
 
         if (esFilaBloqueadaParaEscritura(existente)) {
             return

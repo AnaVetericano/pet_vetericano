@@ -20,11 +20,17 @@ object ActaFieldValidators {
     private const val INTERVALO_MINIMO_TOAST_MS = 1400L
 
     /**
+     * Permite silenciar temporalmente los Toasts durante la carga inicial o restauración
+     * de borradores de la base de datos local.
+     */
+    var suprimirToasts: Boolean = false
+
+    /**
      * Muestra un Toast evitando que se sature la pantalla si el usuario teclea rápido
      * o mantiene presionada una tecla.
      */
     fun mostrarToastAlerta(context: Context?, mensaje: String) {
-        if (context == null) return
+        if (context == null || suprimirToasts) return
         val ahora = SystemClock.elapsedRealtime()
         if (ahora - ultimoToastTiempo < INTERVALO_MINIMO_TOAST_MS && ultimoMensajeToast == mensaje) {
             return

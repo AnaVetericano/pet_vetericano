@@ -98,6 +98,7 @@ class bienvenida : AppCompatActivity() {
         if (nombreLocal.isNotEmpty()) {
             binding.tvSaludo.text = "Hola, $nombreLocal"
         }
+        binding.tvRolCiudadano.text = "👤 Rol: Ciudadano / Peticionario"
 
         lifecycleScope.launch {
             try {
@@ -118,6 +119,7 @@ class bienvenida : AppCompatActivity() {
                         if (saludo.isNotEmpty()) {
                             binding.tvSaludo.text = "Hola, $saludo"
                         }
+                        binding.tvRolCiudadano.text = "👤 Rol: Ciudadano / Peticionario"
                         // Guardamos nombre y apellido POR SEPARADO (fix: antes quedaba
                         // "nombre apellido" todo junto en USER_NAME y el perfil salia descuadrado).
                         if (soloNombre.isNotEmpty()) {

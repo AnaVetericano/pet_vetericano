@@ -281,6 +281,7 @@ class ActaAtencionActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         isInitialSetup = true
+        ActaFieldValidators.suprimirToasts = true
         actaLocalRepository = ActaLocalRepository.getInstance(this)
 
         binding = ActivityActaAtencionBinding.inflate(layoutInflater)
@@ -495,6 +496,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         setupListenersGuardadoBorrador()
         isInitialSetup = false
+        ActaFieldValidators.suprimirToasts = false
         if (savedInstanceState == null) {
             verificarBorradorExistenteAlAbrir()
         }
@@ -4231,6 +4233,7 @@ class ActaAtencionActivity : AppCompatActivity() {
         if (edicionBloqueadaPorEstado || esFilaBloqueadaParaEscritura(entidad)) return
         guardadoHandler.removeCallbacks(guardadoDebounceRunnable)
         isRestaurandoBorrador = true
+        ActaFieldValidators.suprimirToasts = true
         try {
             val entidadNormalizada = if (entidad.estadoSincronizacion == EstadoSincronizacionActa.REQUIERE_ATENCION) {
                 entidad.copy(
@@ -4313,6 +4316,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
             usuarioHaEditado = true
         } finally {
+            ActaFieldValidators.suprimirToasts = false
             isRestaurandoBorrador = false
         }
     }

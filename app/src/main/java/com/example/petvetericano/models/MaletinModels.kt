@@ -198,3 +198,58 @@ data class MedicamentoAplicadoActa(
         )
     }
 }
+
+/**
+ * Modelo para almacenar solicitudes de kit encoladas localmente sin conexión.
+ * Permite radicar reposiciones y devoluciones offline y sincronizarlas automáticamente al recuperar señal.
+ */
+data class SolicitudKitOffline(
+    val clientUuid: String = UUID.randomUUID().toString(),
+    val timestampCreacion: Long = System.currentTimeMillis(),
+    val tipoSolicitud: String, // "REPOSICION", "DEVOLUCION"
+    val motivo: String,
+    val items: List<ItemSolicitudInput>,
+    val nombresItems: List<String> = emptyList(),
+    val esReposicionTotal: Boolean = false
+) : Serializable {
+
+    fun toSolicitudKitResponse(): SolicitudKitResponse {
+        val detalles = items.mapIndexed { idx, item ->
+            val nombreItem = nombresItems.getOrNull(idx) ?: "Medicamento #${item.idMedicamento}"
+            DetalleSolicitudResponse(
+                idDetalleSolicitud = -1 * (idx + 1),
+                idMedicamento = item.idMedicamento,
+                nombreMedicamento = nombreItem,
+                idInventarioOrigen = null,
+                cantidadSolicitada = item.cantidad,
+                cantidadAprobada = null,
+                esVencido = false
+            )
+        }
+        val fechaIso = java.text.SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss", java.util.Locale.getDefault()).format(java.util.Date(timestampCreacion))
+        return SolicitudKitResponse(
+            idSolicitud = -1,
+            tipoSolicitud = tipoSolicitud,
+            estado = "EN_COLA_OFFLINE",
+            idVeterinario = null,
+            nombreVeterinario = null,
+            idGestor = null,
+            nombreGestor = null,
+            fechaSolicitud = fechaIso,
+            fechaResolucion = null,
+            motivoSolicitud = motivo,
+            observacionesGestor = "En cola local en tu teléfono. Se enviará a Farmacia CBA tan pronto recuperes conexión a internet.",
+            esReposicionTotal = esReposicionTotal,
+            detalles = detalles
+        )
+    }
+
+    fun toCrearSolicitudKitRequest(): CrearSolicitudKitRequest {
+        return CrearSolicitudKitRequest(
+            tipoSolicitud = tipoSolicitud,
+            motivo = motivo,
+            esReposicionTotal = esReposicionTotal,
+            items = items
+        )
+    }
+}

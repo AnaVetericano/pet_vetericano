@@ -36,6 +36,8 @@ class SolicitudesKitAdapter(
         RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: SolicitudKitResponse) {
+            val esOffline = item.estado.equals("EN_COLA_OFFLINE", ignoreCase = true)
+
             val tipoStr = if (item.tipoSolicitud.equals("REPOSICION", ignoreCase = true)) {
                 if (item.esReposicionTotal) "Reposición Total Automática" else "Reposición Específica"
             } else {
@@ -44,10 +46,14 @@ class SolicitudesKitAdapter(
             binding.tvTipoSolicitud.text = tipoStr
 
             val fechaStr = item.fechaSolicitud?.substringBefore("T") ?: "Fecha pendiente"
-            binding.tvFechaSolicitud.text = "$fechaStr • Solicitud #${item.idSolicitud}"
+            binding.tvFechaSolicitud.text = if (esOffline) {
+                "$fechaStr • Guardado en teléfono (esperando red)"
+            } else {
+                "$fechaStr • Solicitud #${item.idSolicitud}"
+            }
 
             // Estado y Badge M3
-            binding.tvEstadoBadge.text = item.estado.uppercase()
+            binding.tvEstadoBadge.text = if (esOffline) "EN COLA OFFLINE" else item.estado.uppercase()
             configurarBadgeEstado(item.estado)
 
             // Motivo
@@ -70,14 +76,21 @@ class SolicitudesKitAdapter(
             // Observaciones del gestor si existen
             if (!item.observacionesGestor.isNullOrBlank()) {
                 binding.tvObservacionesGestor.visibility = View.VISIBLE
-                binding.tvObservacionesGestor.text = "Respuesta del Gestor: ${item.observacionesGestor}"
+                binding.tvObservacionesGestor.text = if (esOffline) item.observacionesGestor else "Respuesta del Gestor: ${item.observacionesGestor}"
             } else {
                 binding.tvObservacionesGestor.visibility = View.GONE
             }
 
-            // Botón de cancelación (únicamente permitido por backend en estado PENDIENTE)
-            if (item.estado.equals("PENDIENTE", ignoreCase = true)) {
+            // Botón de cancelación / retirar de la cola offline
+            if (esOffline) {
                 binding.btnCancelarSolicitud.visibility = View.VISIBLE
+                binding.btnCancelarSolicitud.text = "Quitar de la cola"
+                binding.btnCancelarSolicitud.setOnClickListener {
+                    onCancelarClick(item)
+                }
+            } else if (item.estado.equals("PENDIENTE", ignoreCase = true)) {
+                binding.btnCancelarSolicitud.visibility = View.VISIBLE
+                binding.btnCancelarSolicitud.text = "Cancelar Solicitud"
                 binding.btnCancelarSolicitud.setOnClickListener {
                     onCancelarClick(item)
                 }
@@ -88,6 +101,7 @@ class SolicitudesKitAdapter(
 
         private fun configurarBadgeEstado(estado: String) {
             val (bgColor, textColor) = when (estado.uppercase()) {
+                "EN_COLA_OFFLINE" -> Pair(Color.parseColor("#EDE9FE"), Color.parseColor("#6D28D9")) // Púrpura suave
                 "PENDIENTE" -> Pair(Color.parseColor("#FFF4D0"), Color.parseColor("#D49F00")) // Ámbar
                 "APROBADA" -> Pair(Color.parseColor("#D1FAE5"), Color.parseColor("#047857"))  // Verde
                 "PARCIAL" -> Pair(Color.parseColor("#EEF0FF"), Color.parseColor("#4141A5"))   // Azul

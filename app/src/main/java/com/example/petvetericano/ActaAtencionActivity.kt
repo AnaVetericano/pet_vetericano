@@ -1,4 +1,4 @@
-package com.example.petvetericano
+﻿package com.example.petvetericano
 
 import android.Manifest
 import android.app.Activity
@@ -32,6 +32,7 @@ import com.example.petvetericano.models.MedicamentoAplicadoActa
 import com.example.petvetericano.models.MedicamentoMaletin
 import com.example.petvetericano.models.CrearSolicitudKitRequest
 import com.example.petvetericano.models.ItemSolicitudInput
+import com.example.petvetericano.models.SolicitudKitOffline
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.example.petvetericano.models.FuncionarioActaRequest
 import com.example.petvetericano.models.LugarAtencionActa

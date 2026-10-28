@@ -1,4 +1,4 @@
-﻿package com.example.petvetericano
+package com.example.petvetericano
 
 import android.content.Intent
 import android.graphics.Color
@@ -214,17 +214,18 @@ class dahsboard_veterianrio : AppCompatActivity() {
     private fun actualizarDatosUsuario() {
         val hora = Calendar.getInstance().get(Calendar.HOUR_OF_DAY)
         val saludo = when (hora) {
-            in 5..11 -> "Buenos días,"
-            in 12..18 -> "Buenas tardes,"
-            else -> "Buenas noches,"
+            in 5..11 -> "Buenos días"
+            in 12..18 -> "Buenas tardes"
+            else -> "Buenas noches"
         }
-        binding.tvSaludo.text = saludo
+        binding.tvSaludo.text = "$saludo, Dr(a)."
 
         val prefs = SharedPreferencesManager(this)
         val nombre = prefs.getUserName().trim()
         val apellido = prefs.getUserLastName().trim()
         val nombreCompleto = if (apellido.isNotEmpty() && !nombre.contains(apellido)) "$nombre $apellido" else nombre
-        binding.tvNombreUsuario.text = nombreCompleto.ifEmpty { "Veterinario" }
+        binding.tvNombreUsuario.text = nombreCompleto.ifEmpty { "Médico Veterinario" }
+        binding.tvRolUsuario.text = "👨‍⚕️ Rol: Médico Veterinario CBA"
 
         val iniciales = buildString {
             if (nombre.isNotEmpty()) append(nombre.first().uppercaseChar())

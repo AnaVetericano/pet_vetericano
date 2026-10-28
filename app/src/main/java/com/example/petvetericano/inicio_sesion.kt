@@ -109,7 +109,10 @@ class inicio_sesion : AppCompatActivity() {
                     val datos = respuesta.body()
 
                     if (datos != null) {
-                        Toast.makeText(this@inicio_sesion, datos.mensaje, Toast.LENGTH_SHORT).show()
+                        val rolStr = if (datos.idRol == ROL_VETERINARIO) "Médico Veterinario" else "Ciudadano"
+                        val nombreMostrar = datos.nombre?.trim().orEmpty()
+                        val saludo = if (nombreMostrar.isNotEmpty()) "¡Hola, $rolStr $nombreMostrar! Bienvenido." else "¡Hola, $rolStr! Bienvenido."
+                        Toast.makeText(this@inicio_sesion, saludo, Toast.LENGTH_SHORT).show()
 
                         RetrofitClient.authToken = datos.tokens.access
 

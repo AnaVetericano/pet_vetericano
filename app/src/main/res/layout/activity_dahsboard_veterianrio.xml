@@ -60,6 +60,19 @@
                             android:textColor="@color/text_primary"
                             android:textSize="20sp"
                             android:textStyle="bold" />
+                        <TextView
+                            android:id="@+id/tvRolUsuario"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="3dp"
+                            android:background="@drawable/bg_rounded_badge"
+                            android:backgroundTint="@color/badge_alta_bg"
+                            android:fontFamily="@font/nunito_bold"
+                            android:paddingHorizontal="8dp"
+                            android:paddingVertical="2dp"
+                            android:text="👨‍⚕️ Rol: Médico Veterinario CBA"
+                            android:textColor="@color/primary"
+                            android:textSize="11sp" />
                     </LinearLayout>
 
                     <FrameLayout

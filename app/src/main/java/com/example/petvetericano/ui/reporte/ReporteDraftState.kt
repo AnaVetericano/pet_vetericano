@@ -23,7 +23,7 @@ enum class TipoReporteCategoria(
     ANIMAL_HERIDO("Animal Herido", R.string.lbl_animal_herido_o_en_peligro, R.drawable.warning_icon),
     MALTRATO_ANIMAL("Maltrato animal", R.string.lbl_maltrato_animal, R.drawable.warning_icon2),
     CONDICION_CALLE("Animal en condicion de calle", R.string.lbl_animal_en_condicion_de_calle, R.drawable.warning_icon3),
-    OTROS("Otros", R.string.lbl_otros, R.drawable.warning_icon4),
+    OTROS("Otro", R.string.lbl_otros, R.drawable.warning_icon4),
     DESCONOCIDO("", R.string.lbl_otros, R.drawable.baseline_pets_24);
 
     companion object {

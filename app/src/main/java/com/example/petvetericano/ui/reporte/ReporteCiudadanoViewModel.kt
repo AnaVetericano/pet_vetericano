@@ -46,7 +46,7 @@ class ReporteCiudadanoViewModel(
         val tipoInicial = if (idTipo != null && !nombreTipo.isNullOrBlank()) {
             TipoReporteItem(
                 idTipo = idTipo,
-                nombreRemoto = nombreTipo,
+                nombreRemoto = nombreTipo.trim(),
                 categoriaVisual = TipoReporteCategoria.desdeNombre(nombreTipo)
             )
         } else {
@@ -82,7 +82,7 @@ class ReporteCiudadanoViewModel(
         val encontrado = catalogo.firstOrNull { normalizarNombre(it.nombre) == buscadoNorm } ?: return false
         val item = TipoReporteItem(
             idTipo = encontrado.id_tipo,
-            nombreRemoto = encontrado.nombre,
+            nombreRemoto = encontrado.nombre.trim(),
             categoriaVisual = TipoReporteCategoria.desdeNombre(nombreBuscado)
         )
         seleccionarTipo(item)

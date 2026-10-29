@@ -139,7 +139,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         }
 
         binding.cardOtros.setOnClickListener {
-            seleccionarTipoOCatalogar("Otros")
+            seleccionarTipoOCatalogar(TipoReporteCategoria.OTROS.nombreClave)
         }
 
         binding.etSearch.setOnEditorActionListener { _, actionId, event ->

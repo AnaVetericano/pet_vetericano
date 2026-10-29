@@ -1,0 +1,482 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/mainLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_screen"
+    android:padding="0dp"
+    tools:context=".reportar_peticion">
+
+    <!-- Header: Boton Atras y Titulo -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/headerContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="8dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageButton
+            android:id="@+id/btndev"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/cd_atras"
+            android:src="@drawable/outline_arrow_back_ios_24"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent"
+            app:tint="@color/blue" />
+
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/nunito_display"
+            android:text="@string/lbl_reportar_peticion"
+            android:textColor="@color/blue"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="@id/btndev"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="@id/btndev" />
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Contenedor 1: Pantalla 1 (Tipos 2x2 + Buscador + Mapa 0dp) -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/containerPaso1"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        app:layout_constraintBottom_toTopOf="@id/bottomControlsContainer"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/headerContainer">
+
+        <TextView
+            android:id="@+id/tvTipoPregunta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/nunito_display"
+            android:text="@string/lbl_que_tipo_de_peticion_quieres"
+            android:textColor="@color/text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <!-- Rejilla 2x2 de Tipos de Peticion -->
+        <LinearLayout
+            android:id="@+id/layoutGridTipos"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:orientation="vertical"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tvTipoPregunta">
+
+            <!-- Fila 1: Animal Herido y Maltrato Animal -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardHerido"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:minHeight="56dp"
+                    android:checkable="true"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/card_background"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="1dp"
+                    app:checkedIcon="@drawable/ic_check"
+                    app:checkedIconGravity="TOP_END"
+                    app:checkedIconMargin="6dp"
+                    app:checkedIconSize="20dp"
+                    app:checkedIconTint="@color/blue"
+                    app:strokeColor="@color/card_stroke"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="10dp">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/warning_icon" />
+
+                        <TextView
+                            android:id="@+id/tvHerido"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/nunito"
+                            android:maxLines="3"
+                            android:text="@string/lbl_animal_herido_o_en_peligro"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardMaltrato"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:minHeight="56dp"
+                    android:checkable="true"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/card_background"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="1dp"
+                    app:checkedIcon="@drawable/ic_check"
+                    app:checkedIconGravity="TOP_END"
+                    app:checkedIconMargin="6dp"
+                    app:checkedIconSize="20dp"
+                    app:checkedIconTint="@color/blue"
+                    app:strokeColor="@color/card_stroke"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="10dp">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/warning_icon2" />
+
+                        <TextView
+                            android:id="@+id/tvMaltrato"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/nunito"
+                            android:maxLines="3"
+                            android:text="@string/lbl_maltrato_animal"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+
+            <!-- Fila 2: Condicion de Calle y Otros -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardCalle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="6dp"
+                    android:layout_weight="1"
+                    android:minHeight="56dp"
+                    android:checkable="true"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/card_background"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="1dp"
+                    app:checkedIcon="@drawable/ic_check"
+                    app:checkedIconGravity="TOP_END"
+                    app:checkedIconMargin="6dp"
+                    app:checkedIconSize="20dp"
+                    app:checkedIconTint="@color/blue"
+                    app:strokeColor="@color/card_stroke"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="10dp">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/warning_icon3" />
+
+                        <TextView
+                            android:id="@+id/tvCalle"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/nunito"
+                            android:maxLines="3"
+                            android:text="@string/lbl_animal_en_condicion_de_calle"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+
+                <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardOtros"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:layout_weight="1"
+                    android:minHeight="56dp"
+                    android:checkable="true"
+                    android:clickable="true"
+                    android:focusable="true"
+                    app:cardBackgroundColor="@color/card_background"
+                    app:cardCornerRadius="14dp"
+                    app:cardElevation="1dp"
+                    app:checkedIcon="@drawable/ic_check"
+                    app:checkedIconGravity="TOP_END"
+                    app:checkedIconMargin="6dp"
+                    app:checkedIconSize="20dp"
+                    app:checkedIconTint="@color/blue"
+                    app:strokeColor="@color/card_stroke"
+                    app:strokeWidth="1dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:padding="10dp">
+
+                        <ImageView
+                            android:layout_width="32dp"
+                            android:layout_height="32dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/warning_icon4" />
+
+                        <TextView
+                            android:id="@+id/tvOtros"
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:layout_weight="1"
+                            android:fontFamily="@font/nunito"
+                            android:maxLines="3"
+                            android:text="@string/lbl_otros"
+                            android:textColor="@color/text_primary"
+                            android:textSize="16sp"
+                            android:textStyle="bold" />
+                    </LinearLayout>
+                </com.google.android.material.card.MaterialCardView>
+            </LinearLayout>
+        </LinearLayout>
+
+        <!-- Buscador de Direccion -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilSearch"
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            app:boxBackgroundColor="@color/input_background"
+            app:boxCornerRadiusBottomEnd="12dp"
+            app:boxCornerRadiusBottomStart="12dp"
+            app:boxCornerRadiusTopEnd="12dp"
+            app:boxCornerRadiusTopStart="12dp"
+            app:boxStrokeColor="@color/blue"
+            app:endIconMode="clear_text"
+            app:hintTextColor="@color/blue"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/layoutGridTipos"
+            app:startIconDrawable="@drawable/buscar"
+            app:startIconTint="@color/blue">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etSearch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="@string/hint_buscar_direccion_o_referencia"
+                android:imeOptions="actionSearch"
+                android:inputType="textPostalAddress|text"
+                android:maxLines="1"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_muted"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- Mapa interactivo en contenedor 0dp flexible (sin ScrollView) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cvMap"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="4dp"
+            app:cardCornerRadius="14dp"
+            app:cardElevation="1dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/tilSearch"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp">
+
+            <androidx.fragment.app.FragmentContainerView
+                android:id="@+id/mapFragment"
+                android:name="com.google.android.gms.maps.SupportMapFragment"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+        </com.google.android.material.card.MaterialCardView>
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+    <!-- Contenedor Inferior: Boton Ubicacion, Tarjeta Direccion y Boton Continuar -->
+    <LinearLayout
+        android:id="@+id/bottomControlsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:paddingTop="6dp"
+        android:paddingBottom="12dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnLocation"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:minHeight="48dp"
+            android:fontFamily="@font/nunito"
+            android:text="@string/lbl_usar_mi_ubicacion_actual"
+            android:textAllCaps="false"
+            android:textColor="@color/blue"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            app:cornerRadius="12dp"
+            app:icon="@drawable/location"
+            app:iconGravity="textStart"
+            app:iconPadding="8dp"
+            app:iconSize="20dp"
+            app:iconTint="@color/blue"
+            app:strokeColor="@color/blue"
+            app:strokeWidth="1.5dp" />
+
+        <!-- Tarjeta corta de direccion -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cvDireccion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:minHeight="48dp"
+            app:cardBackgroundColor="@color/card_background"
+            app:cardCornerRadius="12dp"
+            app:cardElevation="1dp"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:padding="10dp">
+
+                <ImageView
+                    android:id="@+id/ivPinDireccion"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:contentDescription="@null"
+                    android:src="@drawable/location"
+                    app:tint="@color/blue" />
+
+                <TextView
+                    android:id="@+id/tvDireccion"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="8dp"
+                    android:layout_weight="1"
+                    android:ellipsize="end"
+                    android:fontFamily="@font/nunito"
+                    android:maxLines="2"
+                    android:text="@string/reporte_ux_direccion_no_seleccionada"
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+
+                <ProgressBar
+                    android:id="@+id/pbDireccion"
+                    style="?android:attr/progressBarStyleSmall"
+                    android:layout_width="20dp"
+                    android:layout_height="20dp"
+                    android:visibility="gone" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Mensaje de error de validacion en linea -->
+        <TextView
+            android:id="@+id/tvErrorValidacion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:layout_marginBottom="2dp"
+            android:fontFamily="@font/nunito"
+            android:gravity="center"
+            android:textColor="@color/error_dark"
+            android:textSize="13sp"
+            android:visibility="gone"
+            tools:text="Por favor selecciona un tipo de peticion y una ubicacion en el mapa"
+            tools:visibility="visible" />
+
+        <!-- Boton Continuar Fijo -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnContinue"
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="6dp"
+            android:minHeight="48dp"
+            android:fontFamily="@font/nunito"
+            android:text="@string/btn_continuar"
+            android:textAllCaps="false"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/blue"
+            app:cornerRadius="14dp"
+            app:elevation="2dp" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

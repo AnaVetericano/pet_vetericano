@@ -670,4 +670,20 @@
     <string name="notif_aviso_dialog_mensaje">Activa las notificaciones para avisarte cuando tu reporte sea enviado o requiera tu atención.</string>
     <string name="notif_aviso_btn_activar">Activar</string>
     <string name="notif_aviso_btn_ahora_no">Ahora no</string>
+    <!-- Tarea R1: Flujo Unificado de Reporte Ciudadano (Pantalla 1) -->
+    <string name="reporte_ux_direccion_sin_conexion">Ubicación seleccionada (sin conexión a internet)</string>
+    <string name="reporte_ux_direccion_fallback_coordenadas">%1$s (%2$.5f, %3$.5f)</string>
+    <string name="reporte_ux_marcador_ubicacion">Ubicación seleccionada</string>
+    <string name="reporte_ux_error_permiso_ubicacion">Permiso de ubicación denegado</string>
+    <string name="reporte_ux_error_obtener_ubicacion">No se pudo obtener la ubicación actual</string>
+    <string name="reporte_ux_error_direccion_no_encontrada">Dirección no encontrada</string>
+    <string name="reporte_ux_error_buscar_direccion">Error al buscar dirección</string>
+    <string name="reporte_ux_error_selecciona_tipo">Por favor selecciona un tipo de petición</string>
+    <string name="reporte_ux_error_selecciona_ubicacion">Por favor selecciona una ubicación en el mapa</string>
+    <string name="reporte_ux_error_falta_ambos">Por favor selecciona un tipo de petición y una ubicación en el mapa</string>
+    <string name="reporte_ux_error_falta_tipo">Por favor selecciona un tipo de petición</string>
+    <string name="reporte_ux_error_falta_ubicacion">Por favor selecciona una ubicación en el mapa</string>
+    <string name="reporte_ux_error_red_tipos">Error de red al cargar tipos</string>
+    <string name="reporte_ux_cd_tipo_seleccionado">%1$s seleccionado</string>
+    <string name="reporte_ux_direccion_no_seleccionada">Toca el mapa o busca una dirección</string>
 </resources>

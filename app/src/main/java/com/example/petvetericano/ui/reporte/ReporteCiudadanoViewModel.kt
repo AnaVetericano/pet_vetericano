@@ -78,7 +78,8 @@ class ReporteCiudadanoViewModel(
 
     fun seleccionarTipoPorNombre(nombreBuscado: String, catalogo: List<TipoPeticionResponse>): Boolean {
         if (catalogo.isEmpty()) return false
-        val encontrado = catalogo.firstOrNull { it.nombre.equals(nombreBuscado, ignoreCase = true) } ?: return false
+        val buscadoNorm = normalizarNombre(nombreBuscado)
+        val encontrado = catalogo.firstOrNull { normalizarNombre(it.nombre) == buscadoNorm } ?: return false
         val item = TipoReporteItem(
             idTipo = encontrado.id_tipo,
             nombreRemoto = encontrado.nombre,

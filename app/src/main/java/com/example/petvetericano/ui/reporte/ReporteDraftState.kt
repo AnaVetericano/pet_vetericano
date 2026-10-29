@@ -3,6 +3,17 @@ package com.example.petvetericano.ui.reporte
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.example.petvetericano.R
+import java.text.Normalizer
+import java.util.Locale
+
+fun normalizarNombre(texto: String?): String {
+    if (texto.isNullOrBlank()) return ""
+    val trimmed = texto.trim()
+    val lower = trimmed.lowercase(Locale.ROOT)
+    val normalized = Normalizer.normalize(lower, Normalizer.Form.NFD)
+    val withoutDiacritics = normalized.replace("\\p{InCombiningDiacriticalMarks}+".toRegex(), "")
+    return withoutDiacritics.replace("\\s+".toRegex(), " ")
+}
 
 enum class TipoReporteCategoria(
     val nombreClave: String,
@@ -18,8 +29,8 @@ enum class TipoReporteCategoria(
     companion object {
         fun desdeNombre(nombre: String?): TipoReporteCategoria {
             if (nombre.isNullOrBlank()) return DESCONOCIDO
-            val buscado = nombre.trim()
-            return entries.firstOrNull { it.nombreClave.equals(buscado, ignoreCase = true) }
+            val buscado = normalizarNombre(nombre)
+            return entries.firstOrNull { normalizarNombre(it.nombreClave) == buscado }
                 ?: DESCONOCIDO
         }
     }

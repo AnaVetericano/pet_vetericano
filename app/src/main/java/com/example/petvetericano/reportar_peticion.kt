@@ -8,6 +8,8 @@ import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
+import androidx.annotation.ColorInt
+import androidx.annotation.StringRes
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
@@ -23,6 +25,7 @@ import com.example.petvetericano.models.TipoPeticionResponse
 import com.example.petvetericano.network.RetrofitClient
 import com.example.petvetericano.ui.reporte.ReporteCiudadanoViewModel
 import com.example.petvetericano.ui.reporte.TipoReporteCategoria
+import com.example.petvetericano.ui.reporte.ReporteDraftState
 import com.example.petvetericano.ui.reporte.TipoReporteItem
 import android.location.Location
 import com.google.android.gms.location.FusedLocationProviderClient
@@ -54,6 +57,9 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var fusedLocationClient: FusedLocationProviderClient
 
     private var listaTipos: List<TipoPeticionResponse> = emptyList()
+    private var isCargandoTipos = false
+    private var tipoPendiente: String? = null
+    private var esErrorValidacionVisible = false
 
     private val prefsCache = "ReporteTiposCachePrefs"
     private val keyCache = "ReporteTiposCache"
@@ -89,7 +95,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         configurarVistas()
         configurarMapa()
         observarEstado()
-        cargarTiposDesdeApi()
+        cargarTipos()
     }
 
     private fun configurarInsets() {
@@ -193,8 +199,13 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
                         }
                     }
 
-                    if (state.puedeAvanzarPaso1) {
-                        binding.tvErrorValidacion.visibility = View.GONE
+                    val errorRes = obtenerErrorValidacionResId(state)
+                    if (errorRes == null) {
+                        esErrorValidacionVisible = false
+                        ocultarAviso()
+                    } else if (esErrorValidacionVisible) {
+                        val colorError = ContextCompat.getColor(this@reportar_peticion, R.color.error_dark)
+                        mostrarAviso(getString(errorRes), colorError)
                     }
 
                     if (state.ubicacionSeleccionadaPorUsuario && state.latitud != null && state.longitud != null) {
@@ -225,10 +236,10 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         }
 
         val cat = tipo?.categoriaVisual
-        actualizarCard(binding.cardHerido, cat == TipoReporteCategoria.ANIMAL_HERIDO, R.string.lbl_animal_herido_o_en_peligro)
-        actualizarCard(binding.cardMaltrato, cat == TipoReporteCategoria.MALTRATO_ANIMAL, R.string.lbl_maltrato_animal)
-        actualizarCard(binding.cardCalle, cat == TipoReporteCategoria.CONDICION_CALLE, R.string.lbl_animal_en_condicion_de_calle)
-        actualizarCard(binding.cardOtros, cat == TipoReporteCategoria.OTROS, R.string.lbl_otros)
+        actualizarCard(binding.cardHerido, cat == TipoReporteCategoria.ANIMAL_HERIDO, R.string.reporte_ux_tipo_herido)
+        actualizarCard(binding.cardMaltrato, cat == TipoReporteCategoria.MALTRATO_ANIMAL, R.string.reporte_ux_tipo_maltrato)
+        actualizarCard(binding.cardCalle, cat == TipoReporteCategoria.CONDICION_CALLE, R.string.reporte_ux_tipo_calle)
+        actualizarCard(binding.cardOtros, cat == TipoReporteCategoria.OTROS, R.string.reporte_ux_tipo_otros)
     }
 
     private fun dpToPx(dp: Int): Int {
@@ -294,12 +305,38 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun seleccionarTipoOCatalogar(nombreBuscado: String) {
+        if (listaTipos.isEmpty()) {
+            tipoPendiente = nombreBuscado
+            val colorMuted = ContextCompat.getColor(this, R.color.text_muted)
+            mostrarAviso(getString(R.string.reporte_ux_tipos_cargando), colorMuted)
+            cargarTipos()
+            return
+        }
+
         val seleccionado = viewModel.seleccionarTipoPorNombre(nombreBuscado, listaTipos)
-        if (!seleccionado) {
-            Toast.makeText(this, R.string.reporte_offline_error_cargar_tipos, Toast.LENGTH_SHORT).show()
-            if (listaTipos.isEmpty()) {
-                cargarTiposDesdeApi()
+        if (seleccionado) {
+            tipoPendiente = null
+            if (!esErrorValidacionVisible) {
+                ocultarAviso()
             }
+        } else {
+            val colorError = ContextCompat.getColor(this, R.color.error_dark)
+            mostrarAviso(getString(R.string.reporte_ux_error_tipo_no_disponible), colorError)
+        }
+    }
+
+    private fun aplicarTipoPendienteSiExiste() {
+        val pendiente = tipoPendiente ?: return
+        val seleccionado = viewModel.seleccionarTipoPorNombre(pendiente, listaTipos)
+        if (seleccionado) {
+            tipoPendiente = null
+            if (!esErrorValidacionVisible) {
+                ocultarAviso()
+            }
+        } else {
+            tipoPendiente = null
+            val colorError = ContextCompat.getColor(this, R.color.error_dark)
+            mostrarAviso(getString(R.string.reporte_ux_error_tipo_no_disponible), colorError)
         }
     }
 
@@ -400,25 +437,46 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         editor.apply()
     }
 
-    private fun avanzarAlPaso2() {
-        val state = viewModel.uiState.value
+    @StringRes
+    private fun obtenerErrorValidacionResId(state: ReporteDraftState): Int? {
         val faltaTipo = state.tipoSeleccionado == null
         val faltaUbicacion = !state.ubicacionSeleccionadaPorUsuario || state.latitud == null || state.longitud == null
+        return when {
+            faltaTipo && faltaUbicacion -> R.string.reporte_ux_error_falta_ambos
+            faltaTipo -> R.string.reporte_ux_error_falta_tipo
+            faltaUbicacion -> R.string.reporte_ux_error_falta_ubicacion
+            else -> null
+        }
+    }
 
-        if (faltaTipo || faltaUbicacion) {
-            val errorRes = when {
-                faltaTipo && faltaUbicacion -> R.string.reporte_ux_error_falta_ambos
-                faltaTipo -> R.string.reporte_ux_error_falta_tipo
-                else -> R.string.reporte_ux_error_falta_ubicacion
-            }
-            val mensaje = getString(errorRes)
-            binding.tvErrorValidacion.text = mensaje
-            binding.tvErrorValidacion.visibility = View.VISIBLE
-            binding.tvErrorValidacion.announceForAccessibility(mensaje)
+    private fun mostrarAviso(texto: CharSequence, @ColorInt color: Int) {
+        val textoAnterior = binding.tvErrorValidacion.text?.toString().orEmpty()
+        val estabaVisible = binding.tvErrorValidacion.visibility == View.VISIBLE
+        binding.tvErrorValidacion.setTextColor(color)
+        binding.tvErrorValidacion.text = texto
+        binding.tvErrorValidacion.visibility = View.VISIBLE
+        if (!estabaVisible || textoAnterior != texto.toString()) {
+            binding.tvErrorValidacion.announceForAccessibility(texto)
+        }
+    }
+
+    private fun ocultarAviso() {
+        binding.tvErrorValidacion.visibility = View.GONE
+    }
+
+    private fun avanzarAlPaso2() {
+        val state = viewModel.uiState.value
+        val errorRes = obtenerErrorValidacionResId(state)
+
+        if (errorRes != null) {
+            esErrorValidacionVisible = true
+            val colorError = ContextCompat.getColor(this, R.color.error_dark)
+            mostrarAviso(getString(errorRes), colorError)
             return
         }
 
-        binding.tvErrorValidacion.visibility = View.GONE
+        esErrorValidacionVisible = false
+        ocultarAviso()
 
         val tipo = state.tipoSeleccionado ?: return
 
@@ -441,19 +499,43 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         startActivity(intent)
     }
 
-    private fun cargarTiposDesdeApi() {
-        lifecycleScope.launch(Dispatchers.IO) {
+    private fun cargarTipos() {
+        if (isCargandoTipos) return
+        isCargandoTipos = true
+
+        lifecycleScope.launch {
+            if (listaTipos.isEmpty()) {
+                val cached = withContext(Dispatchers.IO) { obtenerTiposDeCache() }
+                if (cached.isNotEmpty()) {
+                    listaTipos = cached
+                    aplicarTipoPendienteSiExiste()
+                }
+            }
+
             try {
-                val response = RetrofitClient.apiService.obtenerTiposPeticion()
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.apiService.obtenerTiposPeticion()
+                }
                 if (response.isSuccessful && response.body() != null) {
                     val remotos = response.body()!!
                     listaTipos = remotos
-                    guardarEnCache(remotos)
-                } else {
-                    cargarDeCacheOFallar()
+                    withContext(Dispatchers.IO) { guardarEnCache(remotos) }
+                    aplicarTipoPendienteSiExiste()
+                } else if (listaTipos.isEmpty()) {
+                    if (tipoPendiente != null) {
+                        val colorError = ContextCompat.getColor(this@reportar_peticion, R.color.error_dark)
+                        mostrarAviso(getString(R.string.reporte_ux_error_red_tipos), colorError)
+                    }
                 }
             } catch (_: Exception) {
-                cargarDeCacheOFallar()
+                if (listaTipos.isEmpty()) {
+                    if (tipoPendiente != null) {
+                        val colorError = ContextCompat.getColor(this@reportar_peticion, R.color.error_dark)
+                        mostrarAviso(getString(R.string.reporte_ux_error_red_tipos), colorError)
+                    }
+                }
+            } finally {
+                isCargandoTipos = false
             }
         }
     }
@@ -473,21 +555,6 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
                 .putString(keyCache, jsonArray.toString())
                 .apply()
         } catch (_: Exception) {
-        }
-    }
-
-    private suspend fun cargarDeCacheOFallar() {
-        val cached = obtenerTiposDeCache()
-        if (cached.isNotEmpty()) {
-            listaTipos = cached
-        } else {
-            withContext(Dispatchers.Main) {
-                Toast.makeText(
-                    this@reportar_peticion,
-                    R.string.reporte_offline_error_cargar_tipos,
-                    Toast.LENGTH_SHORT
-                ).show()
-            }
         }
     }
 

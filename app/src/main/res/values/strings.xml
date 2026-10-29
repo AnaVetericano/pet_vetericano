@@ -686,4 +686,11 @@
     <string name="reporte_ux_error_red_tipos">Error de red al cargar tipos</string>
     <string name="reporte_ux_cd_tipo_seleccionado">%1$s seleccionado</string>
     <string name="reporte_ux_direccion_no_seleccionada">Toca el mapa o busca una dirección</string>
+    <!-- Tarea R1.2: Refinamiento visual y seleccion de tipos (Pantalla 1) -->
+    <string name="reporte_ux_tipo_herido">Animal herido o en peligro</string>
+    <string name="reporte_ux_tipo_maltrato">Maltrato animal</string>
+    <string name="reporte_ux_tipo_calle">Animal en condición de calle</string>
+    <string name="reporte_ux_tipo_otros">Otros</string>
+    <string name="reporte_ux_tipos_cargando">Cargando tipos de reporte...</string>
+    <string name="reporte_ux_error_tipo_no_disponible">Tipo no disponible en este momento</string>
 </resources>

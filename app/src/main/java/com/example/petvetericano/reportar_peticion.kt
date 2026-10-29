@@ -28,6 +28,7 @@ import com.example.petvetericano.ui.reporte.TipoReporteCategoria
 import com.example.petvetericano.ui.reporte.ReporteDraftState
 import com.example.petvetericano.ui.reporte.TipoReporteItem
 import android.location.Location
+import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
@@ -40,6 +41,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -60,6 +62,9 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
     private var isCargandoTipos = false
     private var tipoPendiente: String? = null
     private var esErrorValidacionVisible = false
+    private var isObteniendoUbicacion = false
+    private var ctsUbicacion: CancellationTokenSource? = null
+    private var ubicacionJob: Job? = null
 
     private val prefsCache = "ReporteTiposCachePrefs"
     private val keyCache = "ReporteTiposCache"
@@ -79,6 +84,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         if (isGranted) {
             obtenerUbicacionActual()
         } else {
+            isObteniendoUbicacion = false
             Toast.makeText(this, R.string.reporte_ux_error_permiso_ubicacion, Toast.LENGTH_SHORT).show()
         }
     }
@@ -155,6 +161,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         }
 
         binding.btnLocation.setOnClickListener {
+            if (isObteniendoUbicacion) return@setOnClickListener
             verificarPermisosUbicacion()
         }
 
@@ -182,8 +189,9 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
 
                     if (state.isLoadingUbicacion) {
                         binding.pbDireccion.visibility = View.VISIBLE
-                        binding.tvDireccion.setText(R.string.reporte_offline_cargando_direccion)
+                        binding.tvDireccion.setText(state.mensajeCargaUbicacionResId)
                     } else {
+                        isObteniendoUbicacion = false
                         binding.pbDireccion.visibility = View.GONE
                         if (!state.direccionTexto.isNullOrBlank()) {
                             binding.tvDireccion.text = state.direccionTexto
@@ -273,7 +281,16 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    private fun cancelarBusquedaUbicacionEnCurso() {
+        isObteniendoUbicacion = false
+        ctsUbicacion?.cancel()
+        ctsUbicacion = null
+        ubicacionJob?.cancel()
+        ubicacionJob = null
+    }
+
     private fun onUbicacionElegida(latLng: LatLng) {
+        cancelarBusquedaUbicacionEnCurso()
         actualizarMarcador(latLng, moverCamara = true)
         viewModel.resolverDireccion(this, latLng.latitude, latLng.longitude)
     }
@@ -341,17 +358,36 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun obtenerUbicacionActual() {
-        viewModel.iniciarCargaUbicacion()
-        lifecycleScope.launch {
+        if (isObteniendoUbicacion) return
+        isObteniendoUbicacion = true
+
+        binding.pbDireccion.visibility = View.VISIBLE
+        binding.tvDireccion.setText(R.string.reporte_ux_obteniendo_ubicacion)
+        binding.tvDireccion.announceForAccessibility(getString(R.string.reporte_ux_obteniendo_ubicacion))
+
+        viewModel.iniciarCargaUbicacion(R.string.reporte_ux_obteniendo_ubicacion)
+
+        ctsUbicacion?.cancel()
+        ubicacionJob?.cancel()
+
+        val cts = CancellationTokenSource()
+        ctsUbicacion = cts
+
+        ubicacionJob = lifecycleScope.launch {
             var ubicacion: Location? = null
-            val cts = CancellationTokenSource()
             try {
                 ubicacion = withTimeoutOrNull(10_000L) {
                     suspendCancellableCoroutine<Location?> { cont ->
                         cont.invokeOnCancellation { cts.cancel() }
                         try {
+                            val request = CurrentLocationRequest.Builder()
+                                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                                .setMaxUpdateAgeMillis(30_000L)
+                                .setDurationMillis(10_000L)
+                                .build()
+
                             fusedLocationClient.getCurrentLocation(
-                                Priority.PRIORITY_HIGH_ACCURACY,
+                                request,
                                 cts.token
                             ).addOnSuccessListener { loc ->
                                 if (cont.isActive) cont.resume(loc)
@@ -369,6 +405,9 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
                 ubicacion = null
             } finally {
                 cts.cancel()
+                if (ctsUbicacion === cts) {
+                    ctsUbicacion = null
+                }
             }
 
             if (ubicacion == null) {
@@ -396,8 +435,10 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
 
             if (ubicacion != null) {
                 val currentLatLng = LatLng(ubicacion.latitude, ubicacion.longitude)
-                onUbicacionElegida(currentLatLng)
+                actualizarMarcador(currentLatLng, moverCamara = true)
+                viewModel.resolverDireccion(this@reportar_peticion, ubicacion.latitude, ubicacion.longitude)
             } else {
+                isObteniendoUbicacion = false
                 viewModel.cancelarCargaUbicacion()
                 Toast.makeText(
                     this@reportar_peticion,
@@ -411,6 +452,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
     private fun ejecutarBusqueda() {
         val query = binding.etSearch.text?.toString()?.trim().orEmpty()
         if (query.isNotEmpty()) {
+            cancelarBusquedaUbicacionEnCurso()
             viewModel.buscarDireccion(this, query) { coords ->
                 if (coords != null) {
                     actualizarMarcador(coords, moverCamara = true)
@@ -419,6 +461,11 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cancelarBusquedaUbicacionEnCurso()
     }
 
     override fun onPause() {

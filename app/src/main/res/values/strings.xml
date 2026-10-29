@@ -693,4 +693,6 @@
     <string name="reporte_ux_tipo_otros">Otros</string>
     <string name="reporte_ux_tipos_cargando">Cargando tipos de reporte...</string>
     <string name="reporte_ux_error_tipo_no_disponible">Tipo no disponible en este momento</string>
+    <!-- Tarea R1.4: Diagnostico y optimizacion de ubicacion actual -->
+    <string name="reporte_ux_obteniendo_ubicacion">Obteniendo tu ubicación…</string>
 </resources>

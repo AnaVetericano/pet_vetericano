@@ -73,6 +73,7 @@ data class ReporteDraftState(
 
     // Control de UI
     val isLoadingUbicacion: Boolean = false,
+    @get:StringRes val mensajeCargaUbicacionResId: Int = R.string.reporte_offline_cargando_direccion,
     val estaEnviando: Boolean = false,
     val hayConexionInternet: Boolean = true,
     @get:StringRes val errorValidacionResId: Int? = null

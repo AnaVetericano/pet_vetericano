@@ -4,6 +4,7 @@ import android.content.Context
 import android.location.Address
 import android.location.Geocoder
 import android.os.Build
+import androidx.annotation.StringRes
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -89,8 +90,13 @@ class ReporteCiudadanoViewModel(
         return true
     }
 
-    fun iniciarCargaUbicacion() {
-        _uiState.update { it.copy(isLoadingUbicacion = true) }
+    fun iniciarCargaUbicacion(@StringRes mensajeResId: Int = R.string.reporte_offline_cargando_direccion) {
+        _uiState.update {
+            it.copy(
+                isLoadingUbicacion = true,
+                mensajeCargaUbicacionResId = mensajeResId
+            )
+        }
     }
 
     fun cancelarCargaUbicacion() {
@@ -123,6 +129,7 @@ class ReporteCiudadanoViewModel(
                 direccionTexto = null,
                 ubicacionSeleccionadaPorUsuario = true,
                 isLoadingUbicacion = true,
+                mensajeCargaUbicacionResId = R.string.reporte_offline_cargando_direccion,
                 errorValidacionResId = null
             )
         }
@@ -137,7 +144,12 @@ class ReporteCiudadanoViewModel(
             onResultado(null)
             return
         }
-        _uiState.update { it.copy(isLoadingUbicacion = true) }
+        _uiState.update {
+            it.copy(
+                isLoadingUbicacion = true,
+                mensajeCargaUbicacionResId = R.string.reporte_offline_cargando_direccion
+            )
+        }
         viewModelScope.launch {
             val coords = buscarDireccionIO(context.applicationContext, query)
             if (coords != null) {

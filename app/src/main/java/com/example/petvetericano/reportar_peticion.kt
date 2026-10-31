@@ -28,6 +28,8 @@ import com.example.petvetericano.ui.reporte.TipoReporteCategoria
 import com.example.petvetericano.ui.reporte.ReporteDraftState
 import com.example.petvetericano.ui.reporte.TipoReporteItem
 import android.location.Location
+import android.os.SystemClock
+import android.util.Log
 import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -62,6 +64,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
     private var isCargandoTipos = false
     private var tipoPendiente: String? = null
     private var esErrorValidacionVisible = false
+    private var esAvisoUbicacionAproximadaVisible = false
     private var isObteniendoUbicacion = false
     private var ctsUbicacion: CancellationTokenSource? = null
     private var ubicacionJob: Job? = null
@@ -210,7 +213,12 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
                     val errorRes = obtenerErrorValidacionResId(state)
                     if (errorRes == null) {
                         esErrorValidacionVisible = false
-                        ocultarAviso()
+                        if (esAvisoUbicacionAproximadaVisible) {
+                            val colorMuted = ContextCompat.getColor(this@reportar_peticion, R.color.text_muted)
+                            mostrarAviso(getString(R.string.reporte_ux_ubicacion_aproximada), colorMuted)
+                        } else {
+                            ocultarAviso()
+                        }
                     } else if (esErrorValidacionVisible) {
                         val colorError = ContextCompat.getColor(this@reportar_peticion, R.color.error_dark)
                         mostrarAviso(getString(errorRes), colorError)
@@ -287,6 +295,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         ctsUbicacion = null
         ubicacionJob?.cancel()
         ubicacionJob = null
+        ocultarAvisoAproximada()
     }
 
     private fun onUbicacionElegida(latLng: LatLng) {
@@ -334,7 +343,11 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         if (seleccionado) {
             tipoPendiente = null
             if (!esErrorValidacionVisible) {
-                ocultarAviso()
+                if (esAvisoUbicacionAproximadaVisible) {
+                    mostrarAvisoAproximada()
+                } else {
+                    ocultarAviso()
+                }
             }
         } else {
             val colorError = ContextCompat.getColor(this, R.color.error_dark)
@@ -348,12 +361,77 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         if (seleccionado) {
             tipoPendiente = null
             if (!esErrorValidacionVisible) {
-                ocultarAviso()
+                if (esAvisoUbicacionAproximadaVisible) {
+                    mostrarAvisoAproximada()
+                } else {
+                    ocultarAviso()
+                }
             }
         } else {
             tipoPendiente = null
             val colorError = ContextCompat.getColor(this, R.color.error_dark)
             mostrarAviso(getString(R.string.reporte_ux_error_tipo_no_disponible), colorError)
+        }
+    }
+
+    private fun mostrarAvisoAproximada() {
+        esAvisoUbicacionAproximadaVisible = true
+        if (!esErrorValidacionVisible) {
+            val colorMuted = ContextCompat.getColor(this, R.color.text_muted)
+            mostrarAviso(getString(R.string.reporte_ux_ubicacion_aproximada), colorMuted)
+        }
+    }
+
+    private fun ocultarAvisoAproximada() {
+        esAvisoUbicacionAproximadaVisible = false
+        if (!esErrorValidacionVisible) {
+            ocultarAviso()
+        }
+    }
+
+    private fun calcularAntiguedadSegundos(loc: Location): Long {
+        val elapsedNanos = loc.elapsedRealtimeNanos
+        if (elapsedNanos > 0L) {
+            val diffNanos = SystemClock.elapsedRealtimeNanos() - elapsedNanos
+            return (diffNanos / 1_000_000_000L).coerceAtLeast(0L)
+        }
+        val diffMs = System.currentTimeMillis() - loc.time
+        return (diffMs / 1000L).coerceAtLeast(0L)
+    }
+
+    private suspend fun obtenerUltimaUbicacion(): Location? =
+        withTimeoutOrNull(2_000L) {
+            suspendCancellableCoroutine { cont ->
+                try {
+                    fusedLocationClient.lastLocation
+                        .addOnSuccessListener { loc -> if (cont.isActive) cont.resume(loc) }
+                        .addOnFailureListener { if (cont.isActive) cont.resume(null) }
+                        .addOnCanceledListener { if (cont.isActive) cont.resume(null) }
+                } catch (_: SecurityException) {
+                    if (cont.isActive) cont.resume(null)
+                }
+            }
+        }
+
+    private suspend fun obtenerUbicacionFresca(
+        cts: CancellationTokenSource,
+        timeoutMs: Long
+    ): Location? = withTimeoutOrNull(timeoutMs) {
+        suspendCancellableCoroutine<Location?> { cont ->
+            cont.invokeOnCancellation { cts.cancel() }
+            try {
+                val request = CurrentLocationRequest.Builder()
+                    .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                    .setMaxUpdateAgeMillis(0L)
+                    .setDurationMillis(timeoutMs)
+                    .build()
+                fusedLocationClient.getCurrentLocation(request, cts.token)
+                    .addOnSuccessListener { loc -> if (cont.isActive) cont.resume(loc) }
+                    .addOnFailureListener { if (cont.isActive) cont.resume(null) }
+                    .addOnCanceledListener { if (cont.isActive) cont.resume(null) }
+            } catch (_: SecurityException) {
+                if (cont.isActive) cont.resume(null)
+            }
         }
     }
 
@@ -374,77 +452,77 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         ctsUbicacion = cts
 
         ubicacionJob = lifecycleScope.launch {
-            var ubicacion: Location? = null
             try {
-                ubicacion = withTimeoutOrNull(10_000L) {
-                    suspendCancellableCoroutine<Location?> { cont ->
-                        cont.invokeOnCancellation { cts.cancel() }
-                        try {
-                            val request = CurrentLocationRequest.Builder()
-                                .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-                                .setMaxUpdateAgeMillis(30_000L)
-                                .setDurationMillis(10_000L)
-                                .build()
+                val lastLoc = obtenerUltimaUbicacion()
+                val antiguedad = if (lastLoc != null) calcularAntiguedadSegundos(lastLoc) else Long.MAX_VALUE
 
-                            fusedLocationClient.getCurrentLocation(
-                                request,
-                                cts.token
-                            ).addOnSuccessListener { loc ->
-                                if (cont.isActive) cont.resume(loc)
-                            }.addOnFailureListener {
-                                if (cont.isActive) cont.resume(null)
-                            }.addOnCanceledListener {
-                                if (cont.isActive) cont.resume(null)
-                            }
-                        } catch (_: SecurityException) {
-                            if (cont.isActive) cont.resume(null)
+                if (lastLoc != null && antiguedad <= 120L) {
+                    Log.d("reportar_peticion", "Via ubicacion: lastLocation_reciente (antiguedad=" + antiguedad + "s)")
+                    val currentLatLng = LatLng(lastLoc.latitude, lastLoc.longitude)
+                    actualizarMarcador(currentLatLng, moverCamara = true)
+                    viewModel.resolverDireccion(this@reportar_peticion, lastLoc.latitude, lastLoc.longitude)
+
+                    if (antiguedad > 30L) {
+                        mostrarAvisoAproximada()
+                    } else {
+                        ocultarAvisoAproximada()
+                    }
+
+                    val freshLoc = obtenerUbicacionFresca(cts, 4_000L)
+                    if (freshLoc != null) {
+                        val eraAproximada = antiguedad > 30L
+                        val mejorPrecision = freshLoc.hasAccuracy() && (
+                            !lastLoc.hasAccuracy() || freshLoc.accuracy < lastLoc.accuracy
+                        )
+                        val distanciaMetros = lastLoc.distanceTo(freshLoc)
+                        val debeActualizar = eraAproximada || (mejorPrecision && distanciaMetros > 15f)
+
+                        if (debeActualizar) {
+                            Log.d("reportar_peticion", "Via ubicacion: fresca_refinada (distancia=" + distanciaMetros + "m)")
+                            ocultarAvisoAproximada()
+                            val freshLatLng = LatLng(freshLoc.latitude, freshLoc.longitude)
+                            actualizarMarcador(freshLatLng, moverCamara = true)
+                            viewModel.resolverDireccion(this@reportar_peticion, freshLoc.latitude, freshLoc.longitude)
+                        } else {
+                            Log.d("reportar_peticion", "Via ubicacion: fresca_descartada")
+                        }
+                    }
+                } else {
+                    val freshLoc = obtenerUbicacionFresca(cts, 10_000L)
+                    if (freshLoc != null) {
+                        Log.d("reportar_peticion", "Via ubicacion: fresca")
+                        ocultarAvisoAproximada()
+                        val freshLatLng = LatLng(freshLoc.latitude, freshLoc.longitude)
+                        actualizarMarcador(freshLatLng, moverCamara = true)
+                        viewModel.resolverDireccion(this@reportar_peticion, freshLoc.latitude, freshLoc.longitude)
+                    } else {
+                        val fallbackLoc = lastLoc ?: obtenerUltimaUbicacion()
+                        if (fallbackLoc != null) {
+                            Log.d("reportar_peticion", "Via ubicacion: respaldo")
+                            mostrarAvisoAproximada()
+                            val fallbackLatLng = LatLng(fallbackLoc.latitude, fallbackLoc.longitude)
+                            actualizarMarcador(fallbackLatLng, moverCamara = true)
+                            viewModel.resolverDireccion(this@reportar_peticion, fallbackLoc.latitude, fallbackLoc.longitude)
+                        } else {
+                            Log.d("reportar_peticion", "Via ubicacion: ninguna")
+                            ocultarAvisoAproximada()
+                            isObteniendoUbicacion = false
+                            viewModel.cancelarCargaUbicacion()
+                            Toast.makeText(
+                                this@reportar_peticion,
+                                R.string.reporte_ux_error_obtener_ubicacion,
+                                Toast.LENGTH_SHORT
+                            ).show()
                         }
                     }
                 }
             } catch (_: Exception) {
-                ubicacion = null
             } finally {
+                isObteniendoUbicacion = false
                 cts.cancel()
                 if (ctsUbicacion === cts) {
                     ctsUbicacion = null
                 }
-            }
-
-            if (ubicacion == null) {
-                ubicacion = try {
-                    suspendCancellableCoroutine<Location?> { cont ->
-                        try {
-                            fusedLocationClient.lastLocation
-                                .addOnSuccessListener { loc ->
-                                    if (cont.isActive) cont.resume(loc)
-                                }
-                                .addOnFailureListener {
-                                    if (cont.isActive) cont.resume(null)
-                                }
-                                .addOnCanceledListener {
-                                    if (cont.isActive) cont.resume(null)
-                                }
-                        } catch (_: SecurityException) {
-                            if (cont.isActive) cont.resume(null)
-                        }
-                    }
-                } catch (_: Exception) {
-                    null
-                }
-            }
-
-            if (ubicacion != null) {
-                val currentLatLng = LatLng(ubicacion.latitude, ubicacion.longitude)
-                actualizarMarcador(currentLatLng, moverCamara = true)
-                viewModel.resolverDireccion(this@reportar_peticion, ubicacion.latitude, ubicacion.longitude)
-            } else {
-                isObteniendoUbicacion = false
-                viewModel.cancelarCargaUbicacion()
-                Toast.makeText(
-                    this@reportar_peticion,
-                    R.string.reporte_ux_error_obtener_ubicacion,
-                    Toast.LENGTH_SHORT
-                ).show()
             }
         }
     }

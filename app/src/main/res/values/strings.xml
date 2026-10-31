@@ -695,4 +695,6 @@
     <string name="reporte_ux_error_tipo_no_disponible">Tipo no disponible en este momento</string>
     <!-- Tarea R1.4: Diagnostico y optimizacion de ubicacion actual -->
     <string name="reporte_ux_obteniendo_ubicacion">Obteniendo tu ubicación…</string>
+    <!-- Tarea R1.5: Ubicacion rapida con refinamiento en segundo plano -->
+    <string name="reporte_ux_ubicacion_aproximada">Ubicación aproximada. Ajústala tocando el mapa.</string>
 </resources>

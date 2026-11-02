@@ -705,4 +705,12 @@
     <string name="reporte_ux_enviando_titulo">Enviando reporte</string>
     <string name="reporte_ux_enviando_espera">Por favor, espere mientras se envía su reporte.</string>
     <string name="reporte_ux_enviando_descripcion_spinner">Progreso de envío del reporte</string>
+    <!-- Tarea R2: Pantalla 2 del reporte ciudadano unificado -->
+    <string name="reporte_ux_ayuda_multimedia">Puedes adjuntar hasta 5 fotos y 1 video corto (15 s)</string>
+    <string name="reporte_ux_limite_multimedia">Máximo 5 fotos y 1 video</string>
+    <string name="reporte_ux_error_video_excede_duracion">El video supera los 15 segundos permitidos. Selecciona o graba un video más corto.</string>
+    <string name="reporte_ux_video_largo_titulo">Video demasiado largo</string>
+    <string name="reporte_ux_btn_revisar_reporte">Revisar reporte</string>
+    <string name="reporte_ux_cd_eliminar_evidencia">Eliminar evidencia</string>
+    <string name="reporte_ux_error_permiso_camara">Permiso de cámara requerido para capturar evidencias</string>
 </resources>

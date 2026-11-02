@@ -497,4 +497,183 @@
             app:elevation="2dp" />
     </LinearLayout>
 
+    <!-- Contenedor 2: Pantalla 2 (Descripcion + Multimedia + Boton Revisar) -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/containerPaso2"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@id/headerContainer"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <androidx.core.widget.NestedScrollView
+            android:id="@+id/nsvPaso2"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:fillViewport="true"
+            app:layout_constraintTop_toTopOf="parent"
+            app:layout_constraintBottom_toTopOf="@id/bottomControlsContainerPaso2"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingTop="8dp"
+                android:paddingBottom="16dp">
+
+                <TextView
+                    android:id="@+id/tvPreguntaPaso2"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/nunito_display"
+                    android:text="@string/lbl_cuentanos_mas_sobre_lo_que"
+                    android:textColor="@color/text_primary"
+                    android:textSize="18sp"
+                    android:textStyle="bold" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/tilDescripcion"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    app:boxBackgroundColor="@color/input_background"
+                    app:boxCornerRadiusBottomEnd="16dp"
+                    app:boxCornerRadiusBottomStart="16dp"
+                    app:boxCornerRadiusTopEnd="16dp"
+                    app:boxCornerRadiusTopStart="16dp"
+                    app:boxStrokeColor="@color/blue"
+                    app:hintTextColor="@color/blue"
+                    app:errorEnabled="true">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/etDescripcion"
+                        android:layout_width="match_parent"
+                        android:layout_height="140dp"
+                        android:gravity="top"
+                        android:hint="@string/hint_describe_la_situacion_del_animal"
+                        android:inputType="textMultiLine"
+                        android:textColor="@color/text_primary"
+                        android:textColorHint="@color/text_muted"
+                        android:textSize="16sp" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <!-- Fila de Botones: Adjuntar Foto y Grabar Video -->
+                <LinearLayout
+                    android:id="@+id/layoutBotonesMultimedia"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:orientation="horizontal">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAdjuntarFoto"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="6dp"
+                        android:minHeight="48dp"
+                        android:fontFamily="@font/nunito_bold"
+                        android:text="@string/btn_adjuntar_foto"
+                        android:textAllCaps="false"
+                        android:textColor="@color/primary"
+                        android:textSize="16sp"
+                        app:backgroundTint="@color/primary_light"
+                        app:cornerRadius="14dp"
+                        app:icon="@drawable/camera"
+                        app:iconGravity="textStart"
+                        app:iconPadding="8dp"
+                        app:iconSize="20dp"
+                        app:iconTint="@color/primary"
+                        app:strokeColor="@color/primary"
+                        app:strokeWidth="1dp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnAdjuntarVideo"
+                        style="@style/Widget.Material3.Button.TonalButton"
+                        android:layout_width="0dp"
+                        android:layout_height="52dp"
+                        android:layout_weight="1"
+                        android:layout_marginStart="6dp"
+                        android:minHeight="48dp"
+                        android:fontFamily="@font/nunito_bold"
+                        android:text="@string/lbl_grabar_video"
+                        android:textAllCaps="false"
+                        android:textColor="@color/secondary_dark"
+                        android:textSize="16sp"
+                        app:backgroundTint="@color/secondary_light"
+                        app:cornerRadius="14dp"
+                        app:icon="@drawable/ic_videocam"
+                        app:iconGravity="textStart"
+                        app:iconPadding="8dp"
+                        app:iconSize="20dp"
+                        app:iconTint="@color/secondary_dark"
+                        app:strokeColor="@color/secondary"
+                        app:strokeWidth="1dp" />
+                </LinearLayout>
+
+                <!-- Texto de ayuda / contador de evidencias -->
+                <TextView
+                    android:id="@+id/tvAyudaMultimedia"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:fontFamily="@font/nunito"
+                    android:text="@string/reporte_ux_ayuda_multimedia"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="16sp" />
+
+                <!-- RecyclerView Horizontal para miniaturas -->
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvMiniaturas"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:clipToPadding="false"
+                    android:orientation="horizontal"
+                    android:visibility="gone"
+                    tools:listitem="@layout/item_evidencia_miniatura"
+                    tools:visibility="visible" />
+
+            </LinearLayout>
+        </androidx.core.widget.NestedScrollView>
+
+        <!-- Boton Inferior Fijo: Revisar reporte -->
+        <LinearLayout
+            android:id="@+id/bottomControlsContainerPaso2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="20dp"
+            android:paddingEnd="20dp"
+            android:paddingTop="8dp"
+            android:paddingBottom="12dp"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnRevisarReporte"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:minHeight="48dp"
+                android:fontFamily="@font/nunito"
+                android:text="@string/reporte_ux_btn_revisar_reporte"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:backgroundTint="@color/blue"
+                app:cornerRadius="14dp"
+                app:elevation="2dp" />
+        </LinearLayout>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
 </androidx.constraintlayout.widget.ConstraintLayout>

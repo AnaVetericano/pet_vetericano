@@ -53,6 +53,8 @@
     <!-- Contenedor 1: Pantalla 1 (Tipos 2x2 + Buscador + Mapa 0dp) -->
     <androidx.constraintlayout.widget.ConstraintLayout
         android:id="@+id/containerPaso1"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:paddingStart="20dp"
@@ -78,6 +80,8 @@
         <!-- Rejilla 2x2 de Tipos de Peticion -->
         <LinearLayout
             android:id="@+id/layoutGridTipos"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="10dp"
@@ -92,7 +96,9 @@
                 android:layout_height="wrap_content"
                 android:baselineAligned="false"
                 android:orientation="horizontal"
-                android:weightSum="2">
+                android:weightSum="2"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardHerido"
@@ -106,7 +112,7 @@
                     android:focusable="true"
                     app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="14dp"
-                    app:cardElevation="1dp"
+                    app:cardElevation="3dp"
                     app:checkedIcon="@drawable/ic_check"
                     app:checkedIconGravity="TOP_END"
                     app:checkedIconMargin="6dp"
@@ -155,7 +161,7 @@
                     android:focusable="true"
                     app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="14dp"
-                    app:cardElevation="1dp"
+                    app:cardElevation="3dp"
                     app:checkedIcon="@drawable/ic_check"
                     app:checkedIconGravity="TOP_END"
                     app:checkedIconMargin="6dp"
@@ -200,7 +206,9 @@
                 android:layout_marginTop="8dp"
                 android:baselineAligned="false"
                 android:orientation="horizontal"
-                android:weightSum="2">
+                android:weightSum="2"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardCalle"
@@ -214,7 +222,7 @@
                     android:focusable="true"
                     app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="14dp"
-                    app:cardElevation="1dp"
+                    app:cardElevation="3dp"
                     app:checkedIcon="@drawable/ic_check"
                     app:checkedIconGravity="TOP_END"
                     app:checkedIconMargin="6dp"
@@ -263,7 +271,7 @@
                     android:focusable="true"
                     app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="14dp"
-                    app:cardElevation="1dp"
+                    app:cardElevation="3dp"
                     app:checkedIcon="@drawable/ic_check"
                     app:checkedIconGravity="TOP_END"
                     app:checkedIconMargin="6dp"

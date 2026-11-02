@@ -29,7 +29,6 @@ import com.example.petvetericano.ui.reporte.ReporteDraftState
 import com.example.petvetericano.ui.reporte.TipoReporteItem
 import android.location.Location
 import android.os.SystemClock
-import android.util.Log
 import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
@@ -44,6 +43,7 @@ import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.card.MaterialCardView
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
@@ -164,7 +164,6 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         }
 
         binding.btnLocation.setOnClickListener {
-            if (isObteniendoUbicacion) return@setOnClickListener
             verificarPermisosUbicacion()
         }
 
@@ -236,6 +235,8 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
     private fun renderizarSeleccionTipo(tipo: TipoReporteItem?) {
         val colorPrimary = ContextCompat.getColor(this, R.color.blue)
         val colorStroke = ContextCompat.getColor(this, R.color.card_stroke)
+        val colorBackgroundSelected = ContextCompat.getColor(this, R.color.primary_light)
+        val colorBackgroundDefault = ContextCompat.getColor(this, R.color.card_background)
         val strokeSelectedPx = dpToPx(3)
         val strokeDefaultPx = dpToPx(1)
 
@@ -243,6 +244,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
             card.isChecked = seleccionado
             card.strokeWidth = if (seleccionado) strokeSelectedPx else strokeDefaultPx
             card.strokeColor = if (seleccionado) colorPrimary else colorStroke
+            card.setCardBackgroundColor(if (seleccionado) colorBackgroundSelected else colorBackgroundDefault)
             val baseTexto = getString(tituloRes)
             card.contentDescription = if (seleccionado) {
                 getString(R.string.reporte_ux_cd_tipo_seleccionado, baseTexto)
@@ -399,8 +401,8 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         return (diffMs / 1000L).coerceAtLeast(0L)
     }
 
-    private suspend fun obtenerUltimaUbicacion(): Location? =
-        withTimeoutOrNull(2_000L) {
+    private suspend fun obtenerUltimaUbicacion(timeoutMs: Long = 1_500L): Location? =
+        withTimeoutOrNull(timeoutMs) {
             suspendCancellableCoroutine { cont ->
                 try {
                     fusedLocationClient.lastLocation
@@ -436,7 +438,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun obtenerUbicacionActual() {
-        if (isObteniendoUbicacion) return
+        cancelarBusquedaUbicacionEnCurso()
         isObteniendoUbicacion = true
 
         binding.pbDireccion.visibility = View.VISIBLE
@@ -445,76 +447,65 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
 
         viewModel.iniciarCargaUbicacion(R.string.reporte_ux_obteniendo_ubicacion)
 
-        ctsUbicacion?.cancel()
-        ubicacionJob?.cancel()
-
         val cts = CancellationTokenSource()
         ctsUbicacion = cts
 
         ubicacionJob = lifecycleScope.launch {
             try {
-                val lastLoc = obtenerUltimaUbicacion()
-                val antiguedad = if (lastLoc != null) calcularAntiguedadSegundos(lastLoc) else Long.MAX_VALUE
+                val freshDeferred = async { obtenerUbicacionFresca(cts, 10_000L) }
+                val lastLoc = obtenerUltimaUbicacion(1_500L)
+                var mostroUbicacion = false
+                var antiguedad = Long.MAX_VALUE
 
-                if (lastLoc != null && antiguedad <= 120L) {
-                    Log.d("reportar_peticion", "Via ubicacion: lastLocation_reciente (antiguedad=" + antiguedad + "s)")
+                if (lastLoc != null) {
+                    antiguedad = calcularAntiguedadSegundos(lastLoc)
                     val currentLatLng = LatLng(lastLoc.latitude, lastLoc.longitude)
                     actualizarMarcador(currentLatLng, moverCamara = true)
                     viewModel.resolverDireccion(this@reportar_peticion, lastLoc.latitude, lastLoc.longitude)
+                    mostroUbicacion = true
+                    isObteniendoUbicacion = false
 
                     if (antiguedad > 30L) {
                         mostrarAvisoAproximada()
                     } else {
                         ocultarAvisoAproximada()
                     }
+                }
 
-                    val freshLoc = obtenerUbicacionFresca(cts, 4_000L)
-                    if (freshLoc != null) {
+                val freshLoc = try {
+                    freshDeferred.await()
+                } catch (_: Exception) {
+                    null
+                }
+
+                if (freshLoc != null) {
+                    val debeActualizar = if (!mostroUbicacion) {
+                        true
+                    } else {
                         val eraAproximada = antiguedad > 30L
                         val mejorPrecision = freshLoc.hasAccuracy() && (
-                            !lastLoc.hasAccuracy() || freshLoc.accuracy < lastLoc.accuracy
+                            lastLoc == null || !lastLoc.hasAccuracy() || freshLoc.accuracy < lastLoc.accuracy
                         )
-                        val distanciaMetros = lastLoc.distanceTo(freshLoc)
-                        val debeActualizar = eraAproximada || (mejorPrecision && distanciaMetros > 15f)
-
-                        if (debeActualizar) {
-                            Log.d("reportar_peticion", "Via ubicacion: fresca_refinada (distancia=" + distanciaMetros + "m)")
-                            ocultarAvisoAproximada()
-                            val freshLatLng = LatLng(freshLoc.latitude, freshLoc.longitude)
-                            actualizarMarcador(freshLatLng, moverCamara = true)
-                            viewModel.resolverDireccion(this@reportar_peticion, freshLoc.latitude, freshLoc.longitude)
-                        } else {
-                            Log.d("reportar_peticion", "Via ubicacion: fresca_descartada")
-                        }
+                        val distanciaMetros = if (lastLoc != null) lastLoc.distanceTo(freshLoc) else Float.MAX_VALUE
+                        eraAproximada || (mejorPrecision && distanciaMetros > 15f)
                     }
-                } else {
-                    val freshLoc = obtenerUbicacionFresca(cts, 10_000L)
-                    if (freshLoc != null) {
-                        Log.d("reportar_peticion", "Via ubicacion: fresca")
+
+                    if (debeActualizar) {
                         ocultarAvisoAproximada()
                         val freshLatLng = LatLng(freshLoc.latitude, freshLoc.longitude)
                         actualizarMarcador(freshLatLng, moverCamara = true)
                         viewModel.resolverDireccion(this@reportar_peticion, freshLoc.latitude, freshLoc.longitude)
                     } else {
-                        val fallbackLoc = lastLoc ?: obtenerUltimaUbicacion()
-                        if (fallbackLoc != null) {
-                            Log.d("reportar_peticion", "Via ubicacion: respaldo")
-                            mostrarAvisoAproximada()
-                            val fallbackLatLng = LatLng(fallbackLoc.latitude, fallbackLoc.longitude)
-                            actualizarMarcador(fallbackLatLng, moverCamara = true)
-                            viewModel.resolverDireccion(this@reportar_peticion, fallbackLoc.latitude, fallbackLoc.longitude)
-                        } else {
-                            Log.d("reportar_peticion", "Via ubicacion: ninguna")
-                            ocultarAvisoAproximada()
-                            isObteniendoUbicacion = false
-                            viewModel.cancelarCargaUbicacion()
-                            Toast.makeText(
-                                this@reportar_peticion,
-                                R.string.reporte_ux_error_obtener_ubicacion,
-                                Toast.LENGTH_SHORT
-                            ).show()
-                        }
                     }
+                } else if (!mostroUbicacion) {
+                    ocultarAvisoAproximada()
+                    isObteniendoUbicacion = false
+                    viewModel.cancelarCargaUbicacion()
+                    Toast.makeText(
+                        this@reportar_peticion,
+                        R.string.reporte_ux_error_obtener_ubicacion,
+                        Toast.LENGTH_SHORT
+                    ).show()
                 }
             } catch (_: Exception) {
             } finally {

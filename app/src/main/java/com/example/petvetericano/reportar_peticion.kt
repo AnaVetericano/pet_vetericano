@@ -80,6 +80,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
 
     private val prefsReportes = "MisReportesPrefs"
     private val keyIdTipoSeleccionado = "ID_TIPO_SELECCIONADO"
+    private val keyTipoReporte = "TIPO_REPORTE"
 
     private val locationPermissionRequest = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -601,6 +602,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         getSharedPreferences(prefsReportes, MODE_PRIVATE)
             .edit()
             .putInt(keyIdTipoSeleccionado, tipo.idTipo)
+            .putString(keyTipoReporte, tipo.nombreRemoto)
             .apply()
 
         val puntoReferencia = binding.etSearch.text?.toString()?.trim().orEmpty()

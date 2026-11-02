@@ -646,10 +646,23 @@ class reportar_peticionnn : AppCompatActivity() {
         banderasVideo: BooleanArray
     ) {
         val referencia = intent.getStringExtra("PUNTO_REFERENCIA")
-        val idTipoRecibido = intent.getIntExtra("ID_TIPO_SELECCIONADO", 1)
+        val idTipoIntent = intent.getIntExtra("ID_TIPO_SELECCIONADO", -1)
+        val prefsReportes = getSharedPreferences("MisReportesPrefs", MODE_PRIVATE)
+        val idTipoPrefs = if (prefsReportes.contains("ID_TIPO_SELECCIONADO")) {
+            prefsReportes.getInt("ID_TIPO_SELECCIONADO", -1)
+        } else {
+            -1
+        }
+        val idTipoRecibido = if (idTipoIntent > 0) idTipoIntent else idTipoPrefs
+        val tipoReporteFinal = tipoReporte ?: prefsReportes.getString("TIPO_REPORTE", null)
+
+        if (idTipoRecibido <= 0) {
+            Toast.makeText(this, R.string.reporte_ux_error_tipo_no_definido, Toast.LENGTH_SHORT).show()
+            return
+        }
 
         val intent = Intent(this, confirmar_reporte::class.java).apply {
-            putExtra("TIPO_REPORTE", tipoReporte)
+            putExtra("TIPO_REPORTE", tipoReporteFinal)
             putExtra("DESCRIPCION", descripcion)
             putStringArrayListExtra("RUTAS_ARCHIVOS", rutasArchivos)
             putExtra("ES_VIDEO", banderasVideo)

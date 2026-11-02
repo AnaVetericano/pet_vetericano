@@ -37,7 +37,9 @@ class confirmar_reporte : AppCompatActivity() {
         val descripcionRecibida = intent.getStringExtra("DESCRIPCION")
         binding.descri.text = descripcionRecibida ?: getString(R.string.acta_offline_sin_observaciones)
 
+        val prefsReportes = getSharedPreferences("MisReportesPrefs", MODE_PRIVATE)
         val tipoReporte = intent.getStringExtra("TIPO_REPORTE")
+            ?: if (prefsReportes.contains("TIPO_REPORTE")) prefsReportes.getString("TIPO_REPORTE", null) else null
         binding.tvTipoReporte.text = tipoReporte ?: getString(R.string.reporte_offline_tipo_predeterminado)
 
         val latitudCruda = intent.getDoubleExtra("LATITUD", 0.0)
@@ -64,7 +66,12 @@ class confirmar_reporte : AppCompatActivity() {
         }
 
         binding.ubicacionedit.setOnClickListener {
-            startActivity(Intent(this, reportar_peticionn::class.java))
+            val idTipoIntent = intent.getIntExtra("ID_TIPO_SELECCIONADO", -1)
+            val intent = Intent(this, reportar_peticionn::class.java).apply {
+                if (idTipoIntent > 0) putExtra("ID_TIPO_SELECCIONADO", idTipoIntent)
+                if (tipoReporte != null) putExtra("TIPO_REPORTE", tipoReporte)
+            }
+            startActivity(intent)
         }
 
         binding.tipoPeticion.setOnClickListener {
@@ -72,14 +79,44 @@ class confirmar_reporte : AppCompatActivity() {
         }
 
         binding.descripedit.setOnClickListener {
-            startActivity(Intent(this, reportar_peticionnn::class.java))
+            val idTipoIntent = intent.getIntExtra("ID_TIPO_SELECCIONADO", -1)
+            val intent = Intent(this, reportar_peticionnn::class.java).apply {
+                if (idTipoIntent > 0) putExtra("ID_TIPO_SELECCIONADO", idTipoIntent)
+                if (tipoReporte != null) putExtra("TIPO_REPORTE", tipoReporte)
+            }
+            startActivity(intent)
         }
 
         binding.archivosedi.setOnClickListener {
-            startActivity(Intent(this, reportar_peticionnn::class.java))
+            val idTipoIntent = intent.getIntExtra("ID_TIPO_SELECCIONADO", -1)
+            val intent = Intent(this, reportar_peticionnn::class.java).apply {
+                if (idTipoIntent > 0) putExtra("ID_TIPO_SELECCIONADO", idTipoIntent)
+                if (tipoReporte != null) putExtra("TIPO_REPORTE", tipoReporte)
+            }
+            startActivity(intent)
         }
 
         binding.btnenvR.setOnClickListener {
+            val idTipoIntent = intent.getIntExtra("ID_TIPO_SELECCIONADO", -1)
+            val prefs = getSharedPreferences("MisReportesPrefs", MODE_PRIVATE)
+            val idTipoPrefs = if (prefs.contains("ID_TIPO_SELECCIONADO")) {
+                prefs.getInt("ID_TIPO_SELECCIONADO", -1)
+            } else {
+                -1
+            }
+            val idTipoFinal = if (idTipoIntent > 0) {
+                idTipoIntent
+            } else if (idTipoPrefs > 0) {
+                idTipoPrefs
+            } else {
+                -1
+            }
+
+            if (idTipoFinal <= 0) {
+                Toast.makeText(this, R.string.reporte_ux_error_tipo_no_definido, Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+
             binding.btnenvR.isEnabled = false
             Toast.makeText(this, R.string.reporte_offline_guardando_reporte, Toast.LENGTH_SHORT).show()
 
@@ -87,28 +124,18 @@ class confirmar_reporte : AppCompatActivity() {
                 val dirFinal = direccionResuelta ?: resolverDireccion(latitud, longitud)
                 direccionResuelta = dirFinal
 
-                val prefsReportes = getSharedPreferences("MisReportesPrefs", MODE_PRIVATE)
-                val idTipoPrefs = if (prefsReportes.contains("ID_TIPO_SELECCIONADO")) {
-                    prefsReportes.getInt("ID_TIPO_SELECCIONADO", -1)
-                } else {
-                    -1
-                }
-                val idTipoFinal = if (idTipoPrefs > 0) {
-                    idTipoPrefs
-                } else {
-                    intent.getIntExtra("ID_TIPO_SELECCIONADO", 1)
-                }
-
                 val evidenciasList = mutableListOf<Pair<String, Boolean>>()
                 for (i in rutasArchivos.indices) {
                     val esVideo = if (i < esVideoBanderas.size) esVideoBanderas[i] else false
                     evidenciasList.add(Pair(rutasArchivos[i], esVideo))
                 }
 
+                val tipoNombreFinal = tipoReporte ?: getString(R.string.reporte_offline_tipo_predeterminado)
+
                 val idLocal = ReporteEncolador.encolar(
                     context = this@confirmar_reporte,
                     idTipo = idTipoFinal,
-                    tipoNombre = tipoReporte ?: getString(R.string.reporte_offline_tipo_predeterminado),
+                    tipoNombre = tipoNombreFinal,
                     descripcion = descripcionRecibida ?: "",
                     direccion = dirFinal,
                     latitud = latitud,

@@ -50,7 +50,7 @@
             android:fontFamily="@font/nunito_bold"
             android:paddingHorizontal="8dp"
             android:paddingVertical="2dp"
-            android:text="/ Peticionario"
+            android:text="👤 Rol: Ciudadano / Peticionario"
             android:textColor="@color/text_secondary"
             android:textSize="11sp" />
     </LinearLayout>

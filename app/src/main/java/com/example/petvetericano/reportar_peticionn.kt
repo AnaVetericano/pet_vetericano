@@ -97,11 +97,24 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
                 // Limpiamos el borrador del mapa al avanzar con éxito
                 getSharedPreferences(PREFS_MAPA, MODE_PRIVATE).edit().clear().apply()
 
+                val prefsReportes = getSharedPreferences("MisReportesPrefs", MODE_PRIVATE)
+                val idTipoIntent = intent.getIntExtra("ID_TIPO_SELECCIONADO", -1)
+                val idTipoPrefs = if (prefsReportes.contains("ID_TIPO_SELECCIONADO")) {
+                    prefsReportes.getInt("ID_TIPO_SELECCIONADO", -1)
+                } else {
+                    -1
+                }
+                val idTipoFinal = if (idTipoIntent > 0) idTipoIntent else idTipoPrefs
+                val tipoFinal = tipoReporte ?: prefsReportes.getString("TIPO_REPORTE", null)
+
                 val intent = Intent(this, reportar_peticionnn::class.java).apply {
-                    putExtra("TIPO_REPORTE", tipoReporte)
+                    putExtra("TIPO_REPORTE", tipoFinal)
                     putExtra("LATITUD", selectedLatLng?.latitude)
                     putExtra("LONGITUD", selectedLatLng?.longitude)
                     putExtra("PUNTO_REFERENCIA", referenciaText)
+                    if (idTipoFinal > 0) {
+                        putExtra("ID_TIPO_SELECCIONADO", idTipoFinal)
+                    }
                 }
                 startActivity(intent)
             } else {
@@ -232,9 +245,10 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
                 }
             }
         }
-        val idTipo = intent.getIntExtra("ID_TIPO_SELECCIONADO", 1)
-
-        intent.putExtra("ID_TIPO_SELECCIONADO", idTipo)
+        val idTipo = intent.getIntExtra("ID_TIPO_SELECCIONADO", -1)
+        if (idTipo > 0) {
+            intent.putExtra("ID_TIPO_SELECCIONADO", idTipo)
+        }
     }
 
 }

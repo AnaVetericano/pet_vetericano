@@ -31,6 +31,7 @@ import com.example.petvetericano.databinding.ActivityReportarPeticionUnificadaBi
 import com.example.petvetericano.databinding.BottomSheetAdjuntarEvidenciaBinding
 import com.example.petvetericano.models.TipoPeticionResponse
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.ui.reporte.BottomSheetConfirmarReporte
 import com.example.petvetericano.ui.reporte.CaptureVideoConLimites
 import com.example.petvetericano.ui.reporte.EvidenciaItemLocal
 import com.example.petvetericano.ui.reporte.MiniaturasAdapter
@@ -82,6 +83,13 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
     private var isObteniendoUbicacion = false
     private var ctsUbicacion: CancellationTokenSource? = null
     private var ubicacionJob: Job? = null
+    private var reporteEncoladoExitoso = false
+
+    fun marcarReporteEncoladoExitoso() {
+        reporteEncoladoExitoso = true
+        binding.etSearch.text?.clear()
+        binding.etDescripcion.text?.clear()
+    }
 
     private val prefsCache = "ReporteTiposCachePrefs"
     private val keyCache = "ReporteTiposCache"
@@ -193,6 +201,10 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
                     }
                     ResultadoValidacionVideo.ErrorLectura -> {
                         viewModel.limpiarPendingCamera()
+                        mostrarDialogoErrorVideo(
+                            R.string.reporte_ux_error_video_invalido_titulo,
+                            R.string.reporte_ux_error_video_invalido
+                        )
                     }
                 }
             }
@@ -231,7 +243,12 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
                                 R.string.reporte_ux_error_video_excede_duracion
                             )
                         }
-                        ResultadoValidacionVideo.ErrorLectura -> {}
+                        ResultadoValidacionVideo.ErrorLectura -> {
+                            mostrarDialogoErrorVideo(
+                                R.string.reporte_ux_error_video_invalido_titulo,
+                                R.string.reporte_ux_error_video_invalido
+                            )
+                        }
                     }
                 }
             }
@@ -746,6 +763,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onPause() {
         super.onPause()
+        if (reporteEncoladoExitoso) return
         val textoActual = binding.etSearch.text?.toString().orEmpty()
         val prefs = getSharedPreferences(prefsMapa, MODE_PRIVATE)
         val editor = prefs.edit()
@@ -1025,28 +1043,15 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
             return
         }
 
-        val latitud = state.latitud ?: 0.0
-        val longitud = state.longitud ?: 0.0
-        val puntoReferencia = binding.etSearch.text?.toString()?.trim().orEmpty()
-
-        val rutas = ArrayList<String>()
-        val banderasVideo = BooleanArray(state.evidencias.size)
-        for ((i, item) in state.evidencias.withIndex()) {
-            rutas.add(item.localPath)
-            banderasVideo[i] = item.esVideo
+        if (!state.ubicacionSeleccionadaPorUsuario || state.latitud == null || state.longitud == null) {
+            Toast.makeText(this, R.string.reporte_ux_error_falta_ubicacion, Toast.LENGTH_SHORT).show()
+            return
         }
 
-        val intent = Intent(this, confirmar_reporte::class.java).apply {
-            putExtra("TIPO_REPORTE", tipo.nombreRemoto)
-            putExtra("DESCRIPCION", descripcion)
-            putStringArrayListExtra("RUTAS_ARCHIVOS", rutas)
-            putExtra("ES_VIDEO", banderasVideo)
-            putExtra("LATITUD", latitud)
-            putExtra("LONGITUD", longitud)
-            putExtra("PUNTO_REFERENCIA", puntoReferencia)
-            putExtra("ID_TIPO_SELECCIONADO", tipo.idTipo)
+        val existente = supportFragmentManager.findFragmentByTag(BottomSheetConfirmarReporte.TAG)
+        if (existente == null && !supportFragmentManager.isStateSaved) {
+            BottomSheetConfirmarReporte().show(supportFragmentManager, BottomSheetConfirmarReporte.TAG)
         }
-        startActivity(intent)
     }
 
     private fun cargarTipos() {

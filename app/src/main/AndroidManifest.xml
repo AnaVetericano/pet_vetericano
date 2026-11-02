@@ -59,10 +59,6 @@
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
         <activity
-            android:name=".confirmar_reporte"
-            android:exported="true"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
             android:name=".editar_perfil"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
@@ -81,16 +77,6 @@
         <activity
             android:name=".reportar_peticion"
             android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
-            android:name=".reportar_peticionn"
-            android:exported="false"
-            android:windowSoftInputMode="adjustResize" />
-        <activity
-            android:name=".reportar_peticionnn"
-            android:exported="false"
-            android:screenOrientation="portrait"
-            android:configChanges="orientation|screenSize|screenLayout|keyboardHidden"
             android:windowSoftInputMode="adjustResize" />
         <activity
             android:name=".reporte_enviado"

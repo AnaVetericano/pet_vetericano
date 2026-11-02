@@ -713,4 +713,9 @@
     <string name="reporte_ux_btn_revisar_reporte">Revisar reporte</string>
     <string name="reporte_ux_cd_eliminar_evidencia">Eliminar evidencia</string>
     <string name="reporte_ux_error_permiso_camara">Permiso de cámara requerido para capturar evidencias</string>
+    <!-- Tarea R3: Validacion de video invalido y Modal Bottom Sheet de confirmacion -->
+    <string name="reporte_ux_error_video_invalido_titulo">Error en el video</string>
+    <string name="reporte_ux_error_video_invalido">No se pudo leer el archivo de video. Por favor selecciona o graba un video válido.</string>
+    <string name="reporte_ux_btn_editar">Editar</string>
+    <string name="reporte_ux_aviso_sin_conexion">Sin conexión a internet. El reporte se guardará en tu teléfono y se enviará automáticamente al reconectarse.</string>
 </resources>

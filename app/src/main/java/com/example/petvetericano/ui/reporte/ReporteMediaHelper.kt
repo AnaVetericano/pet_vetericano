@@ -174,11 +174,17 @@ object ReporteMediaHelper {
             retriever.setDataSource(archivo.absolutePath)
             val duracionStr = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)
             val duracionMs = duracionStr?.toLongOrNull() ?: 0L
+            if (duracionMs <= 0L) {
+                archivo.delete()
+                return@withContext ResultadoValidacionVideo.ErrorLectura
+            }
             if (duracionMs > LIMITE_VIDEO_DURACION_MS) {
                 archivo.delete()
                 return@withContext ResultadoValidacionVideo.ExcedeDuracion
             }
         } catch (_: Exception) {
+            archivo.delete()
+            return@withContext ResultadoValidacionVideo.ErrorLectura
         } finally {
             try {
                 retriever.release()

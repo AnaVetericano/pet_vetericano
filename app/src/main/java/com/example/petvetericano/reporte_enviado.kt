@@ -19,11 +19,41 @@ import kotlinx.coroutines.withContext
 class reporte_enviado : AppCompatActivity() {
 
     private lateinit var binding: ActivityReporteEnviadoBinding
+    private var yaAnuncioEnviando = false
+    private var yaEstaEnviado = false
+    private var ultimoRadicado: String? = null
+
+    companion object {
+        private const val KEY_ENVIADO = "KEY_ENVIADO"
+        private const val KEY_RADICADO = "KEY_RADICADO"
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
         binding = ActivityReporteEnviadoBinding.inflate(layoutInflater)
+
+        val idLocal = intent.getLongExtra("ID_LOCAL", -1L)
+        val hayConexion = intent.getBooleanExtra("HAY_CONEXION", false)
+
+        val fueEnviadoPrevio = savedInstanceState?.getBoolean(KEY_ENVIADO, false) ?: false
+        ultimoRadicado = savedInstanceState?.getString(KEY_RADICADO)
+
+        // Decisión de visibilidad inicial ANTES del primer frame para evitar parpadeos
+        if (fueEnviadoPrevio) {
+            yaEstaEnviado = true
+            binding.layoutEnviando.visibility = View.GONE
+            binding.layoutResultado.visibility = View.VISIBLE
+            binding.layoutResultado.alpha = 1f
+        } else if (hayConexion && idLocal > 0L) {
+            binding.layoutEnviando.visibility = View.VISIBLE
+            binding.layoutResultado.visibility = View.GONE
+        } else {
+            binding.layoutEnviando.visibility = View.GONE
+            binding.layoutResultado.visibility = View.VISIBLE
+            binding.layoutResultado.alpha = 1f
+        }
+
         setContentView(binding.root)
 
         val prefs = SharedPreferencesManager(this)
@@ -37,10 +67,12 @@ class reporte_enviado : AppCompatActivity() {
 
         binding.cardReporteNumber.visibility = View.GONE
 
-        val idLocal = intent.getLongExtra("ID_LOCAL", -1L)
-        val hayConexion = intent.getBooleanExtra("HAY_CONEXION", false)
-
-        if (idLocal > 0L) {
+        if (fueEnviadoPrevio) {
+            mostrarEstadoExito(ultimoRadicado, animar = false)
+        } else if (idLocal > 0L) {
+            if (hayConexion) {
+                mostrarEstadoEnviando()
+            }
             verificarYProcesarReporte(idLocal, hayConexion, prefs)
         } else {
             mostrarEstadoSinConexion()
@@ -59,6 +91,12 @@ class reporte_enviado : AppCompatActivity() {
                 volverAlMenuPrincipal()
             }
         })
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putBoolean(KEY_ENVIADO, yaEstaEnviado)
+        outState.putString(KEY_RADICADO, ultimoRadicado)
     }
 
     private fun volverAlMenuPrincipal() {
@@ -89,7 +127,11 @@ class reporte_enviado : AppCompatActivity() {
                 return@launch
             }
 
-            if (hayConexion) {
+            if (reporte.estado == EstadoReporteLocal.ENVIADO) {
+                mostrarEstadoExito(reporte.numeroRadicado, animar = false)
+            } else if (reporte.estado == EstadoReporteLocal.REQUIERE_ATENCION) {
+                mostrarEstadoRequiereAtencion()
+            } else if (hayConexion) {
                 iniciarSeguimientoEnvio(idLocal)
             } else {
                 mostrarEstadoSinConexion()
@@ -97,15 +139,33 @@ class reporte_enviado : AppCompatActivity() {
         }
     }
 
+    private fun mostrarEstadoEnviando() {
+        binding.layoutResultado.visibility = View.GONE
+        binding.layoutEnviando.visibility = View.VISIBLE
+        binding.progressBarReporte.visibility = View.VISIBLE
+
+        if (!yaAnuncioEnviando) {
+            yaAnuncioEnviando = true
+            binding.layoutEnviando.announceForAccessibility(getString(R.string.reporte_ux_enviando_titulo))
+        }
+    }
+
     private fun mostrarEstadoSinConexion() {
+        binding.layoutEnviando.visibility = View.GONE
         binding.progressBarReporte.visibility = View.GONE
+        binding.layoutResultado.alpha = 1f
+        binding.layoutResultado.visibility = View.VISIBLE
         binding.textView5.visibility = View.VISIBLE
         binding.textView5.text = getString(R.string.reporte_offline_enviado_sin_conexion)
         binding.textView6.visibility = View.GONE
         binding.cardReporteNumber.visibility = View.GONE
     }
 
-    private fun mostrarEstadoExito(numeroRadicado: String?) {
+    private fun mostrarEstadoExito(numeroRadicado: String?, animar: Boolean = true) {
+        yaEstaEnviado = true
+        ultimoRadicado = numeroRadicado
+
+        binding.layoutEnviando.visibility = View.GONE
         binding.progressBarReporte.visibility = View.GONE
         binding.textView5.visibility = View.VISIBLE
         binding.textView5.text = getString(R.string.lbl_tu_reporte_ha_sido_enviado)
@@ -119,10 +179,26 @@ class reporte_enviado : AppCompatActivity() {
         } else {
             binding.cardReporteNumber.visibility = View.GONE
         }
+
+        if (animar) {
+            binding.layoutResultado.apply {
+                alpha = 0f
+                visibility = View.VISIBLE
+                animate().alpha(1f).setDuration(200L).start()
+            }
+        } else {
+            binding.layoutResultado.alpha = 1f
+            binding.layoutResultado.visibility = View.VISIBLE
+        }
+
+        binding.layoutResultado.announceForAccessibility(getString(R.string.lbl_tu_reporte_ha_sido_enviado))
     }
 
     private fun mostrarEstadoRequiereAtencion() {
+        binding.layoutEnviando.visibility = View.GONE
         binding.progressBarReporte.visibility = View.GONE
+        binding.layoutResultado.alpha = 1f
+        binding.layoutResultado.visibility = View.VISIBLE
         binding.textView5.visibility = View.VISIBLE
         binding.textView5.text = getString(R.string.reporte_offline_requiere_atencion_mensaje)
         binding.textView6.visibility = View.GONE
@@ -130,11 +206,7 @@ class reporte_enviado : AppCompatActivity() {
     }
 
     private fun iniciarSeguimientoEnvio(idLocal: Long) {
-        binding.progressBarReporte.visibility = View.VISIBLE
-        binding.textView5.visibility = View.VISIBLE
-        binding.textView5.text = getString(R.string.reporte_offline_enviando_reporte)
-        binding.textView6.visibility = View.GONE
-        binding.cardReporteNumber.visibility = View.GONE
+        mostrarEstadoEnviando()
 
         lifecycleScope.launch {
             val repo = ReporteLocalRepository.getInstance(this@reporte_enviado)
@@ -157,7 +229,7 @@ class reporte_enviado : AppCompatActivity() {
                     when (reporte.estado) {
                         EstadoReporteLocal.ENVIADO -> {
                             resuelto = true
-                            mostrarEstadoExito(reporte.numeroRadicado)
+                            mostrarEstadoExito(reporte.numeroRadicado, animar = true)
                             break
                         }
                         EstadoReporteLocal.REQUIERE_ATENCION -> {

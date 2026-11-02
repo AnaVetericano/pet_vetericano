@@ -701,4 +701,8 @@
     <string name="reporte_ux_ubicacion_aproximada">Ubicación aproximada. Ajústala tocando el mapa.</string>
     <!-- Tarea R1.7: Propagacion explicita del tipo de reporte -->
     <string name="reporte_ux_error_tipo_no_definido">Tipo de reporte no definido o inválido</string>
+    <!-- Tarea PF1: Estados de la pantalla final reporte_enviado -->
+    <string name="reporte_ux_enviando_titulo">Enviando reporte</string>
+    <string name="reporte_ux_enviando_espera">Por favor, espere mientras se envía su reporte.</string>
+    <string name="reporte_ux_enviando_descripcion_spinner">Progreso de envío del reporte</string>
 </resources>

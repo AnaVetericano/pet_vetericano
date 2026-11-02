@@ -40,7 +40,9 @@
     <!-- ============================================================ -->
     <!-- 2. AUTENTICACIÓN, REGISTRO & BIENVENIDA                    -->
     <!-- ============================================================ -->
+
     <string name="lbl_hola">Hola,</string>
+    <string name="lbl_rol_principal">Rol: Ciudadano</string>
     <string name="lbl_gracias_por_ayudar">¡Gracias por ayudar!</string>
     <string name="lbl_que_deseas_hacer_hoy">¿Qué deseas hacer hoy?</string>
     <string name="lbl_reportar_incidencia">Reportar\nIncidencia</string>

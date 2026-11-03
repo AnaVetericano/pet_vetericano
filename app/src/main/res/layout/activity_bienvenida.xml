@@ -102,8 +102,7 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-        android:gravity="center_vertical"
+            android:orientation="vertical"
             android:paddingHorizontal="20dp"
             android:paddingBottom="16dp">
 
@@ -144,8 +143,7 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:orientation="horizontal"
-        android:gravity="center_vertical">
+                        android:orientation="vertical">
 
                         <TextView
                             android:id="@+id/tvReportarPeticion"
@@ -220,8 +218,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:gravity="center"
-                        android:orientation="horizontal"
-        android:gravity="center_vertical"
+                        android:orientation="vertical"
                         android:padding="16dp">
 
                         <com.google.android.material.card.MaterialCardView
@@ -286,8 +283,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:gravity="center"
-                        android:orientation="horizontal"
-        android:gravity="center_vertical"
+                        android:orientation="vertical"
                         android:padding="16dp">
 
                         <com.google.android.material.card.MaterialCardView

@@ -17,6 +17,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.app.AppCompatDelegate
 import androidx.lifecycle.lifecycleScope
 import androidx.viewpager2.widget.ViewPager2
 import com.example.petvetericano.databinding.ActivityBienvenidaBinding
@@ -43,6 +44,9 @@ class bienvenida : AppCompatActivity() {
         binding = ActivityBienvenidaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        configurarBotonModoOscuro()
+        configurarBotonPerfil()
+
         // Usamos la misma clase que en el login para leer el token
         val prefs = SharedPreferencesManager(this)
         val token = prefs.getAccessToken()
@@ -66,6 +70,7 @@ class bienvenida : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        actualizarIconoModoOscuro()
         // Al regresar de editar perfil, refrescamos los datos para mostrar el nombre actualizado
         val prefs = SharedPreferencesManager(this)
         val token = prefs.getAccessToken()
@@ -111,11 +116,13 @@ class bienvenida : AppCompatActivity() {
     private fun cargarDashboard() {
         val prefs = SharedPreferencesManager(this)
         // Carga inmediata del nombre guardado en caché local para que no parpadee
-        val nombreLocal = prefs.getUserName()
+        val nombreLocal = prefs.getUserName().trim()
+        val apellidoLocal = prefs.getUserLastName().trim()
         if (nombreLocal.isNotEmpty()) {
             binding.tvSaludo.text = "Hola, $nombreLocal"
         }
-        binding.tvRolCiudadano.text = "👤 Rol: Ciudadano / Peticionario"
+        actualizarInicialesAvatar(nombreLocal, apellidoLocal)
+        binding.tvRolCiudadano.setText(R.string.dashboard_ux_rol_ciudadano)
 
         lifecycleScope.launch {
             try {
@@ -136,7 +143,8 @@ class bienvenida : AppCompatActivity() {
                         if (saludo.isNotEmpty()) {
                             binding.tvSaludo.text = "Hola, $saludo"
                         }
-                        binding.tvRolCiudadano.text = "👤 Rol: Ciudadano / Peticionario"
+                        actualizarInicialesAvatar(soloNombre, soloApellido)
+                        binding.tvRolCiudadano.setText(R.string.dashboard_ux_rol_ciudadano)
                         // Guardamos nombre y apellido POR SEPARADO (fix: antes quedaba
                         // "nombre apellido" todo junto en USER_NAME y el perfil salia descuadrado).
                         if (soloNombre.isNotEmpty()) {
@@ -357,5 +365,45 @@ class bienvenida : AppCompatActivity() {
                 Toast.makeText(this@bienvenida, "Error de conexión. Revisa tu internet.", Toast.LENGTH_LONG).show()
             }
         }
+    }
+
+    private fun configurarBotonModoOscuro() {
+        actualizarIconoModoOscuro()
+        binding.btnThemeToggle.setOnClickListener {
+            val sharedPreferences = getSharedPreferences("ThemePrefs", MODE_PRIVATE)
+            val nuevoModo = !sharedPreferences.getBoolean("isDarkMode", false)
+            sharedPreferences.edit().putBoolean("isDarkMode", nuevoModo).apply()
+
+            if (nuevoModo) {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES)
+            } else {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO)
+            }
+        }
+    }
+
+    private fun actualizarIconoModoOscuro() {
+        val sharedPreferences = getSharedPreferences("ThemePrefs", MODE_PRIVATE)
+        val isDarkMode = sharedPreferences.getBoolean("isDarkMode", false)
+        binding.btnThemeToggle.setImageResource(
+            if (isDarkMode) R.drawable.baseline_light_mode_24 else R.drawable.baseline_dark_mode_24
+        )
+    }
+
+    private fun configurarBotonPerfil() {
+        binding.tvInicialesAvatar.setOnClickListener {
+            startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
+        }
+    }
+
+    private fun actualizarInicialesAvatar(nombre: String, apellido: String) {
+        val n = nombre.trim()
+        val a = apellido.trim()
+        val iniciales = buildString {
+            if (n.isNotEmpty()) append(n.first().uppercaseChar())
+            if (a.isNotEmpty()) append(a.first().uppercaseChar())
+            else if (n.length > 1) append(n[1].uppercaseChar())
+        }
+        binding.tvInicialesAvatar.text = iniciales.ifEmpty { "C" }
     }
 }

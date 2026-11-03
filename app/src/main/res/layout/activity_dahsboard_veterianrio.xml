@@ -66,11 +66,11 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="3dp"
                             android:background="@drawable/bg_rounded_badge"
-                            android:backgroundTint="@color/badge_alta_bg"
+                            android:backgroundTint="@color/primary_light"
                             android:fontFamily="@font/nunito_bold"
                             android:paddingHorizontal="8dp"
                             android:paddingVertical="2dp"
-                            android:text="👨‍⚕️ Rol: Médico Veterinario CBA"
+                            android:text="@string/dashboard_ux_rol_veterinario"
                             android:textColor="@color/primary"
                             android:textSize="11sp" />
                     </LinearLayout>

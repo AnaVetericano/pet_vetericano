@@ -99,7 +99,11 @@ object CloudinaryUploadHelper {
                     .upload(file.absolutePath)
                     .unsigned(UPLOAD_PRESET)
                     .option("resource_type", tipoRecurso)
-                    .callback(object : UploadCallback {
+                if (esVideo) {
+                    uploadRequest.option("read_timeout", 300_000)
+                    uploadRequest.option("connect_timeout", 60_000)
+                }
+                uploadRequest.callback(object : UploadCallback {
                         override fun onStart(reqId: String?) {
                             // Sin acción en inicio
                         }
@@ -247,7 +251,11 @@ object CloudinaryUploadHelper {
                     .upload(uri)
                     .unsigned(UPLOAD_PRESET)
                     .option("resource_type", tipoRecurso)
-                    .callback(object : UploadCallback {
+                if (esVideo) {
+                    uploadRequest.option("read_timeout", 300_000)
+                    uploadRequest.option("connect_timeout", 60_000)
+                }
+                uploadRequest.callback(object : UploadCallback {
                         override fun onStart(reqId: String?) {}
                         override fun onProgress(reqId: String?, bytes: Long, totalBytes: Long) {}
                         override fun onSuccess(reqId: String?, resultData: Map<*, *>?) {

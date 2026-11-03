@@ -3320,14 +3320,39 @@ class ActaAtencionActivity : AppCompatActivity() {
                             mensajeExito += "\n\n⚠️ Advertencia de stock en farmacia:\n$descConflictos"
                         }
                         val maletin = MaletinManager.getInstance(this@ActaAtencionActivity)
-                        val medsCriticos = maletin.getMedicamentos().filter { it.esCritico }
+                        // 1. Obtener los medicamentos que se aplicaron durante esta atención clínica
+                        val idsAplicadosEnActa = medicamentosAplicadosList.map { it.idMedicamentoInt }.filter { it > 0 }.toSet()
+                        val todosMedsMaletin = maletin.getMedicamentos().associateBy { it.idMedicamentoInt }
+                        val medsEnTramiteIds = maletin.getMedicamentosEnTramiteIds()
+                        val mapaTramiteInfo = maletin.getMapaMedicamentosEnTramite()
 
-                        if (medsCriticos.isNotEmpty()) {
-                            val resumenCriticos = medsCriticos.joinToString("\n") { m ->
-                                val cuotaTxt = m.cuotaAsignada?.let { "/ $it" } ?: ""
-                                "• ${m.nombre}: ${m.saldoDisponibleInt} $cuotaTxt ${m.unidadMedida} (${m.nivelSemaforo.etiqueta})"
+                        // Filtrar los medicamentos gastados en este procedimiento médico que quedaron en nivel crítico, reorden o con cuota faltante
+                        val medsGastadosEnActa = idsAplicadosEnActa.mapNotNull { todosMedsMaletin[it] }
+                        val medsGastadosRequierenRepo = medsGastadosEnActa.filter { med ->
+                            med.esCritico || med.saldoDisponibleInt <= 0 || med.unidadesFaltantesParaCuota > 0 ||
+                                med.nivelSemaforo == com.example.petvetericano.models.NivelSemaforoStock.CRITICO ||
+                                med.nivelSemaforo == com.example.petvetericano.models.NivelSemaforoStock.REORDEN ||
+                                med.nivelSemaforo == com.example.petvetericano.models.NivelSemaforoStock.AGOTADO
+                        }
+
+                        // Separar los que ya tienen trámite previo activo (anti-duplicado) de los que se deben radicar ahora
+                        val (gastadosEnTramite, gastadosPorSolicitar) = medsGastadosRequierenRepo.partition { it.idMedicamentoInt in medsEnTramiteIds }
+
+                        if (gastadosPorSolicitar.isNotEmpty()) {
+                            val resumenGastados = gastadosPorSolicitar.joinToString("\n") { m ->
+                                val cuotaTxt = m.cuotaAsignada?.let { " / cuota $it" } ?: ""
+                                "• ${m.nombre}: Stock restante ${m.saldoDisponibleInt}$cuotaTxt ${m.unidadMedida} (Faltan: ${m.unidadesFaltantesParaCuota.coerceAtLeast(1)} uds)"
                             }
-                            val mensajeProactivo = "$mensajeExito\n\n⚠️ Stock crítico en tu maletín:\n$resumenCriticos\n\n¿Deseas enviar una Solicitud de Reposición automática a la administración de Farmacia CBA?"
+                            var mensajeProactivo = "$mensajeExito\n\n⚠️ Medicamento(s) administrado(s) en esta atención que requieren reposición urgente:\n$resumenGastados\n\n¿Deseas enviar una Solicitud de Reposición automática (1 Clic) a Farmacia CBA?"
+
+                            if (gastadosEnTramite.isNotEmpty()) {
+                                val detalleTramite = gastadosEnTramite.joinToString("\n") { g ->
+                                    val info = mapaTramiteInfo[g.idMedicamentoInt]
+                                    val solTxt = if (info != null && info.first > 0) "#${info.first}" else "en cola offline"
+                                    "• ${g.nombre}: Solicitud $solTxt en trámite"
+                                }
+                                mensajeProactivo += "\n\n⏳ Ya en trámite ante farmacia:\n$detalleTramite"
+                            }
 
                             MaterialAlertDialogBuilder(this@ActaAtencionActivity)
                                 .setIcon(R.drawable.ic_sync)
@@ -3336,7 +3361,7 @@ class ActaAtencionActivity : AppCompatActivity() {
                                 .setCancelable(false)
                                 .setPositiveButton("Solicitar Reposición (1 Clic)") { dialog, _ ->
                                     dialog.dismiss()
-                                    val items = medsCriticos.map { m ->
+                                    val items = gastadosPorSolicitar.map { m ->
                                         ItemSolicitudInput(
                                             idMedicamento = m.idMedicamentoInt,
                                             cantidad = m.unidadesFaltantesParaCuota.coerceAtLeast(1)
@@ -3351,6 +3376,21 @@ class ActaAtencionActivity : AppCompatActivity() {
                                     enviarSolicitudReposicionRapida(reqRepo)
                                 }
                                 .setNegativeButton("Finalizar") { dialog, _ ->
+                                    dialog.dismiss()
+                                    setResult(Activity.RESULT_OK)
+                                    finish()
+                                }
+                                .show()
+                        } else if (gastadosEnTramite.isNotEmpty()) {
+                            val nombresTramite = gastadosEnTramite.joinToString(", ") { it.nombre }
+                            val mensajeAntiduplicado = "$mensajeExito\n\nℹ️ Control Anti-Duplicados:\nEl medicamento utilizado ($nombresTramite) ya cuenta con una solicitud de reposición previa en trámite ante Farmacia CBA. Se evita enviar una solicitud repetida para prevenir duplicidad de inventario."
+
+                            MaterialAlertDialogBuilder(this@ActaAtencionActivity)
+                                .setIcon(R.drawable.ic_check)
+                                .setTitle("Atención registrada con éxito")
+                                .setMessage(mensajeAntiduplicado)
+                                .setCancelable(false)
+                                .setPositiveButton("Finalizar") { dialog, _ ->
                                     dialog.dismiss()
                                     setResult(Activity.RESULT_OK)
                                     finish()
@@ -4634,31 +4674,95 @@ class ActaAtencionActivity : AppCompatActivity() {
             return
         }
 
+        val maletinManager = MaletinManager.getInstance(this)
+
+        // Resiliencia offline: si no hay red, guardar en cola local
+        if (!NetworkUtils.hayRedDisponible(this)) {
+            val medsMap = maletinManager.getMedicamentos().associateBy { it.idMedicamentoInt }
+            val nombres = request.items?.map { item ->
+                val nom = medsMap[item.idMedicamento]?.nombre ?: "Medicamento #${item.idMedicamento}"
+                "• $nom: ${item.cantidad} uds"
+            } ?: emptyList()
+
+            val offlineItem = SolicitudKitOffline(
+                tipoSolicitud = request.tipoSolicitud,
+                motivo = request.motivo,
+                items = request.items ?: emptyList(),
+                nombresItems = nombres,
+                esReposicionTotal = request.esReposicionTotal
+            )
+            maletinManager.encolarSolicitudOffline(offlineItem)
+
+            // Registrar en trámite local offline
+            request.items?.forEach { item ->
+                maletinManager.registrarMedicamentoEnTramite(item.idMedicamento, -1, item.cantidad)
+            }
+
+            MaterialAlertDialogBuilder(this)
+                .setIcon(R.drawable.ic_sync)
+                .setTitle("📱 Solicitud guardada sin conexión")
+                .setMessage("No hay señal de red en este momento.\n\nLa reposición de 1 clic para los medicamentos consumidos ha quedado en tu bandeja de salida y se enviará a Farmacia CBA apenas recuperes conectividad.")
+                .setPositiveButton("Finalizar") { dialog, _ ->
+                    dialog.dismiss()
+                    setResult(Activity.RESULT_OK)
+                    finish()
+                }
+                .setCancelable(false)
+                .show()
+            return
+        }
+
         setLoadingState(true)
         lifecycleScope.launch(Dispatchers.IO) {
             try {
                 val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
                 val resp = RetrofitClient.apiService.crearSolicitudKit(authHeader, request)
-                MaletinManager.getInstance(this@ActaAtencionActivity).sincronizarDesdeServidor(token)
+                maletinManager.sincronizarDesdeServidor(token)
 
                 withContext(Dispatchers.Main) {
                     setLoadingState(false)
                     if (resp.isSuccessful) {
                         val body = resp.body()
-                        Toast.makeText(
-                            this@ActaAtencionActivity,
-                            "✅ Solicitud de reposición #${body?.idSolicitud ?: ""} radicada ante Farmacia CBA",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        val idSol = body?.idSolicitud ?: 0
+                        request.items?.forEach { item ->
+                            maletinManager.registrarMedicamentoEnTramite(item.idMedicamento, idSol, item.cantidad)
+                        }
+
+                        MaterialAlertDialogBuilder(this@ActaAtencionActivity)
+                            .setIcon(R.drawable.ic_check)
+                            .setTitle("Reposición radicada con éxito")
+                            .setMessage("✅ Se radicó la Solicitud #${if (idSol > 0) idSol.toString() else ""} ante Farmacia CBA para reponer las existencias del maletín.")
+                            .setPositiveButton("Finalizar") { dialog, _ ->
+                                dialog.dismiss()
+                                setResult(Activity.RESULT_OK)
+                                finish()
+                            }
+                            .setCancelable(false)
+                            .show()
                     } else {
-                        Toast.makeText(
-                            this@ActaAtencionActivity,
-                            "Atención registrada. Podrás tramitar la reposición desde el Maletín.",
-                            Toast.LENGTH_LONG
-                        ).show()
+                        val errStr = resp.errorBody()?.string() ?: ""
+                        if (errStr.contains("SOLICITUD_DUPLICADA")) {
+                            DialogoAntiduplicadoM3Helper.mostrar(
+                                context = this@ActaAtencionActivity,
+                                nombreMedicamento = request.items?.firstOrNull()?.let { item ->
+                                    maletinManager.getMedicamentos().find { m -> m.idMedicamentoInt == item.idMedicamento }?.nombre
+                                } ?: "Medicamento",
+                                mensajePersonalizado = "Ya existe una solicitud de reposición previa en trámite ante Farmacia CBA. Se previene la creación de duplicados.",
+                                onDismiss = {
+                                    setResult(Activity.RESULT_OK)
+                                    finish()
+                                }
+                            )
+                        } else {
+                            Toast.makeText(
+                                this@ActaAtencionActivity,
+                                "Atención registrada. Podrás tramitar la reposición desde el Maletín.",
+                                Toast.LENGTH_LONG
+                            ).show()
+                            setResult(Activity.RESULT_OK)
+                            finish()
+                        }
                     }
-                    setResult(Activity.RESULT_OK)
-                    finish()
                 }
             } catch (_: Exception) {
                 withContext(Dispatchers.Main) {

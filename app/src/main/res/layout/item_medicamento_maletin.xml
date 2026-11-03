@@ -83,14 +83,14 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_rounded_badge"
-                    android:backgroundTint="#FEE2E2"
+                    android:backgroundTint="@color/badge_urgente_bg"
                     android:fontFamily="@font/nunito_bold"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="3dp"
-                    android:textColor="#B91C1C"
+                    android:textColor="@color/badge_urgente_text"
                     android:textSize="10sp"
                     android:layout_marginBottom="4dp"
-                    tools:text="🔴 CRÍTICO" />
+                    tools:text="CRÍTICO" />
 
                 <!-- Badge de Categoría Farmacológica -->
                 <TextView
@@ -98,11 +98,11 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:background="@drawable/bg_rounded_badge"
-                    android:backgroundTint="@color/badge_alta_bg"
+                    android:backgroundTint="@color/chip_bg_neutral"
                     android:fontFamily="@font/nunito_bold"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="3dp"
-                    android:textColor="@color/badge_alta_text"
+                    android:textColor="@color/text_secondary"
                     android:textSize="10sp"
                     tools:text="AINE / Analgésico" />
             </LinearLayout>

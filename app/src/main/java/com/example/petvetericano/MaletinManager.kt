@@ -44,6 +44,8 @@ class MaletinManager(context: Context) {
         private const val KEY_ULTIMA_SYNC = "MALETIN_ULTIMA_SINCRONIZACION"
         private const val KEY_CONSUMOS_PENDIENTES = "MALETIN_CONSUMOS_PENDIENTES"
         private const val KEY_SOLICITUDES_OFFLINE_QUEUE = "MALETIN_SOLICITUDES_OFFLINE_QUEUE"
+        private const val KEY_MEDS_EN_TRAMITE = "MALETIN_MEDICAMENTOS_EN_TRAMITE"
+        private const val KEY_MEDS_TRAMITE_MAP = "MALETIN_MEDICAMENTOS_TRAMITE_MAP"
 
         @Volatile
         private var instance: MaletinManager? = null
@@ -429,5 +431,69 @@ class MaletinManager(context: Context) {
             sincronizarDesdeServidor(token)
         }
         return@withContext enviadas
+    }
+
+    // =========================================================================
+    // CONTROL ANTI-DUPLICADOS (FÁRMACOS CON SOLICITUD EN TRÁMITE)
+    // =========================================================================
+
+    fun getMedicamentosEnTramiteIds(): Set<Int> {
+        val json = prefs.getString(KEY_MEDS_EN_TRAMITE, null)
+        val guardados = if (!json.isNullOrEmpty()) {
+            try {
+                val type = object : TypeToken<Set<Int>>() {}.type
+                gson.fromJson<Set<Int>>(json, type) ?: emptySet()
+            } catch (_: Exception) {
+                emptySet()
+            }
+        } else {
+            emptySet()
+        }
+        // Incluir además los que están en la cola offline local esperando red
+        val idsOffline = getSolicitudesOffline().flatMap { sol -> sol.items.map { it.idMedicamento } }.toSet()
+        return guardados + idsOffline
+    }
+
+    fun guardarMedicamentosEnTramiteIds(ids: Set<Int>) {
+        val json = gson.toJson(ids)
+        prefs.edit().putString(KEY_MEDS_EN_TRAMITE, json).apply()
+    }
+
+    fun getMapaMedicamentosEnTramite(): Map<Int, Pair<Int, Int>> {
+        val json = prefs.getString(KEY_MEDS_TRAMITE_MAP, null)
+        val guardados = if (!json.isNullOrEmpty()) {
+            try {
+                val type = object : TypeToken<Map<Int, Pair<Int, Int>>>() {}.type
+                gson.fromJson<Map<Int, Pair<Int, Int>>>(json, type) ?: emptyMap()
+            } catch (_: Exception) {
+                emptyMap()
+            }
+        } else {
+            emptyMap()
+        }
+        val mutable = guardados.toMutableMap()
+        for (off in getSolicitudesOffline()) {
+            for (item in off.items) {
+                if (!mutable.containsKey(item.idMedicamento)) {
+                    mutable[item.idMedicamento] = Pair(-1, item.cantidad)
+                }
+            }
+        }
+        return mutable
+    }
+
+    fun guardarMapaMedicamentosEnTramite(mapa: Map<Int, Pair<Int, Int>>) {
+        val json = gson.toJson(mapa)
+        prefs.edit().putString(KEY_MEDS_TRAMITE_MAP, json).apply()
+    }
+
+    fun registrarMedicamentoEnTramite(idMedicamento: Int, idSolicitud: Int, cantidad: Int) {
+        val actualesIds = getMedicamentosEnTramiteIds().toMutableSet()
+        actualesIds.add(idMedicamento)
+        guardarMedicamentosEnTramiteIds(actualesIds)
+
+        val mapa = getMapaMedicamentosEnTramite().toMutableMap()
+        mapa[idMedicamento] = Pair(idSolicitud, cantidad)
+        guardarMapaMedicamentosEnTramite(mapa)
     }
 }

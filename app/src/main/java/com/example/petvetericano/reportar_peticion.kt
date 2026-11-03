@@ -1,6 +1,13 @@
 package com.example.petvetericano
 
 import android.Manifest
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.example.petvetericano.ui.reporte.DestinoEdicion
+import com.example.petvetericano.ui.reporte.ResultadoEnvio
+import com.example.petvetericano.ui.reporte.VisorEvidenciaDialogFragment
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.location.Location
@@ -405,6 +412,10 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
 
     private fun configurarRecyclerViewMiniaturas() {
         miniaturasAdapter = MiniaturasAdapter(
+            onFotoClick = { item ->
+                VisorEvidenciaDialogFragment.nuevaInstancia(item.localPath)
+                    .show(supportFragmentManager, VisorEvidenciaDialogFragment.TAG)
+            },
             onVideoClick = { item ->
                 reproducirVideo(item)
             },
@@ -437,6 +448,23 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
     private fun observarEstado() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.resultadoEnvio.collect { resultado ->
+                        when (resultado) {
+                            is ResultadoEnvio.Exito -> {
+                                consumirEnvioExitoso(resultado.idLocal)
+                            }
+                            is ResultadoEnvio.Error -> {
+                                Toast.makeText(
+                                    this@reportar_peticion,
+                                    R.string.reporte_offline_error_guardar_reporte,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    }
+                }
+
                 viewModel.uiState.collect { state ->
                     renderizarSeleccionTipo(state.tipoSeleccionado)
 
@@ -934,7 +962,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         guardarMultimediaEnPrefs()
     }
 
-    private fun reproducirVideo(item: EvidenciaItemLocal) {
+    fun reproducirVideo(item: EvidenciaItemLocal) {
         try {
             val file = File(item.localPath)
             val uri = FileProvider.getUriForFile(
@@ -1051,6 +1079,82 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         val existente = supportFragmentManager.findFragmentByTag(BottomSheetConfirmarReporte.TAG)
         if (existente == null && !supportFragmentManager.isStateSaved) {
             BottomSheetConfirmarReporte().show(supportFragmentManager, BottomSheetConfirmarReporte.TAG)
+        }
+    }
+
+    private fun consumirEnvioExitoso(idLocal: Long) {
+        if (reporteEncoladoExitoso) return
+        marcarReporteEncoladoExitoso()
+
+        val sheet = supportFragmentManager.findFragmentByTag(BottomSheetConfirmarReporte.TAG) as? BottomSheetDialogFragment
+        sheet?.dismissAllowingStateLoss()
+
+        viewModel.limpiarBorrador()
+
+        getSharedPreferences("MisReportesPrefs", Context.MODE_PRIVATE).edit().clear().apply()
+        getSharedPreferences("MapaOffline", Context.MODE_PRIVATE).edit().clear().apply()
+        getSharedPreferences("ReporteOfflineMultimedia", Context.MODE_PRIVATE).edit().clear().apply()
+        getSharedPreferences("ReporteOffline", Context.MODE_PRIVATE).edit().clear().apply()
+
+        try {
+            val draftDir = File(filesDir, "reporte_drafts")
+            draftDir.listFiles()?.forEach { f ->
+                if (f.isFile) f.delete()
+            }
+        } catch (_: Exception) {
+        }
+
+        val conn = hayConexionInternet(this)
+        val nuevoIntent = Intent(this, reporte_enviado::class.java).apply {
+            putExtra("ID_LOCAL", idLocal)
+            putExtra("HAY_CONEXION", conn)
+        }
+        startActivity(nuevoIntent)
+        finish()
+    }
+
+    private fun hayConexionInternet(context: Context): Boolean {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return false
+        val activeNetwork = cm.activeNetwork ?: return false
+        val capabilities = cm.getNetworkCapabilities(activeNetwork) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+    }
+
+    fun navegarDesdeModal(destino: DestinoEdicion) {
+        when (destino) {
+            DestinoEdicion.TIPO -> {
+                volverAlPaso1()
+                binding.containerPaso1.post {
+                    binding.cardHerido.requestFocus()
+                }
+            }
+            DestinoEdicion.UBICACION -> {
+                volverAlPaso1()
+                binding.containerPaso1.post {
+                    binding.cvMap.requestFocus()
+                }
+            }
+            DestinoEdicion.DESCRIPCION -> {
+                binding.containerPaso1.visibility = View.GONE
+                binding.bottomControlsContainer.visibility = View.GONE
+                binding.containerPaso2.visibility = View.VISIBLE
+                binding.etDescripcion.post {
+                    binding.etDescripcion.requestFocus()
+                    binding.etDescripcion.text?.let {
+                        binding.etDescripcion.setSelection(it.length)
+                    }
+                }
+            }
+            DestinoEdicion.ADJUNTOS -> {
+                binding.containerPaso1.visibility = View.GONE
+                binding.bottomControlsContainer.visibility = View.GONE
+                binding.containerPaso2.visibility = View.VISIBLE
+                binding.nsvPaso2.post {
+                    binding.nsvPaso2.smoothScrollTo(0, binding.layoutBotonesMultimedia.top)
+                    binding.btnAdjuntarFoto.requestFocus()
+                }
+            }
         }
     }
 

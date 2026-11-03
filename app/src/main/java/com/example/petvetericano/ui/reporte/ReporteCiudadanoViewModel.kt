@@ -22,6 +22,10 @@ import kotlinx.coroutines.withContext
 import java.io.File
 import java.util.Locale
 import kotlin.coroutines.resume
+import com.example.petvetericano.offline.ReporteEncolador
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 
 private const val KEY_ID_TIPO = "key_reporte_id_tipo"
 private const val KEY_NOMBRE_TIPO = "key_reporte_nombre_tipo"
@@ -44,6 +48,9 @@ class ReporteCiudadanoViewModel(
 
     private val _uiState: MutableStateFlow<ReporteDraftState>
     val uiState: StateFlow<ReporteDraftState>
+
+    private val _resultadoEnvioChannel = Channel<ResultadoEnvio>(Channel.BUFFERED)
+    val resultadoEnvio = _resultadoEnvioChannel.receiveAsFlow()
 
     init {
         val idTipo = savedStateHandle.get<Int>(KEY_ID_TIPO)
@@ -358,5 +365,53 @@ class ReporteCiudadanoViewModel(
         savedStateHandle.remove<BooleanArray>(KEY_EVIDENCIAS_IS_VIDEO)
         limpiarPendingCamera()
         _uiState.value = ReporteDraftState()
+    }
+
+    fun enviarReporte(context: Context) {
+        if (_uiState.value.estaEnviando) return
+        val state = _uiState.value
+        val tipo = state.tipoSeleccionado ?: return
+        if (tipo.idTipo <= 0) return
+
+        _uiState.update { it.copy(estaEnviando = true) }
+
+        viewModelScope.launch {
+            val appContext = context.applicationContext
+            val latitud = state.latitud ?: 0.0
+            val longitud = state.longitud ?: 0.0
+            val dirFinal = when {
+                !state.direccionTexto.isNullOrBlank() -> state.direccionTexto
+                latitud != 0.0 && longitud != 0.0 -> appContext.getString(
+                    R.string.reporte_offline_direccion_coordenadas,
+                    latitud,
+                    longitud
+                )
+                else -> appContext.getString(R.string.reporte_offline_ubicacion_no_seleccionada)
+            }
+
+            val evidenciasList = state.evidencias
+                .filter { File(it.localPath).exists() }
+                .map { Pair(it.localPath, it.esVideo) }
+
+            val idLocal = withContext(Dispatchers.IO + NonCancellable) {
+                ReporteEncolador.encolar(
+                    context = appContext,
+                    idTipo = tipo.idTipo,
+                    tipoNombre = tipo.nombreRemoto,
+                    descripcion = state.descripcion.trim(),
+                    direccion = dirFinal,
+                    latitud = latitud,
+                    longitud = longitud,
+                    evidencias = evidenciasList
+                )
+            }
+
+            if (idLocal != null && idLocal > 0L) {
+                _resultadoEnvioChannel.send(ResultadoEnvio.Exito(idLocal))
+            } else {
+                _uiState.update { it.copy(estaEnviando = false) }
+                _resultadoEnvioChannel.send(ResultadoEnvio.Error)
+            }
+        }
     }
 }

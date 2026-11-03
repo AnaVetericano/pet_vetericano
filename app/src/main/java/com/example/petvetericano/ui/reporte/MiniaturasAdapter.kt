@@ -7,11 +7,13 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.example.petvetericano.R
 import com.example.petvetericano.databinding.ItemEvidenciaMiniaturaBinding
 import java.io.File
 
 class MiniaturasAdapter(
+    private val onFotoClick: (EvidenciaItemLocal) -> Unit,
     private val onVideoClick: (EvidenciaItemLocal) -> Unit,
     private val onEliminarClick: (EvidenciaItemLocal) -> Unit
 ) : ListAdapter<EvidenciaItemLocal, MiniaturasAdapter.MiniaturaViewHolder>(DiffCallback) {
@@ -35,22 +37,44 @@ class MiniaturasAdapter(
 
         fun bind(item: EvidenciaItemLocal) {
             val file = File(item.localPath)
-            Glide.with(binding.root.context)
-                .load(file)
-                .override(160, 160)
-                .centerCrop()
-                .placeholder(R.drawable.baseline_pets_24)
-                .error(R.drawable.baseline_pets_24)
-                .into(binding.ivMiniatura)
+            val context = binding.root.context
 
             if (item.esVideo) {
+                Glide.with(context)
+                    .asBitmap()
+                    .load(file)
+                    .apply(RequestOptions.frameOf(1_000_000L))
+                    .override(160, 160)
+                    .centerCrop()
+                    .placeholder(R.drawable.baseline_pets_24)
+                    .error(
+                        Glide.with(context)
+                            .asBitmap()
+                            .load(file)
+                            .override(160, 160)
+                            .centerCrop()
+                            .placeholder(R.drawable.baseline_pets_24)
+                            .error(R.drawable.baseline_pets_24)
+                    )
+                    .into(binding.ivMiniatura)
+
                 binding.layoutVideoOverlay.visibility = View.VISIBLE
                 binding.cardMiniatura.setOnClickListener {
                     onVideoClick(item)
                 }
             } else {
+                Glide.with(context)
+                    .load(file)
+                    .override(160, 160)
+                    .centerCrop()
+                    .placeholder(R.drawable.baseline_pets_24)
+                    .error(R.drawable.baseline_pets_24)
+                    .into(binding.ivMiniatura)
+
                 binding.layoutVideoOverlay.visibility = View.GONE
-                binding.cardMiniatura.setOnClickListener(null)
+                binding.cardMiniatura.setOnClickListener {
+                    onFotoClick(item)
+                }
             }
 
             binding.btnQuitar.setOnClickListener {

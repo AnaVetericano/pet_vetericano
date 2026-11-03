@@ -718,4 +718,17 @@
     <string name="reporte_ux_error_video_invalido">No se pudo leer el archivo de video. Por favor selecciona o graba un video válido.</string>
     <string name="reporte_ux_btn_editar">Editar</string>
     <string name="reporte_ux_aviso_sin_conexion">Sin conexión a internet. El reporte se guardará en tu teléfono y se enviará automáticamente al reconectarse.</string>
+    <!-- Tarea R5: Robustez de envio, direccion y mejoras de UX del modal -->
+    <string name="reporte_ux_btn_seguir_editando">Seguir editando</string>
+    <string name="reporte_ux_cd_editar_tipo">Editar tipo de reporte</string>
+    <string name="reporte_ux_cd_editar_ubicacion">Editar ubicación del reporte</string>
+    <string name="reporte_ux_cd_editar_descripcion">Editar descripción del reporte</string>
+    <string name="reporte_ux_cd_editar_adjuntos">Editar archivos adjuntos del reporte</string>
+    <string name="reporte_ux_cd_visor_foto">Foto de evidencia ampliada</string>
+    <string name="reporte_ux_cd_cerrar_visor">Cerrar visor de evidencia</string>
+    <!-- Tarea R6: Encabezado del dashboard (insignias de rol y controles de cabecera) -->
+    <string name="dashboard_ux_rol_ciudadano">Rol: Ciudadano</string>
+    <string name="dashboard_ux_rol_veterinario">Rol: Veterinario</string>
+    <string name="dashboard_ux_modo_oscuro">Modo oscuro</string>
+    <string name="dashboard_ux_perfil">Mi perfil</string>
 </resources>

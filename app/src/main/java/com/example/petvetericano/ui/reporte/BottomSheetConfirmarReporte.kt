@@ -1,7 +1,6 @@
 package com.example.petvetericano.ui.reporte
 
 import android.content.Context
-import android.content.Intent
 import android.net.ConnectivityManager
 import android.net.NetworkCapabilities
 import android.os.Bundle
@@ -9,15 +8,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.example.petvetericano.R
 import com.example.petvetericano.databinding.BottomSheetConfirmarReporteBinding
 import com.example.petvetericano.databinding.ItemEvidenciaMiniaturaBinding
-import com.example.petvetericano.offline.ReporteEncolador
 import com.example.petvetericano.reportar_peticion
-import com.example.petvetericano.reporte_enviado
 import com.google.android.material.bottomsheet.BottomSheetBehavior
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
@@ -89,18 +89,45 @@ class BottomSheetConfirmarReporte : BottomSheetDialogFragment() {
                     false
                 )
                 itemBinding.btnQuitar.visibility = View.GONE
-                Glide.with(this)
-                    .load(File(item.localPath))
-                    .override(160, 160)
-                    .centerCrop()
-                    .placeholder(R.drawable.baseline_pets_24)
-                    .error(R.drawable.baseline_pets_24)
-                    .into(itemBinding.ivMiniatura)
+                val file = File(item.localPath)
 
                 if (item.esVideo) {
+                    Glide.with(this)
+                        .asBitmap()
+                        .load(file)
+                        .apply(RequestOptions.frameOf(1_000_000L))
+                        .override(160, 160)
+                        .centerCrop()
+                        .placeholder(R.drawable.baseline_pets_24)
+                        .error(
+                            Glide.with(this)
+                                .asBitmap()
+                                .load(file)
+                                .override(160, 160)
+                                .centerCrop()
+                                .placeholder(R.drawable.baseline_pets_24)
+                                .error(R.drawable.baseline_pets_24)
+                        )
+                        .into(itemBinding.ivMiniatura)
+
                     itemBinding.layoutVideoOverlay.visibility = View.VISIBLE
+                    itemBinding.cardMiniatura.setOnClickListener {
+                        (activity as? reportar_peticion)?.reproducirVideo(item)
+                    }
                 } else {
+                    Glide.with(this)
+                        .load(file)
+                        .override(160, 160)
+                        .centerCrop()
+                        .placeholder(R.drawable.baseline_pets_24)
+                        .error(R.drawable.baseline_pets_24)
+                        .into(itemBinding.ivMiniatura)
+
                     itemBinding.layoutVideoOverlay.visibility = View.GONE
+                    itemBinding.cardMiniatura.setOnClickListener {
+                        VisorEvidenciaDialogFragment.nuevaInstancia(item.localPath)
+                            .show(parentFragmentManager, VisorEvidenciaDialogFragment.TAG)
+                    }
                 }
                 binding.llMiniaturasContainer.addView(itemBinding.root)
             }
@@ -109,16 +136,63 @@ class BottomSheetConfirmarReporte : BottomSheetDialogFragment() {
         val hayConexion = hayConexionInternet(requireContext())
         binding.layoutAvisoSinConexion.visibility = if (hayConexion) View.GONE else View.VISIBLE
 
+        binding.btnEditarTipo.setOnClickListener {
+            dismiss()
+            (activity as? reportar_peticion)?.navegarDesdeModal(DestinoEdicion.TIPO)
+        }
+
+        binding.btnEditarUbicacion.setOnClickListener {
+            dismiss()
+            (activity as? reportar_peticion)?.navegarDesdeModal(DestinoEdicion.UBICACION)
+        }
+
+        binding.btnEditarDescripcion.setOnClickListener {
+            dismiss()
+            (activity as? reportar_peticion)?.navegarDesdeModal(DestinoEdicion.DESCRIPCION)
+        }
+
+        binding.btnEditarAdjuntos.setOnClickListener {
+            dismiss()
+            (activity as? reportar_peticion)?.navegarDesdeModal(DestinoEdicion.ADJUNTOS)
+        }
+
         binding.btnEditar.setOnClickListener {
             dismiss()
         }
 
         binding.btnEnviarReporte.setOnClickListener {
-            enviarReporte()
+            solicitarEnvioReporte()
+        }
+
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { uiState ->
+                    actualizarEstadoEnvio(uiState.estaEnviando)
+                }
+            }
         }
     }
 
-    private fun enviarReporte() {
+    private fun actualizarEstadoEnvio(estaEnviando: Boolean) {
+        binding.btnEnviarReporte.isEnabled = !estaEnviando
+        binding.btnEditar.isEnabled = !estaEnviando
+        binding.btnEditarTipo.isEnabled = !estaEnviando
+        binding.btnEditarUbicacion.isEnabled = !estaEnviando
+        binding.btnEditarDescripcion.isEnabled = !estaEnviando
+        binding.btnEditarAdjuntos.isEnabled = !estaEnviando
+        isCancelable = !estaEnviando
+        (dialog as? BottomSheetDialog)?.behavior?.isHideable = !estaEnviando
+
+        if (estaEnviando) {
+            binding.btnEnviarReporte.setText(R.string.reporte_offline_guardando_reporte)
+            binding.pbEnvio.visibility = View.VISIBLE
+        } else {
+            binding.btnEnviarReporte.setText(R.string.btn_enviar_reporte)
+            binding.pbEnvio.visibility = View.GONE
+        }
+    }
+
+    private fun solicitarEnvioReporte() {
         val state = viewModel.uiState.value
         val tipo = state.tipoSeleccionado
 
@@ -127,79 +201,8 @@ class BottomSheetConfirmarReporte : BottomSheetDialogFragment() {
             return
         }
 
-        binding.btnEnviarReporte.isEnabled = false
-        binding.btnEditar.isEnabled = false
-        isCancelable = false
-        (dialog as? BottomSheetDialog)?.behavior?.isHideable = false
-
         Toast.makeText(requireContext(), R.string.reporte_offline_guardando_reporte, Toast.LENGTH_SHORT).show()
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            val context = requireContext().applicationContext
-            val latitud = state.latitud ?: 0.0
-            val longitud = state.longitud ?: 0.0
-            val dirFinal = when {
-                !state.direccionTexto.isNullOrBlank() -> state.direccionTexto
-                latitud != 0.0 && longitud != 0.0 -> getString(
-                    R.string.reporte_offline_direccion_coordenadas,
-                    latitud,
-                    longitud
-                )
-                else -> getString(R.string.reporte_offline_ubicacion_no_seleccionada)
-            }
-
-            val evidenciasList = state.evidencias
-                .filter { File(it.localPath).exists() }
-                .map { Pair(it.localPath, it.esVideo) }
-
-            val idLocal = ReporteEncolador.encolar(
-                context = context,
-                idTipo = tipo.idTipo,
-                tipoNombre = tipo.nombreRemoto,
-                descripcion = state.descripcion.trim(),
-                direccion = dirFinal,
-                latitud = latitud,
-                longitud = longitud,
-                evidencias = evidenciasList
-            )
-
-            if (idLocal != null && idLocal > 0L) {
-                (activity as? reportar_peticion)?.marcarReporteEncoladoExitoso()
-
-                viewModel.limpiarBorrador()
-
-                context.getSharedPreferences("MisReportesPrefs", Context.MODE_PRIVATE).edit().clear().apply()
-                context.getSharedPreferences("MapaOffline", Context.MODE_PRIVATE).edit().clear().apply()
-                context.getSharedPreferences("ReporteOfflineMultimedia", Context.MODE_PRIVATE).edit().clear().apply()
-                context.getSharedPreferences("ReporteOffline", Context.MODE_PRIVATE).edit().clear().apply()
-
-                try {
-                    val draftDir = File(context.filesDir, "reporte_drafts")
-                    draftDir.listFiles()?.forEach { f ->
-                        if (f.isFile) f.delete()
-                    }
-                } catch (_: Exception) {
-                }
-
-                val conn = hayConexionInternet(context)
-                val act = activity
-                dismissAllowingStateLoss()
-                if (act != null) {
-                    val nuevoIntent = Intent(act, reporte_enviado::class.java).apply {
-                        putExtra("ID_LOCAL", idLocal)
-                        putExtra("HAY_CONEXION", conn)
-                    }
-                    act.startActivity(nuevoIntent)
-                    act.finish()
-                }
-            } else {
-                binding.btnEnviarReporte.isEnabled = true
-                binding.btnEditar.isEnabled = true
-                isCancelable = true
-                (dialog as? BottomSheetDialog)?.behavior?.isHideable = true
-                Toast.makeText(context, R.string.reporte_offline_error_guardar_reporte, Toast.LENGTH_LONG).show()
-            }
-        }
+        viewModel.enviarReporte(requireContext())
     }
 
     private fun hayConexionInternet(context: Context): Boolean {

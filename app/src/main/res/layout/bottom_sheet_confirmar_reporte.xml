@@ -6,7 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:fillViewport="true"
-    android:background="@drawable/bg_bottom_sheet_m3">
+    android:background="@drawable/bg_bottom_sheet_m3"
+    android:backgroundTint="@color/bg_screen">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -55,7 +56,7 @@
             android:layout_marginBottom="16dp"
             app:cardBackgroundColor="@color/card_background"
             app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
+            app:cardElevation="2dp"
             app:strokeColor="@color/card_stroke"
             app:strokeWidth="1dp">
 
@@ -105,6 +106,21 @@
                             android:textSize="16sp"
                             tools:text="Animal en condicion de calle" />
                     </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEditarTipo"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
+                        android:paddingHorizontal="8dp"
+                        android:fontFamily="@font/nunito_bold"
+                        android:text="@string/reporte_ux_btn_editar"
+                        android:textAllCaps="false"
+                        android:textColor="@color/blue"
+                        android:textSize="16sp"
+                        android:contentDescription="@string/reporte_ux_cd_editar_tipo" />
                 </LinearLayout>
 
                 <View
@@ -113,7 +129,7 @@
                     android:layout_marginVertical="12dp"
                     android:background="@color/divider" />
 
-                <!-- Fila: Ubicación -->
+                <!-- Fila: Ubicacion -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -152,6 +168,21 @@
                             android:textSize="16sp"
                             tools:text="Calle 123 # 45-67" />
                     </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEditarUbicacion"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
+                        android:paddingHorizontal="8dp"
+                        android:fontFamily="@font/nunito_bold"
+                        android:text="@string/reporte_ux_btn_editar"
+                        android:textAllCaps="false"
+                        android:textColor="@color/blue"
+                        android:textSize="16sp"
+                        android:contentDescription="@string/reporte_ux_cd_editar_ubicacion" />
                 </LinearLayout>
 
                 <View
@@ -160,7 +191,7 @@
                     android:layout_marginVertical="12dp"
                     android:background="@color/divider" />
 
-                <!-- Fila: Descripción -->
+                <!-- Fila: Descripcion -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -199,6 +230,21 @@
                             android:textSize="16sp"
                             tools:text="Descripcion de prueba" />
                     </LinearLayout>
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnEditarDescripcion"
+                        style="@style/Widget.Material3.Button.TextButton"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:minWidth="48dp"
+                        android:minHeight="48dp"
+                        android:paddingHorizontal="8dp"
+                        android:fontFamily="@font/nunito_bold"
+                        android:text="@string/reporte_ux_btn_editar"
+                        android:textAllCaps="false"
+                        android:textColor="@color/blue"
+                        android:textSize="16sp"
+                        android:contentDescription="@string/reporte_ux_cd_editar_descripcion" />
                 </LinearLayout>
 
                 <View
@@ -251,6 +297,21 @@
                                 android:textSize="16sp"
                                 tools:text="1 foto y 1 video" />
                         </LinearLayout>
+
+                        <com.google.android.material.button.MaterialButton
+                            android:id="@+id/btnEditarAdjuntos"
+                            style="@style/Widget.Material3.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:minWidth="48dp"
+                            android:minHeight="48dp"
+                            android:paddingHorizontal="8dp"
+                            android:fontFamily="@font/nunito_bold"
+                            android:text="@string/reporte_ux_btn_editar"
+                            android:textAllCaps="false"
+                            android:textColor="@color/blue"
+                            android:textSize="16sp"
+                            android:contentDescription="@string/reporte_ux_cd_editar_adjuntos" />
                     </LinearLayout>
 
                     <!-- Fila horizontal de miniaturas -->
@@ -275,7 +336,7 @@
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Aviso discreto sin conexión -->
+        <!-- Aviso discreto sin conexion -->
         <LinearLayout
             android:id="@+id/layoutAvisoSinConexion"
             android:layout_width="match_parent"
@@ -323,7 +384,18 @@
             app:cornerRadius="16dp"
             app:elevation="2dp" />
 
-        <!-- Boton Editar (Secundario, cierra modal) -->
+        <!-- Spinner de progreso de envio -->
+        <ProgressBar
+            android:id="@+id/pbEnvio"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:indeterminateTint="@color/blue"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
+        <!-- Boton Seguir editando (Secundario, cierra modal) -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnEditar"
             style="@style/Widget.Material3.Button.OutlinedButton"
@@ -332,7 +404,7 @@
             android:minHeight="48dp"
             android:layout_marginTop="8dp"
             android:fontFamily="@font/nunito_bold"
-            android:text="@string/reporte_ux_btn_editar"
+            android:text="@string/reporte_ux_btn_seguir_editando"
             android:textAllCaps="false"
             android:textColor="@color/blue"
             android:textSize="16sp"
@@ -342,4 +414,3 @@
 
     </LinearLayout>
 </androidx.core.widget.NestedScrollView>
-

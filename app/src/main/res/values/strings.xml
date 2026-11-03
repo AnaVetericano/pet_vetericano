@@ -699,4 +699,36 @@
     <string name="reporte_ux_obteniendo_ubicacion">Obteniendo tu ubicación…</string>
     <!-- Tarea R1.5: Ubicacion rapida con refinamiento en segundo plano -->
     <string name="reporte_ux_ubicacion_aproximada">Ubicación aproximada. Ajústala tocando el mapa.</string>
+    <!-- Tarea R1.7: Propagacion explicita del tipo de reporte -->
+    <string name="reporte_ux_error_tipo_no_definido">Tipo de reporte no definido o inválido</string>
+    <!-- Tarea PF1: Estados de la pantalla final reporte_enviado -->
+    <string name="reporte_ux_enviando_titulo">Enviando reporte</string>
+    <string name="reporte_ux_enviando_espera">Por favor, espere mientras se envía su reporte.</string>
+    <string name="reporte_ux_enviando_descripcion_spinner">Progreso de envío del reporte</string>
+    <!-- Tarea R2: Pantalla 2 del reporte ciudadano unificado -->
+    <string name="reporte_ux_ayuda_multimedia">Puedes adjuntar hasta 5 fotos y 1 video corto (15 s)</string>
+    <string name="reporte_ux_limite_multimedia">Máximo 5 fotos y 1 video</string>
+    <string name="reporte_ux_error_video_excede_duracion">El video supera los 15 segundos permitidos. Selecciona o graba un video más corto.</string>
+    <string name="reporte_ux_video_largo_titulo">Video demasiado largo</string>
+    <string name="reporte_ux_btn_revisar_reporte">Revisar reporte</string>
+    <string name="reporte_ux_cd_eliminar_evidencia">Eliminar evidencia</string>
+    <string name="reporte_ux_error_permiso_camara">Permiso de cámara requerido para capturar evidencias</string>
+    <!-- Tarea R3: Validacion de video invalido y Modal Bottom Sheet de confirmacion -->
+    <string name="reporte_ux_error_video_invalido_titulo">Error en el video</string>
+    <string name="reporte_ux_error_video_invalido">No se pudo leer el archivo de video. Por favor selecciona o graba un video válido.</string>
+    <string name="reporte_ux_btn_editar">Editar</string>
+    <string name="reporte_ux_aviso_sin_conexion">Sin conexión a internet. El reporte se guardará en tu teléfono y se enviará automáticamente al reconectarse.</string>
+    <!-- Tarea R5: Robustez de envio, direccion y mejoras de UX del modal -->
+    <string name="reporte_ux_btn_seguir_editando">Seguir editando</string>
+    <string name="reporte_ux_cd_editar_tipo">Editar tipo de reporte</string>
+    <string name="reporte_ux_cd_editar_ubicacion">Editar ubicación del reporte</string>
+    <string name="reporte_ux_cd_editar_descripcion">Editar descripción del reporte</string>
+    <string name="reporte_ux_cd_editar_adjuntos">Editar archivos adjuntos del reporte</string>
+    <string name="reporte_ux_cd_visor_foto">Foto de evidencia ampliada</string>
+    <string name="reporte_ux_cd_cerrar_visor">Cerrar visor de evidencia</string>
+    <!-- Tarea R6: Encabezado del dashboard (insignias de rol y controles de cabecera) -->
+    <string name="dashboard_ux_rol_ciudadano">Rol: Ciudadano</string>
+    <string name="dashboard_ux_rol_veterinario">Rol: Veterinario</string>
+    <string name="dashboard_ux_modo_oscuro">Modo oscuro</string>
+    <string name="dashboard_ux_perfil">Mi perfil</string>
 </resources>

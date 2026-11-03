@@ -1,46 +1,67 @@
 package com.example.petvetericano
 
 import android.Manifest
+import android.content.Context
+import android.net.ConnectivityManager
+import android.net.NetworkCapabilities
+import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import com.example.petvetericano.ui.reporte.DestinoEdicion
+import com.example.petvetericano.ui.reporte.ResultadoEnvio
+import com.example.petvetericano.ui.reporte.VisorEvidenciaDialogFragment
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.location.Location
+import android.net.Uri
 import android.os.Bundle
+import android.os.SystemClock
 import android.view.KeyEvent
 import android.view.View
 import android.view.inputmethod.EditorInfo
 import android.widget.Toast
-import androidx.annotation.ColorInt
-import androidx.annotation.StringRes
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
+import androidx.annotation.ColorInt
+import androidx.annotation.StringRes
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.addTextChangedListener
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
+import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.databinding.ActivityReportarPeticionUnificadaBinding
+import com.example.petvetericano.databinding.BottomSheetAdjuntarEvidenciaBinding
 import com.example.petvetericano.models.TipoPeticionResponse
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.ui.reporte.BottomSheetConfirmarReporte
+import com.example.petvetericano.ui.reporte.CaptureVideoConLimites
+import com.example.petvetericano.ui.reporte.EvidenciaItemLocal
+import com.example.petvetericano.ui.reporte.MiniaturasAdapter
 import com.example.petvetericano.ui.reporte.ReporteCiudadanoViewModel
-import com.example.petvetericano.ui.reporte.TipoReporteCategoria
 import com.example.petvetericano.ui.reporte.ReporteDraftState
+import com.example.petvetericano.ui.reporte.ReporteMediaHelper
+import com.example.petvetericano.ui.reporte.ResultadoValidacionVideo
+import com.example.petvetericano.ui.reporte.TipoReporteCategoria
 import com.example.petvetericano.ui.reporte.TipoReporteItem
-import android.location.Location
-import android.os.SystemClock
 import com.google.android.gms.location.CurrentLocationRequest
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import com.google.android.gms.location.Priority
-import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.tasks.CancellationTokenSource
+import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.card.MaterialCardView
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -48,9 +69,10 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
-import kotlin.coroutines.resume
 import org.json.JSONArray
 import org.json.JSONObject
+import java.io.File
+import kotlin.coroutines.resume
 
 class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
 
@@ -68,6 +90,13 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
     private var isObteniendoUbicacion = false
     private var ctsUbicacion: CancellationTokenSource? = null
     private var ubicacionJob: Job? = null
+    private var reporteEncoladoExitoso = false
+
+    fun marcarReporteEncoladoExitoso() {
+        reporteEncoladoExitoso = true
+        binding.etSearch.text?.clear()
+        binding.etDescripcion.text?.clear()
+    }
 
     private val prefsCache = "ReporteTiposCachePrefs"
     private val keyCache = "ReporteTiposCache"
@@ -80,6 +109,15 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
 
     private val prefsReportes = "MisReportesPrefs"
     private val keyIdTipoSeleccionado = "ID_TIPO_SELECCIONADO"
+    private val keyTipoReporte = "TIPO_REPORTE"
+
+    private val prefsMultimedia = "ReporteOfflineMultimedia"
+    private val keyBorradorDesc = "borrador_descripcion"
+    private val keyBorradorPaths = "borrador_paths_v2"
+    private val keyBorradorIsVideo = "borrador_is_video_v2"
+
+    private lateinit var miniaturasAdapter: MiniaturasAdapter
+    private var pendingMediaEsVideo: Boolean = false
 
     private val locationPermissionRequest = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
@@ -92,24 +130,184 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         }
     }
 
+    private val takePhotoLauncher = registerForActivityResult(
+        ActivityResultContracts.TakePicture()
+    ) { success ->
+        val pendPath = viewModel.uiState.value.pendingCameraFilePath
+        if (success && !pendPath.isNullOrBlank()) {
+            val file = File(pendPath)
+            lifecycleScope.launch {
+                val optimizado = ReporteMediaHelper.optimizarImagen(file)
+                val item = EvidenciaItemLocal(
+                    id = optimizado.name,
+                    localPath = optimizado.absolutePath,
+                    uriString = viewModel.uiState.value.pendingCameraUriString.orEmpty(),
+                    esVideo = false
+                )
+                viewModel.agregarEvidencia(item)
+                viewModel.limpiarPendingCamera()
+                guardarMultimediaEnPrefs()
+            }
+        } else {
+            viewModel.limpiarPendingCamera()
+        }
+    }
+
+    private val pickPhotoLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            lifecycleScope.launch {
+                val file = ReporteMediaHelper.copiarUriADraft(this@reportar_peticion, it, esVideo = false)
+                if (file != null) {
+                    val item = EvidenciaItemLocal(
+                        id = file.name,
+                        localPath = file.absolutePath,
+                        uriString = it.toString(),
+                        esVideo = false
+                    )
+                    viewModel.agregarEvidencia(item)
+                    guardarMultimediaEnPrefs()
+                }
+            }
+        }
+    }
+
+    private val recordVideoLauncher = registerForActivityResult(
+        CaptureVideoConLimites()
+    ) { success ->
+        val pendPath = viewModel.uiState.value.pendingCameraFilePath
+        if (success && !pendPath.isNullOrBlank()) {
+            val file = File(pendPath)
+            lifecycleScope.launch {
+                when (ReporteMediaHelper.validarVideo(file)) {
+                    ResultadoValidacionVideo.Valido -> {
+                        val item = EvidenciaItemLocal(
+                            id = file.name,
+                            localPath = file.absolutePath,
+                            uriString = viewModel.uiState.value.pendingCameraUriString.orEmpty(),
+                            esVideo = true
+                        )
+                        viewModel.agregarEvidencia(item)
+                        viewModel.limpiarPendingCamera()
+                        guardarMultimediaEnPrefs()
+                    }
+                    ResultadoValidacionVideo.ExcedeTamano -> {
+                        viewModel.limpiarPendingCamera()
+                        mostrarDialogoErrorVideo(
+                            R.string.reporte_offline_video_pesado_titulo,
+                            R.string.reporte_offline_video_pesado_mensaje
+                        )
+                    }
+                    ResultadoValidacionVideo.ExcedeDuracion -> {
+                        viewModel.limpiarPendingCamera()
+                        mostrarDialogoErrorVideo(
+                            R.string.reporte_ux_video_largo_titulo,
+                            R.string.reporte_ux_error_video_excede_duracion
+                        )
+                    }
+                    ResultadoValidacionVideo.ErrorLectura -> {
+                        viewModel.limpiarPendingCamera()
+                        mostrarDialogoErrorVideo(
+                            R.string.reporte_ux_error_video_invalido_titulo,
+                            R.string.reporte_ux_error_video_invalido
+                        )
+                    }
+                }
+            }
+        } else {
+            viewModel.limpiarPendingCamera()
+        }
+    }
+
+    private val pickVideoLauncher = registerForActivityResult(
+        ActivityResultContracts.GetContent()
+    ) { uri ->
+        uri?.let {
+            lifecycleScope.launch {
+                val file = ReporteMediaHelper.copiarUriADraft(this@reportar_peticion, it, esVideo = true)
+                if (file != null) {
+                    when (ReporteMediaHelper.validarVideo(file)) {
+                        ResultadoValidacionVideo.Valido -> {
+                            val item = EvidenciaItemLocal(
+                                id = file.name,
+                                localPath = file.absolutePath,
+                                uriString = it.toString(),
+                                esVideo = true
+                            )
+                            viewModel.agregarEvidencia(item)
+                            guardarMultimediaEnPrefs()
+                        }
+                        ResultadoValidacionVideo.ExcedeTamano -> {
+                            mostrarDialogoErrorVideo(
+                                R.string.reporte_offline_video_pesado_titulo,
+                                R.string.reporte_offline_video_pesado_mensaje
+                            )
+                        }
+                        ResultadoValidacionVideo.ExcedeDuracion -> {
+                            mostrarDialogoErrorVideo(
+                                R.string.reporte_ux_video_largo_titulo,
+                                R.string.reporte_ux_error_video_excede_duracion
+                            )
+                        }
+                        ResultadoValidacionVideo.ErrorLectura -> {
+                            mostrarDialogoErrorVideo(
+                                R.string.reporte_ux_error_video_invalido_titulo,
+                                R.string.reporte_ux_error_video_invalido
+                            )
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    private val cameraPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            if (pendingMediaEsVideo) {
+                lanzarGrabacionVideo()
+            } else {
+                lanzarCapturaFoto()
+            }
+        } else {
+            Toast.makeText(this, R.string.reporte_ux_error_permiso_camara, Toast.LENGTH_SHORT).show()
+        }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         binding = ActivityReportarPeticionUnificadaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        ReporteMediaHelper.purgarDraftsAntiguos(this)
+
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
         configurarInsets()
         configurarVistas()
+        configurarRecyclerViewMiniaturas()
         configurarMapa()
+        configurarNavegacionAtras()
         observarEstado()
         cargarTipos()
+
+        if (savedInstanceState == null) {
+            restaurarBorradorDesdePrefs()
+        } else {
+            val desc = viewModel.uiState.value.descripcion
+            if (desc.isNotBlank() && binding.etDescripcion.text.isNullOrBlank()) {
+                binding.etDescripcion.setText(desc)
+            }
+        }
     }
 
     private fun configurarInsets() {
         val initHeaderTop = binding.headerContainer.paddingTop
-        val initBottomPadding = binding.bottomControlsContainer.paddingBottom
+        val initBottomPaso1 = binding.bottomControlsContainer.paddingBottom
+        val initBottomPaso2 = binding.bottomControlsContainerPaso2.paddingBottom
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
@@ -123,7 +321,13 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
                 binding.bottomControlsContainer.paddingLeft,
                 binding.bottomControlsContainer.paddingTop,
                 binding.bottomControlsContainer.paddingRight,
-                initBottomPadding + systemBars.bottom
+                initBottomPaso1 + systemBars.bottom
+            )
+            binding.bottomControlsContainerPaso2.setPadding(
+                binding.bottomControlsContainerPaso2.paddingLeft,
+                binding.bottomControlsContainerPaso2.paddingTop,
+                binding.bottomControlsContainerPaso2.paddingRight,
+                initBottomPaso2 + systemBars.bottom
             )
             insets
         }
@@ -131,8 +335,12 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
 
     private fun configurarVistas() {
         binding.btndev.setOnClickListener {
-            startActivity(Intent(this, bienvenida::class.java))
-            finish()
+            if (viewModel.uiState.value.pasoActual == 2) {
+                volverAlPaso1()
+            } else {
+                startActivity(Intent(this, bienvenida::class.java))
+                finish()
+            }
         }
 
         binding.cardHerido.setOnClickListener {
@@ -171,11 +379,65 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
             avanzarAlPaso2()
         }
 
+        binding.btnAdjuntarFoto.setOnClickListener {
+            mostrarBottomSheetEvidencia(esVideo = false)
+        }
+
+        binding.btnAdjuntarVideo.setOnClickListener {
+            mostrarBottomSheetEvidencia(esVideo = true)
+        }
+
+        binding.etDescripcion.addTextChangedListener { text ->
+            val texto = text?.toString().orEmpty()
+            viewModel.actualizarDescripcion(texto)
+            getSharedPreferences(prefsMultimedia, MODE_PRIVATE)
+                .edit()
+                .putString(keyBorradorDesc, texto)
+                .apply()
+            if (texto.isNotBlank()) {
+                binding.tilDescripcion.error = null
+            }
+        }
+
+        binding.btnRevisarReporte.setOnClickListener {
+            validarYRevisarReporte()
+        }
+
         val prefs = getSharedPreferences(prefsMapa, MODE_PRIVATE)
         val textoGuardado = prefs.getString(keyBusqueda, "")
         if (!textoGuardado.isNullOrBlank()) {
             binding.etSearch.setText(textoGuardado)
         }
+    }
+
+    private fun configurarRecyclerViewMiniaturas() {
+        miniaturasAdapter = MiniaturasAdapter(
+            onFotoClick = { item ->
+                VisorEvidenciaDialogFragment.nuevaInstancia(item.localPath)
+                    .show(supportFragmentManager, VisorEvidenciaDialogFragment.TAG)
+            },
+            onVideoClick = { item ->
+                reproducirVideo(item)
+            },
+            onEliminarClick = { item ->
+                eliminarEvidencia(item)
+            }
+        )
+        binding.rvMiniaturas.layoutManager = LinearLayoutManager(this, LinearLayoutManager.HORIZONTAL, false)
+        binding.rvMiniaturas.adapter = miniaturasAdapter
+    }
+
+    private fun configurarNavegacionAtras() {
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                if (viewModel.uiState.value.pasoActual == 2) {
+                    volverAlPaso1()
+                } else {
+                    startActivity(Intent(this@reportar_peticion, bienvenida::class.java))
+                    finish()
+                }
+            }
+        })
     }
 
     private fun configurarMapa() {
@@ -186,8 +448,58 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
     private fun observarEstado() {
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.STARTED) {
+                launch {
+                    viewModel.resultadoEnvio.collect { resultado ->
+                        when (resultado) {
+                            is ResultadoEnvio.Exito -> {
+                                consumirEnvioExitoso(resultado.idLocal)
+                            }
+                            is ResultadoEnvio.Error -> {
+                                Toast.makeText(
+                                    this@reportar_peticion,
+                                    R.string.reporte_offline_error_guardar_reporte,
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            }
+                        }
+                    }
+                }
+
                 viewModel.uiState.collect { state ->
                     renderizarSeleccionTipo(state.tipoSeleccionado)
+
+                    // Control de contenedores paso 1 y paso 2
+                    if (state.pasoActual == 2) {
+                        binding.containerPaso1.visibility = View.GONE
+                        binding.bottomControlsContainer.visibility = View.GONE
+                        binding.containerPaso2.visibility = View.VISIBLE
+                    } else {
+                        binding.containerPaso2.visibility = View.GONE
+                        binding.containerPaso1.visibility = View.VISIBLE
+                        binding.bottomControlsContainer.visibility = View.VISIBLE
+                    }
+
+                    // Miniaturas y contador de evidencias
+                    miniaturasAdapter.submitList(state.evidencias)
+                    if (state.evidencias.isEmpty()) {
+                        binding.rvMiniaturas.visibility = View.GONE
+                    } else {
+                        binding.rvMiniaturas.visibility = View.VISIBLE
+                    }
+
+                    if (state.fotosCount >= 5 && state.videosCount >= 1) {
+                        binding.tvAyudaMultimedia.setText(R.string.reporte_ux_limite_multimedia)
+                        binding.btnAdjuntarFoto.isEnabled = false
+                        binding.btnAdjuntarVideo.isEnabled = false
+                        binding.btnAdjuntarFoto.alpha = 0.5f
+                        binding.btnAdjuntarVideo.alpha = 0.5f
+                    } else {
+                        binding.tvAyudaMultimedia.setText(R.string.reporte_ux_ayuda_multimedia)
+                        binding.btnAdjuntarFoto.isEnabled = state.puedeAgregarFoto
+                        binding.btnAdjuntarVideo.isEnabled = state.puedeAgregarVideo
+                        binding.btnAdjuntarFoto.alpha = if (state.puedeAgregarFoto) 1.0f else 0.5f
+                        binding.btnAdjuntarVideo.alpha = if (state.puedeAgregarVideo) 1.0f else 0.5f
+                    }
 
                     if (state.isLoadingUbicacion) {
                         binding.pbDireccion.visibility = View.VISIBLE
@@ -260,190 +572,104 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         actualizarCard(binding.cardOtros, cat == TipoReporteCategoria.OTROS, R.string.reporte_ux_tipo_otros)
     }
 
-    private fun dpToPx(dp: Int): Int {
-        return (dp * resources.displayMetrics.density).toInt()
-    }
-
-    override fun onMapReady(googleMap: GoogleMap) {
-        mMap = googleMap
-
-        mMap?.setOnMapClickListener { latLng ->
-            onUbicacionElegida(latLng)
-        }
-
-        val state = viewModel.uiState.value
-        if (state.ubicacionSeleccionadaPorUsuario && state.latitud != null && state.longitud != null) {
-            val userLatLng = LatLng(state.latitud, state.longitud)
-            actualizarMarcador(userLatLng, moverCamara = true)
-        } else {
-            val prefs = getSharedPreferences(prefsMapa, MODE_PRIVATE)
-            val hasLoc = prefs.getBoolean(keyHasLoc, false)
-
-            if (hasLoc) {
-                val lat = prefs.getFloat(keyLat, 0f).toDouble()
-                val lng = prefs.getFloat(keyLng, 0f).toDouble()
-                val savedLatLng = LatLng(lat, lng)
-                onUbicacionElegida(savedLatLng)
-            } else {
-                val bogota = LatLng(4.570868, -74.297333)
-                mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(bogota, 11f))
-            }
-        }
-    }
-
-    private fun cancelarBusquedaUbicacionEnCurso() {
-        isObteniendoUbicacion = false
-        ctsUbicacion?.cancel()
-        ctsUbicacion = null
-        ubicacionJob?.cancel()
-        ubicacionJob = null
-        ocultarAvisoAproximada()
-    }
-
-    private fun onUbicacionElegida(latLng: LatLng) {
-        cancelarBusquedaUbicacionEnCurso()
-        actualizarMarcador(latLng, moverCamara = true)
-        viewModel.resolverDireccion(this, latLng.latitude, latLng.longitude)
-    }
-
-    private fun actualizarMarcador(latLng: LatLng, moverCamara: Boolean) {
-        mMap?.clear()
-        mMap?.addMarker(
-            MarkerOptions()
-                .position(latLng)
-                .title(getString(R.string.reporte_ux_marcador_ubicacion))
-        )
-        if (moverCamara) {
-            mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
-        }
-    }
-
-    private fun verificarPermisosUbicacion() {
-        when {
-            ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) == PackageManager.PERMISSION_GRANTED -> {
-                obtenerUbicacionActual()
-            }
-            else -> {
-                locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
-            }
-        }
-    }
-
     private fun seleccionarTipoOCatalogar(nombreBuscado: String) {
-        if (listaTipos.isEmpty()) {
+        val asignado = viewModel.seleccionarTipoPorNombre(nombreBuscado, listaTipos)
+        if (!asignado) {
             tipoPendiente = nombreBuscado
-            val colorMuted = ContextCompat.getColor(this, R.color.text_muted)
-            mostrarAviso(getString(R.string.reporte_ux_tipos_cargando), colorMuted)
             cargarTipos()
-            return
-        }
-
-        val seleccionado = viewModel.seleccionarTipoPorNombre(nombreBuscado, listaTipos)
-        if (seleccionado) {
-            tipoPendiente = null
-            if (!esErrorValidacionVisible) {
-                if (esAvisoUbicacionAproximadaVisible) {
-                    mostrarAvisoAproximada()
-                } else {
-                    ocultarAviso()
-                }
-            }
-        } else {
-            val colorError = ContextCompat.getColor(this, R.color.error_dark)
-            mostrarAviso(getString(R.string.reporte_ux_error_tipo_no_disponible), colorError)
         }
     }
 
     private fun aplicarTipoPendienteSiExiste() {
         val pendiente = tipoPendiente ?: return
-        val seleccionado = viewModel.seleccionarTipoPorNombre(pendiente, listaTipos)
-        if (seleccionado) {
-            tipoPendiente = null
-            if (!esErrorValidacionVisible) {
-                if (esAvisoUbicacionAproximadaVisible) {
-                    mostrarAvisoAproximada()
-                } else {
-                    ocultarAviso()
-                }
+        if (listaTipos.isNotEmpty()) {
+            val asignado = viewModel.seleccionarTipoPorNombre(pendiente, listaTipos)
+            if (asignado) {
+                tipoPendiente = null
+                ocultarAviso()
             }
-        } else {
-            tipoPendiente = null
-            val colorError = ContextCompat.getColor(this, R.color.error_dark)
-            mostrarAviso(getString(R.string.reporte_ux_error_tipo_no_disponible), colorError)
         }
     }
 
-    private fun mostrarAvisoAproximada() {
-        esAvisoUbicacionAproximadaVisible = true
-        if (!esErrorValidacionVisible) {
-            val colorMuted = ContextCompat.getColor(this, R.color.text_muted)
-            mostrarAviso(getString(R.string.reporte_ux_ubicacion_aproximada), colorMuted)
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+
+        mMap?.uiSettings?.isZoomControlsEnabled = true
+        mMap?.uiSettings?.isCompassEnabled = true
+
+        val bogota = LatLng(4.6097, -74.0817)
+
+        val state = viewModel.uiState.value
+        if (state.ubicacionSeleccionadaPorUsuario && state.latitud != null && state.longitud != null) {
+            val pos = LatLng(state.latitud, state.longitud)
+            actualizarMarcador(pos, moverCamara = true)
+        } else {
+            val prefs = getSharedPreferences(prefsMapa, MODE_PRIVATE)
+            val hasLoc = prefs.getBoolean(keyHasLoc, false)
+            if (hasLoc) {
+                val lat = prefs.getFloat(keyLat, 0f).toDouble()
+                val lng = prefs.getFloat(keyLng, 0f).toDouble()
+                if (lat != 0.0 && lng != 0.0) {
+                    val pos = LatLng(lat, lng)
+                    viewModel.establecerUbicacion(lat, lng, null)
+                    viewModel.resolverDireccion(this, lat, lng)
+                    actualizarMarcador(pos, moverCamara = true)
+                } else {
+                    mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(bogota, 11f))
+                }
+            } else {
+                mMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(bogota, 11f))
+            }
         }
+
+        mMap?.setOnMapClickListener { latLng ->
+            cancelarBusquedaUbicacionEnCurso()
+            actualizarMarcador(latLng, moverCamara = false)
+            viewModel.resolverDireccion(this, latLng.latitude, latLng.longitude)
+        }
+    }
+
+    private fun actualizarMarcador(posicion: LatLng, moverCamara: Boolean) {
+        mMap?.clear()
+        mMap?.addMarker(
+            MarkerOptions()
+                .position(posicion)
+                .title(getString(R.string.reporte_ux_marcador_ubicacion))
+        )
+        if (moverCamara) {
+            mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(posicion, 15f))
+        }
+    }
+
+    private fun verificarPermisosUbicacion() {
+        val fineGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+        val coarseGranted = ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+
+        if (fineGranted || coarseGranted) {
+            obtenerUbicacionActual()
+        } else {
+            locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+        }
+    }
+
+    private fun cancelarBusquedaUbicacionEnCurso() {
+        ctsUbicacion?.cancel()
+        ctsUbicacion = null
+        ubicacionJob?.cancel()
+        ubicacionJob = null
+        isObteniendoUbicacion = false
     }
 
     private fun ocultarAvisoAproximada() {
-        esAvisoUbicacionAproximadaVisible = false
-        if (!esErrorValidacionVisible) {
+        if (esAvisoUbicacionAproximadaVisible) {
+            esAvisoUbicacionAproximadaVisible = false
             ocultarAviso()
         }
     }
 
-    private fun calcularAntiguedadSegundos(loc: Location): Long {
-        val elapsedNanos = loc.elapsedRealtimeNanos
-        if (elapsedNanos > 0L) {
-            val diffNanos = SystemClock.elapsedRealtimeNanos() - elapsedNanos
-            return (diffNanos / 1_000_000_000L).coerceAtLeast(0L)
-        }
-        val diffMs = System.currentTimeMillis() - loc.time
-        return (diffMs / 1000L).coerceAtLeast(0L)
-    }
-
-    private suspend fun obtenerUltimaUbicacion(timeoutMs: Long = 1_500L): Location? =
-        withTimeoutOrNull(timeoutMs) {
-            suspendCancellableCoroutine { cont ->
-                try {
-                    fusedLocationClient.lastLocation
-                        .addOnSuccessListener { loc -> if (cont.isActive) cont.resume(loc) }
-                        .addOnFailureListener { if (cont.isActive) cont.resume(null) }
-                        .addOnCanceledListener { if (cont.isActive) cont.resume(null) }
-                } catch (_: SecurityException) {
-                    if (cont.isActive) cont.resume(null)
-                }
-            }
-        }
-
-    private suspend fun obtenerUbicacionFresca(
-        cts: CancellationTokenSource,
-        timeoutMs: Long
-    ): Location? = withTimeoutOrNull(timeoutMs) {
-        suspendCancellableCoroutine<Location?> { cont ->
-            cont.invokeOnCancellation { cts.cancel() }
-            try {
-                val request = CurrentLocationRequest.Builder()
-                    .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
-                    .setMaxUpdateAgeMillis(0L)
-                    .setDurationMillis(timeoutMs)
-                    .build()
-                fusedLocationClient.getCurrentLocation(request, cts.token)
-                    .addOnSuccessListener { loc -> if (cont.isActive) cont.resume(loc) }
-                    .addOnFailureListener { if (cont.isActive) cont.resume(null) }
-                    .addOnCanceledListener { if (cont.isActive) cont.resume(null) }
-            } catch (_: SecurityException) {
-                if (cont.isActive) cont.resume(null)
-            }
-        }
-    }
-
     private fun obtenerUbicacionActual() {
-        cancelarBusquedaUbicacionEnCurso()
+        if (isObteniendoUbicacion) return
         isObteniendoUbicacion = true
-
-        binding.pbDireccion.visibility = View.VISIBLE
-        binding.tvDireccion.setText(R.string.reporte_ux_obteniendo_ubicacion)
-        binding.tvDireccion.announceForAccessibility(getString(R.string.reporte_ux_obteniendo_ubicacion))
 
         viewModel.iniciarCargaUbicacion(R.string.reporte_ux_obteniendo_ubicacion)
 
@@ -452,51 +678,77 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
 
         ubicacionJob = lifecycleScope.launch {
             try {
-                val freshDeferred = async { obtenerUbicacionFresca(cts, 10_000L) }
-                val lastLoc = obtenerUltimaUbicacion(1_500L)
                 var mostroUbicacion = false
-                var antiguedad = Long.MAX_VALUE
+                val inicioMs = SystemClock.elapsedRealtime()
+
+                val deferredLast = async(Dispatchers.IO) {
+                    try {
+                        val fine = ContextCompat.checkSelfPermission(this@reportar_peticion, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                        val coarse = ContextCompat.checkSelfPermission(this@reportar_peticion, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                        if (!fine && !coarse) return@async null
+
+                        suspendCancellableCoroutine<Location?> { cont ->
+                            fusedLocationClient.lastLocation
+                                .addOnSuccessListener { loc -> if (cont.isActive) cont.resume(loc) }
+                                .addOnFailureListener { if (cont.isActive) cont.resume(null) }
+                                .addOnCanceledListener { if (cont.isActive) cont.resume(null) }
+                        }
+                    } catch (_: Exception) {
+                        null
+                    }
+                }
+
+                val lastLoc = withTimeoutOrNull(400) { deferredLast.await() }
 
                 if (lastLoc != null) {
-                    antiguedad = calcularAntiguedadSegundos(lastLoc)
-                    val currentLatLng = LatLng(lastLoc.latitude, lastLoc.longitude)
-                    actualizarMarcador(currentLatLng, moverCamara = true)
-                    viewModel.resolverDireccion(this@reportar_peticion, lastLoc.latitude, lastLoc.longitude)
+                    val pos = LatLng(lastLoc.latitude, lastLoc.longitude)
                     mostroUbicacion = true
-                    isObteniendoUbicacion = false
+                    actualizarMarcador(pos, moverCamara = true)
+                    viewModel.resolverDireccion(this@reportar_peticion, pos.latitude, pos.longitude)
 
-                    if (antiguedad > 30L) {
-                        mostrarAvisoAproximada()
+                    val edadMs = System.currentTimeMillis() - lastLoc.time
+                    val esRecienteYPrecisa = (edadMs < 60_000L) && (lastLoc.hasAccuracy() && lastLoc.accuracy <= 50f)
+                    if (!esRecienteYPrecisa) {
+                        esAvisoUbicacionAproximadaVisible = true
+                        val colorMuted = ContextCompat.getColor(this@reportar_peticion, R.color.text_muted)
+                        mostrarAviso(getString(R.string.reporte_ux_ubicacion_aproximada), colorMuted)
                     } else {
                         ocultarAvisoAproximada()
                     }
                 }
 
-                val freshLoc = try {
-                    freshDeferred.await()
-                } catch (_: Exception) {
-                    null
+                val tiempoConsumido = SystemClock.elapsedRealtime() - inicioMs
+                val tiempoRestante = (5000L - tiempoConsumido).coerceAtLeast(1000L)
+
+                val freshLoc = withTimeoutOrNull(tiempoRestante) {
+                    try {
+                        val fine = ContextCompat.checkSelfPermission(this@reportar_peticion, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                        val coarse = ContextCompat.checkSelfPermission(this@reportar_peticion, Manifest.permission.ACCESS_COARSE_LOCATION) == PackageManager.PERMISSION_GRANTED
+                        if (!fine && !coarse) return@withTimeoutOrNull null
+
+                        val request = CurrentLocationRequest.Builder()
+                            .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                            .setDurationMillis(tiempoRestante)
+                            .setMaxUpdateAgeMillis(10_000)
+                            .build()
+
+                        suspendCancellableCoroutine<Location?> { cont ->
+                            fusedLocationClient.getCurrentLocation(request, cts.token)
+                                .addOnSuccessListener { loc -> if (cont.isActive) cont.resume(loc) }
+                                .addOnFailureListener { if (cont.isActive) cont.resume(null) }
+                                .addOnCanceledListener { if (cont.isActive) cont.resume(null) }
+                        }
+                    } catch (_: Exception) {
+                        null
+                    }
                 }
 
                 if (freshLoc != null) {
-                    val debeActualizar = if (!mostroUbicacion) {
-                        true
-                    } else {
-                        val eraAproximada = antiguedad > 30L
-                        val mejorPrecision = freshLoc.hasAccuracy() && (
-                            lastLoc == null || !lastLoc.hasAccuracy() || freshLoc.accuracy < lastLoc.accuracy
-                        )
-                        val distanciaMetros = if (lastLoc != null) lastLoc.distanceTo(freshLoc) else Float.MAX_VALUE
-                        eraAproximada || (mejorPrecision && distanciaMetros > 15f)
-                    }
-
-                    if (debeActualizar) {
-                        ocultarAvisoAproximada()
-                        val freshLatLng = LatLng(freshLoc.latitude, freshLoc.longitude)
-                        actualizarMarcador(freshLatLng, moverCamara = true)
-                        viewModel.resolverDireccion(this@reportar_peticion, freshLoc.latitude, freshLoc.longitude)
-                    } else {
-                    }
+                    ocultarAvisoAproximada()
+                    val pos = LatLng(freshLoc.latitude, freshLoc.longitude)
+                    mostroUbicacion = true
+                    actualizarMarcador(pos, moverCamara = true)
+                    viewModel.resolverDireccion(this@reportar_peticion, pos.latitude, pos.longitude)
                 } else if (!mostroUbicacion) {
                     ocultarAvisoAproximada()
                     isObteniendoUbicacion = false
@@ -539,6 +791,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onPause() {
         super.onPause()
+        if (reporteEncoladoExitoso) return
         val textoActual = binding.etSearch.text?.toString().orEmpty()
         val prefs = getSharedPreferences(prefsMapa, MODE_PRIVATE)
         val editor = prefs.edit()
@@ -601,18 +854,308 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         getSharedPreferences(prefsReportes, MODE_PRIVATE)
             .edit()
             .putInt(keyIdTipoSeleccionado, tipo.idTipo)
+            .putString(keyTipoReporte, tipo.nombreRemoto)
             .apply()
 
-        val puntoReferencia = binding.etSearch.text?.toString()?.trim().orEmpty()
+        viewModel.avanzarPaso2()
+    }
 
-        val intent = Intent(this, reportar_peticionnn::class.java).apply {
-            putExtra("TIPO_REPORTE", tipo.nombreRemoto)
-            putExtra("LATITUD", state.latitud)
-            putExtra("LONGITUD", state.longitud)
-            putExtra("PUNTO_REFERENCIA", puntoReferencia)
-            putExtra("ID_TIPO_SELECCIONADO", tipo.idTipo)
+    private fun volverAlPaso1() {
+        viewModel.volverPaso1()
+    }
+
+    private fun mostrarBottomSheetEvidencia(esVideo: Boolean) {
+        val state = viewModel.uiState.value
+        if (esVideo && !state.puedeAgregarVideo) return
+        if (!esVideo && !state.puedeAgregarFoto) return
+
+        val bottomSheet = BottomSheetDialog(this, R.style.ThemeOverlay_Vetericano_BottomSheetDialog)
+        val sheetBinding = BottomSheetAdjuntarEvidenciaBinding.inflate(layoutInflater)
+        bottomSheet.setContentView(sheetBinding.root)
+
+        if (esVideo) {
+            sheetBinding.ivSheetHeaderIcon.setImageResource(R.drawable.ic_videocam)
+            sheetBinding.tvSheetTitulo.setText(R.string.lbl_grabar_video)
+            sheetBinding.tvSheetSubtitulo.setText(R.string.lbl_selecciona_el_origen_para_documentar)
+
+            sheetBinding.ivIconCamara.setImageResource(R.drawable.ic_videocam)
+            sheetBinding.tvTituloCamara.setText(R.string.lbl_grabar_video)
+            sheetBinding.tvSubtituloCamara.setText(R.string.reporte_offline_sheet_video_nota)
+
+            sheetBinding.ivIconGaleria.setImageResource(R.drawable.ic_videocam)
+            sheetBinding.tvTituloGaleria.setText(R.string.lbl_video)
+            sheetBinding.tvSubtituloGaleria.setText(R.string.lbl_selecciona_el_origen_para_documentar)
+
+            sheetBinding.tvSheetInfoNota.setText(R.string.reporte_offline_sheet_video_nota)
+        } else {
+            sheetBinding.ivSheetHeaderIcon.setImageResource(R.drawable.camera)
+            sheetBinding.tvSheetTitulo.setText(R.string.btn_adjuntar_foto)
+            sheetBinding.tvSheetSubtitulo.setText(R.string.lbl_selecciona_el_origen_para_documentar)
+
+            sheetBinding.ivIconCamara.setImageResource(R.drawable.camera)
+            sheetBinding.tvTituloCamara.setText(R.string.lbl_tomar_foto_con_la_camara)
+            sheetBinding.tvSubtituloCamara.setText(R.string.lbl_selecciona_el_origen_para_documentar)
+
+            sheetBinding.ivIconGaleria.setImageResource(R.drawable.ic_photo_library)
+            sheetBinding.tvTituloGaleria.setText(R.string.lbl_foto)
+            sheetBinding.tvSubtituloGaleria.setText(R.string.lbl_selecciona_el_origen_para_documentar)
+
+            sheetBinding.tvSheetInfoNota.setText(R.string.lbl_optimizacion_automatica_las_fotos_se)
         }
-        startActivity(intent)
+
+        sheetBinding.cardOpcionCamara.setOnClickListener {
+            bottomSheet.dismiss()
+            verificarPermisoYLanzar(esVideo = esVideo)
+        }
+
+        sheetBinding.cardOpcionGaleria.setOnClickListener {
+            bottomSheet.dismiss()
+            if (esVideo) {
+                pickVideoLauncher.launch("video/*")
+            } else {
+                pickPhotoLauncher.launch("image/*")
+            }
+        }
+
+        sheetBinding.btnCerrarSheet.setOnClickListener { bottomSheet.dismiss() }
+        sheetBinding.btnCancelarSheet.setOnClickListener { bottomSheet.dismiss() }
+
+        bottomSheet.show()
+    }
+
+    private fun verificarPermisoYLanzar(esVideo: Boolean) {
+        pendingMediaEsVideo = esVideo
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED) {
+            if (esVideo) lanzarGrabacionVideo() else lanzarCapturaFoto()
+        } else {
+            cameraPermissionLauncher.launch(Manifest.permission.CAMERA)
+        }
+    }
+
+    private fun lanzarCapturaFoto() {
+        try {
+            val (file, uri) = ReporteMediaHelper.crearArchivoCamaraDraft(this, esVideo = false)
+            viewModel.guardarPendingCamera(file.absolutePath, uri.toString(), esVideo = false)
+            takePhotoLauncher.launch(uri)
+        } catch (_: Exception) {
+            viewModel.limpiarPendingCamera()
+        }
+    }
+
+    private fun lanzarGrabacionVideo() {
+        try {
+            val (file, uri) = ReporteMediaHelper.crearArchivoCamaraDraft(this, esVideo = true)
+            viewModel.guardarPendingCamera(file.absolutePath, uri.toString(), esVideo = true)
+            recordVideoLauncher.launch(uri)
+        } catch (_: Exception) {
+            viewModel.limpiarPendingCamera()
+        }
+    }
+
+    private fun eliminarEvidencia(item: EvidenciaItemLocal) {
+        viewModel.eliminarEvidencia(item.id)
+        val file = File(item.localPath)
+        val draftDir = ReporteMediaHelper.obtenerDirectorioDrafts(this)
+        if (file.exists() && file.parentFile?.absolutePath == draftDir.absolutePath) {
+            file.delete()
+        }
+        guardarMultimediaEnPrefs()
+    }
+
+    fun reproducirVideo(item: EvidenciaItemLocal) {
+        try {
+            val file = File(item.localPath)
+            val uri = FileProvider.getUriForFile(
+                this,
+                "${applicationContext.packageName}.fileprovider",
+                file
+            )
+            val intent = Intent(Intent.ACTION_VIEW).apply {
+                setDataAndType(uri, "video/*")
+                addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+            }
+            startActivity(intent)
+        } catch (_: Exception) {
+            Toast.makeText(this, R.string.acta_offline_reproducir_video_error, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun mostrarDialogoErrorVideo(@StringRes tituloRes: Int, @StringRes mensajeRes: Int) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(tituloRes)
+            .setMessage(mensajeRes)
+            .setPositiveButton(R.string.btn_aceptar, null)
+            .show()
+    }
+
+    private fun guardarMultimediaEnPrefs() {
+        val prefs = getSharedPreferences(prefsMultimedia, MODE_PRIVATE)
+        val editor = prefs.edit()
+        val paths = mutableListOf<String>()
+        val isVideo = mutableListOf<String>()
+
+        val state = viewModel.uiState.value
+        for (item in state.evidencias) {
+            val file = File(item.localPath)
+            if (file.exists() && file.length() > 0L) {
+                paths.add(file.absolutePath)
+                isVideo.add(if (item.esVideo) "1" else "0")
+            }
+        }
+        editor.putString(keyBorradorPaths, paths.joinToString(";"))
+        editor.putString(keyBorradorIsVideo, isVideo.joinToString(";"))
+        editor.apply()
+    }
+
+    private fun restaurarBorradorDesdePrefs() {
+        val prefs = getSharedPreferences(prefsMultimedia, MODE_PRIVATE)
+        val descGuardada = prefs.getString(keyBorradorDesc, "") ?: ""
+        val pathsStr = prefs.getString(keyBorradorPaths, "") ?: ""
+        val isVideoStr = prefs.getString(keyBorradorIsVideo, "") ?: ""
+
+        val listaRecuperada = mutableListOf<EvidenciaItemLocal>()
+        val pathsValidos = mutableListOf<String>()
+        val isVideoValidos = mutableListOf<String>()
+
+        if (pathsStr.isNotBlank()) {
+            val paths = pathsStr.split(";")
+            val isVideos = isVideoStr.split(";")
+            for (i in paths.indices) {
+                val path = paths[i]
+                if (path.isNotBlank()) {
+                    val f = File(path)
+                    if (f.exists() && f.length() > 0L) {
+                        val esVid = if (i < isVideos.size) isVideos[i] == "1" else false
+                        listaRecuperada.add(
+                            EvidenciaItemLocal(
+                                id = f.name,
+                                localPath = f.absolutePath,
+                                uriString = "",
+                                esVideo = esVid
+                            )
+                        )
+                        pathsValidos.add(path)
+                        isVideoValidos.add(if (esVid) "1" else "0")
+                    }
+                }
+            }
+        }
+
+        if (pathsValidos.size != (if (pathsStr.isBlank()) 0 else pathsStr.split(";").size)) {
+            prefs.edit()
+                .putString(keyBorradorPaths, pathsValidos.joinToString(";"))
+                .putString(keyBorradorIsVideo, isVideoValidos.joinToString(";"))
+                .apply()
+        }
+
+        viewModel.cargarBorradorPersistente(descGuardada, listaRecuperada)
+        if (descGuardada.isNotBlank()) {
+            binding.etDescripcion.setText(descGuardada)
+        }
+    }
+
+    private fun validarYRevisarReporte() {
+        val state = viewModel.uiState.value
+        val descripcion = state.descripcion.trim()
+
+        if (descripcion.isEmpty()) {
+            binding.tilDescripcion.error = getString(R.string.reporte_offline_error_descripcion_vacia)
+            binding.tilDescripcion.requestFocus()
+            return
+        }
+        binding.tilDescripcion.error = null
+
+        val tipo = state.tipoSeleccionado
+        if (tipo == null) {
+            Toast.makeText(this, R.string.reporte_ux_error_tipo_no_definido, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (!state.ubicacionSeleccionadaPorUsuario || state.latitud == null || state.longitud == null) {
+            Toast.makeText(this, R.string.reporte_ux_error_falta_ubicacion, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val existente = supportFragmentManager.findFragmentByTag(BottomSheetConfirmarReporte.TAG)
+        if (existente == null && !supportFragmentManager.isStateSaved) {
+            BottomSheetConfirmarReporte().show(supportFragmentManager, BottomSheetConfirmarReporte.TAG)
+        }
+    }
+
+    private fun consumirEnvioExitoso(idLocal: Long) {
+        if (reporteEncoladoExitoso) return
+        marcarReporteEncoladoExitoso()
+
+        val sheet = supportFragmentManager.findFragmentByTag(BottomSheetConfirmarReporte.TAG) as? BottomSheetDialogFragment
+        sheet?.dismissAllowingStateLoss()
+
+        viewModel.limpiarBorrador()
+
+        getSharedPreferences("MisReportesPrefs", Context.MODE_PRIVATE).edit().clear().apply()
+        getSharedPreferences("MapaOffline", Context.MODE_PRIVATE).edit().clear().apply()
+        getSharedPreferences("ReporteOfflineMultimedia", Context.MODE_PRIVATE).edit().clear().apply()
+        getSharedPreferences("ReporteOffline", Context.MODE_PRIVATE).edit().clear().apply()
+
+        try {
+            val draftDir = File(filesDir, "reporte_drafts")
+            draftDir.listFiles()?.forEach { f ->
+                if (f.isFile) f.delete()
+            }
+        } catch (_: Exception) {
+        }
+
+        val conn = hayConexionInternet(this)
+        val nuevoIntent = Intent(this, reporte_enviado::class.java).apply {
+            putExtra("ID_LOCAL", idLocal)
+            putExtra("HAY_CONEXION", conn)
+        }
+        startActivity(nuevoIntent)
+        finish()
+    }
+
+    private fun hayConexionInternet(context: Context): Boolean {
+        val cm = context.getSystemService(Context.CONNECTIVITY_SERVICE) as? ConnectivityManager ?: return false
+        val activeNetwork = cm.activeNetwork ?: return false
+        val capabilities = cm.getNetworkCapabilities(activeNetwork) ?: return false
+        return capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET) &&
+                capabilities.hasCapability(NetworkCapabilities.NET_CAPABILITY_VALIDATED)
+    }
+
+    fun navegarDesdeModal(destino: DestinoEdicion) {
+        when (destino) {
+            DestinoEdicion.TIPO -> {
+                volverAlPaso1()
+                binding.containerPaso1.post {
+                    binding.cardHerido.requestFocus()
+                }
+            }
+            DestinoEdicion.UBICACION -> {
+                volverAlPaso1()
+                binding.containerPaso1.post {
+                    binding.cvMap.requestFocus()
+                }
+            }
+            DestinoEdicion.DESCRIPCION -> {
+                binding.containerPaso1.visibility = View.GONE
+                binding.bottomControlsContainer.visibility = View.GONE
+                binding.containerPaso2.visibility = View.VISIBLE
+                binding.etDescripcion.post {
+                    binding.etDescripcion.requestFocus()
+                    binding.etDescripcion.text?.let {
+                        binding.etDescripcion.setSelection(it.length)
+                    }
+                }
+            }
+            DestinoEdicion.ADJUNTOS -> {
+                binding.containerPaso1.visibility = View.GONE
+                binding.bottomControlsContainer.visibility = View.GONE
+                binding.containerPaso2.visibility = View.VISIBLE
+                binding.nsvPaso2.post {
+                    binding.nsvPaso2.smoothScrollTo(0, binding.layoutBotonesMultimedia.top)
+                    binding.btnAdjuntarFoto.requestFocus()
+                }
+            }
+        }
     }
 
     private fun cargarTipos() {
@@ -693,5 +1236,9 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         } catch (_: Exception) {
         }
         return list
+    }
+
+    private fun dpToPx(dp: Int): Int {
+        return (dp * resources.displayMetrics.density).toInt()
     }
 }

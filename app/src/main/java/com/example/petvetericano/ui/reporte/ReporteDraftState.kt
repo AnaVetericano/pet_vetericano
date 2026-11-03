@@ -90,3 +90,15 @@ data class ReporteDraftState(
     val puedeRevisarPaso2: Boolean
         get() = descripcion.isNotBlank() && fotosCount <= 5 && videosCount <= 1
 }
+
+enum class DestinoEdicion {
+    TIPO,
+    UBICACION,
+    DESCRIPCION,
+    ADJUNTOS
+}
+
+sealed interface ResultadoEnvio {
+    data class Exito(val idLocal: Long) : ResultadoEnvio
+    data object Error : ResultadoEnvio
+}

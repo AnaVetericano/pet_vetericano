@@ -225,7 +225,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
         val apellido = prefs.getUserLastName().trim()
         val nombreCompleto = if (apellido.isNotEmpty() && !nombre.contains(apellido)) "$nombre $apellido" else nombre
         binding.tvNombreUsuario.text = nombreCompleto.ifEmpty { "Médico Veterinario" }
-        binding.tvRolUsuario.text = "👨‍⚕️ Rol: Médico Veterinario CBA"
+        binding.tvRolUsuario.setText(R.string.dashboard_ux_rol_veterinario)
 
         val iniciales = buildString {
             if (nombre.isNotEmpty()) append(nombre.first().uppercaseChar())

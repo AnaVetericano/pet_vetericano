@@ -2,6 +2,8 @@ package com.example.petvetericano
 
 import android.Manifest
 import android.content.Intent
+import android.content.Context
+import android.provider.MediaStore
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -22,9 +24,6 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.addTextChangedListener
 import com.bumptech.glide.Glide
-import com.cloudinary.android.MediaManager
-import com.cloudinary.android.callback.ErrorInfo
-import com.cloudinary.android.callback.UploadCallback
 import com.example.petvetericano.databinding.ActivityReportarPeticionnnBinding
 import com.example.petvetericano.databinding.BottomSheetAdjuntarEvidenciaBinding
 import com.google.android.material.bottomsheet.BottomSheetDialog
@@ -38,6 +37,18 @@ data class EvidenciaItem(
     val localFile: File? = null
 )
 
+private const val LIMITE_VIDEO_BYTES = 45L * 1024 * 1024
+
+private class CaptureVideoConLimites : ActivityResultContracts.CaptureVideo() {
+    override fun createIntent(context: Context, input: Uri): Intent {
+        return super.createIntent(context, input).apply {
+            putExtra(MediaStore.EXTRA_DURATION_LIMIT, 15)
+            putExtra(MediaStore.EXTRA_SIZE_LIMIT, LIMITE_VIDEO_BYTES)
+            putExtra(MediaStore.EXTRA_VIDEO_QUALITY, 1)
+        }
+    }
+}
+
 class reportar_peticionnn : AppCompatActivity() {
 
     private lateinit var binding: ActivityReportarPeticionnnBinding
@@ -47,10 +58,6 @@ class reportar_peticionnn : AppCompatActivity() {
     private val KEY_BORRADOR = "borrador_descripcion"
     private val KEY_PATHS = "borrador_paths_v2"
     private val KEY_IS_VIDEO = "borrador_is_video_v2"
-
-    // Datos de Cloudinary
-    private val CLOUD_NAME = "aefeig5y"
-    private val UPLOAD_PRESET = "preset_android"
 
     // Evidencias multimedia seleccionadas (hasta 2)
     private val selectedMediaList = mutableListOf<EvidenciaItem>()
@@ -89,22 +96,21 @@ class reportar_peticionnn : AppCompatActivity() {
     }
 
     private val recordVideoLauncher = registerForActivityResult(
-        ActivityResultContracts.CaptureVideo()
+        CaptureVideoConLimites()
     ) { success ->
         if (success && tempCameraUri != null) {
-            if (tempCameraFile != null && tempCameraFile!!.length() > 10L * 1024 * 1024) {
-                val sizeMb = tempCameraFile!!.length() / (1024 * 1024)
+            if (tempCameraFile != null && tempCameraFile!!.length() > LIMITE_VIDEO_BYTES) {
                 tempCameraFile!!.delete()
                 MaterialAlertDialogBuilder(this)
-                    .setTitle("Video excede el límite")
-                    .setMessage("El video grabado pesa ${sizeMb} MB y supera el límite de 10 MB permitido.\n\nPor favor graba un video más breve (máx. 20-30 segundos).")
-                    .setPositiveButton("Aceptar", null)
+                    .setTitle(R.string.reporte_offline_video_pesado_titulo)
+                    .setMessage(R.string.reporte_offline_video_pesado_mensaje)
+                    .setPositiveButton(R.string.btn_aceptar, null)
                     .show()
             } else {
                 selectedMediaList.add(EvidenciaItem(tempCameraUri!!, esVideo = true, localFile = tempCameraFile))
                 actualizarVisualizacionMultimedia()
                 guardarMultimediaEnPrefs()
-                Toast.makeText(this, "Video grabado correctamente 🎥", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, R.string.reporte_offline_video_grabado_exito, Toast.LENGTH_SHORT).show()
             }
         }
     }
@@ -116,19 +122,18 @@ class reportar_peticionnn : AppCompatActivity() {
             val localUri = copiarUriALocal(it, esVideo = true)
             if (localUri != null) {
                 val file = File(localUri.path ?: "")
-                if (file.exists() && file.length() > 10L * 1024 * 1024) {
-                    val sizeMb = file.length() / (1024 * 1024)
+                if (file.exists() && file.length() > LIMITE_VIDEO_BYTES) {
                     file.delete()
                     MaterialAlertDialogBuilder(this)
-                        .setTitle("Video demasiado pesado")
-                        .setMessage("El video seleccionado pesa ${sizeMb} MB y supera el límite de 10 MB permitido.\n\nPor favor selecciona un video más corto o graba un clip breve.")
-                        .setPositiveButton("Aceptar", null)
+                        .setTitle(R.string.reporte_offline_video_pesado_titulo)
+                        .setMessage(R.string.reporte_offline_video_pesado_mensaje)
+                        .setPositiveButton(R.string.btn_aceptar, null)
                         .show()
                 } else {
                     selectedMediaList.add(EvidenciaItem(localUri, esVideo = true, localFile = file))
                     actualizarVisualizacionMultimedia()
                     guardarMultimediaEnPrefs()
-                    Toast.makeText(this, "Video seleccionado 🎥", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this, R.string.reporte_offline_video_seleccionado_exito, Toast.LENGTH_SHORT).show()
                 }
             }
         }
@@ -155,13 +160,18 @@ class reportar_peticionnn : AppCompatActivity() {
         binding = ActivityReportarPeticionnnBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val initPaddingLeft = binding.main.paddingLeft
+        val initPaddingTop = binding.main.paddingTop
+        val initPaddingRight = binding.main.paddingRight
+        val initPaddingBottom = binding.main.paddingBottom
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.main) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
             v.setPadding(
-                systemBars.left,
-                systemBars.top,
-                systemBars.right,
-                systemBars.bottom
+                initPaddingLeft + systemBars.left,
+                initPaddingTop + systemBars.top,
+                initPaddingRight + systemBars.right,
+                initPaddingBottom + systemBars.bottom
             )
             insets
         }
@@ -190,7 +200,6 @@ class reportar_peticionnn : AppCompatActivity() {
             }
         }
 
-        initCloudinary()
         setupUI()
 
         // Recuperar texto de descripción
@@ -269,16 +278,6 @@ class reportar_peticionnn : AppCompatActivity() {
         editor.apply()
     }
 
-    private fun initCloudinary() {
-        val config = HashMap<String, String>()
-        config["cloud_name"] = CLOUD_NAME
-        try {
-            MediaManager.init(this, config)
-        } catch (_: Exception) {
-            // MediaManager ya inicializado
-        }
-    }
-
     private fun setupUI() {
         binding.btndev.setOnClickListener {
             finish()
@@ -341,7 +340,7 @@ class reportar_peticionnn : AppCompatActivity() {
             sheetBinding.tvTituloGaleria.text = "Elegir video de la galería"
             sheetBinding.tvSubtituloGaleria.text = "Seleccionar archivo de video guardado"
 
-            sheetBinding.tvSheetInfoNota.text = "Almacenamiento en la nube: Graba clips breves de hasta 20-30 seg (máx. 10 MB)."
+            sheetBinding.tvSheetInfoNota.text = getString(R.string.reporte_offline_sheet_video_nota)
         } else {
             sheetBinding.ivSheetHeaderIcon.setImageResource(R.drawable.camera)
             sheetBinding.tvSheetTitulo.text = "Adjuntar evidencia fotográfica"
@@ -616,7 +615,7 @@ class reportar_peticionnn : AppCompatActivity() {
         val descripcion = binding.etDescripcion.text.toString().trim()
 
         if (descripcion.isEmpty()) {
-            binding.tilDescripcion.error = "Ingresa una descripción de la incidencia"
+            binding.tilDescripcion.error = getString(R.string.reporte_offline_error_descripcion_vacia)
             return
         }
 
@@ -626,71 +625,16 @@ class reportar_peticionnn : AppCompatActivity() {
         val longitud = intent.getDoubleExtra("LONGITUD", 0.0)
         val tipoReporte = intent.getStringExtra("TIPO_REPORTE")
 
-        if (selectedMediaList.isNotEmpty()) {
-            subirArchivosYContinuar(descripcion, latitud, longitud, tipoReporte)
-        } else {
-            navegarAConfirmar(descripcion, latitud, longitud, tipoReporte, arrayListOf())
+        val rutas = ArrayList<String>()
+        val banderasVideo = BooleanArray(selectedMediaList.size)
+        for ((i, item) in selectedMediaList.withIndex()) {
+            val path = item.localFile?.absolutePath
+                ?: (item.uri.path?.let { File(filesDir, File(it).name).absolutePath } ?: "")
+            rutas.add(path)
+            banderasVideo[i] = item.esVideo
         }
-    }
 
-    private fun subirArchivosYContinuar(
-        descripcion: String,
-        latitud: Double,
-        longitud: Double,
-        tipoReporte: String?
-    ) {
-        val urlsSubidas = mutableListOf<String>()
-        var subidasCompletadas = 0
-        val totalArchivos = selectedMediaList.size
-
-        binding.btnContinue.isEnabled = false
-        binding.btnContinue.text = "Subiendo evidencias..."
-        Toast.makeText(this, "Subiendo evidencias a la nube...", Toast.LENGTH_SHORT).show()
-
-        for (item in selectedMediaList) {
-            MediaManager.get()
-                .upload(item.uri)
-                .unsigned(UPLOAD_PRESET)
-                .callback(object : UploadCallback {
-                    override fun onStart(requestId: String?) {}
-
-                    override fun onProgress(requestId: String?, bytes: Long, totalBytes: Long) {}
-
-                    override fun onSuccess(requestId: String?, resultData: Map<*, *>?) {
-                        val url = resultData?.get("secure_url") as? String
-                        if (url != null) {
-                            urlsSubidas.add(url)
-                        }
-
-                        subidasCompletadas++
-
-                        if (subidasCompletadas == totalArchivos) {
-                            binding.btnContinue.isEnabled = true
-                            binding.btnContinue.text = "Continuar"
-                            navegarAConfirmar(
-                                descripcion,
-                                latitud,
-                                longitud,
-                                tipoReporte,
-                                ArrayList(urlsSubidas)
-                            )
-                        }
-                    }
-
-                    override fun onError(requestId: String?, error: ErrorInfo?) {
-                        binding.btnContinue.isEnabled = true
-                        binding.btnContinue.text = "Continuar"
-                        Toast.makeText(
-                            applicationContext,
-                            "Error al subir: ${error?.description}",
-                            Toast.LENGTH_LONG
-                        ).show()
-                    }
-
-                    override fun onReschedule(requestId: String?, error: ErrorInfo?) {}
-                })
-                .dispatch()
-        }
+        navegarAConfirmar(descripcion, latitud, longitud, tipoReporte, rutas, banderasVideo)
     }
 
     private fun navegarAConfirmar(
@@ -698,7 +642,8 @@ class reportar_peticionnn : AppCompatActivity() {
         latitud: Double,
         longitud: Double,
         tipoReporte: String?,
-        urlsArchivos: ArrayList<String>
+        rutasArchivos: ArrayList<String>,
+        banderasVideo: BooleanArray
     ) {
         val referencia = intent.getStringExtra("PUNTO_REFERENCIA")
         val idTipoRecibido = intent.getIntExtra("ID_TIPO_SELECCIONADO", 1)
@@ -706,7 +651,8 @@ class reportar_peticionnn : AppCompatActivity() {
         val intent = Intent(this, confirmar_reporte::class.java).apply {
             putExtra("TIPO_REPORTE", tipoReporte)
             putExtra("DESCRIPCION", descripcion)
-            putStringArrayListExtra("URLS_ARCHIVOS", urlsArchivos)
+            putStringArrayListExtra("RUTAS_ARCHIVOS", rutasArchivos)
+            putExtra("ES_VIDEO", banderasVideo)
             putExtra("LATITUD", latitud)
             putExtra("LONGITUD", longitud)
             putExtra("PUNTO_REFERENCIA", referencia)

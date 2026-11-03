@@ -2,6 +2,8 @@ package com.example.petvetericano
 
 import android.graphics.Color
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
@@ -42,6 +44,11 @@ class SolicitudesKitActivity : AppCompatActivity() {
     private var medicamentosEnTramiteIds: Set<Int> = emptySet()
     private var mapaMedTramiteInfo: Map<Int, Pair<Int, Int>> = emptyMap() // idMedicamento -> (idSolicitud, cantidad)
 
+    // Lista unificada y variables para búsqueda y filtros reactivos M3
+    private var listaSolicitudesCompleta: List<SolicitudKitResponse> = emptyList()
+    private var queryBusquedaSolicitudes: String = ""
+    private var filtroEstadoSeleccionado: String = "TODAS"
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivitySolicitudesKitBinding.inflate(layoutInflater)
@@ -53,6 +60,7 @@ class SolicitudesKitActivity : AppCompatActivity() {
         configurarTabs()
         configurarRecyclerView()
         configurarFormularioNuevaSolicitud()
+        configurarBuscadorYFiltrosSolicitudes()
 
         cargarSolicitudes()
     }
@@ -68,12 +76,12 @@ class SolicitudesKitActivity : AppCompatActivity() {
             override fun onTabSelected(tab: TabLayout.Tab?) {
                 when (tab?.position) {
                     0 -> {
-                        binding.swipeRefreshSolicitudes.visibility = View.VISIBLE
+                        binding.containerListadoSolicitudes.visibility = View.VISIBLE
                         binding.scrollNuevaSolicitud.visibility = View.GONE
                         cargarSolicitudes()
                     }
                     1 -> {
-                        binding.swipeRefreshSolicitudes.visibility = View.GONE
+                        binding.containerListadoSolicitudes.visibility = View.GONE
                         binding.scrollNuevaSolicitud.visibility = View.VISIBLE
                         actualizarSelectorMedicamentos()
                         prepararFormularioNuevaSolicitud()
@@ -251,6 +259,15 @@ class SolicitudesKitActivity : AppCompatActivity() {
             if (esReposicion && medicamentosEnTramiteIds.contains(med.idMedicamento)) {
                 val tramite = mapaMedTramiteInfo[med.idMedicamento]
                 binding.tilMedSolicitud.error = "⏳ Ya existe la Solicitud #${tramite?.first} en trámite para este fármaco."
+                DialogoAntiduplicadoM3Helper.mostrar(
+                    context = this,
+                    nombreMedicamento = med.nombre,
+                    idSolicitud = tramite?.first,
+                    cantidadPedida = tramite?.second,
+                    onVerSolicitudes = {
+                        binding.tabLayoutSolicitudes.getTabAt(0)?.select()
+                    }
+                )
                 return@setOnClickListener
             }
 
@@ -437,7 +454,7 @@ class SolicitudesKitActivity : AppCompatActivity() {
 
                 // Lista unificada: en cola offline primero + servidor
                 val listaTotal = offlineComoResponse + listaServidor
-                adapter.updateList(listaTotal)
+                listaSolicitudesCompleta = listaTotal
 
                 // Identificar solicitudes PENDIENTE de REPOSICION para controlar medicamentos en trámite
                 solicitudesPendientes = listaServidor.filter {
@@ -465,13 +482,11 @@ class SolicitudesKitActivity : AppCompatActivity() {
                 mapaMedTramiteInfo = mapaTramite
                 medicamentosEnTramiteIds = mapaTramite.keys
 
-                if (listaTotal.isEmpty()) {
-                    binding.layoutEmptySolicitudes.visibility = View.VISIBLE
-                    binding.rvSolicitudes.visibility = View.GONE
-                } else {
-                    binding.layoutEmptySolicitudes.visibility = View.GONE
-                    binding.rvSolicitudes.visibility = View.VISIBLE
-                }
+                // Persistir en MaletinManager para control anti-duplicados transversal en toda la app
+                maletinManager.guardarMedicamentosEnTramiteIds(medicamentosEnTramiteIds)
+                maletinManager.guardarMapaMedicamentosEnTramite(mapaMedTramiteInfo)
+
+                filtrarSolicitudes()
 
                 if (binding.tabLayoutSolicitudes.selectedTabPosition == 1) {
                     prepararFormularioNuevaSolicitud()
@@ -540,15 +555,21 @@ class SolicitudesKitActivity : AppCompatActivity() {
                             .setMessage(detalle)
 
                         if (esDuplicada) {
-                            builder.setPositiveButton("Ver mis solicitudes") { _, _ ->
-                                binding.tabLayoutSolicitudes.getTabAt(0)?.select()
-                            }
-                            builder.setNegativeButton("Cerrar", null)
+                            DialogoAntiduplicadoM3Helper.mostrar(
+                                context = this@SolicitudesKitActivity,
+                                nombreMedicamento = request.items?.firstOrNull()?.let { item ->
+                                    medicamentosDisponibles.find { it.idMedicamento == item.idMedicamento }?.nombre
+                                } ?: "Medicamento",
+                                mensajePersonalizado = detalle,
+                                onVerSolicitudes = {
+                                    binding.tabLayoutSolicitudes.getTabAt(0)?.select()
+                                }
+                            )
                             cargarSolicitudes()
                         } else {
                             builder.setPositiveButton("Entendido", null)
+                            builder.show()
                         }
-                        builder.show()
                     }
                 }
             } catch (e: Exception) {
@@ -651,6 +672,69 @@ class SolicitudesKitActivity : AppCompatActivity() {
                     Toast.makeText(this@SolicitudesKitActivity, "Error al cancelar: ${e.localizedMessage}", Toast.LENGTH_SHORT).show()
                 }
             }
+        }
+    }
+
+    private fun configurarBuscadorYFiltrosSolicitudes() {
+        binding.etBuscarSolicitud.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {
+                queryBusquedaSolicitudes = s?.toString()?.trim() ?: ""
+                filtrarSolicitudes()
+            }
+            override fun afterTextChanged(s: Editable?) {}
+        })
+
+        binding.chipGroupFiltroSolicitudes.setOnCheckedStateChangeListener { _, checkedIds ->
+            filtroEstadoSeleccionado = when (checkedIds.firstOrNull()) {
+                R.id.chipSolPendientes -> "PENDIENTE"
+                R.id.chipSolAprobadas -> "APROBADA"
+                R.id.chipSolOffline -> "OFFLINE"
+                R.id.chipSolOtras -> "OTRAS"
+                else -> "TODAS"
+            }
+            filtrarSolicitudes()
+        }
+    }
+
+    private fun filtrarSolicitudes() {
+        val filtradas = listaSolicitudesCompleta.filter { sol ->
+            // Filtro por estado
+            val coincideEstado = when (filtroEstadoSeleccionado) {
+                "PENDIENTE" -> sol.estado.equals("PENDIENTE", ignoreCase = true)
+                "APROBADA" -> sol.estado.equals("APROBADA", ignoreCase = true) || sol.estado.equals("PARCIAL", ignoreCase = true)
+                "OFFLINE" -> sol.estado.equals("EN_COLA_OFFLINE", ignoreCase = true)
+                "OTRAS" -> sol.estado.equals("CANCELADA", ignoreCase = true) || sol.estado.equals("RECHAZADA", ignoreCase = true)
+                else -> true
+            }
+
+            // Filtro por texto de búsqueda (id, motivo, o nombres de medicamentos)
+            val coincideBusqueda = if (queryBusquedaSolicitudes.isEmpty()) {
+                true
+            } else {
+                sol.idSolicitud.toString().contains(queryBusquedaSolicitudes, ignoreCase = true) ||
+                    (sol.motivoSolicitud?.contains(queryBusquedaSolicitudes, ignoreCase = true) ?: false) ||
+                    sol.detalles.any { it.nombreMedicamento?.contains(queryBusquedaSolicitudes, ignoreCase = true) == true }
+            }
+
+            coincideEstado && coincideBusqueda
+        }
+
+        adapter.updateList(filtradas)
+
+        if (filtradas.isEmpty()) {
+            binding.layoutEmptySolicitudes.visibility = View.VISIBLE
+            binding.rvSolicitudes.visibility = View.GONE
+            if (listaSolicitudesCompleta.isEmpty()) {
+                binding.tvEmptySolicitudesTitulo.text = "No tienes solicitudes registradas"
+                binding.tvEmptySolicitudesSubtitulo.text = "Crea una solicitud de reposición o devolución cuando requieras dotar tu maletín."
+            } else {
+                binding.tvEmptySolicitudesTitulo.text = "Sin resultados para el filtro"
+                binding.tvEmptySolicitudesSubtitulo.text = "No se encontraron solicitudes que coincidan con la búsqueda o el estado seleccionado."
+            }
+        } else {
+            binding.layoutEmptySolicitudes.visibility = View.GONE
+            binding.rvSolicitudes.visibility = View.VISIBLE
         }
     }
 }

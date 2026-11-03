@@ -40,7 +40,9 @@
     <!-- ============================================================ -->
     <!-- 2. AUTENTICACIÓN, REGISTRO & BIENVENIDA                    -->
     <!-- ============================================================ -->
+
     <string name="lbl_hola">Hola,</string>
+    <string name="lbl_rol_principal">Rol: Ciudadano</string>
     <string name="lbl_gracias_por_ayudar">¡Gracias por ayudar!</string>
     <string name="lbl_que_deseas_hacer_hoy">¿Qué deseas hacer hoy?</string>
     <string name="lbl_reportar_incidencia">Reportar\nIncidencia</string>
@@ -618,4 +620,83 @@
     <string name="acta_offline_error_cargar_dashboard">Error al cargar dashboard</string>
     <string name="acta_offline_error_cargar_peticiones">Error al cargar peticiones</string>
     <string name="acta_offline_error_generico_con_detalle">Error: %1$s</string>
+    <!-- Reportes Offline (Tarea B1) -->
+    <string name="reporte_offline_channel_nombre">Sincronización de Reportes Ciudadanos</string>
+    <string name="reporte_offline_channel_descripcion">Notificaciones sobre el envío automático de reportes registrados sin conexión</string>
+    <string name="reporte_offline_notif_exito_titulo">Gracias por tu reporte</string>
+    <string name="reporte_offline_notif_exito_texto">Tu reporte %1$s fue enviado correctamente.</string>
+    <string name="reporte_offline_notif_atencion_titulo">Un reporte requiere tu atención</string>
+    <string name="reporte_offline_notif_atencion_texto">El reporte #%1$d no pudo sincronizarse: %2$s. Toca para revisarlo.</string>
+    <string name="reporte_offline_notif_atencion_sesion_titulo">Inicia sesión para sincronizar tus reportes</string>
+    <string name="reporte_offline_notif_atencion_sesion_texto">Tu sesión expiró mientras había reportes ciudadanos pendientes de envío. Toca para iniciar sesión y reanudar.</string>
+    <string name="reporte_offline_error_evidencia_faltante">Uno de los archivos de evidencia ya no existe en el dispositivo.</string>
+    <string name="reporte_offline_error_evidencia_subida">No se pudo subir la evidencia multimedia a los servidores.</string>
+    <string name="reporte_offline_error_datos_servidor">El servidor rechazó los datos del reporte. Requiere verificación.</string>
+    <string name="reporte_offline_error_max_reintentos">Se superó el límite de intentos de envío automático.</string>
+    <string name="reporte_offline_notif_exito_texto_sin_radicado">Tu reporte fue enviado correctamente.</string>
+    <string name="reporte_offline_error_cargar_tipos">No se pudieron cargar los tipos de reporte. Intenta más tarde.</string>
+    <string name="reporte_offline_error_descripcion_vacia">Ingresa una descripción de la incidencia</string>
+    <string name="reporte_offline_direccion_coordenadas">Coordenadas: %1$.7f, %2$.7f</string>
+    <string name="reporte_offline_ubicacion_no_seleccionada">Ubicación no seleccionada</string>
+    <string name="reporte_offline_tipo_predeterminado">Reporte ciudadano</string>
+    <string name="reporte_offline_cargando_direccion">Determinando dirección…</string>
+    <string name="reporte_offline_sin_evidencias">Sin evidencias</string>
+    <string name="reporte_offline_un_video">1 video</string>
+    <string name="reporte_offline_una_foto">1 foto</string>
+    <string name="reporte_offline_foto_y_video">1 foto y 1 video</string>
+    <string name="reporte_offline_evidencias_formato">%1$d evidencias</string>
+    <string name="reporte_offline_guardando_reporte">Guardando reporte…</string>
+    <string name="reporte_offline_guardado_exitoso">Reporte guardado para envío automático</string>
+    <string name="reporte_offline_error_guardar_reporte">No se pudo guardar el reporte. Intenta de nuevo.</string>
+    <string name="reporte_offline_gracias_usuario">Gracias, %1$s</string>
+    <string name="reporte_offline_enviado_mensaje">Reporte guardado. Se enviará automáticamente en cuanto haya conexión y te avisaremos.</string>
+    <!-- Tarea B2.1: Ajustes reporte ciudadano -->
+    <string name="reporte_offline_video_pesado_titulo">Video demasiado pesado</string>
+    <string name="reporte_offline_video_pesado_mensaje">El video es demasiado pesado. Graba hasta 15 segundos o elige uno más corto.</string>
+    <string name="reporte_offline_sheet_video_nota">Almacenamiento en la nube: Graba clips breves de hasta 15 segundos.</string>
+    <string name="reporte_offline_video_grabado_exito">Video grabado correctamente</string>
+    <string name="reporte_offline_video_seleccionado_exito">Video seleccionado correctamente</string>
+    <string name="reporte_offline_enviado_sin_conexion">Recibimos tu reporte. Lo guardamos en tu teléfono y se enviará en segundo plano en cuanto tengas conexión. Te avisaremos.</string>
+    <string name="reporte_offline_enviando_reporte">Enviando tu reporte…</string>
+    <string name="reporte_offline_requiere_atencion_mensaje">Guardamos tu reporte, pero necesita tu atención. Te avisaremos por notificación.</string>
+    <!-- Tarea B3+B4: Mis reportes y Aviso de notificaciones -->
+    <string name="reporte_offline_mis_reportes_titulo">Mis reportes</string>
+    <string name="reporte_offline_mis_reportes_subtitulo">Revisa el estado de tus solicitudes</string>
+    <string name="reporte_offline_mis_reportes_vacio">No tienes reportes registrados</string>
+    <string name="reporte_offline_mis_reportes_estado_pendiente">Pendiente de envío</string>
+    <string name="reporte_offline_mis_reportes_estado_enviado">Enviado</string>
+    <string name="reporte_offline_mis_reportes_estado_atencion">Requiere atención</string>
+    <string name="reporte_offline_mis_reportes_radicado">Reporte %1$s</string>
+    <string name="reporte_offline_mis_reportes_cd_atras">Volver</string>
+    <string name="notif_aviso_dialog_titulo">¿Activar notificaciones?</string>
+    <string name="notif_aviso_dialog_mensaje">Activa las notificaciones para avisarte cuando tu reporte sea enviado o requiera tu atención.</string>
+    <string name="notif_aviso_btn_activar">Activar</string>
+    <string name="notif_aviso_btn_ahora_no">Ahora no</string>
+    <!-- Tarea R1: Flujo Unificado de Reporte Ciudadano (Pantalla 1) -->
+    <string name="reporte_ux_direccion_sin_conexion">Ubicación seleccionada (sin conexión a internet)</string>
+    <string name="reporte_ux_direccion_fallback_coordenadas">%1$s (%2$.5f, %3$.5f)</string>
+    <string name="reporte_ux_marcador_ubicacion">Ubicación seleccionada</string>
+    <string name="reporte_ux_error_permiso_ubicacion">Permiso de ubicación denegado</string>
+    <string name="reporte_ux_error_obtener_ubicacion">No se pudo obtener la ubicación actual</string>
+    <string name="reporte_ux_error_direccion_no_encontrada">Dirección no encontrada</string>
+    <string name="reporte_ux_error_buscar_direccion">Error al buscar dirección</string>
+    <string name="reporte_ux_error_selecciona_tipo">Por favor selecciona un tipo de petición</string>
+    <string name="reporte_ux_error_selecciona_ubicacion">Por favor selecciona una ubicación en el mapa</string>
+    <string name="reporte_ux_error_falta_ambos">Por favor selecciona un tipo de petición y una ubicación en el mapa</string>
+    <string name="reporte_ux_error_falta_tipo">Por favor selecciona un tipo de petición</string>
+    <string name="reporte_ux_error_falta_ubicacion">Por favor selecciona una ubicación en el mapa</string>
+    <string name="reporte_ux_error_red_tipos">Error de red al cargar tipos</string>
+    <string name="reporte_ux_cd_tipo_seleccionado">%1$s seleccionado</string>
+    <string name="reporte_ux_direccion_no_seleccionada">Toca el mapa o busca una dirección</string>
+    <!-- Tarea R1.2: Refinamiento visual y seleccion de tipos (Pantalla 1) -->
+    <string name="reporte_ux_tipo_herido">Animal herido o en peligro</string>
+    <string name="reporte_ux_tipo_maltrato">Maltrato animal</string>
+    <string name="reporte_ux_tipo_calle">Animal en condición de calle</string>
+    <string name="reporte_ux_tipo_otros">Otros</string>
+    <string name="reporte_ux_tipos_cargando">Cargando tipos de reporte...</string>
+    <string name="reporte_ux_error_tipo_no_disponible">Tipo no disponible en este momento</string>
+    <!-- Tarea R1.4: Diagnostico y optimizacion de ubicacion actual -->
+    <string name="reporte_ux_obteniendo_ubicacion">Obteniendo tu ubicación…</string>
+    <!-- Tarea R1.5: Ubicacion rapida con refinamiento en segundo plano -->
+    <string name="reporte_ux_ubicacion_aproximada">Ubicación aproximada. Ajústala tocando el mapa.</string>
 </resources>

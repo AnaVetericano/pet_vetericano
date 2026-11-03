@@ -3,14 +3,18 @@ package com.example.petvetericano
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.view.View
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityReporteEnviadoBinding
-import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.offline.EstadoReporteLocal
+import com.example.petvetericano.offline.ReporteLocalRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
-import java.util.Locale
 
 class reporte_enviado : AppCompatActivity() {
 
@@ -22,28 +26,24 @@ class reporte_enviado : AppCompatActivity() {
         binding = ActivityReporteEnviadoBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Obtener los datos guardados del usuario
         val prefs = SharedPreferencesManager(this)
+        val nombreUsuario = prefs.getUserName().trim()
 
-        val nombreUsuario = prefs.getUserName()
-
-        // Mostrar el nombre
-        binding.textView4.text = "Gracias, $nombreUsuario"
-
-        // Mostrar el número de radicado real e incremental (ej. PET-2026-00081)
-        val numeroRadicado = intent.getStringExtra("NUMERO_RADICADO")
-        val idPeticion = intent.getIntExtra("ID_PETICION", -1)
-
-        val radicadoFinal = when {
-            !numeroRadicado.isNullOrBlank() -> numeroRadicado
-            idPeticion > 0 -> String.format(Locale.US, "PET-2026-%05d", idPeticion)
-            else -> null
+        if (nombreUsuario.isNotEmpty()) {
+            binding.textView4.text = getString(R.string.reporte_offline_gracias_usuario, nombreUsuario)
+        } else {
+            binding.textView4.text = getString(R.string.lbl_gracias)
         }
 
-        if (radicadoFinal != null) {
-            binding.textView9.text = radicadoFinal
+        binding.cardReporteNumber.visibility = View.GONE
+
+        val idLocal = intent.getLongExtra("ID_LOCAL", -1L)
+        val hayConexion = intent.getBooleanExtra("HAY_CONEXION", false)
+
+        if (idLocal > 0L) {
+            verificarYProcesarReporte(idLocal, hayConexion, prefs)
         } else {
-            cargarUltimoRadicadoReal(prefs)
+            mostrarEstadoSinConexion()
         }
 
         binding.contcba.setOnClickListener {
@@ -51,39 +51,133 @@ class reporte_enviado : AppCompatActivity() {
         }
 
         binding.regremen.setOnClickListener {
-            val role = prefs.getUserRole()
-            val intent = if (role == inicio_sesion.ROL_VETERINARIO) {
-                Intent(this, dahsboard_veterianrio::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                }
-            } else {
-                Intent(this, bienvenida::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-                }
+            volverAlMenuPrincipal()
+        }
+
+        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
+            override fun handleOnBackPressed() {
+                volverAlMenuPrincipal()
             }
-            startActivity(intent)
-            finish()
+        })
+    }
+
+    private fun volverAlMenuPrincipal() {
+        val prefs = SharedPreferencesManager(this)
+        val role = prefs.getUserRole()
+        val intent = if (role == inicio_sesion.ROL_VETERINARIO) {
+            Intent(this, dahsboard_veterianrio::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+        } else {
+            Intent(this, bienvenida::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
+        }
+        startActivity(intent)
+        finish()
+    }
+
+    private fun verificarYProcesarReporte(idLocal: Long, hayConexion: Boolean, prefs: SharedPreferencesManager) {
+        lifecycleScope.launch {
+            val repo = ReporteLocalRepository.getInstance(this@reporte_enviado)
+            val reporte = withContext(Dispatchers.IO) {
+                repo.obtenerPorId(idLocal)
+            }
+            val currentUserId = prefs.getUserId()
+            if (reporte == null || reporte.idUsuario != currentUserId) {
+                volverAlMenuPrincipal()
+                return@launch
+            }
+
+            if (hayConexion) {
+                iniciarSeguimientoEnvio(idLocal)
+            } else {
+                mostrarEstadoSinConexion()
+            }
         }
     }
 
-    private fun cargarUltimoRadicadoReal(prefs: SharedPreferencesManager) {
-        val token = prefs.getAccessToken().ifEmpty { RetrofitClient.authToken ?: "" }
-        if (token.isEmpty()) return
+    private fun mostrarEstadoSinConexion() {
+        binding.progressBarReporte.visibility = View.GONE
+        binding.textView5.visibility = View.VISIBLE
+        binding.textView5.text = getString(R.string.reporte_offline_enviado_sin_conexion)
+        binding.textView6.visibility = View.GONE
+        binding.cardReporteNumber.visibility = View.GONE
+    }
 
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val response = RetrofitClient.apiService.listarPeticiones("Bearer $token")
-                if (response.isSuccessful) {
-                    val ultimaPeticion = response.body()?.firstOrNull()
-                    if (ultimaPeticion != null) {
-                        val radicado = ultimaPeticion.numero_radicado?.takeIf { it.isNotBlank() }
-                            ?: String.format(Locale.US, "PET-2026-%05d", ultimaPeticion.id_peticion)
-                        withContext(Dispatchers.Main) {
-                            binding.textView9.text = radicado
+    private fun mostrarEstadoExito(numeroRadicado: String?) {
+        binding.progressBarReporte.visibility = View.GONE
+        binding.textView5.visibility = View.VISIBLE
+        binding.textView5.text = getString(R.string.lbl_tu_reporte_ha_sido_enviado)
+        binding.textView6.visibility = View.VISIBLE
+        binding.textView6.text = getString(R.string.lbl_hemos_notificado_a_nuestro_equipo)
+
+        val radicadoLimpio = numeroRadicado?.trim()
+        if (!radicadoLimpio.isNullOrBlank()) {
+            binding.textView9.text = radicadoLimpio
+            binding.cardReporteNumber.visibility = View.VISIBLE
+        } else {
+            binding.cardReporteNumber.visibility = View.GONE
+        }
+    }
+
+    private fun mostrarEstadoRequiereAtencion() {
+        binding.progressBarReporte.visibility = View.GONE
+        binding.textView5.visibility = View.VISIBLE
+        binding.textView5.text = getString(R.string.reporte_offline_requiere_atencion_mensaje)
+        binding.textView6.visibility = View.GONE
+        binding.cardReporteNumber.visibility = View.GONE
+    }
+
+    private fun iniciarSeguimientoEnvio(idLocal: Long) {
+        binding.progressBarReporte.visibility = View.VISIBLE
+        binding.textView5.visibility = View.VISIBLE
+        binding.textView5.text = getString(R.string.reporte_offline_enviando_reporte)
+        binding.textView6.visibility = View.GONE
+        binding.cardReporteNumber.visibility = View.GONE
+
+        lifecycleScope.launch {
+            val repo = ReporteLocalRepository.getInstance(this@reporte_enviado)
+            val prefs = SharedPreferencesManager(this@reporte_enviado)
+            var resuelto = false
+            val tiempoInicio = System.currentTimeMillis()
+            val tiempoMaximoMs = 90_000L
+
+            while (isActive && !resuelto && (System.currentTimeMillis() - tiempoInicio < tiempoMaximoMs)) {
+                val reporte = withContext(Dispatchers.IO) {
+                    repo.obtenerPorId(idLocal)
+                }
+
+                if (reporte != null) {
+                    if (reporte.idUsuario != prefs.getUserId()) {
+                        volverAlMenuPrincipal()
+                        return@launch
+                    }
+
+                    when (reporte.estado) {
+                        EstadoReporteLocal.ENVIADO -> {
+                            resuelto = true
+                            mostrarEstadoExito(reporte.numeroRadicado)
+                            break
+                        }
+                        EstadoReporteLocal.REQUIERE_ATENCION -> {
+                            resuelto = true
+                            mostrarEstadoRequiereAtencion()
+                            break
+                        }
+                        else -> {
+                            // Sigue en proceso
                         }
                     }
                 }
-            } catch (_: Exception) {
+
+                if (!resuelto) {
+                    delay(1000L)
+                }
+            }
+
+            if (!resuelto && isActive) {
+                mostrarEstadoSinConexion()
             }
         }
     }
@@ -92,7 +186,6 @@ class reporte_enviado : AppCompatActivity() {
         val intent = Intent(Intent.ACTION_DIAL).apply {
             data = Uri.parse("tel:$numeroTelefono")
         }
-
         startActivity(intent)
     }
 }

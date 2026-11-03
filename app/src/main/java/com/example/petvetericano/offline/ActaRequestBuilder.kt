@@ -145,8 +145,8 @@ object ActaRequestBuilder {
         val fechaAtencion = entity.fechaAtencion.trim()
         val radicado = entity.nroRadicadoAtencion.trim()
 
-        val firmaNotificador = entity.firmaNotificadorBase64
-        val firmaNotificado = entity.firmaNotificadoBase64
+        val firmaNotificador = FirmaCompactor.compactar(entity.firmaNotificadorBase64)
+        val firmaNotificado = FirmaCompactor.compactar(entity.firmaNotificadoBase64)
         val desparasitacion = entity.desparasitacion
 
         // Constantes vitales del Paso 2

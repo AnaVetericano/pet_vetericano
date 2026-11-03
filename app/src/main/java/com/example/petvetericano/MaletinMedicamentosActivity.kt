@@ -130,6 +130,8 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
     private fun configurarFiltros() {
         binding.chipGroupCategorias.setOnCheckedStateChangeListener { _, checkedIds ->
             categoriaSeleccionada = when (checkedIds.firstOrNull()) {
+                R.id.chipCatCriticos -> "CRITICOS"
+                R.id.chipCatOptimos -> "OPTIMOS"
                 R.id.chipCatAine -> "Analgésicos / AINE"
                 R.id.chipCatAntibioticos -> "Antibióticos"
                 R.id.chipCatAnestesicos -> "Anestésicos"
@@ -201,10 +203,11 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
 
     private fun filtrarLista(todos: List<MedicamentoMaletin>) {
         val filtrados = todos.filter { med ->
-            val coincideCategoria = if (categoriaSeleccionada == "Todos") {
-                true
-            } else {
-                med.categoria.contains(categoriaSeleccionada, ignoreCase = true) ||
+            val coincideCategoria = when (categoriaSeleccionada) {
+                "Todos" -> true
+                "CRITICOS" -> med.esCritico || med.unidadesFaltantesParaCuota > 0 || med.saldoDisponibleInt <= 0
+                "OPTIMOS" -> med.saldoDisponibleInt > 0 && med.unidadesFaltantesParaCuota == 0
+                else -> med.categoria.contains(categoriaSeleccionada, ignoreCase = true) ||
                         categoriaSeleccionada.contains(med.categoria, ignoreCase = true)
             }
 

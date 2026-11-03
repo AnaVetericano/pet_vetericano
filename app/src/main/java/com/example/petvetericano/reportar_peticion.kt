@@ -1,91 +1,697 @@
 package com.example.petvetericano
 
+import android.Manifest
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.os.Bundle
+import android.view.KeyEvent
+import android.view.View
+import android.view.inputmethod.EditorInfo
 import android.widget.Toast
+import androidx.annotation.ColorInt
+import androidx.annotation.StringRes
 import androidx.activity.enableEdgeToEdge
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
-import com.example.petvetericano.databinding.ActivityReportarPeticionBinding
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-
-import com.example.petvetericano.network.RetrofitClient
+import androidx.lifecycle.repeatOnLifecycle
+import com.example.petvetericano.databinding.ActivityReportarPeticionUnificadaBinding
 import com.example.petvetericano.models.TipoPeticionResponse
+import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.ui.reporte.ReporteCiudadanoViewModel
+import com.example.petvetericano.ui.reporte.TipoReporteCategoria
+import com.example.petvetericano.ui.reporte.ReporteDraftState
+import com.example.petvetericano.ui.reporte.TipoReporteItem
+import android.location.Location
+import android.os.SystemClock
+import com.google.android.gms.location.CurrentLocationRequest
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
+import com.google.android.gms.tasks.CancellationTokenSource
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.material.card.MaterialCardView
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.async
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.coroutines.resume
+import org.json.JSONArray
+import org.json.JSONObject
 
-class reportar_peticion : AppCompatActivity() {
+class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
 
-    private lateinit var binding: ActivityReportarPeticionBinding
+    private lateinit var binding: ActivityReportarPeticionUnificadaBinding
+    private val viewModel: ReporteCiudadanoViewModel by viewModels()
 
-    // Lista para guardar los tipos que vienen de la base de datos
+    private var mMap: GoogleMap? = null
+    private lateinit var fusedLocationClient: FusedLocationProviderClient
+
     private var listaTipos: List<TipoPeticionResponse> = emptyList()
+    private var isCargandoTipos = false
+    private var tipoPendiente: String? = null
+    private var esErrorValidacionVisible = false
+    private var esAvisoUbicacionAproximadaVisible = false
+    private var isObteniendoUbicacion = false
+    private var ctsUbicacion: CancellationTokenSource? = null
+    private var ubicacionJob: Job? = null
+
+    private val prefsCache = "ReporteTiposCachePrefs"
+    private val keyCache = "ReporteTiposCache"
+
+    private val prefsMapa = "MapaOffline"
+    private val keyBusqueda = "borrador_busqueda"
+    private val keyLat = "borrador_lat"
+    private val keyLng = "borrador_lng"
+    private val keyHasLoc = "borrador_has_loc"
+
+    private val prefsReportes = "MisReportesPrefs"
+    private val keyIdTipoSeleccionado = "ID_TIPO_SELECCIONADO"
+
+    private val locationPermissionRequest = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted ->
+        if (isGranted) {
+            obtenerUbicacionActual()
+        } else {
+            isObteniendoUbicacion = false
+            Toast.makeText(this, R.string.reporte_ux_error_permiso_ubicacion, Toast.LENGTH_SHORT).show()
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
-        binding = ActivityReportarPeticionBinding.inflate(layoutInflater)
+        binding = ActivityReportarPeticionUnificadaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        binding.btndev.setOnClickListener {
-            startActivity(Intent(this, bienvenida::class.java))
-        }
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
-        // 1. Descargar los tipos desde la API al abrir la pantalla
-        cargarTiposDesdeApi()
+        configurarInsets()
+        configurarVistas()
+        configurarMapa()
+        observarEstado()
+        cargarTipos()
+    }
 
-        // 2. Configurar clics buscando el ID correspondiente de la lista obtenida
-        binding.cardHerido.setOnClickListener {
-            obtenerIdYAvanzar("Animal Herido")
-        }
+    private fun configurarInsets() {
+        val initHeaderTop = binding.headerContainer.paddingTop
+        val initBottomPadding = binding.bottomControlsContainer.paddingBottom
 
-        binding.cardMaltrato.setOnClickListener {
-            obtenerIdYAvanzar("Maltrato animal")
-        }
-
-        binding.cardCalle.setOnClickListener {
-            obtenerIdYAvanzar("Animal en condicion de calle")
-        }
-
-        // 3. Configurar clic para la nueva tarjeta "Otros"
-        binding.cardOtros.setOnClickListener {
-            obtenerIdYAvanzar("Otros")
+        ViewCompat.setOnApplyWindowInsetsListener(binding.root) { _, insets ->
+            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            binding.headerContainer.setPadding(
+                binding.headerContainer.paddingLeft,
+                initHeaderTop + systemBars.top,
+                binding.headerContainer.paddingRight,
+                binding.headerContainer.paddingBottom
+            )
+            binding.bottomControlsContainer.setPadding(
+                binding.bottomControlsContainer.paddingLeft,
+                binding.bottomControlsContainer.paddingTop,
+                binding.bottomControlsContainer.paddingRight,
+                initBottomPadding + systemBars.bottom
+            )
+            insets
         }
     }
 
-    private fun cargarTiposDesdeApi() {
-        lifecycleScope.launch(Dispatchers.IO) {
-            try {
-                val response = RetrofitClient.apiService.obtenerTiposPeticion()
-                if (response.isSuccessful && response.body() != null) {
-                    listaTipos = response.body()!!
-                } else {
-                    withContext(Dispatchers.Main) {
-                        Toast.makeText(this@reportar_peticion, "No se pudieron cargar los tipos", Toast.LENGTH_SHORT).show()
+    private fun configurarVistas() {
+        binding.btndev.setOnClickListener {
+            startActivity(Intent(this, bienvenida::class.java))
+            finish()
+        }
+
+        binding.cardHerido.setOnClickListener {
+            seleccionarTipoOCatalogar("Animal Herido")
+        }
+
+        binding.cardMaltrato.setOnClickListener {
+            seleccionarTipoOCatalogar("Maltrato animal")
+        }
+
+        binding.cardCalle.setOnClickListener {
+            seleccionarTipoOCatalogar("Animal en condicion de calle")
+        }
+
+        binding.cardOtros.setOnClickListener {
+            seleccionarTipoOCatalogar(TipoReporteCategoria.OTROS.nombreClave)
+        }
+
+        binding.etSearch.setOnEditorActionListener { _, actionId, event ->
+            if (actionId == EditorInfo.IME_ACTION_SEARCH ||
+                actionId == EditorInfo.IME_ACTION_DONE ||
+                (event != null && event.keyCode == KeyEvent.KEYCODE_ENTER && event.action == KeyEvent.ACTION_DOWN)
+            ) {
+                ejecutarBusqueda()
+                true
+            } else {
+                false
+            }
+        }
+
+        binding.btnLocation.setOnClickListener {
+            verificarPermisosUbicacion()
+        }
+
+        binding.btnContinue.setOnClickListener {
+            avanzarAlPaso2()
+        }
+
+        val prefs = getSharedPreferences(prefsMapa, MODE_PRIVATE)
+        val textoGuardado = prefs.getString(keyBusqueda, "")
+        if (!textoGuardado.isNullOrBlank()) {
+            binding.etSearch.setText(textoGuardado)
+        }
+    }
+
+    private fun configurarMapa() {
+        val mapFragment = supportFragmentManager.findFragmentById(R.id.mapFragment) as? SupportMapFragment
+        mapFragment?.getMapAsync(this)
+    }
+
+    private fun observarEstado() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                viewModel.uiState.collect { state ->
+                    renderizarSeleccionTipo(state.tipoSeleccionado)
+
+                    if (state.isLoadingUbicacion) {
+                        binding.pbDireccion.visibility = View.VISIBLE
+                        binding.tvDireccion.setText(state.mensajeCargaUbicacionResId)
+                    } else {
+                        isObteniendoUbicacion = false
+                        binding.pbDireccion.visibility = View.GONE
+                        if (!state.direccionTexto.isNullOrBlank()) {
+                            binding.tvDireccion.text = state.direccionTexto
+                        } else if (state.ubicacionSeleccionadaPorUsuario && state.latitud != null && state.longitud != null) {
+                            binding.tvDireccion.text = getString(
+                                R.string.reporte_ux_direccion_fallback_coordenadas,
+                                getString(R.string.reporte_ux_direccion_sin_conexion),
+                                state.latitud,
+                                state.longitud
+                            )
+                        } else {
+                            binding.tvDireccion.setText(R.string.reporte_ux_direccion_no_seleccionada)
+                        }
                     }
-                }
-            } catch (e: Exception) {
-                withContext(Dispatchers.Main) {
-                    Toast.makeText(this@reportar_peticion, "Error de red al cargar tipos", Toast.LENGTH_SHORT).show()
+
+                    val errorRes = obtenerErrorValidacionResId(state)
+                    if (errorRes == null) {
+                        esErrorValidacionVisible = false
+                        if (esAvisoUbicacionAproximadaVisible) {
+                            val colorMuted = ContextCompat.getColor(this@reportar_peticion, R.color.text_muted)
+                            mostrarAviso(getString(R.string.reporte_ux_ubicacion_aproximada), colorMuted)
+                        } else {
+                            ocultarAviso()
+                        }
+                    } else if (esErrorValidacionVisible) {
+                        val colorError = ContextCompat.getColor(this@reportar_peticion, R.color.error_dark)
+                        mostrarAviso(getString(errorRes), colorError)
+                    }
+
+                    if (state.ubicacionSeleccionadaPorUsuario && state.latitud != null && state.longitud != null) {
+                        val pos = LatLng(state.latitud, state.longitud)
+                        actualizarMarcador(pos, moverCamara = false)
+                    }
                 }
             }
         }
     }
 
-    private fun obtenerIdYAvanzar(nombreBuscado: String) {
-        val tipoEncontrado = listaTipos.find { it.nombre.equals(nombreBuscado, ignoreCase = true) }
-        val idReal = tipoEncontrado?.id_tipo ?: 1
+    private fun renderizarSeleccionTipo(tipo: TipoReporteItem?) {
+        val colorPrimary = ContextCompat.getColor(this, R.color.blue)
+        val colorStroke = ContextCompat.getColor(this, R.color.card_stroke)
+        val colorBackgroundSelected = ContextCompat.getColor(this, R.color.primary_light)
+        val colorBackgroundDefault = ContextCompat.getColor(this, R.color.card_background)
+        val strokeSelectedPx = dpToPx(3)
+        val strokeDefaultPx = dpToPx(1)
 
-        // GUARDAR EN PREFS LOCALES AL INSTANTE
-        getSharedPreferences("MisReportesPrefs", MODE_PRIVATE)
+        fun actualizarCard(card: MaterialCardView, seleccionado: Boolean, tituloRes: Int) {
+            card.isChecked = seleccionado
+            card.strokeWidth = if (seleccionado) strokeSelectedPx else strokeDefaultPx
+            card.strokeColor = if (seleccionado) colorPrimary else colorStroke
+            card.setCardBackgroundColor(if (seleccionado) colorBackgroundSelected else colorBackgroundDefault)
+            val baseTexto = getString(tituloRes)
+            card.contentDescription = if (seleccionado) {
+                getString(R.string.reporte_ux_cd_tipo_seleccionado, baseTexto)
+            } else {
+                baseTexto
+            }
+        }
+
+        val cat = tipo?.categoriaVisual
+        actualizarCard(binding.cardHerido, cat == TipoReporteCategoria.ANIMAL_HERIDO, R.string.reporte_ux_tipo_herido)
+        actualizarCard(binding.cardMaltrato, cat == TipoReporteCategoria.MALTRATO_ANIMAL, R.string.reporte_ux_tipo_maltrato)
+        actualizarCard(binding.cardCalle, cat == TipoReporteCategoria.CONDICION_CALLE, R.string.reporte_ux_tipo_calle)
+        actualizarCard(binding.cardOtros, cat == TipoReporteCategoria.OTROS, R.string.reporte_ux_tipo_otros)
+    }
+
+    private fun dpToPx(dp: Int): Int {
+        return (dp * resources.displayMetrics.density).toInt()
+    }
+
+    override fun onMapReady(googleMap: GoogleMap) {
+        mMap = googleMap
+
+        mMap?.setOnMapClickListener { latLng ->
+            onUbicacionElegida(latLng)
+        }
+
+        val state = viewModel.uiState.value
+        if (state.ubicacionSeleccionadaPorUsuario && state.latitud != null && state.longitud != null) {
+            val userLatLng = LatLng(state.latitud, state.longitud)
+            actualizarMarcador(userLatLng, moverCamara = true)
+        } else {
+            val prefs = getSharedPreferences(prefsMapa, MODE_PRIVATE)
+            val hasLoc = prefs.getBoolean(keyHasLoc, false)
+
+            if (hasLoc) {
+                val lat = prefs.getFloat(keyLat, 0f).toDouble()
+                val lng = prefs.getFloat(keyLng, 0f).toDouble()
+                val savedLatLng = LatLng(lat, lng)
+                onUbicacionElegida(savedLatLng)
+            } else {
+                val bogota = LatLng(4.570868, -74.297333)
+                mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(bogota, 11f))
+            }
+        }
+    }
+
+    private fun cancelarBusquedaUbicacionEnCurso() {
+        isObteniendoUbicacion = false
+        ctsUbicacion?.cancel()
+        ctsUbicacion = null
+        ubicacionJob?.cancel()
+        ubicacionJob = null
+        ocultarAvisoAproximada()
+    }
+
+    private fun onUbicacionElegida(latLng: LatLng) {
+        cancelarBusquedaUbicacionEnCurso()
+        actualizarMarcador(latLng, moverCamara = true)
+        viewModel.resolverDireccion(this, latLng.latitude, latLng.longitude)
+    }
+
+    private fun actualizarMarcador(latLng: LatLng, moverCamara: Boolean) {
+        mMap?.clear()
+        mMap?.addMarker(
+            MarkerOptions()
+                .position(latLng)
+                .title(getString(R.string.reporte_ux_marcador_ubicacion))
+        )
+        if (moverCamara) {
+            mMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
+        }
+    }
+
+    private fun verificarPermisosUbicacion() {
+        when {
+            ContextCompat.checkSelfPermission(
+                this,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) == PackageManager.PERMISSION_GRANTED -> {
+                obtenerUbicacionActual()
+            }
+            else -> {
+                locationPermissionRequest.launch(Manifest.permission.ACCESS_FINE_LOCATION)
+            }
+        }
+    }
+
+    private fun seleccionarTipoOCatalogar(nombreBuscado: String) {
+        if (listaTipos.isEmpty()) {
+            tipoPendiente = nombreBuscado
+            val colorMuted = ContextCompat.getColor(this, R.color.text_muted)
+            mostrarAviso(getString(R.string.reporte_ux_tipos_cargando), colorMuted)
+            cargarTipos()
+            return
+        }
+
+        val seleccionado = viewModel.seleccionarTipoPorNombre(nombreBuscado, listaTipos)
+        if (seleccionado) {
+            tipoPendiente = null
+            if (!esErrorValidacionVisible) {
+                if (esAvisoUbicacionAproximadaVisible) {
+                    mostrarAvisoAproximada()
+                } else {
+                    ocultarAviso()
+                }
+            }
+        } else {
+            val colorError = ContextCompat.getColor(this, R.color.error_dark)
+            mostrarAviso(getString(R.string.reporte_ux_error_tipo_no_disponible), colorError)
+        }
+    }
+
+    private fun aplicarTipoPendienteSiExiste() {
+        val pendiente = tipoPendiente ?: return
+        val seleccionado = viewModel.seleccionarTipoPorNombre(pendiente, listaTipos)
+        if (seleccionado) {
+            tipoPendiente = null
+            if (!esErrorValidacionVisible) {
+                if (esAvisoUbicacionAproximadaVisible) {
+                    mostrarAvisoAproximada()
+                } else {
+                    ocultarAviso()
+                }
+            }
+        } else {
+            tipoPendiente = null
+            val colorError = ContextCompat.getColor(this, R.color.error_dark)
+            mostrarAviso(getString(R.string.reporte_ux_error_tipo_no_disponible), colorError)
+        }
+    }
+
+    private fun mostrarAvisoAproximada() {
+        esAvisoUbicacionAproximadaVisible = true
+        if (!esErrorValidacionVisible) {
+            val colorMuted = ContextCompat.getColor(this, R.color.text_muted)
+            mostrarAviso(getString(R.string.reporte_ux_ubicacion_aproximada), colorMuted)
+        }
+    }
+
+    private fun ocultarAvisoAproximada() {
+        esAvisoUbicacionAproximadaVisible = false
+        if (!esErrorValidacionVisible) {
+            ocultarAviso()
+        }
+    }
+
+    private fun calcularAntiguedadSegundos(loc: Location): Long {
+        val elapsedNanos = loc.elapsedRealtimeNanos
+        if (elapsedNanos > 0L) {
+            val diffNanos = SystemClock.elapsedRealtimeNanos() - elapsedNanos
+            return (diffNanos / 1_000_000_000L).coerceAtLeast(0L)
+        }
+        val diffMs = System.currentTimeMillis() - loc.time
+        return (diffMs / 1000L).coerceAtLeast(0L)
+    }
+
+    private suspend fun obtenerUltimaUbicacion(timeoutMs: Long = 1_500L): Location? =
+        withTimeoutOrNull(timeoutMs) {
+            suspendCancellableCoroutine { cont ->
+                try {
+                    fusedLocationClient.lastLocation
+                        .addOnSuccessListener { loc -> if (cont.isActive) cont.resume(loc) }
+                        .addOnFailureListener { if (cont.isActive) cont.resume(null) }
+                        .addOnCanceledListener { if (cont.isActive) cont.resume(null) }
+                } catch (_: SecurityException) {
+                    if (cont.isActive) cont.resume(null)
+                }
+            }
+        }
+
+    private suspend fun obtenerUbicacionFresca(
+        cts: CancellationTokenSource,
+        timeoutMs: Long
+    ): Location? = withTimeoutOrNull(timeoutMs) {
+        suspendCancellableCoroutine<Location?> { cont ->
+            cont.invokeOnCancellation { cts.cancel() }
+            try {
+                val request = CurrentLocationRequest.Builder()
+                    .setPriority(Priority.PRIORITY_HIGH_ACCURACY)
+                    .setMaxUpdateAgeMillis(0L)
+                    .setDurationMillis(timeoutMs)
+                    .build()
+                fusedLocationClient.getCurrentLocation(request, cts.token)
+                    .addOnSuccessListener { loc -> if (cont.isActive) cont.resume(loc) }
+                    .addOnFailureListener { if (cont.isActive) cont.resume(null) }
+                    .addOnCanceledListener { if (cont.isActive) cont.resume(null) }
+            } catch (_: SecurityException) {
+                if (cont.isActive) cont.resume(null)
+            }
+        }
+    }
+
+    private fun obtenerUbicacionActual() {
+        cancelarBusquedaUbicacionEnCurso()
+        isObteniendoUbicacion = true
+
+        binding.pbDireccion.visibility = View.VISIBLE
+        binding.tvDireccion.setText(R.string.reporte_ux_obteniendo_ubicacion)
+        binding.tvDireccion.announceForAccessibility(getString(R.string.reporte_ux_obteniendo_ubicacion))
+
+        viewModel.iniciarCargaUbicacion(R.string.reporte_ux_obteniendo_ubicacion)
+
+        val cts = CancellationTokenSource()
+        ctsUbicacion = cts
+
+        ubicacionJob = lifecycleScope.launch {
+            try {
+                val freshDeferred = async { obtenerUbicacionFresca(cts, 10_000L) }
+                val lastLoc = obtenerUltimaUbicacion(1_500L)
+                var mostroUbicacion = false
+                var antiguedad = Long.MAX_VALUE
+
+                if (lastLoc != null) {
+                    antiguedad = calcularAntiguedadSegundos(lastLoc)
+                    val currentLatLng = LatLng(lastLoc.latitude, lastLoc.longitude)
+                    actualizarMarcador(currentLatLng, moverCamara = true)
+                    viewModel.resolverDireccion(this@reportar_peticion, lastLoc.latitude, lastLoc.longitude)
+                    mostroUbicacion = true
+                    isObteniendoUbicacion = false
+
+                    if (antiguedad > 30L) {
+                        mostrarAvisoAproximada()
+                    } else {
+                        ocultarAvisoAproximada()
+                    }
+                }
+
+                val freshLoc = try {
+                    freshDeferred.await()
+                } catch (_: Exception) {
+                    null
+                }
+
+                if (freshLoc != null) {
+                    val debeActualizar = if (!mostroUbicacion) {
+                        true
+                    } else {
+                        val eraAproximada = antiguedad > 30L
+                        val mejorPrecision = freshLoc.hasAccuracy() && (
+                            lastLoc == null || !lastLoc.hasAccuracy() || freshLoc.accuracy < lastLoc.accuracy
+                        )
+                        val distanciaMetros = if (lastLoc != null) lastLoc.distanceTo(freshLoc) else Float.MAX_VALUE
+                        eraAproximada || (mejorPrecision && distanciaMetros > 15f)
+                    }
+
+                    if (debeActualizar) {
+                        ocultarAvisoAproximada()
+                        val freshLatLng = LatLng(freshLoc.latitude, freshLoc.longitude)
+                        actualizarMarcador(freshLatLng, moverCamara = true)
+                        viewModel.resolverDireccion(this@reportar_peticion, freshLoc.latitude, freshLoc.longitude)
+                    } else {
+                    }
+                } else if (!mostroUbicacion) {
+                    ocultarAvisoAproximada()
+                    isObteniendoUbicacion = false
+                    viewModel.cancelarCargaUbicacion()
+                    Toast.makeText(
+                        this@reportar_peticion,
+                        R.string.reporte_ux_error_obtener_ubicacion,
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            } catch (_: Exception) {
+            } finally {
+                isObteniendoUbicacion = false
+                cts.cancel()
+                if (ctsUbicacion === cts) {
+                    ctsUbicacion = null
+                }
+            }
+        }
+    }
+
+    private fun ejecutarBusqueda() {
+        val query = binding.etSearch.text?.toString()?.trim().orEmpty()
+        if (query.isNotEmpty()) {
+            cancelarBusquedaUbicacionEnCurso()
+            viewModel.buscarDireccion(this, query) { coords ->
+                if (coords != null) {
+                    actualizarMarcador(coords, moverCamara = true)
+                } else {
+                    Toast.makeText(this, R.string.reporte_ux_error_direccion_no_encontrada, Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        cancelarBusquedaUbicacionEnCurso()
+    }
+
+    override fun onPause() {
+        super.onPause()
+        val textoActual = binding.etSearch.text?.toString().orEmpty()
+        val prefs = getSharedPreferences(prefsMapa, MODE_PRIVATE)
+        val editor = prefs.edit()
+        editor.putString(keyBusqueda, textoActual)
+
+        val state = viewModel.uiState.value
+        if (state.ubicacionSeleccionadaPorUsuario && state.latitud != null && state.longitud != null) {
+            editor.putBoolean(keyHasLoc, true)
+            editor.putFloat(keyLat, state.latitud.toFloat())
+            editor.putFloat(keyLng, state.longitud.toFloat())
+        }
+        editor.apply()
+    }
+
+    @StringRes
+    private fun obtenerErrorValidacionResId(state: ReporteDraftState): Int? {
+        val faltaTipo = state.tipoSeleccionado == null
+        val faltaUbicacion = !state.ubicacionSeleccionadaPorUsuario || state.latitud == null || state.longitud == null
+        return when {
+            faltaTipo && faltaUbicacion -> R.string.reporte_ux_error_falta_ambos
+            faltaTipo -> R.string.reporte_ux_error_falta_tipo
+            faltaUbicacion -> R.string.reporte_ux_error_falta_ubicacion
+            else -> null
+        }
+    }
+
+    private fun mostrarAviso(texto: CharSequence, @ColorInt color: Int) {
+        val textoAnterior = binding.tvErrorValidacion.text?.toString().orEmpty()
+        val estabaVisible = binding.tvErrorValidacion.visibility == View.VISIBLE
+        binding.tvErrorValidacion.setTextColor(color)
+        binding.tvErrorValidacion.text = texto
+        binding.tvErrorValidacion.visibility = View.VISIBLE
+        if (!estabaVisible || textoAnterior != texto.toString()) {
+            binding.tvErrorValidacion.announceForAccessibility(texto)
+        }
+    }
+
+    private fun ocultarAviso() {
+        binding.tvErrorValidacion.visibility = View.GONE
+    }
+
+    private fun avanzarAlPaso2() {
+        val state = viewModel.uiState.value
+        val errorRes = obtenerErrorValidacionResId(state)
+
+        if (errorRes != null) {
+            esErrorValidacionVisible = true
+            val colorError = ContextCompat.getColor(this, R.color.error_dark)
+            mostrarAviso(getString(errorRes), colorError)
+            return
+        }
+
+        esErrorValidacionVisible = false
+        ocultarAviso()
+
+        val tipo = state.tipoSeleccionado ?: return
+
+        getSharedPreferences(prefsMapa, MODE_PRIVATE).edit().clear().apply()
+
+        getSharedPreferences(prefsReportes, MODE_PRIVATE)
             .edit()
-            .putInt("ID_TIPO_SELECCIONADO", idReal)
+            .putInt(keyIdTipoSeleccionado, tipo.idTipo)
             .apply()
 
-        val intent = Intent(this, reportar_peticionn::class.java).apply {
-            putExtra("ID_TIPO_SELECCIONADO", idReal)
-            putExtra("TIPO_REPORTE", nombreBuscado)
+        val puntoReferencia = binding.etSearch.text?.toString()?.trim().orEmpty()
+
+        val intent = Intent(this, reportar_peticionnn::class.java).apply {
+            putExtra("TIPO_REPORTE", tipo.nombreRemoto)
+            putExtra("LATITUD", state.latitud)
+            putExtra("LONGITUD", state.longitud)
+            putExtra("PUNTO_REFERENCIA", puntoReferencia)
+            putExtra("ID_TIPO_SELECCIONADO", tipo.idTipo)
         }
         startActivity(intent)
+    }
+
+    private fun cargarTipos() {
+        if (isCargandoTipos) return
+        isCargandoTipos = true
+
+        lifecycleScope.launch {
+            if (listaTipos.isEmpty()) {
+                val cached = withContext(Dispatchers.IO) { obtenerTiposDeCache() }
+                if (cached.isNotEmpty()) {
+                    listaTipos = cached
+                    aplicarTipoPendienteSiExiste()
+                }
+            }
+
+            try {
+                val response = withContext(Dispatchers.IO) {
+                    RetrofitClient.apiService.obtenerTiposPeticion()
+                }
+                if (response.isSuccessful && response.body() != null) {
+                    val remotos = response.body()!!
+                    listaTipos = remotos
+                    withContext(Dispatchers.IO) { guardarEnCache(remotos) }
+                    aplicarTipoPendienteSiExiste()
+                } else if (listaTipos.isEmpty()) {
+                    if (tipoPendiente != null) {
+                        val colorError = ContextCompat.getColor(this@reportar_peticion, R.color.error_dark)
+                        mostrarAviso(getString(R.string.reporte_ux_error_red_tipos), colorError)
+                    }
+                }
+            } catch (_: Exception) {
+                if (listaTipos.isEmpty()) {
+                    if (tipoPendiente != null) {
+                        val colorError = ContextCompat.getColor(this@reportar_peticion, R.color.error_dark)
+                        mostrarAviso(getString(R.string.reporte_ux_error_red_tipos), colorError)
+                    }
+                }
+            } finally {
+                isCargandoTipos = false
+            }
+        }
+    }
+
+    private fun guardarEnCache(tipos: List<TipoPeticionResponse>) {
+        try {
+            val jsonArray = JSONArray()
+            for (item in tipos) {
+                val obj = JSONObject().apply {
+                    put("id_tipo", item.id_tipo)
+                    put("nombre", item.nombre)
+                }
+                jsonArray.put(obj)
+            }
+            getSharedPreferences(prefsCache, MODE_PRIVATE)
+                .edit()
+                .putString(keyCache, jsonArray.toString())
+                .apply()
+        } catch (_: Exception) {
+        }
+    }
+
+    private fun obtenerTiposDeCache(): List<TipoPeticionResponse> {
+        val raw = getSharedPreferences(prefsCache, MODE_PRIVATE)
+            .getString(keyCache, null) ?: return emptyList()
+        val list = mutableListOf<TipoPeticionResponse>()
+        try {
+            val jsonArray = JSONArray(raw)
+            for (i in 0 until jsonArray.length()) {
+                val obj = jsonArray.getJSONObject(i)
+                list.add(
+                    TipoPeticionResponse(
+                        id_tipo = obj.getInt("id_tipo"),
+                        nombre = obj.getString("nombre"),
+                        descripcion = null
+                    )
+                )
+            }
+        } catch (_: Exception) {
+        }
+        return list
     }
 }

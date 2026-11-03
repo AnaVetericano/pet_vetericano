@@ -220,10 +220,10 @@
                     android:layout_marginHorizontal="16dp"
                     android:layout_marginBottom="12dp"
                     android:visibility="gone"
-                    app:cardBackgroundColor="#FEF2F2"
+                    app:cardBackgroundColor="@color/badge_urgente_bg"
                     app:cardCornerRadius="16dp"
                     app:cardElevation="0dp"
-                    app:strokeColor="#FECACA"
+                    app:strokeColor="@color/radix_tomato_border"
                     app:strokeWidth="1dp"
                     tools:visibility="visible">
 
@@ -235,10 +235,10 @@
                         android:padding="14dp">
 
                         <ImageView
-                            android:layout_width="28dp"
-                            android:layout_height="28dp"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
                             android:src="@drawable/warning_icon4"
-                            app:tint="#DC2626"
+                            app:tint="@color/badge_urgente_text"
                             android:layout_marginEnd="12dp"
                             android:contentDescription="Alerta stock crítico" />
 
@@ -254,7 +254,7 @@
                                 android:layout_height="wrap_content"
                                 android:fontFamily="@font/nunito_bold"
                                 android:text="¡Stock crítico en maletín!"
-                                android:textColor="#991B1B"
+                                android:textColor="@color/badge_urgente_text"
                                 android:textSize="14sp" />
 
                             <TextView
@@ -264,7 +264,7 @@
                                 android:layout_marginTop="2dp"
                                 android:fontFamily="@font/nunito"
                                 android:text="Medicamentos por debajo del umbral mínimo de seguridad."
-                                android:textColor="#B91C1C"
+                                android:textColor="@color/text_secondary"
                                 android:textSize="11sp" />
                         </LinearLayout>
 
@@ -277,8 +277,10 @@
                             android:layout_marginStart="8dp"
                             android:fontFamily="@font/nunito_bold"
                             android:text="Reponer"
-                            android:textColor="#FFFFFF"
-                            app:backgroundTint="#DC2626"
+                            android:textColor="@color/badge_urgente_text"
+                            app:backgroundTint="@color/card_background"
+                            app:strokeColor="@color/radix_tomato_border"
+                            app:strokeWidth="1dp"
                             app:cornerRadius="10dp"
                             android:textSize="11sp" />
                     </LinearLayout>
@@ -338,6 +340,20 @@
                             android:layout_height="wrap_content"
                             android:checked="true"
                             android:text="@string/lbl_todos" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipCatCriticos"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="⚠️ Críticos / Faltantes" />
+
+                        <com.google.android.material.chip.Chip
+                            android:id="@+id/chipCatOptimos"
+                            style="@style/Widget.Material3.Chip.Filter"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="🟢 En Cuota" />
 
                         <com.google.android.material.chip.Chip
                             android:id="@+id/chipCatAine"

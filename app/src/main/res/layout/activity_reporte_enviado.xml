@@ -65,6 +65,18 @@
         app:layout_constraintTop_toBottomOf="@+id/textView5" />
 
     <!-- Tarjeta de Código de Reporte -->
+    <ProgressBar
+        android:id="@+id/progressBarReporte"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:indeterminate="true"
+        android:indeterminateTint="@color/blue"
+        android:visibility="gone"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@+id/textView6" />
+
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardReporteNumber"
         android:layout_width="match_parent"
@@ -75,7 +87,7 @@
         app:cardElevation="0dp"
         app:strokeColor="@color/primary_light"
         app:strokeWidth="1.5dp"
-        app:layout_constraintTop_toBottomOf="@+id/textView6">
+        app:layout_constraintTop_toBottomOf="@+id/progressBarReporte">
 
         <LinearLayout
             android:layout_width="match_parent"

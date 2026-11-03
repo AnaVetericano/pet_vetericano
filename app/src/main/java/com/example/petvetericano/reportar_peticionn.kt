@@ -151,7 +151,7 @@ class reportar_peticionn : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun actualizarMarcador(latLng: LatLng) {
-        Toast.makeText(this, latLng.toString(), Toast.LENGTH_SHORT).show()
+        
         selectedLatLng = latLng
         mMap?.clear()
         mMap?.addMarker(

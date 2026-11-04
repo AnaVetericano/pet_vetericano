@@ -87,6 +87,7 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
                 $COL_PERSONA_ATIENDE_CEDULA TEXT,
                 $COL_PERSONA_ATIENDE_TELEFONO TEXT,
                 $COL_BARRIO_RESCATE TEXT,
+                $COL_CHIP_SIN_TESTIGO INTEGER NOT NULL DEFAULT 0,
                 $COL_TESTIGO1_NOMBRE TEXT,
                 $COL_TESTIGO1_CEDULA TEXT,
                 $COL_TESTIGO1_TELEFONO TEXT,
@@ -112,12 +113,20 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
                 $COL_SW_MUSCULO_HERIDA_ABIERTA INTEGER NOT NULL DEFAULT 0,
                 $COL_SW_MUSCULO_GUSANOS INTEGER NOT NULL DEFAULT 0,
                 $COL_SW_MUSCULO_POSTRADO INTEGER NOT NULL DEFAULT 0,
+                $COL_SW_MUSCULO_SARCOMA INTEGER NOT NULL DEFAULT 0,
                 $COL_SW_DERMATO_PELADURAS INTEGER NOT NULL DEFAULT 0,
                 $COL_SW_DERMATO_HERIDAS_SANGRE INTEGER NOT NULL DEFAULT 0,
                 $COL_SW_DERMATO_PULGAS INTEGER NOT NULL DEFAULT 0,
+                $COL_SW_DERMATO_CARCINOMA_CUTANEO INTEGER NOT NULL DEFAULT 0,
                 $COL_SW_GENITO_MASA_SECRECION INTEGER NOT NULL DEFAULT 0,
                 $COL_SW_GENITO_GESTANTE INTEGER NOT NULL DEFAULT 0,
                 $COL_SW_GENITO_CELO INTEGER NOT NULL DEFAULT 0,
+                $COL_SW_LEY_84_1989 INTEGER NOT NULL DEFAULT 0,
+                $COL_SW_LEY_1638_2013 INTEGER NOT NULL DEFAULT 0,
+                $COL_SW_LEY_1774_2016 INTEGER NOT NULL DEFAULT 0,
+                $COL_SW_LEY_1801_2016 INTEGER NOT NULL DEFAULT 0,
+                $COL_SW_LEY_2054_2020 INTEGER NOT NULL DEFAULT 0,
+                $COL_SW_LEY_2385_2024 INTEGER NOT NULL DEFAULT 0,
                 
                 UNIQUE($COL_ID_PETICION, $COL_ID_VETERINARIO)
             )
@@ -126,12 +135,24 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        // En futuras versiones incrementales se aplican migraciones con ALTER TABLE
+        if (oldVersion < 2) {
+            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_SW_LEY_84_1989 INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_SW_LEY_1638_2013 INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_SW_LEY_1774_2016 INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_SW_LEY_1801_2016 INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_SW_LEY_2054_2020 INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_SW_LEY_2385_2024 INTEGER NOT NULL DEFAULT 0")
+        }
+        if (oldVersion < 3) {
+            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_CHIP_SIN_TESTIGO INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_SW_MUSCULO_SARCOMA INTEGER NOT NULL DEFAULT 0")
+            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_SW_DERMATO_CARCINOMA_CUTANEO INTEGER NOT NULL DEFAULT 0")
+        }
     }
 
     companion object {
         const val DATABASE_NAME = "petvetericano_actas_offline.db"
-        const val DATABASE_VERSION = 1
+        const val DATABASE_VERSION = 3
 
         @Volatile
         private var instance: ActaLocalDbHelper? = null
@@ -210,6 +231,7 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
         const val COL_PERSONA_ATIENDE_CEDULA = "persona_atiende_cedula"
         const val COL_PERSONA_ATIENDE_TELEFONO = "persona_atiende_telefono"
         const val COL_BARRIO_RESCATE = "barrio_rescate"
+        const val COL_CHIP_SIN_TESTIGO = "chip_sin_testigo"
         const val COL_TESTIGO1_NOMBRE = "testigo1_nombre"
         const val COL_TESTIGO1_CEDULA = "testigo1_cedula"
         const val COL_TESTIGO1_TELEFONO = "testigo1_telefono"
@@ -236,12 +258,22 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
         const val COL_SW_MUSCULO_HERIDA_ABIERTA = "sw_musculo_herida_abierta"
         const val COL_SW_MUSCULO_GUSANOS = "sw_musculo_gusanos"
         const val COL_SW_MUSCULO_POSTRADO = "sw_musculo_postrado"
+        const val COL_SW_MUSCULO_SARCOMA = "sw_musculo_sarcoma"
         const val COL_SW_DERMATO_PELADURAS = "sw_dermato_peladuras"
         const val COL_SW_DERMATO_HERIDAS_SANGRE = "sw_dermato_heridas_sangre"
         const val COL_SW_DERMATO_PULGAS = "sw_dermato_pulgas"
+        const val COL_SW_DERMATO_CARCINOMA_CUTANEO = "sw_dermato_carcinoma_cutaneo"
         const val COL_SW_GENITO_MASA_SECRECION = "sw_genito_masa_secrecion"
         const val COL_SW_GENITO_GESTANTE = "sw_genito_gestante"
         const val COL_SW_GENITO_CELO = "sw_genito_celo"
+
+        // 6 Switches de Fundamento Legal
+        const val COL_SW_LEY_84_1989 = "sw_ley_84_1989"
+        const val COL_SW_LEY_1638_2013 = "sw_ley_1638_2013"
+        const val COL_SW_LEY_1774_2016 = "sw_ley_1774_2016"
+        const val COL_SW_LEY_1801_2016 = "sw_ley_1801_2016"
+        const val COL_SW_LEY_2054_2020 = "sw_ley_2054_2020"
+        const val COL_SW_LEY_2385_2024 = "sw_ley_2385_2024"
 
         fun toContentValues(entity: ActaLocalEntity): ContentValues {
             return ContentValues().apply {
@@ -313,6 +345,7 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
                 put(COL_PERSONA_ATIENDE_CEDULA, entity.personaAtiendeCedula)
                 put(COL_PERSONA_ATIENDE_TELEFONO, entity.personaAtiendeTelefono)
                 put(COL_BARRIO_RESCATE, entity.barrioRescate)
+                put(COL_CHIP_SIN_TESTIGO, if (entity.chipSinTestigo) 1 else 0)
                 put(COL_TESTIGO1_NOMBRE, entity.testigo1Nombre)
                 put(COL_TESTIGO1_CEDULA, entity.testigo1Cedula)
                 put(COL_TESTIGO1_TELEFONO, entity.testigo1Telefono)
@@ -339,12 +372,20 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
                 put(COL_SW_MUSCULO_HERIDA_ABIERTA, if (entity.swMusculoHeridaAbierta) 1 else 0)
                 put(COL_SW_MUSCULO_GUSANOS, if (entity.swMusculoGusanos) 1 else 0)
                 put(COL_SW_MUSCULO_POSTRADO, if (entity.swMusculoPostrado) 1 else 0)
+                put(COL_SW_MUSCULO_SARCOMA, if (entity.swMusculoSarcoma) 1 else 0)
                 put(COL_SW_DERMATO_PELADURAS, if (entity.swDermatoPeladuras) 1 else 0)
                 put(COL_SW_DERMATO_HERIDAS_SANGRE, if (entity.swDermatoHeridasSangre) 1 else 0)
                 put(COL_SW_DERMATO_PULGAS, if (entity.swDermatoPulgas) 1 else 0)
+                put(COL_SW_DERMATO_CARCINOMA_CUTANEO, if (entity.swDermatoCarcinomaCutaneo) 1 else 0)
                 put(COL_SW_GENITO_MASA_SECRECION, if (entity.swGenitoMasaSecrecion) 1 else 0)
                 put(COL_SW_GENITO_GESTANTE, if (entity.swGenitoGestante) 1 else 0)
                 put(COL_SW_GENITO_CELO, if (entity.swGenitoCelo) 1 else 0)
+                put(COL_SW_LEY_84_1989, if (entity.swLey84_1989) 1 else 0)
+                put(COL_SW_LEY_1638_2013, if (entity.swLey1638_2013) 1 else 0)
+                put(COL_SW_LEY_1774_2016, if (entity.swLey1774_2016) 1 else 0)
+                put(COL_SW_LEY_1801_2016, if (entity.swLey1801_2016) 1 else 0)
+                put(COL_SW_LEY_2054_2020, if (entity.swLey2054_2020) 1 else 0)
+                put(COL_SW_LEY_2385_2024, if (entity.swLey2385_2024) 1 else 0)
             }
         }
 
@@ -423,6 +464,7 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
                 personaAtiendeCedula = cursor.getStringOrDefault(COL_PERSONA_ATIENDE_CEDULA, ""),
                 personaAtiendeTelefono = cursor.getStringOrDefault(COL_PERSONA_ATIENDE_TELEFONO, ""),
                 barrioRescate = cursor.getStringOrDefault(COL_BARRIO_RESCATE, ""),
+                chipSinTestigo = cursor.getBooleanOrDefault(COL_CHIP_SIN_TESTIGO, false),
                 testigo1Nombre = cursor.getStringOrDefault(COL_TESTIGO1_NOMBRE, ""),
                 testigo1Cedula = cursor.getStringOrDefault(COL_TESTIGO1_CEDULA, ""),
                 testigo1Telefono = cursor.getStringOrDefault(COL_TESTIGO1_TELEFONO, ""),
@@ -449,12 +491,20 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
                 swMusculoHeridaAbierta = cursor.getBooleanOrDefault(COL_SW_MUSCULO_HERIDA_ABIERTA, false),
                 swMusculoGusanos = cursor.getBooleanOrDefault(COL_SW_MUSCULO_GUSANOS, false),
                 swMusculoPostrado = cursor.getBooleanOrDefault(COL_SW_MUSCULO_POSTRADO, false),
+                swMusculoSarcoma = cursor.getBooleanOrDefault(COL_SW_MUSCULO_SARCOMA, false),
                 swDermatoPeladuras = cursor.getBooleanOrDefault(COL_SW_DERMATO_PELADURAS, false),
                 swDermatoHeridasSangre = cursor.getBooleanOrDefault(COL_SW_DERMATO_HERIDAS_SANGRE, false),
                 swDermatoPulgas = cursor.getBooleanOrDefault(COL_SW_DERMATO_PULGAS, false),
+                swDermatoCarcinomaCutaneo = cursor.getBooleanOrDefault(COL_SW_DERMATO_CARCINOMA_CUTANEO, false),
                 swGenitoMasaSecrecion = cursor.getBooleanOrDefault(COL_SW_GENITO_MASA_SECRECION, false),
                 swGenitoGestante = cursor.getBooleanOrDefault(COL_SW_GENITO_GESTANTE, false),
-                swGenitoCelo = cursor.getBooleanOrDefault(COL_SW_GENITO_CELO, false)
+                swGenitoCelo = cursor.getBooleanOrDefault(COL_SW_GENITO_CELO, false),
+                swLey84_1989 = cursor.getBooleanOrDefault(COL_SW_LEY_84_1989, false),
+                swLey1638_2013 = cursor.getBooleanOrDefault(COL_SW_LEY_1638_2013, false),
+                swLey1774_2016 = cursor.getBooleanOrDefault(COL_SW_LEY_1774_2016, false),
+                swLey1801_2016 = cursor.getBooleanOrDefault(COL_SW_LEY_1801_2016, false),
+                swLey2054_2020 = cursor.getBooleanOrDefault(COL_SW_LEY_2054_2020, false),
+                swLey2385_2024 = cursor.getBooleanOrDefault(COL_SW_LEY_2385_2024, false)
             )
         }
 

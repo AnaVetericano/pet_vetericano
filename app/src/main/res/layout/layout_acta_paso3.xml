@@ -392,6 +392,159 @@
                 android:textColor="@color/text_primary" />
         </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Fundamento Legal: Chips de leyes normativas -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:layout_marginBottom="4dp"
+            android:fontFamily="@font/nunito_bold"
+            android:text="@string/lbl_marco_normativo_leyes"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:fontFamily="@font/nunito"
+            android:text="@string/lbl_marco_normativo_desc"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:scrollbars="none"
+            android:clipToPadding="false"
+            android:layout_marginBottom="8dp">
+
+            <LinearLayout
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal">
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/chipLey84"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="32dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="3dp"
+                    android:text="@string/lbl_chip_ley_84"
+                    android:textAllCaps="false"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_secondary"
+                    app:cornerRadius="8dp"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
+                    app:strokeWidth="1dp"
+                    android:layout_marginEnd="6dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/chipLey1638"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="32dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="3dp"
+                    android:text="@string/lbl_chip_ley_1638"
+                    android:textAllCaps="false"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_secondary"
+                    app:cornerRadius="8dp"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
+                    app:strokeWidth="1dp"
+                    android:layout_marginEnd="6dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/chipLey1774"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="32dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="3dp"
+                    android:text="@string/lbl_chip_ley_1774"
+                    android:textAllCaps="false"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_secondary"
+                    app:cornerRadius="8dp"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
+                    app:strokeWidth="1dp"
+                    android:layout_marginEnd="6dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/chipLey1801"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="32dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="3dp"
+                    android:text="@string/lbl_chip_ley_1801"
+                    android:textAllCaps="false"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_secondary"
+                    app:cornerRadius="8dp"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
+                    app:strokeWidth="1dp"
+                    android:layout_marginEnd="6dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/chipLey2054"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="32dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="3dp"
+                    android:text="@string/lbl_chip_ley_2054"
+                    android:textAllCaps="false"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_secondary"
+                    app:cornerRadius="8dp"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
+                    app:strokeWidth="1dp"
+                    android:layout_marginEnd="6dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/chipLey2385"
+                    style="?attr/materialButtonOutlinedStyle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:minHeight="32dp"
+                    android:insetTop="0dp"
+                    android:insetBottom="0dp"
+                    android:paddingHorizontal="10dp"
+                    android:paddingVertical="3dp"
+                    android:text="@string/lbl_chip_ley_2385"
+                    android:textAllCaps="false"
+                    android:textSize="11sp"
+                    android:textColor="@color/text_secondary"
+                    app:cornerRadius="8dp"
+                    app:backgroundTint="@color/chip_bg_neutral"
+                    app:strokeColor="@color/chip_stroke_neutral"
+                    app:strokeWidth="1dp" />
+            </LinearLayout>
+        </HorizontalScrollView>
+
         <!-- Fundamento Legal -->
         <com.google.android.material.textfield.TextInputLayout
             android:id="@+id/tilFundamentoLegal"
@@ -406,8 +559,9 @@
                 android:id="@+id/etFundamentoLegal"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:inputType="textCapSentences"
-                android:text="@string/lbl_ley_1774_de_2016_ley"
+                android:gravity="top|start"
+                android:inputType="textMultiLine|textCapSentences"
+                android:minLines="3"
                 android:textColor="@color/text_primary" />
         </com.google.android.material.textfield.TextInputLayout>
 
@@ -849,7 +1003,7 @@
                         android:textColor="@color/text_primary" />
                 </com.google.android.material.textfield.TextInputLayout>
 
-                <!-- Testigo 1 -->
+                <!-- Testigo -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -859,6 +1013,16 @@
                     android:text="@string/lbl_testigo_1_certifica_traslado_entrega"
                     android:textColor="@color/text_primary"
                     android:textSize="14sp" />
+
+                <com.google.android.material.chip.Chip
+                    android:id="@+id/chipSinTestigo"
+                    style="@style/Widget.Material3.Chip.Filter"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="8dp"
+                    android:checkable="true"
+                    android:checked="false"
+                    android:text="@string/lbl_sin_testigo_voluntario" />
 
                 <com.google.android.material.textfield.TextInputLayout
                     android:id="@+id/tilTestigo1Nombre"
@@ -921,79 +1085,7 @@
                     </com.google.android.material.textfield.TextInputLayout>
                 </LinearLayout>
 
-                <!-- Testigo 2 (Opcional) -->
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
-                    android:layout_marginBottom="4dp"
-                    android:fontFamily="@font/nunito_bold"
-                    android:text="@string/lbl_testigo_2_opcional_segun_formato"
-                    android:textColor="@color/text_primary"
-                    android:textSize="14sp" />
-
-                <com.google.android.material.textfield.TextInputLayout
-                    android:id="@+id/tilTestigo2Nombre"
-                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginBottom="12dp"
-                    android:hint="@string/hint_nombre_completo_del_testigo_2"
-                    app:boxStrokeColor="@color/primary">
-
-                    <com.google.android.material.textfield.TextInputEditText
-                        android:id="@+id/etTestigo2Nombre"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:inputType="textCapWords"
-                        android:textColor="@color/text_primary" />
-                </com.google.android.material.textfield.TextInputLayout>
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:baselineAligned="false"
-                    android:orientation="horizontal"
-                    android:layout_marginBottom="14dp">
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilTestigo2Cedula"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginEnd="6dp"
-                        android:layout_weight="1"
-                        android:hint="@string/hint_cedula_testigo_2"
-                        app:boxStrokeColor="@color/primary">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etTestigo2Cedula"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="number"
-                            android:textColor="@color/text_primary" />
-                    </com.google.android.material.textfield.TextInputLayout>
-
-                    <com.google.android.material.textfield.TextInputLayout
-                        android:id="@+id/tilTestigo2Telefono"
-                        style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="6dp"
-                        android:layout_weight="1"
-                        android:hint="@string/hint_telefono_testigo_2"
-                        app:boxStrokeColor="@color/primary">
-
-                        <com.google.android.material.textfield.TextInputEditText
-                            android:id="@+id/etTestigo2Telefono"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:inputType="phone"
-                            android:textColor="@color/text_primary" />
-                    </com.google.android.material.textfield.TextInputLayout>
-                </LinearLayout>
-
-                <!-- EVALUACIÓN CLÍNICA POR SISTEMAS (19 SWITCHES) -->
+                <!-- EVALUACIÓN CLÍNICA POR SISTEMAS -->
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -1497,6 +1589,37 @@
                                 android:layout_height="wrap_content"
                                 android:checked="false" />
                         </LinearLayout>
+
+                        <!-- Switch: Sarcoma -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingVertical="4dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/nunito"
+                                android:text="@string/lbl_sarcoma"
+                                android:textColor="@color/text_primary"
+                                android:textSize="13sp" />
+                            <TextView
+                                android:id="@+id/tvEstadoMusculoSarcoma"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:fontFamily="@font/nunito_bold"
+                                android:text="@string/lbl_no_mayus"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+                            <com.google.android.material.materialswitch.MaterialSwitch
+                                android:id="@+id/swMusculoSarcoma"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:checked="false" />
+                        </LinearLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -1588,7 +1711,7 @@
                                 android:checked="false" />
                         </LinearLayout>
 
-                        <!-- Switch: Pulgas / Garrapatas -->
+                        <!-- Switch: Pulgas / Garrapatas (Hectoparásitos) -->
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
@@ -1614,6 +1737,37 @@
                                 android:textSize="12sp" />
                             <com.google.android.material.materialswitch.MaterialSwitch
                                 android:id="@+id/swDermatoPulgas"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:checked="false" />
+                        </LinearLayout>
+
+                        <!-- Switch: Carcinoma Cutáneo -->
+                        <LinearLayout
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:gravity="center_vertical"
+                            android:orientation="horizontal"
+                            android:paddingVertical="4dp">
+                            <TextView
+                                android:layout_width="0dp"
+                                android:layout_height="wrap_content"
+                                android:layout_weight="1"
+                                android:fontFamily="@font/nunito"
+                                android:text="@string/lbl_carcinoma_cutaneo"
+                                android:textColor="@color/text_primary"
+                                android:textSize="13sp" />
+                            <TextView
+                                android:id="@+id/tvEstadoDermatoCarcinomaCutaneo"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:layout_marginEnd="8dp"
+                                android:fontFamily="@font/nunito_bold"
+                                android:text="@string/lbl_no_mayus"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+                            <com.google.android.material.materialswitch.MaterialSwitch
+                                android:id="@+id/swDermatoCarcinomaCutaneo"
                                 android:layout_width="wrap_content"
                                 android:layout_height="wrap_content"
                                 android:checked="false" />

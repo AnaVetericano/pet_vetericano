@@ -118,6 +118,12 @@ val ActivityActaAtencionBinding.tilCompromisos: TextInputLayout get() = layoutPa
 val ActivityActaAtencionBinding.etCompromisos: TextInputEditText get() = layoutPaso3.etCompromisos
 val ActivityActaAtencionBinding.tilFundamentoLegal: TextInputLayout get() = layoutPaso3.tilFundamentoLegal
 val ActivityActaAtencionBinding.etFundamentoLegal: TextInputEditText get() = layoutPaso3.etFundamentoLegal
+val ActivityActaAtencionBinding.chipLey84: MaterialButton get() = layoutPaso3.chipLey84
+val ActivityActaAtencionBinding.chipLey1638: MaterialButton get() = layoutPaso3.chipLey1638
+val ActivityActaAtencionBinding.chipLey1774: MaterialButton get() = layoutPaso3.chipLey1774
+val ActivityActaAtencionBinding.chipLey1801: MaterialButton get() = layoutPaso3.chipLey1801
+val ActivityActaAtencionBinding.chipLey2054: MaterialButton get() = layoutPaso3.chipLey2054
+val ActivityActaAtencionBinding.chipLey2385: MaterialButton get() = layoutPaso3.chipLey2385
 val ActivityActaAtencionBinding.btnPlazoMenos: MaterialButton get() = layoutPaso3.btnPlazoMenos
 val ActivityActaAtencionBinding.tilPlazoDias: TextInputLayout get() = layoutPaso3.tilPlazoDias
 val ActivityActaAtencionBinding.etPlazoDias: TextInputEditText get() = layoutPaso3.etPlazoDias
@@ -142,20 +148,15 @@ val ActivityActaAtencionBinding.tilPersonaAtiendeTelefono: TextInputLayout get()
 val ActivityActaAtencionBinding.etPersonaAtiendeTelefono: TextInputEditText get() = layoutPaso3.etPersonaAtiendeTelefono
 val ActivityActaAtencionBinding.tilBarrioRescate: TextInputLayout get() = layoutPaso3.tilBarrioRescate
 val ActivityActaAtencionBinding.etBarrioRescate: TextInputEditText get() = layoutPaso3.etBarrioRescate
+val ActivityActaAtencionBinding.chipSinTestigo: com.google.android.material.chip.Chip get() = layoutPaso3.chipSinTestigo
 val ActivityActaAtencionBinding.tilTestigo1Nombre: TextInputLayout get() = layoutPaso3.tilTestigo1Nombre
 val ActivityActaAtencionBinding.etTestigo1Nombre: TextInputEditText get() = layoutPaso3.etTestigo1Nombre
 val ActivityActaAtencionBinding.tilTestigo1Cedula: TextInputLayout get() = layoutPaso3.tilTestigo1Cedula
 val ActivityActaAtencionBinding.etTestigo1Cedula: TextInputEditText get() = layoutPaso3.etTestigo1Cedula
 val ActivityActaAtencionBinding.tilTestigo1Telefono: TextInputLayout get() = layoutPaso3.tilTestigo1Telefono
 val ActivityActaAtencionBinding.etTestigo1Telefono: TextInputEditText get() = layoutPaso3.etTestigo1Telefono
-val ActivityActaAtencionBinding.tilTestigo2Nombre: TextInputLayout get() = layoutPaso3.tilTestigo2Nombre
-val ActivityActaAtencionBinding.etTestigo2Nombre: TextInputEditText get() = layoutPaso3.etTestigo2Nombre
-val ActivityActaAtencionBinding.tilTestigo2Cedula: TextInputLayout get() = layoutPaso3.tilTestigo2Cedula
-val ActivityActaAtencionBinding.etTestigo2Cedula: TextInputEditText get() = layoutPaso3.etTestigo2Cedula
-val ActivityActaAtencionBinding.tilTestigo2Telefono: TextInputLayout get() = layoutPaso3.tilTestigo2Telefono
-val ActivityActaAtencionBinding.etTestigo2Telefono: TextInputEditText get() = layoutPaso3.etTestigo2Telefono
 
-// 19 Switches Checklist y Estados
+// Switches Checklist y Estados
 val ActivityActaAtencionBinding.swRespiratorioMoco: MaterialSwitch get() = layoutPaso3.swRespiratorioMoco
 val ActivityActaAtencionBinding.tvEstadoRespiratorioMoco: TextView get() = layoutPaso3.tvEstadoRespiratorioMoco
 val ActivityActaAtencionBinding.swRespiratorioDificultad: MaterialSwitch get() = layoutPaso3.swRespiratorioDificultad
@@ -184,6 +185,8 @@ val ActivityActaAtencionBinding.swMusculoGusanos: MaterialSwitch get() = layoutP
 val ActivityActaAtencionBinding.tvEstadoMusculoGusanos: TextView get() = layoutPaso3.tvEstadoMusculoGusanos
 val ActivityActaAtencionBinding.swMusculoPostrado: MaterialSwitch get() = layoutPaso3.swMusculoPostrado
 val ActivityActaAtencionBinding.tvEstadoMusculoPostrado: TextView get() = layoutPaso3.tvEstadoMusculoPostrado
+val ActivityActaAtencionBinding.swMusculoSarcoma: MaterialSwitch get() = layoutPaso3.swMusculoSarcoma
+val ActivityActaAtencionBinding.tvEstadoMusculoSarcoma: TextView get() = layoutPaso3.tvEstadoMusculoSarcoma
 
 val ActivityActaAtencionBinding.swDermatoPeladuras: MaterialSwitch get() = layoutPaso3.swDermatoPeladuras
 val ActivityActaAtencionBinding.tvEstadoDermatoPeladuras: TextView get() = layoutPaso3.tvEstadoDermatoPeladuras
@@ -191,6 +194,8 @@ val ActivityActaAtencionBinding.swDermatoHeridasSangre: MaterialSwitch get() = l
 val ActivityActaAtencionBinding.tvEstadoDermatoHeridasSangre: TextView get() = layoutPaso3.tvEstadoDermatoHeridasSangre
 val ActivityActaAtencionBinding.swDermatoPulgas: MaterialSwitch get() = layoutPaso3.swDermatoPulgas
 val ActivityActaAtencionBinding.tvEstadoDermatoPulgas: TextView get() = layoutPaso3.tvEstadoDermatoPulgas
+val ActivityActaAtencionBinding.swDermatoCarcinomaCutaneo: MaterialSwitch get() = layoutPaso3.swDermatoCarcinomaCutaneo
+val ActivityActaAtencionBinding.tvEstadoDermatoCarcinomaCutaneo: TextView get() = layoutPaso3.tvEstadoDermatoCarcinomaCutaneo
 
 val ActivityActaAtencionBinding.swGenitoMasaSecrecion: MaterialSwitch get() = layoutPaso3.swGenitoMasaSecrecion
 val ActivityActaAtencionBinding.tvEstadoGenitoMasaSecrecion: TextView get() = layoutPaso3.tvEstadoGenitoMasaSecrecion

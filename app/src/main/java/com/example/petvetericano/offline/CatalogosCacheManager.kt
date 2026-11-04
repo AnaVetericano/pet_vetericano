@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.example.petvetericano.models.EspecieItemResponse
 import com.example.petvetericano.models.ExamenCatalogoItemResponse
+import com.example.petvetericano.models.MedicamentoApiItem
 import com.example.petvetericano.models.RazaItemResponse
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -22,6 +23,7 @@ object CatalogosCacheManager {
     private const val KEY_ESPECIES = "CACHE_CATALOGO_ESPECIES"
     private const val KEY_RAZAS = "CACHE_CATALOGO_RAZAS"
     private const val KEY_EXAMENES = "CACHE_CATALOGO_EXAMENES"
+    private const val KEY_MEDICAMENTOS_CATALOGO = "CACHE_CATALOGO_MEDICAMENTOS"
     private const val KEY_HORA_GUARDADO = "CACHE_HORA_GUARDADO"
 
     private val gson = Gson()
@@ -112,6 +114,36 @@ object CatalogosCacheManager {
             try {
                 val tipo = object : TypeToken<List<ExamenCatalogoItemResponse>>() {}.type
                 gson.fromJson<List<ExamenCatalogoItemResponse>>(json, tipo) ?: emptyList()
+            } catch (_: Exception) {
+                emptyList()
+            }
+        } else {
+            emptyList()
+        }
+    }
+
+    suspend fun guardarMedicamentosCatalogo(
+        context: Context,
+        medicamentos: List<MedicamentoApiItem>
+    ) = withContext(Dispatchers.IO) {
+        if (medicamentos.isEmpty()) return@withContext
+        val json = gson.toJson(medicamentos)
+        val prefs = getPrefs(context)
+        prefs.edit()
+            .putString(KEY_MEDICAMENTOS_CATALOGO, json)
+            .putLong(KEY_HORA_GUARDADO, System.currentTimeMillis())
+            .apply()
+    }
+
+    suspend fun obtenerMedicamentosCatalogo(
+        context: Context
+    ): List<MedicamentoApiItem> = withContext(Dispatchers.IO) {
+        val prefs = getPrefs(context)
+        val json = prefs.getString(KEY_MEDICAMENTOS_CATALOGO, null)
+        if (!json.isNullOrEmpty()) {
+            try {
+                val tipo = object : TypeToken<List<MedicamentoApiItem>>() {}.type
+                gson.fromJson<List<MedicamentoApiItem>>(json, tipo) ?: emptyList()
             } catch (_: Exception) {
                 emptyList()
             }

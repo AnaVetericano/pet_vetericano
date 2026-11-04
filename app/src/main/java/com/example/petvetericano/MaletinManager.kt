@@ -4,11 +4,13 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.example.petvetericano.models.ConsumoOfflineItem
 import com.example.petvetericano.models.KitItemResponse
+import com.example.petvetericano.models.MedicamentoApiItem
 import com.example.petvetericano.models.MedicamentoMaletin
 import com.example.petvetericano.models.SincronizarOfflineRequest
 import com.example.petvetericano.models.SincronizarOfflineResponse
 import com.example.petvetericano.models.SolicitudKitOffline
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.offline.CatalogosCacheManager
 import com.example.petvetericano.offline.NetworkUtils
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
@@ -111,6 +113,37 @@ class MaletinManager(context: Context) {
     }
 
     /**
+     * Actualiza las vías de administración y unidades de medida del maletín usando los datos del catálogo.
+     */
+    fun actualizarViasDesdeCatalogo(listaMeds: List<MedicamentoApiItem>) {
+        if (listaMeds.isEmpty()) return
+        val actuales = getMedicamentos()
+        if (actuales.isEmpty()) return
+
+        val actualizados = actuales.map { med ->
+            val medApi = listaMeds.find {
+                (it.idReal > 0 && it.idReal == med.idMedicamentoInt) ||
+                (it.nombre.isNotBlank() && it.nombre.trim().equals(med.nombre.trim(), ignoreCase = true))
+            }
+            if (medApi != null && !medApi.viaAdministracion.isNullOrBlank()) {
+                val viaNorm = MedicamentoMaletin.normalizarVia(medApi.viaAdministracion)
+                val unidad = MedicamentoMaletin.obtenerUnidadMedida(viaNorm, med.nombre, medApi.presentacion)
+                val pres = medApi.presentacion?.takeIf { it.isNotBlank() } ?: med.presentacion
+                val conc = medApi.concentracion?.takeIf { it.isNotBlank() } ?: med.concentracion
+                med.copy(
+                    viaRecomendada = viaNorm,
+                    unidadMedida = unidad,
+                    presentacion = pres,
+                    concentracion = conc
+                )
+            } else {
+                med
+            }
+        }
+        guardarMedicamentos(actualizados)
+    }
+
+    /**
      * Obtiene un medicamento por su ID.
      */
     fun getMedicamento(id: String): MedicamentoMaletin? {
@@ -142,12 +175,31 @@ class MaletinManager(context: Context) {
 
         try {
             val authHeader = if (token.startsWith("Bearer ")) token else "Bearer $token"
+
+            // Obtener catálogo para enriquecer vías de administración oficiales y unidades
+            val catalogoMeds: List<MedicamentoApiItem> = try {
+                val respMeds = RetrofitClient.apiService.obtenerMedicamentos(authHeader)
+                if (respMeds.isSuccessful && respMeds.body() != null) {
+                    val lista = respMeds.body()!!
+                    CatalogosCacheManager.guardarMedicamentosCatalogo(appContext, lista)
+                    lista
+                } else {
+                    CatalogosCacheManager.obtenerMedicamentosCatalogo(appContext)
+                }
+            } catch (_: Exception) {
+                CatalogosCacheManager.obtenerMedicamentosCatalogo(appContext)
+            }
+
             val response = RetrofitClient.apiService.obtenerMiKit(authHeader)
 
             if (response.isSuccessful && response.body() != null) {
                 val body = response.body()!!
                 val listaTransformada = body.items.map { item ->
-                    MedicamentoMaletin.fromKitItem(item)
+                    val medApi = catalogoMeds.find {
+                        (it.idReal > 0 && it.idReal == item.idMedicamento) ||
+                        (it.nombre.isNotBlank() && it.nombre.trim().equals(item.nombre.trim(), ignoreCase = true))
+                    }
+                    MedicamentoMaletin.fromKitItem(item, medApi)
                 }
 
                 guardarMedicamentos(listaTransformada)
@@ -163,17 +215,30 @@ class MaletinManager(context: Context) {
 
                     val listaDesdeSnapshot = snapshot.stock.map { stockItem ->
                         val anterior = existentesMap[stockItem.idMedicamento]
+                        val medApi = catalogoMeds.find {
+                            (it.idReal > 0 && it.idReal == stockItem.idMedicamento) ||
+                            (it.nombre.isNotBlank() && it.nombre.trim().equals(stockItem.nombre.trim(), ignoreCase = true))
+                        }
+                        val viaFinal = MedicamentoMaletin.normalizarVia(
+                            medApi?.viaAdministracion?.takeIf { it.isNotBlank() }
+                                ?: anterior?.viaRecomendada
+                                ?: MedicamentoMaletin.inferirViaPorNombre(stockItem.nombre)
+                        )
+                        val unidadFinal = MedicamentoMaletin.obtenerUnidadMedida(viaFinal, stockItem.nombre, medApi?.presentacion)
+
                         MedicamentoMaletin(
                             id = stockItem.idMedicamento.toString(),
                             nombre = stockItem.nombre,
+                            concentracion = medApi?.concentracion ?: anterior?.concentracion ?: "",
                             categoria = anterior?.categoria ?: MedicamentoMaletin.categorizarPorNombre(stockItem.nombre),
-                            unidadMedida = anterior?.unidadMedida ?: "unidades",
+                            presentacion = medApi?.presentacion ?: anterior?.presentacion ?: if (MedicamentoMaletin.esPresentacionLiquida(viaFinal, stockItem.nombre)) "Presentación líquida" else "Tabletas / Pastillas",
+                            unidadMedida = unidadFinal,
                             cantidadDisponible = stockItem.saldoDisponible.toDouble(),
                             cantidadInicial = if ((anterior?.cantidadInicial ?: 0.0) > 0) anterior!!.cantidadInicial else maxOf(stockItem.saldoDisponible.toDouble(), 1.0),
                             lote = anterior?.lote ?: "Lote activo",
                             fechaVencimiento = anterior?.fechaVencimiento ?: "Vigente",
-                            viaRecomendada = anterior?.viaRecomendada ?: "Clínica",
-                            descripcionUso = anterior?.descripcionUso ?: ""
+                            viaRecomendada = viaFinal,
+                            descripcionUso = medApi?.descripcion ?: anterior?.descripcionUso ?: ""
                         )
                     }
 

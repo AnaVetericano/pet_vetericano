@@ -120,12 +120,13 @@ object ActaFormSnapshotMapper {
             personaAtiendeCedula = binding.etPersonaAtiendeCedula.text?.toString()?.trim() ?: "",
             personaAtiendeTelefono = binding.etPersonaAtiendeTelefono.text?.toString()?.trim() ?: "",
             barrioRescate = binding.etBarrioRescate.text?.toString()?.trim() ?: "",
+            chipSinTestigo = binding.chipSinTestigo.isChecked,
             testigo1Nombre = binding.etTestigo1Nombre.text?.toString()?.trim() ?: "",
             testigo1Cedula = binding.etTestigo1Cedula.text?.toString()?.trim() ?: "",
             testigo1Telefono = binding.etTestigo1Telefono.text?.toString()?.trim() ?: "",
-            testigo2Nombre = binding.etTestigo2Nombre.text?.toString()?.trim() ?: "",
-            testigo2Cedula = binding.etTestigo2Cedula.text?.toString()?.trim() ?: "",
-            testigo2Telefono = binding.etTestigo2Telefono.text?.toString()?.trim() ?: "",
+            testigo2Nombre = "",
+            testigo2Cedula = "",
+            testigo2Telefono = "",
             observacionesRescate = binding.etObservacionesRescate.text?.toString()?.trim() ?: "",
             veterinarioReceptor = binding.etVeterinarioReceptor.text?.toString()?.trim() ?: "",
             fechaRecepcion = binding.etFechaRecepcion.text?.toString()?.trim() ?: "",
@@ -146,12 +147,22 @@ object ActaFormSnapshotMapper {
             swMusculoHeridaAbierta = binding.swMusculoHeridaAbierta.isChecked,
             swMusculoGusanos = binding.swMusculoGusanos.isChecked,
             swMusculoPostrado = binding.swMusculoPostrado.isChecked,
+            swMusculoSarcoma = binding.swMusculoSarcoma.isChecked,
             swDermatoPeladuras = binding.swDermatoPeladuras.isChecked,
             swDermatoHeridasSangre = binding.swDermatoHeridasSangre.isChecked,
             swDermatoPulgas = binding.swDermatoPulgas.isChecked,
+            swDermatoCarcinomaCutaneo = binding.swDermatoCarcinomaCutaneo.isChecked,
             swGenitoMasaSecrecion = binding.swGenitoMasaSecrecion.isChecked,
             swGenitoGestante = binding.swGenitoGestante.isChecked,
-            swGenitoCelo = binding.swGenitoCelo.isChecked
+            swGenitoCelo = binding.swGenitoCelo.isChecked,
+
+            // Paso 3: Estado de Fundamento Legal (6 leyes)
+            swLey84_1989 = binding.etFundamentoLegal.text?.contains("84 de 1989", ignoreCase = true) == true,
+            swLey1638_2013 = binding.etFundamentoLegal.text?.contains("1638 de 2013", ignoreCase = true) == true,
+            swLey1774_2016 = binding.etFundamentoLegal.text?.contains("1774 de 2016", ignoreCase = true) == true,
+            swLey1801_2016 = binding.etFundamentoLegal.text?.contains("1801 de 2016", ignoreCase = true) == true,
+            swLey2054_2020 = binding.etFundamentoLegal.text?.contains("2054 de 2020", ignoreCase = true) == true,
+            swLey2385_2024 = binding.etFundamentoLegal.text?.contains("2385 de 2024", ignoreCase = true) == true
         )
     }
 
@@ -232,12 +243,19 @@ object ActaFormSnapshotMapper {
         binding.etPersonaAtiendeCedula.setText(entity.personaAtiendeCedula)
         binding.etPersonaAtiendeTelefono.setText(entity.personaAtiendeTelefono)
         binding.etBarrioRescate.setText(entity.barrioRescate)
+        binding.chipSinTestigo.isChecked = entity.chipSinTestigo
         binding.etTestigo1Nombre.setText(entity.testigo1Nombre)
         binding.etTestigo1Cedula.setText(entity.testigo1Cedula)
         binding.etTestigo1Telefono.setText(entity.testigo1Telefono)
-        binding.etTestigo2Nombre.setText(entity.testigo2Nombre)
-        binding.etTestigo2Cedula.setText(entity.testigo2Cedula)
-        binding.etTestigo2Telefono.setText(entity.testigo2Telefono)
+        if (entity.chipSinTestigo) {
+            binding.tilTestigo1Nombre.isEnabled = false
+            binding.tilTestigo1Cedula.isEnabled = false
+            binding.tilTestigo1Telefono.isEnabled = false
+        } else {
+            binding.tilTestigo1Nombre.isEnabled = true
+            binding.tilTestigo1Cedula.isEnabled = true
+            binding.tilTestigo1Telefono.isEnabled = true
+        }
         binding.etObservacionesRescate.setText(entity.observacionesRescate)
         binding.etVeterinarioReceptor.setText(entity.veterinarioReceptor)
         binding.etFechaRecepcion.setText(entity.fechaRecepcion)
@@ -260,12 +278,33 @@ object ActaFormSnapshotMapper {
         binding.swMusculoHeridaAbierta.isChecked = entity.swMusculoHeridaAbierta
         binding.swMusculoGusanos.isChecked = entity.swMusculoGusanos
         binding.swMusculoPostrado.isChecked = entity.swMusculoPostrado
+        binding.swMusculoSarcoma.isChecked = entity.swMusculoSarcoma
         binding.swDermatoPeladuras.isChecked = entity.swDermatoPeladuras
         binding.swDermatoHeridasSangre.isChecked = entity.swDermatoHeridasSangre
         binding.swDermatoPulgas.isChecked = entity.swDermatoPulgas
+        binding.swDermatoCarcinomaCutaneo.isChecked = entity.swDermatoCarcinomaCutaneo
         binding.swGenitoMasaSecrecion.isChecked = entity.swGenitoMasaSecrecion
         binding.swGenitoGestante.isChecked = entity.swGenitoGestante
         binding.swGenitoCelo.isChecked = entity.swGenitoCelo
+
+        // ----------------------------------------------------
+        // 5b. Paso 3: Fundamento Legal (reconstrucción si venía de borradores previos)
+        // ----------------------------------------------------
+        val algunSwitchLegalGuardado = entity.swLey84_1989 || entity.swLey1638_2013 || entity.swLey1774_2016 ||
+                entity.swLey1801_2016 || entity.swLey2054_2020 || entity.swLey2385_2024
+
+        if (binding.etFundamentoLegal.text.isNullOrBlank() && algunSwitchLegalGuardado) {
+            val leyes = mutableListOf<String>()
+            if (entity.swLey84_1989) leyes.add(ActaAtencionActivity.DESCRIPCION_LEY_84_1989)
+            if (entity.swLey1638_2013) leyes.add(ActaAtencionActivity.DESCRIPCION_LEY_1638_2013)
+            if (entity.swLey1774_2016) leyes.add(ActaAtencionActivity.DESCRIPCION_LEY_1774_2016)
+            if (entity.swLey1801_2016) leyes.add(ActaAtencionActivity.DESCRIPCION_LEY_1801_2016)
+            if (entity.swLey2054_2020) leyes.add(ActaAtencionActivity.DESCRIPCION_LEY_2054_2020)
+            if (entity.swLey2385_2024) leyes.add(ActaAtencionActivity.DESCRIPCION_LEY_2385_2024)
+            if (leyes.isNotEmpty()) {
+                binding.etFundamentoLegal.setText(leyes.joinToString("\n\n"))
+            }
+        }
 
         // ----------------------------------------------------
         // 6. Firmas Digitales

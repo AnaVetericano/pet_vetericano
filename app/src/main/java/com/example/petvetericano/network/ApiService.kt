@@ -142,7 +142,9 @@ interface ApiService {
     ): Response<List<com.example.petvetericano.models.ExamenCatalogoItemResponse>>
 
     @GET("medicamentos/")
-    suspend fun obtenerMedicamentos(): Response<Any>
+    suspend fun obtenerMedicamentos(
+        @Header("Authorization") token: String? = null
+    ): Response<List<com.example.petvetericano.models.MedicamentoApiItem>>
 
     @GET("medicamentos-catalogo/")
     suspend fun obtenerCatalogoMedicamentos(

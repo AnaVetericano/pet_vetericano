@@ -62,4 +62,68 @@ class ExampleUnitTest {
         assertTrue(Regex("[A-Z]").containsMatchIn(pass1))
         assertTrue(Regex("[0-9]").containsMatchIn(pass1))
     }
+
+    @Test
+    fun fundamentoLegal_constantesDeLeyes_contienenTextoNormativoCorrecto() {
+        // Ley 84 de 1989
+        assertTrue(ActaAtencionActivity.DESCRIPCION_LEY_84_1989.contains("Ley 84 de 1989"))
+        assertTrue(ActaAtencionActivity.DESCRIPCION_LEY_84_1989.contains("Estatuto Nacional de Protección de los Animales"))
+        assertTrue(ActaAtencionActivity.DESCRIPCION_LEY_84_1989.contains("prevenir el dolor y el sufrimiento animal"))
+
+        // Ley 1638 de 2013
+        assertTrue(ActaAtencionActivity.DESCRIPCION_LEY_1638_2013.contains("Ley 1638 de 2013"))
+        assertTrue(ActaAtencionActivity.DESCRIPCION_LEY_1638_2013.contains("espectáculos circenses"))
+
+        // Ley 1774 de 2016
+        assertTrue(ActaAtencionActivity.DESCRIPCION_LEY_1774_2016.contains("Ley 1774 de 2016"))
+        assertTrue(ActaAtencionActivity.DESCRIPCION_LEY_1774_2016.contains("seres sintientes"))
+        assertTrue(ActaAtencionActivity.DESCRIPCION_LEY_1774_2016.contains("Código Penal"))
+
+        // Ley 1801 de 2016
+        assertTrue(ActaAtencionActivity.DESCRIPCION_LEY_1801_2016.contains("Ley 1801 de 2016"))
+        assertTrue(ActaAtencionActivity.DESCRIPCION_LEY_1801_2016.contains("Código Nacional de Seguridad y Convivencia Ciudadana"))
+        assertTrue(ActaAtencionActivity.DESCRIPCION_LEY_1801_2016.contains("Título XIII"))
+
+        // Ley 2054 de 2020
+        assertTrue(ActaAtencionActivity.DESCRIPCION_LEY_2054_2020.contains("Ley 2054 de 2020"))
+        assertTrue(ActaAtencionActivity.DESCRIPCION_LEY_2054_2020.contains("Centros de Bienestar Animal"))
+
+        // Ley 2385 de 2024
+        assertTrue(ActaAtencionActivity.DESCRIPCION_LEY_2385_2024.contains("Ley 2385 de 2024"))
+        assertTrue(ActaAtencionActivity.DESCRIPCION_LEY_2385_2024.contains("Prohibición de la tauromaquia"))
+        assertTrue(ActaAtencionActivity.DESCRIPCION_LEY_2385_2024.contains("corridas de toros"))
+    }
+
+    @Test
+    fun actaLocalEntity_switchesFundamentoLegal_inicializacionPorDefecto() {
+        val entity = com.example.petvetericano.offline.ActaLocalEntity(idPeticion = 1, idVeterinario = 1)
+        assertFalse(entity.swLey84_1989)
+        assertFalse(entity.swLey1638_2013)
+        assertFalse(entity.swLey1774_2016)
+        assertFalse(entity.swLey1801_2016)
+        assertFalse(entity.swLey2054_2020)
+        assertFalse(entity.swLey2385_2024)
+
+        val entityModificada = entity.copy(
+            swLey1774_2016 = true,
+            swLey84_1989 = true
+        )
+        assertTrue(entityModificada.swLey1774_2016)
+        assertTrue(entityModificada.swLey84_1989)
+        assertFalse(entityModificada.swLey1638_2013)
+    }
+
+    @Test
+    fun esNombreValido_aceptaNNyNombresValidos() {
+        assertTrue(ActaFieldValidators.esNombreValido("NN"))
+        assertTrue(ActaFieldValidators.esNombreValido("nn"))
+        assertTrue(ActaFieldValidators.esNombreValido("N.N."))
+        assertTrue(ActaFieldValidators.esNombreValido("Juan Pérez"))
+        assertTrue(ActaFieldValidators.esNombreValido("Carlos"))
+        assertFalse(ActaFieldValidators.esNombreValido("A"))
+        assertFalse(ActaFieldValidators.esNombreValido(""))
+        assertFalse(ActaFieldValidators.esNombreValido("   "))
+        assertFalse(ActaFieldValidators.esNombreValido("Juan 2"))
+        assertFalse(ActaFieldValidators.esNombreValido("12345"))
+    }
 }

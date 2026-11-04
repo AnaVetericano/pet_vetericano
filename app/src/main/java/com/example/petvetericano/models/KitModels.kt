@@ -417,7 +417,51 @@ data class MedicamentoCatalogoItem(
     @SerializedName("tipo")
     val tipo: String? = null,
 
+    @SerializedName("via_administracion")
+    val viaAdministracion: String? = null,
+
+    @SerializedName("cantidad_ml")
+    val cantidadMl: String? = null,
+
     @SerializedName("activo")
     val activo: Boolean = true
 ) : Serializable
+
+data class MedicamentoApiItem(
+    @SerializedName("id")
+    val id: Int? = null,
+
+    @SerializedName("id_medicamento")
+    val idMedicamento: Int? = null,
+
+    @SerializedName("nombre")
+    val nombre: String = "",
+
+    @SerializedName("descripcion")
+    val descripcion: String? = null,
+
+    @SerializedName("cantidad_ml")
+    val cantidadMl: String? = null,
+
+    @SerializedName("tipo")
+    val tipo: String? = null,
+
+    @SerializedName("via_administracion")
+    val viaAdministracion: String? = null,
+
+    @SerializedName("presentacion")
+    val presentacion: String? = null,
+
+    @SerializedName("concentracion")
+    val concentracion: String? = null,
+
+    @SerializedName("estado")
+    val estado: Boolean? = true,
+
+    @SerializedName("activo")
+    val activo: Boolean? = true
+) : Serializable {
+    val idReal: Int
+        get() = idMedicamento ?: id ?: 0
+}
 

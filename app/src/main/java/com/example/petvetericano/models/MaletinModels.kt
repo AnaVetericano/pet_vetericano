@@ -88,10 +88,104 @@ data class MedicamentoMaletin(
         get() = esCritico || esReorden || unidadesFaltantesParaCuota > 0
 
     companion object {
+        val VIAS_ADMINISTRACION_OFICIALES = arrayOf(
+            "Oral (Pastilla / Tableta)",
+            "Oral (Jarabe / Suspensión)",
+            "Subcutánea (SC)",
+            "Intramuscular (IM)",
+            "Intravenosa (IV)",
+            "Tópica (Crema / Pomada)",
+            "Tópica (Spray / Solución)",
+            "Tópica (Pipeta / Spot-on)",
+            "Ótica (Oídos)",
+            "Oftálmica (Ojos)"
+        )
+
+        fun normalizarVia(viaBackend: String?): String {
+            if (viaBackend.isNullOrBlank()) return "Subcutánea (SC)"
+            val v = viaBackend.trim()
+            val lower = v.lowercase()
+
+            return when {
+                VIAS_ADMINISTRACION_OFICIALES.any { it.equals(v, ignoreCase = true) } -> {
+                    VIAS_ADMINISTRACION_OFICIALES.first { it.equals(v, ignoreCase = true) }
+                }
+                lower.contains("subcut") || lower.contains("sc") -> "Subcutánea (SC)"
+                lower.contains("intramusc") || lower.contains("im") -> "Intramuscular (IM)"
+                lower.contains("intraven") || lower.contains("iv") -> "Intravenosa (IV)"
+                lower.contains("jarabe") || lower.contains("suspensi") || lower.contains("gotas") -> "Oral (Jarabe / Suspensión)"
+                lower.contains("pastilla") || lower.contains("tableta") || lower.contains("cápsula") ||
+                lower.contains("capsula") || lower.contains("comprimido") -> "Oral (Pastilla / Tableta)"
+                lower == "oral" -> "Oral (Pastilla / Tableta)"
+                lower.contains("crema") || lower.contains("pomada") || lower.contains("pasta") -> "Tópica (Crema / Pomada)"
+                lower.contains("spray") || lower.contains("soluci") -> "Tópica (Spray / Solución)"
+                lower.contains("pipeta") || lower.contains("spot") -> "Tópica (Pipeta / Spot-on)"
+                lower.contains("topica") || lower.contains("tópica") -> "Tópica (Crema / Pomada)"
+                lower.contains("otic") || lower.contains("ótic") || lower.contains("oído") || lower.contains("oido") || lower.contains("oreja") -> "Ótica (Oídos)"
+                lower.contains("oftalm") || lower.contains("oftálm") || lower.contains("ojo") || lower.contains("colirio") -> "Oftálmica (Ojos)"
+                else -> v
+            }
+        }
+
+        fun esPresentacionLiquida(via: String?, nombre: String? = null, presentacion: String? = null): Boolean {
+            val v = (via ?: "").lowercase()
+            val n = (nombre ?: "").lowercase()
+            val p = (presentacion ?: "").lowercase()
+
+            // 1. Detección por vía explícita
+            if (v.contains("jarabe") || v.contains("suspensi") || v.contains("sc") ||
+                v.contains("subcut") || v.contains("im") || v.contains("intramusc") ||
+                v.contains("iv") || v.contains("intraven") || v.contains("spray") ||
+                v.contains("soluci") || v.contains("ótica") || v.contains("otica") ||
+                v.contains("oftálm") || v.contains("oftalm") || v.contains("gota") ||
+                v.contains("inyect") || v.contains("oreja") || v.contains("ojo")) {
+                return true
+            }
+            if (v.contains("pastilla") || v.contains("tableta") || v.contains("cápsula") ||
+                v.contains("capsula") || v.contains("comprimido") || v.contains("gragea")) {
+                return false
+            }
+
+            // 2. Detección por presentación o nombre
+            if (p.contains("frasco") || p.contains("ampoll") || p.contains("inyect") ||
+                p.contains("gotas") || p.contains("jarabe") || p.contains("suspensi") ||
+                p.contains("ml") || n.contains("gotas") || n.contains("jarabe") ||
+                n.contains("inyectable") || n.contains("suspensión") || n.contains("suspension") ||
+                n.contains("ampolla") || n.contains("suero")) {
+                return true
+            }
+            if (p.contains("tableta") || p.contains("pastilla") || p.contains("cápsula") ||
+                p.contains("capsula") || p.contains("comprimido") || n.contains("tableta") ||
+                n.contains("pastilla") || n.contains("cápsula") || n.contains("capsula") ||
+                n.contains("comprimido") || n.contains("blister")) {
+                return false
+            }
+
+            return false
+        }
+
+        fun obtenerUnidadMedida(via: String?, nombre: String? = null, presentacion: String? = null): String {
+            return if (esPresentacionLiquida(via, nombre, presentacion)) "ml" else "mg"
+        }
+
+        fun inferirViaPorNombre(nombre: String): String {
+            val n = nombre.lowercase()
+            return when {
+                n.contains("gotas") || n.contains("jarabe") -> "Oral (Jarabe / Suspensión)"
+                n.contains("inyectable") || n.contains("ampolla") -> "Subcutánea (SC)"
+                n.contains("spray") || n.contains("crema") || n.contains("gel") -> "Tópica (Crema / Pomada)"
+                n.contains("pastilla") || n.contains("tableta") || n.contains("cápsula") || n.contains("capsula") -> "Oral (Pastilla / Tableta)"
+                else -> "Subcutánea (SC)"
+            }
+        }
+
         /**
-         * Crea un MedicamentoMaletin a partir del KitItemResponse del backend.
+         * Crea un MedicamentoMaletin a partir del KitItemResponse del backend y datos opcionales de catálogo.
          */
-        fun fromKitItem(item: KitItemResponse): MedicamentoMaletin {
+        fun fromKitItem(
+            item: KitItemResponse,
+            medApi: MedicamentoApiItem? = null
+        ): MedicamentoMaletin {
             val primerLote = item.lotes.firstOrNull()
             val loteStr = if (item.lotes.size > 1) {
                 "${item.lotes.size} lotes (${primerLote?.idInventario?.let { "Lote #$it" } ?: "General"})"
@@ -110,19 +204,27 @@ data class MedicamentoMaletin(
                 maxOf(item.saldoDisponible.toDouble(), 1.0)
             }
 
+            val viaRaw = medApi?.viaAdministracion?.takeIf { it.isNotBlank() }
+            val viaFinal = normalizarVia(viaRaw ?: inferirViaPorNombre(item.nombre))
+            val unidadFinal = obtenerUnidadMedida(viaFinal, item.nombre, medApi?.presentacion)
+            val presentacionFinal = medApi?.presentacion?.takeIf { it.isNotBlank() }
+                ?: if (esPresentacionLiquida(viaFinal, item.nombre, null)) "Presentación líquida" else "Tabletas / Pastillas"
+            val concentracionFinal = medApi?.concentracion?.takeIf { it.isNotBlank() }
+                ?: medApi?.cantidadMl?.takeIf { it.isNotBlank() }?.let { "$it ml" } ?: ""
+
             return MedicamentoMaletin(
                 id = item.idMedicamento.toString(),
                 nombre = item.nombre,
-                concentracion = "",
+                concentracion = concentracionFinal,
                 categoria = categorizarPorNombre(item.nombre),
-                presentacion = "Unidad clínica",
-                unidadMedida = "unidades",
+                presentacion = presentacionFinal,
+                unidadMedida = unidadFinal,
                 cantidadDisponible = item.saldoDisponible.toDouble(),
                 cantidadInicial = cantidadInicialCalculada,
                 lote = loteStr,
                 fechaVencimiento = fechaVencStr,
-                viaRecomendada = "Vía veterinaria",
-                descripcionUso = "Medicamento dotado desde la farmacia central CBA.",
+                viaRecomendada = viaFinal,
+                descripcionUso = medApi?.descripcion?.takeIf { it.isNotBlank() } ?: "Medicamento dotado desde la farmacia central CBA.",
                 saldoVencido = item.saldoVencido,
                 lotes = item.lotes
             )

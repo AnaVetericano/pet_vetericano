@@ -160,6 +160,7 @@
 
     <!-- Cantidad / Dosis Entera M3 a suministrar -->
     <TextView
+        android:id="@+id/tvTituloDosisCantidad"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/nunito_bold"

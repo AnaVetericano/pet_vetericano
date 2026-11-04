@@ -249,11 +249,12 @@ object ActaFieldValidators {
     }
 
     /**
-     * Valida que un nombre contenga solo letras y tenga al menos 3 caracteres.
+     * Valida que un nombre contenga solo letras y tenga al menos 2 caracteres (admite NN).
      */
     fun esNombreValido(nombre: String): Boolean {
         val trim = nombre.trim()
-        if (trim.length < 3) return false
+        if (trim.equals("NN", ignoreCase = true) || trim.equals("N.N.", ignoreCase = true)) return true
+        if (trim.length < 2) return false
         // No debe contener números
         return !trim.any { it.isDigit() }
     }

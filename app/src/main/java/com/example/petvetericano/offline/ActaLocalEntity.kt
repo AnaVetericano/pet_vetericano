@@ -94,6 +94,7 @@ data class ActaLocalEntity(
     val personaAtiendeCedula: String = "",
     val personaAtiendeTelefono: String = "",
     val barrioRescate: String = "",
+    val chipSinTestigo: Boolean = false,
     val testigo1Nombre: String = "",
     val testigo1Cedula: String = "",
     val testigo1Telefono: String = "",
@@ -106,7 +107,7 @@ data class ActaLocalEntity(
     val horaRecepcion: String = "",
     val observacionesRecepcion: String = "",
 
-    // Paso 3: Evaluación Clínica por Sistemas (19 switches)
+    // Paso 3: Evaluación Clínica por Sistemas
     val swRespiratorioMoco: Boolean = false,
     val swRespiratorioDificultad: Boolean = false,
     val swRespiratorioTos: Boolean = false,
@@ -120,10 +121,20 @@ data class ActaLocalEntity(
     val swMusculoHeridaAbierta: Boolean = false,
     val swMusculoGusanos: Boolean = false,
     val swMusculoPostrado: Boolean = false,
+    val swMusculoSarcoma: Boolean = false,
     val swDermatoPeladuras: Boolean = false,
     val swDermatoHeridasSangre: Boolean = false,
     val swDermatoPulgas: Boolean = false,
+    val swDermatoCarcinomaCutaneo: Boolean = false,
     val swGenitoMasaSecrecion: Boolean = false,
     val swGenitoGestante: Boolean = false,
-    val swGenitoCelo: Boolean = false
+    val swGenitoCelo: Boolean = false,
+
+    // Paso 3: Switches de Fundamento Legal (6 leyes)
+    val swLey84_1989: Boolean = false,
+    val swLey1638_2013: Boolean = false,
+    val swLey1774_2016: Boolean = false,
+    val swLey1801_2016: Boolean = false,
+    val swLey2054_2020: Boolean = false,
+    val swLey2385_2024: Boolean = false
 )

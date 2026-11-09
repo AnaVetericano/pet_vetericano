@@ -2,6 +2,7 @@ package com.example.petvetericano
 
 import com.example.petvetericano.models.GoogleLoginRequest
 import com.example.petvetericano.models.LoginResponse
+import com.example.petvetericano.models.MedicamentoMaletin
 import com.google.gson.Gson
 import org.junit.Assert.*
 import org.junit.Test
@@ -125,5 +126,36 @@ class ExampleUnitTest {
         assertFalse(ActaFieldValidators.esNombreValido("   "))
         assertFalse(ActaFieldValidators.esNombreValido("Juan 2"))
         assertFalse(ActaFieldValidators.esNombreValido("12345"))
+    }
+
+    @Test
+    fun esObjetoOInsumo_detectaGuantesDeCarnazaYObjetosFisicos() {
+        assertTrue(MedicamentoMaletin.esObjetoOInsumo("Guantes de carnaza"))
+        assertTrue(MedicamentoMaletin.esObjetoOInsumo("guante de látex"))
+        assertTrue(MedicamentoMaletin.esObjetoOInsumo("Jelco 22G"))
+        assertTrue(MedicamentoMaletin.esObjetoOInsumo("Catéter periférico"))
+        assertTrue(MedicamentoMaletin.esObjetoOInsumo("Jeringa 3 ml"))
+        assertTrue(MedicamentoMaletin.esObjetoOInsumo("Aguja hipodérmica"))
+        assertTrue(MedicamentoMaletin.esObjetoOInsumo("Venda elástica"))
+        assertTrue(MedicamentoMaletin.esObjetoOInsumo("Prueba rápida moquillo"))
+
+        // Medicamentos farmacéuticos no deben considerarse objetos
+        assertFalse(MedicamentoMaletin.esObjetoOInsumo("Amoxicilina 500mg"))
+        assertFalse(MedicamentoMaletin.esObjetoOInsumo("Ketamina 10%"))
+        assertFalse(MedicamentoMaletin.esObjetoOInsumo("Meloxicam gotas"))
+    }
+
+    @Test
+    fun obtenerUnidadMedida_asignaUdsParaGuantesDeCarnazaYObjetos() {
+        // Objeto con cantidad 1 -> "ud"
+        assertEquals("ud", MedicamentoMaletin.obtenerUnidadMedida(via = "N/A", nombre = "Guantes de carnaza", cantidad = 1.0))
+        // Objeto con cantidad > 1 -> "uds"
+        assertEquals("uds", MedicamentoMaletin.obtenerUnidadMedida(via = "N/A", nombre = "Guantes de carnaza", cantidad = 2.0))
+        // Objeto sin cantidad especificada -> "uds"
+        assertEquals("uds", MedicamentoMaletin.obtenerUnidadMedida(via = "N/A", nombre = "Guantes de carnaza"))
+
+        // Medicamentos normales deben mantener ml o mg según presentación/vía
+        assertEquals("mg", MedicamentoMaletin.obtenerUnidadMedida(via = "Oral", presentacion = "Tableta", nombre = "Amoxicilina"))
+        assertEquals("ml", MedicamentoMaletin.obtenerUnidadMedida(via = "Intravenosa (IV)", presentacion = "Frasco ampolla", nombre = "Solución Salina"))
     }
 }

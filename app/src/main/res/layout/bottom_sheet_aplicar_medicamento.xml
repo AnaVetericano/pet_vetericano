@@ -158,13 +158,56 @@
             android:textColor="@color/text_primary" />
     </com.google.android.material.textfield.TextInputLayout>
 
-    <!-- Cantidad / Dosis Entera M3 a suministrar -->
+    <!-- Selector de Modo de Dosis: Decimales (0.1 a 0.6) o Enteros -->
+    <LinearLayout
+        android:id="@+id/layoutModoDosisSelector"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_marginBottom="10dp">
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnModoDecimal"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:layout_marginEnd="4dp"
+            android:text="Dosis decimal (0.1 - 0.6)"
+            android:textAllCaps="false"
+            android:textSize="12sp"
+            android:fontFamily="@font/nunito_bold"
+            app:cornerRadius="10dp"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="1.5dp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnModoEntero"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="0dp"
+            android:layout_height="40dp"
+            android:layout_weight="1"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:layout_marginStart="4dp"
+            android:text="Dosis entera (1, 2, 3...)"
+            android:textAllCaps="false"
+            android:textSize="12sp"
+            android:fontFamily="@font/nunito_bold"
+            app:cornerRadius="10dp"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="1.5dp" />
+    </LinearLayout>
+
+    <!-- Cantidad / Dosis M3 a suministrar -->
     <TextView
         android:id="@+id/tvTituloDosisCantidad"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="@font/nunito_bold"
-        android:text="Unidades a descontar del kit (Enteros)"
+        android:text="Cantidad a descontar del kit"
         android:textColor="@color/text_primary"
         android:textSize="13sp"
         android:layout_marginBottom="6dp" />
@@ -213,7 +256,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:gravity="center"
-                android:inputType="number"
+                android:inputType="numberDecimal"
                 android:text="1"
                 android:fontFamily="@font/nunito_bold"
                 android:textColor="@color/text_primary"
@@ -239,8 +282,134 @@
             app:strokeWidth="1.5dp" />
     </LinearLayout>
 
-    <!-- Chips Rápidos de Selección M3 -->
+    <!-- Chips Rápidos de Selección M3: Modo Decimales (0.1 a 0.6) -->
     <HorizontalScrollView
+        android:id="@+id/scrollChipsDecimales"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:scrollbars="none"
+        android:clipToPadding="false"
+        android:visibility="gone"
+        android:layout_marginBottom="12dp">
+
+        <LinearLayout
+            android:id="@+id/layoutChipsDecimales"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chipDosisDec01"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:minHeight="36dp"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="0dp"
+                android:text="0.1"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                app:cornerRadius="18dp"
+                app:backgroundTint="@color/chip_bg_neutral"
+                app:strokeColor="@color/chip_stroke_neutral"
+                app:strokeWidth="1dp"
+                android:layout_marginEnd="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chipDosisDec02"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:minHeight="36dp"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="0dp"
+                android:text="0.2"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                app:cornerRadius="18dp"
+                app:backgroundTint="@color/chip_bg_neutral"
+                app:strokeColor="@color/chip_stroke_neutral"
+                app:strokeWidth="1dp"
+                android:layout_marginEnd="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chipDosisDec03"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:minHeight="36dp"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="0dp"
+                android:text="0.3"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                app:cornerRadius="18dp"
+                app:backgroundTint="@color/chip_bg_neutral"
+                app:strokeColor="@color/chip_stroke_neutral"
+                app:strokeWidth="1dp"
+                android:layout_marginEnd="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chipDosisDec04"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:minHeight="36dp"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="0dp"
+                android:text="0.4"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                app:cornerRadius="18dp"
+                app:backgroundTint="@color/chip_bg_neutral"
+                app:strokeColor="@color/chip_stroke_neutral"
+                app:strokeWidth="1dp"
+                android:layout_marginEnd="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chipDosisDec05"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:minHeight="36dp"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="0dp"
+                android:text="0.5"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                app:cornerRadius="18dp"
+                app:backgroundTint="@color/chip_bg_neutral"
+                app:strokeColor="@color/chip_stroke_neutral"
+                app:strokeWidth="1dp"
+                android:layout_marginEnd="8dp" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/chipDosisDec06"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:minHeight="36dp"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="0dp"
+                android:text="0.6"
+                android:textAllCaps="false"
+                android:textSize="12sp"
+                android:textColor="@color/text_secondary"
+                app:cornerRadius="18dp"
+                app:backgroundTint="@color/chip_bg_neutral"
+                app:strokeColor="@color/chip_stroke_neutral"
+                app:strokeWidth="1dp" />
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- Chips Rápidos de Selección M3: Modo Enteros (1, 2, 3, 5, Máx) -->
+    <HorizontalScrollView
+        android:id="@+id/scrollChipsEnteros"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:scrollbars="none"
@@ -248,6 +417,7 @@
         android:layout_marginBottom="12dp">
 
         <LinearLayout
+            android:id="@+id/layoutChipsEnteros"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:orientation="horizontal">

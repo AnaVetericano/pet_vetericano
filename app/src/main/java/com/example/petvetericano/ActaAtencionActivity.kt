@@ -3480,40 +3480,23 @@ class ActaAtencionActivity : AppCompatActivity() {
 
 
 
-        // 2. Selector de Sexo (por defecto "Seleccionar", obligatorio)
-
-        val sexos = arrayOf("Seleccionar", "Macho", "Hembra", "Desconocido")
-
+        // 2. Selector de Sexo (por defecto "Seleccionar", obligatorio: Macho o Hembra)
+        val sexos = arrayOf("Seleccionar", "Macho", "Hembra")
         val adapterSexo = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, sexos)
-
         itemBinding.autoCompleteSexoCard.setAdapter(adapterSexo)
-
         itemBinding.autoCompleteSexoCard.setText(sexos[0], false)
 
-
-
         itemBinding.autoCompleteSexoCard.setOnItemClickListener { _, _, position, _ ->
-
             val sel = sexos.getOrNull(position).orEmpty()
-
-            if (sel.isNotEmpty() && !sel.equals("Seleccionar", ignoreCase = true)) {
-
+            if (sel.equals("Macho", ignoreCase = true) || sel.equals("Hembra", ignoreCase = true)) {
                 itemBinding.tilPacienteSexo.error = null
-
             }
-
         }
-
         itemBinding.autoCompleteSexoCard.addTextChangedListener {
-
             val sel = it?.toString().orEmpty().trim()
-
-            if (sel.isNotEmpty() && !sel.equals("Seleccionar", ignoreCase = true)) {
-
+            if (sel.equals("Macho", ignoreCase = true) || sel.equals("Hembra", ignoreCase = true)) {
                 itemBinding.tilPacienteSexo.error = null
-
             }
-
         }
 
 
@@ -4296,73 +4279,99 @@ class ActaAtencionActivity : AppCompatActivity() {
 
 
         var medicamentoSeleccionado: MedicamentoMaletin? = null
-
         var unidadMedidaActual = "ml"
+        var esObjetoActual = false
+        var esLiquidoActual = true
+        var modoDecimalActivo = false
 
+        fun actualizarEstiloModos(decimalActivo: Boolean) {
+            modoDecimalActivo = decimalActivo
+            val colorPrimary = ContextCompat.getColor(this, R.color.primary)
+            val colorWhite = ContextCompat.getColor(this, R.color.white)
+            val colorMuted = ContextCompat.getColor(this, R.color.text_secondary)
+            val strokeNeutral = ContextCompat.getColor(this, R.color.chip_stroke_neutral)
 
+            if (decimalActivo) {
+                sheetBinding.btnModoDecimal.setBackgroundColor(colorPrimary)
+                sheetBinding.btnModoDecimal.setTextColor(colorWhite)
+                sheetBinding.btnModoDecimal.strokeColor = ColorStateList.valueOf(colorPrimary)
+
+                sheetBinding.btnModoEntero.setBackgroundColor(Color.TRANSPARENT)
+                sheetBinding.btnModoEntero.setTextColor(colorMuted)
+                sheetBinding.btnModoEntero.strokeColor = ColorStateList.valueOf(strokeNeutral)
+
+                sheetBinding.scrollChipsDecimales.visibility = View.VISIBLE
+                sheetBinding.scrollChipsEnteros.visibility = View.GONE
+                sheetBinding.tvTituloDosisCantidad.text = "Dosis decimal fraccionada (0.1 a 0.6) a descontar"
+                sheetBinding.etDosisCantidad.inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+            } else {
+                sheetBinding.btnModoEntero.setBackgroundColor(colorPrimary)
+                sheetBinding.btnModoEntero.setTextColor(colorWhite)
+                sheetBinding.btnModoEntero.strokeColor = ColorStateList.valueOf(colorPrimary)
+
+                sheetBinding.btnModoDecimal.setBackgroundColor(Color.TRANSPARENT)
+                sheetBinding.btnModoDecimal.setTextColor(colorMuted)
+                sheetBinding.btnModoDecimal.strokeColor = ColorStateList.valueOf(strokeNeutral)
+
+                sheetBinding.scrollChipsDecimales.visibility = View.GONE
+                sheetBinding.scrollChipsEnteros.visibility = View.VISIBLE
+                sheetBinding.tvTituloDosisCantidad.text = if (esObjetoActual) "Unidades (uds) a descontar del kit" else "Dosis entera a descontar del kit"
+                sheetBinding.etDosisCantidad.inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            }
+        }
 
         // 1. Vías de administración oficiales (alineadas con los cambios de la web CBA)
-
         val vias = MedicamentoMaletin.VIAS_ADMINISTRACION_OFICIALES
-
         val viaAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, vias)
-
         sheetBinding.autoCompleteVia.setAdapter(viaAdapter)
 
-
-
-        // Función para adaptar dinámicamente el selector de unidades (ml para líquidos, mg para pastillas/unidades enteras)
-
+        // Función para adaptar dinámicamente el selector de unidades (ml para líquidos, uds para objetos, mg para comprimidos)
         fun adaptarSelectorUnidades(via: String) {
-
             val med = medicamentoSeleccionado
+            esObjetoActual = MedicamentoMaletin.esObjetoOInsumo(med?.nombre, med?.presentacion, via)
+            esLiquidoActual = !esObjetoActual && MedicamentoMaletin.esPresentacionLiquida(via, med?.nombre, med?.presentacion)
 
-            val esLiquido = MedicamentoMaletin.esPresentacionLiquida(via, med?.nombre, med?.presentacion)
-
-            unidadMedidaActual = if (esLiquido) "ml" else "mg"
-
-
-
-            sheetBinding.tvTituloDosisCantidad.text = if (esLiquido) {
-
-                "Mililitros (ml) a descontar del kit"
-
-            } else {
-
-                "Miligramos (mg) a descontar del kit"
-
+            unidadMedidaActual = when {
+                esObjetoActual -> "uds"
+                esLiquidoActual -> "ml"
+                else -> "mg"
             }
-
-
 
             sheetBinding.tilDosisCantidad.suffixText = unidadMedidaActual
 
-
-
             if (med != null) {
-
-                val stockInt = med.cantidadDisponible.toInt()
-
-                sheetBinding.tvInfoStockDisponible.text = "✓ Stock disponible: $stockInt $unidadMedidaActual • Lote: ${med.lote}"
-
+                val stockStr = if (med.cantidadDisponible % 1.0 == 0.0) med.cantidadDisponible.toInt().toString() else String.format(Locale.US, "%.1f", med.cantidadDisponible)
+                sheetBinding.tvInfoStockDisponible.text = "✓ Stock disponible: $stockStr $unidadMedidaActual • Lote: ${med.lote}"
                 sheetBinding.tvInfoPresentacionVia.text = "Presentación: ${med.presentacion} • Vía: $via"
-
             }
 
-
-
-            // Adaptar etiquetas de los chips de dosis rápida
-
-            sheetBinding.chipDosis05.text = "1 $unidadMedidaActual"
-
+            // Adaptar etiquetas de los chips de dosis rápida enteros
+            val sufijoSingular = if (esObjetoActual) "ud" else unidadMedidaActual
+            sheetBinding.chipDosis05.text = "1 $sufijoSingular"
             sheetBinding.chipDosis10.text = "2 $unidadMedidaActual"
-
             sheetBinding.chipDosis15.text = "3 $unidadMedidaActual"
-
             sheetBinding.chipDosis20.text = "5 $unidadMedidaActual"
-
             sheetBinding.chipDosis50.text = "Máx disp."
 
+            // Adaptar etiquetas de los chips decimales (rango 0.1 a 0.6)
+            sheetBinding.chipDosisDec01.text = "0.1 $sufijoSingular"
+            sheetBinding.chipDosisDec02.text = "0.2 $unidadMedidaActual"
+            sheetBinding.chipDosisDec03.text = "0.3 $unidadMedidaActual"
+            sheetBinding.chipDosisDec04.text = "0.4 $unidadMedidaActual"
+            sheetBinding.chipDosisDec05.text = "0.5 $unidadMedidaActual"
+            sheetBinding.chipDosisDec06.text = "0.6 $unidadMedidaActual"
+
+            if (esObjetoActual) {
+                actualizarEstiloModos(false)
+            } else if (esLiquidoActual) {
+                actualizarEstiloModos(true)
+                val curVal = sheetBinding.etDosisCantidad.text.toString().trim()
+                if (curVal.isEmpty() || curVal == "1") {
+                    sheetBinding.etDosisCantidad.setText("0.5")
+                }
+            } else {
+                actualizarEstiloModos(modoDecimalActivo)
+            }
         }
 
 
@@ -4491,184 +4500,168 @@ class ActaAtencionActivity : AppCompatActivity() {
 
 
 
-        // 4. Stepper y chips de dosis M3 (Enteros)
+        // 4. Stepper, selector de modo y chips de dosis M3 (Decimales y Enteros)
+        sheetBinding.btnModoDecimal.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            actualizarEstiloModos(true)
+            val actual = sheetBinding.etDosisCantidad.text.toString().trim().replace(',', '.').toDoubleOrNull()
+            if (actual == null || actual >= 1.0) {
+                sheetBinding.etDosisCantidad.setText("0.5")
+            }
+        }
+
+        sheetBinding.btnModoEntero.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            actualizarEstiloModos(false)
+            val actual = sheetBinding.etDosisCantidad.text.toString().trim().replace(',', '.').toDoubleOrNull()
+            if (actual == null || actual < 1.0) {
+                sheetBinding.etDosisCantidad.setText("1")
+            } else {
+                sheetBinding.etDosisCantidad.setText(actual.toInt().toString())
+            }
+        }
 
         sheetBinding.btnDosisMenos.setOnClickListener {
-
             it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
-
-            val actual = sheetBinding.etDosisCantidad.text.toString().toIntOrNull() ?: 1
-
-            val nuevo = maxOf(1, actual - 1)
-
-            sheetBinding.etDosisCantidad.setText(nuevo.toString())
-
+            if (modoDecimalActivo) {
+                val actual = sheetBinding.etDosisCantidad.text.toString().trim().replace(',', '.').toDoubleOrNull() ?: 0.1
+                val nuevo = Math.round((actual - 0.1) * 10.0) / 10.0
+                val clamped = maxOf(0.1, nuevo)
+                sheetBinding.etDosisCantidad.setText(String.format(Locale.US, "%.1f", clamped))
+            } else {
+                val actual = sheetBinding.etDosisCantidad.text.toString().trim().toIntOrNull() ?: 1
+                val nuevo = maxOf(1, actual - 1)
+                sheetBinding.etDosisCantidad.setText(nuevo.toString())
+            }
         }
-
-
 
         sheetBinding.btnDosisMas.setOnClickListener {
-
             it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
-
-            val actual = sheetBinding.etDosisCantidad.text.toString().toIntOrNull() ?: 1
-
-            val maxStock = (medicamentoSeleccionado?.cantidadDisponible ?: 999.0).toInt()
-
-            val nuevo = minOf(maxStock, actual + 1)
-
-            sheetBinding.etDosisCantidad.setText(nuevo.toString())
-
+            val maxStock = medicamentoSeleccionado?.cantidadDisponible ?: 999.0
+            if (modoDecimalActivo) {
+                val actual = sheetBinding.etDosisCantidad.text.toString().trim().replace(',', '.').toDoubleOrNull() ?: 0.1
+                val nuevo = Math.round((actual + 0.1) * 10.0) / 10.0
+                val clamped = minOf(maxStock, nuevo)
+                sheetBinding.etDosisCantidad.setText(String.format(Locale.US, "%.1f", clamped))
+            } else {
+                val actual = sheetBinding.etDosisCantidad.text.toString().trim().toIntOrNull() ?: 1
+                val nuevo = minOf(maxStock.toInt(), actual + 1)
+                sheetBinding.etDosisCantidad.setText(nuevo.toString())
+            }
         }
 
-
-
-        sheetBinding.chipDosis05.setOnClickListener {
-
+        // Chips de rango decimal (0.1 a 0.6)
+        sheetBinding.chipDosisDec01.setOnClickListener {
             it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            sheetBinding.etDosisCantidad.setText("0.1")
+        }
+        sheetBinding.chipDosisDec02.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            sheetBinding.etDosisCantidad.setText("0.2")
+        }
+        sheetBinding.chipDosisDec03.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            sheetBinding.etDosisCantidad.setText("0.3")
+        }
+        sheetBinding.chipDosisDec04.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            sheetBinding.etDosisCantidad.setText("0.4")
+        }
+        sheetBinding.chipDosisDec05.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            sheetBinding.etDosisCantidad.setText("0.5")
+        }
+        sheetBinding.chipDosisDec06.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            sheetBinding.etDosisCantidad.setText("0.6")
+        }
 
+        // Chips enteros (1, 2, 3, 5, Máx)
+        sheetBinding.chipDosis05.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
             sheetBinding.etDosisCantidad.setText("1")
-
         }
 
         sheetBinding.chipDosis10.setOnClickListener {
-
             it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
-
             sheetBinding.etDosisCantidad.setText("2")
-
         }
 
         sheetBinding.chipDosis15.setOnClickListener {
-
             it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
-
             sheetBinding.etDosisCantidad.setText("3")
-
         }
 
         sheetBinding.chipDosis20.setOnClickListener {
-
             it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
-
             sheetBinding.etDosisCantidad.setText("5")
-
         }
 
         sheetBinding.chipDosis50.setOnClickListener {
-
             it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
-
-            val maxStock = (medicamentoSeleccionado?.cantidadDisponible ?: 1.0).toInt().coerceAtLeast(1)
-
-            sheetBinding.etDosisCantidad.setText(maxStock.toString())
-
+            val maxStock = medicamentoSeleccionado?.cantidadDisponible ?: 1.0
+            if (modoDecimalActivo) {
+                sheetBinding.etDosisCantidad.setText(String.format(Locale.US, "%.1f", maxStock))
+            } else {
+                sheetBinding.etDosisCantidad.setText(maxStock.toInt().coerceAtLeast(1).toString())
+            }
         }
-
-
 
         sheetBinding.btnCerrarBottomSheet.setOnClickListener {
-
             bottomSheet.dismiss()
-
         }
 
-
-
         // 5. Confirmar aplicación y descontar stock
-
         sheetBinding.btnConfirmarAplicar.setOnClickListener {
-
             val med = medicamentoSeleccionado
-
             if (med == null) {
-
                 sheetBinding.tilSelectorMedicamento.error = "Selecciona un medicamento del maletín"
-
                 return@setOnClickListener
-
             }
-
             sheetBinding.tilSelectorMedicamento.error = null
 
-
-
-            val dosis = sheetBinding.etDosisCantidad.text.toString().toIntOrNull()
-
-            if (dosis == null || dosis <= 0) {
-
-                sheetBinding.tilDosisCantidad.error = "Ingresa una cantidad entera válida (mínimo 1)"
-
+            val dosis = sheetBinding.etDosisCantidad.text.toString().trim().replace(',', '.').toDoubleOrNull()
+            if (dosis == null || dosis <= 0.0) {
+                sheetBinding.tilDosisCantidad.error = "Ingresa una cantidad válida (mínimo 0.1)"
                 return@setOnClickListener
-
             }
-
-            if (dosis > med.cantidadDisponible.toInt()) {
-
-                sheetBinding.tilDosisCantidad.error = "Supera el stock disponible (${med.cantidadDisponible.toInt()} $unidadMedidaActual)"
-
+            if (dosis > med.cantidadDisponible) {
+                val stockStr = if (med.cantidadDisponible % 1.0 == 0.0) med.cantidadDisponible.toInt().toString() else String.format(Locale.US, "%.1f", med.cantidadDisponible)
+                sheetBinding.tilDosisCantidad.error = "Supera el stock disponible ($stockStr $unidadMedidaActual)"
                 return@setOnClickListener
-
             }
-
             sheetBinding.tilDosisCantidad.error = null
 
-
-
             val via = sheetBinding.autoCompleteVia.text.toString().trim().ifEmpty { "Subcutánea (SC)" }
-
             val paciente = sheetBinding.autoCompletePaciente.text.toString().trim().ifEmpty { "Paciente" }
 
-
-
-            val exito = maletinManager.descontarStock(med.id, dosis.toDouble())
-
+            val exito = maletinManager.descontarStock(med.id, dosis)
             if (!exito) {
-
                 Toast.makeText(this, "No se pudo descontar del maletín (stock insuficiente)", Toast.LENGTH_SHORT).show()
-
                 return@setOnClickListener
-
             }
-
-
 
             it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
 
-
+            val dosisFormateada = if (dosis % 1.0 == 0.0) dosis.toInt().toString() else String.format(Locale.US, "%.1f", dosis)
+            val unidadItem = if (dosis == 1.0 && esObjetoActual) "ud" else unidadMedidaActual
 
             val aplicado = MedicamentoAplicadoActa(
-
                 idMedicamento = med.id,
-
                 nombre = med.nombre,
-
                 concentracion = med.concentracion,
-
-                cantidad = dosis.toDouble(),
-
-                unidadMedida = unidadMedidaActual,
-
+                cantidad = dosis,
+                unidadMedida = unidadItem,
                 viaAdministracion = via,
-
                 pacienteDestino = paciente,
-
                 clientUuid = java.util.UUID.randomUUID().toString()
-
             )
-
             medicamentosAplicadosList.add(aplicado)
 
-
-
             // Redacción automática en etTratamiento
-
             if (sheetBinding.swSincronizarTratamientoTexto.isChecked) {
-
-                val textoRedactado = "Suministro de ${med.nombre} ($dosis $unidadMedidaActual - vía $via) a $paciente"
-
+                val textoRedactado = "Suministro de ${med.nombre} ($dosisFormateada $unidadItem - vía $via) a $paciente"
                 concatenarTextoEnCampo(binding.etTratamiento, textoRedactado)
-
             }
 
 
@@ -4723,21 +4716,15 @@ class ActaAtencionActivity : AppCompatActivity() {
 
 
 
-                val dosisTxt = if (item.cantidad % 1.0 == 0.0) item.cantidad.toInt().toString() else item.cantidad.toString()
-
-                itemBinding.tvNombreMedicamentoAplicado.text = "${item.nombre} • $dosisTxt ${item.unidadMedida}"
-
+                val dosisTxt = if (item.cantidad % 1.0 == 0.0) item.cantidad.toInt().toString() else String.format(Locale.US, "%.1f", item.cantidad)
+                val unidadTxt = if (item.cantidad == 1.0 && MedicamentoMaletin.esObjetoOInsumo(item.nombre)) "ud" else item.unidadMedida
+                itemBinding.tvNombreMedicamentoAplicado.text = "${item.nombre} • $dosisTxt $unidadTxt"
                 itemBinding.tvDetalleAplicacion.text = "Vía ${item.viaAdministracion} • Paciente: ${item.pacienteDestino ?: "General"}"
 
-
-
                 itemBinding.btnEliminarMedicamentoAplicado.setOnClickListener {
-
                     MaterialAlertDialogBuilder(this)
-
                         .setTitle("¿Remover medicamento?")
-
-                        .setMessage("Se devolverán $dosisTxt ${item.unidadMedida} de ${item.nombre} al maletín asignado.")
+                        .setMessage("Se devolverán $dosisTxt $unidadTxt de ${item.nombre} al maletín asignado.")
 
                         .setPositiveButton("Devolver al maletín") { dialog, _ ->
 
@@ -5148,173 +5135,105 @@ class ActaAtencionActivity : AppCompatActivity() {
 
 
     private fun validarPaso2(): Boolean {
-
         var valido = true
-
-
+        var primerCampoInvalido: View? = null
 
         if (animalBindingsList.isEmpty()) {
-
             MaterialAlertDialogBuilder(this)
-
                 .setIcon(R.drawable.baseline_pets_24)
-
                 .setTitle("Sin pacientes agregados")
-
                 .setMessage("Debe agregar al menos un paciente/animal para registrar la atención clínica.")
-
                 .setPositiveButton("Agregar paciente") { dialog, _ ->
-
                     dialog.dismiss()
-
                     agregarFormularioAnimal()
-
                 }
-
                 .setNegativeButton("Cerrar", null)
-
                 .show()
-
             return false
-
         }
-
-
 
         for (itemBinding in animalBindingsList) {
-
             val nombre = itemBinding.etPacienteNombreCard.text.toString().trim()
-
             if (nombre.isEmpty()) {
-
                 itemBinding.tilPacienteNombre.error = "Nombre requerido"
-
                 valido = false
-
+                if (primerCampoInvalido == null) primerCampoInvalido = itemBinding.tilPacienteNombre
             } else {
-
                 itemBinding.tilPacienteNombre.error = null
-
             }
-
-
 
             val especie = itemBinding.autoCompleteEspecieCard.text.toString().trim()
-
             if (especie.isEmpty() || especie.equals("Seleccionar", ignoreCase = true)) {
-
                 itemBinding.tilPacienteEspecie.error = "Seleccione la especie obligatoria"
-
                 valido = false
-
+                if (primerCampoInvalido == null) primerCampoInvalido = itemBinding.tilPacienteEspecie
             } else {
-
                 itemBinding.tilPacienteEspecie.error = null
-
             }
-
-
 
             val raza = itemBinding.autoCompleteRazaCard.text.toString().trim()
-
             if (raza.isEmpty() || raza.equals("Seleccionar", ignoreCase = true)) {
-
                 itemBinding.tilPacienteRaza.error = "Seleccione la raza obligatoria"
-
                 valido = false
-
+                if (primerCampoInvalido == null) primerCampoInvalido = itemBinding.tilPacienteRaza
             } else {
-
                 itemBinding.tilPacienteRaza.error = null
-
             }
-
-
 
             val sexo = itemBinding.autoCompleteSexoCard.text.toString().trim()
-
-            if (sexo.isEmpty() || sexo.equals("Seleccionar", ignoreCase = true)) {
-
-                itemBinding.tilPacienteSexo.error = "Seleccione el sexo obligatorio *"
-
+            if (sexo.isEmpty() || sexo.equals("Seleccionar", ignoreCase = true) || sexo.equals("Desconocido", ignoreCase = true)) {
+                itemBinding.tilPacienteSexo.error = "El campo de sexo es obligatorio (Macho o Hembra) *"
                 valido = false
-
+                if (primerCampoInvalido == null) primerCampoInvalido = itemBinding.tilPacienteSexo
             } else {
-
                 itemBinding.tilPacienteSexo.error = null
-
             }
-
-
 
             val color = itemBinding.autoCompleteColorCard.text.toString().trim()
-
             if (color.isEmpty() || color.equals("Seleccionar", ignoreCase = true)) {
-
                 itemBinding.tilPacienteColor.error = "Ingrese o seleccione el color obligatorio *"
-
                 valido = false
-
+                if (primerCampoInvalido == null) primerCampoInvalido = itemBinding.tilPacienteColor
             } else {
-
                 itemBinding.tilPacienteColor.error = null
-
             }
-
         }
-
-
 
         val anamnesis = binding.etAnamnesis.text.toString().trim()
-
         if (anamnesis.isEmpty()) {
-
             binding.tilAnamnesis.error = "Anamnesis requerida"
-
             valido = false
-
+            if (primerCampoInvalido == null) primerCampoInvalido = binding.tilAnamnesis
         } else {
-
             binding.tilAnamnesis.error = null
-
         }
-
-
 
         val tratamiento = binding.etTratamiento.text.toString().trim()
-
         if (tratamiento.isEmpty()) {
-
             binding.tilTratamiento.error = "Tratamiento requerido"
-
             valido = false
-
+            if (primerCampoInvalido == null) primerCampoInvalido = binding.tilTratamiento
         } else {
-
             binding.tilTratamiento.error = null
-
         }
-
-
 
         if (!valido) {
-
+            primerCampoInvalido?.let { view ->
+                binding.scrollForm.post {
+                    val rect = Rect()
+                    view.getDrawingRect(rect)
+                    binding.scrollForm.offsetDescendantRectToMyCoords(view, rect)
+                    binding.scrollForm.smoothScrollTo(0, maxOf(0, rect.top - 80))
+                }
+            }
             MaterialAlertDialogBuilder(this)
-
                 .setIcon(R.drawable.warning_icon4)
-
-                .setTitle("Datos clínicos incompletos")
-
-                .setMessage("Por favor complete los datos clínicos requeridos (diagnóstico, estado reproductivo y tratamiento) en el Paso 2.")
-
+                .setTitle("Datos del paciente o clínicos incompletos")
+                .setMessage("Por favor complete todos los campos obligatorios del paciente (incluyendo el sexo obligatorio: Macho o Hembra) y los datos clínicos requeridos en el Paso 2 antes de avanzar.")
                 .setPositiveButton("Revisar", null)
-
                 .show()
-
         }
-
         return valido
-
     }
 
 

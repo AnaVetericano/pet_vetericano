@@ -164,12 +164,52 @@ data class MedicamentoMaletin(
             return false
         }
 
-        fun obtenerUnidadMedida(via: String?, nombre: String? = null, presentacion: String? = null): String {
+        fun esObjetoOInsumo(nombre: String? = null, presentacion: String? = null, via: String? = null): Boolean {
+            val n = (nombre ?: "").lowercase()
+            val p = (presentacion ?: "").lowercase()
+            val v = (via ?: "").lowercase()
+
+            // 1. Detección por nombre explícito de objetos, insumos y herramientas
+            if (n.contains("guante") || n.contains("carnaza") || n.contains("guacal") ||
+                n.contains("aguja") || n.contains("jeringa") || n.contains("jelco") ||
+                n.contains("catéter") || n.contains("cateter") || n.contains("tubo") ||
+                n.contains("gasa") || n.contains("venda") || n.contains("bozal") ||
+                n.contains("collar") || n.contains("bistur") || n.contains("sutura") ||
+                n.contains("algod") || n.contains("esparadrapo") || n.contains("cinta") ||
+                n.contains("buretrol") || n.contains("tapaboca") || n.contains("mascarilla") ||
+                n.contains("equipo") || n.contains("termómetro") || n.contains("termometro") ||
+                n.contains("tijera") || n.contains("pinza") || n.contains("bulto") ||
+                n.contains("alimento") || n.contains("arena") || n.contains("bolsa") ||
+                n.contains("prueba") || n.contains("test") || n.contains("placa") ||
+                n.contains("pañal") || n.contains("panal") || n.contains("sabanilla") ||
+                n.contains("aplicador") || n.contains("bajalenguas")) {
+                return true
+            }
+
+            // 2. Detección por presentación o vía (material de uso físico, unidad, par, etc.)
+            if (p.contains("par") || p.contains("unidad") || p.contains("x unidad") ||
+                p.contains("pieza") || p.contains("bolsa") || p.contains("bulto") ||
+                p.contains("rollo") || p.contains("kit") || p.contains("caja") ||
+                p.contains("insumo") || v.contains("material de uso") || v.contains("n/a") ||
+                v.contains("físico") || v.contains("fisico")) {
+                return true
+            }
+
+            return false
+        }
+
+        fun obtenerUnidadMedida(via: String?, nombre: String? = null, presentacion: String? = null, cantidad: Double? = null): String {
+            if (esObjetoOInsumo(nombre, presentacion, via)) {
+                return if (cantidad != null && cantidad == 1.0) "ud" else "uds"
+            }
             return if (esPresentacionLiquida(via, nombre, presentacion)) "ml" else "mg"
         }
 
         fun inferirViaPorNombre(nombre: String): String {
             val n = nombre.lowercase()
+            if (esObjetoOInsumo(nombre)) {
+                return "Tópica / Uso externo (Material)"
+            }
             return when {
                 n.contains("gotas") || n.contains("jarabe") -> "Oral (Jarabe / Suspensión)"
                 n.contains("inyectable") || n.contains("ampolla") -> "Subcutánea (SC)"
@@ -205,10 +245,15 @@ data class MedicamentoMaletin(
             }
 
             val viaRaw = medApi?.viaAdministracion?.takeIf { it.isNotBlank() }
+            val esObj = esObjetoOInsumo(item.nombre, medApi?.presentacion, viaRaw)
             val viaFinal = normalizarVia(viaRaw ?: inferirViaPorNombre(item.nombre))
-            val unidadFinal = obtenerUnidadMedida(viaFinal, item.nombre, medApi?.presentacion)
+            val unidadFinal = if (esObj) "uds" else obtenerUnidadMedida(viaFinal, item.nombre, medApi?.presentacion)
             val presentacionFinal = medApi?.presentacion?.takeIf { it.isNotBlank() }
-                ?: if (esPresentacionLiquida(viaFinal, item.nombre, null)) "Presentación líquida" else "Tabletas / Pastillas"
+                ?: when {
+                    esObj -> "Insumo / Dispositivo clínico"
+                    esPresentacionLiquida(viaFinal, item.nombre, null) -> "Presentación líquida"
+                    else -> "Tabletas / Pastillas"
+                }
             val concentracionFinal = medApi?.concentracion?.takeIf { it.isNotBlank() }
                 ?: medApi?.cantidadMl?.takeIf { it.isNotBlank() }?.let { "$it ml" } ?: ""
 

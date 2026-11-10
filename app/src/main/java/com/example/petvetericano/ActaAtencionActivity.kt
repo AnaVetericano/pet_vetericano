@@ -19,10 +19,11 @@ import android.os.Build
 import android.os.Bundle
 
 import android.view.View
-
+import android.view.inputmethod.InputMethodManager
 import android.widget.ArrayAdapter
-
+import android.widget.EditText
 import android.widget.Toast
+import com.google.android.material.textfield.TextInputLayout
 
 import androidx.activity.OnBackPressedCallback
 
@@ -973,13 +974,12 @@ class ActaAtencionActivity : AppCompatActivity() {
                 }
 
                 3 -> {
-
-                    if (validarPaso3()) {
-
+                    val errorIntegral = obtenerPrimerErrorIntegral()
+                    if (errorIntegral == null) {
                         submitActa()
-
+                    } else {
+                        mostrarAlertaYRedirigir(errorIntegral)
                     }
-
                 }
 
             }
@@ -3480,40 +3480,23 @@ class ActaAtencionActivity : AppCompatActivity() {
 
 
 
-        // 2. Selector de Sexo (por defecto "Seleccionar", obligatorio)
-
-        val sexos = arrayOf("Seleccionar", "Macho", "Hembra", "Desconocido")
-
+        // 2. Selector de Sexo (por defecto "Seleccionar", obligatorio: Macho o Hembra)
+        val sexos = arrayOf("Seleccionar", "Macho", "Hembra")
         val adapterSexo = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, sexos)
-
         itemBinding.autoCompleteSexoCard.setAdapter(adapterSexo)
-
         itemBinding.autoCompleteSexoCard.setText(sexos[0], false)
 
-
-
         itemBinding.autoCompleteSexoCard.setOnItemClickListener { _, _, position, _ ->
-
             val sel = sexos.getOrNull(position).orEmpty()
-
-            if (sel.isNotEmpty() && !sel.equals("Seleccionar", ignoreCase = true)) {
-
+            if (sel.equals("Macho", ignoreCase = true) || sel.equals("Hembra", ignoreCase = true)) {
                 itemBinding.tilPacienteSexo.error = null
-
             }
-
         }
-
         itemBinding.autoCompleteSexoCard.addTextChangedListener {
-
             val sel = it?.toString().orEmpty().trim()
-
-            if (sel.isNotEmpty() && !sel.equals("Seleccionar", ignoreCase = true)) {
-
+            if (sel.equals("Macho", ignoreCase = true) || sel.equals("Hembra", ignoreCase = true)) {
                 itemBinding.tilPacienteSexo.error = null
-
             }
-
         }
 
 
@@ -4296,73 +4279,99 @@ class ActaAtencionActivity : AppCompatActivity() {
 
 
         var medicamentoSeleccionado: MedicamentoMaletin? = null
-
         var unidadMedidaActual = "ml"
+        var esObjetoActual = false
+        var esLiquidoActual = true
+        var modoDecimalActivo = false
 
+        fun actualizarEstiloModos(decimalActivo: Boolean) {
+            modoDecimalActivo = decimalActivo
+            val colorPrimary = ContextCompat.getColor(this, R.color.primary)
+            val colorWhite = ContextCompat.getColor(this, R.color.white)
+            val colorMuted = ContextCompat.getColor(this, R.color.text_secondary)
+            val strokeNeutral = ContextCompat.getColor(this, R.color.chip_stroke_neutral)
 
+            if (decimalActivo) {
+                sheetBinding.btnModoDecimal.setBackgroundColor(colorPrimary)
+                sheetBinding.btnModoDecimal.setTextColor(colorWhite)
+                sheetBinding.btnModoDecimal.strokeColor = ColorStateList.valueOf(colorPrimary)
+
+                sheetBinding.btnModoEntero.setBackgroundColor(Color.TRANSPARENT)
+                sheetBinding.btnModoEntero.setTextColor(colorMuted)
+                sheetBinding.btnModoEntero.strokeColor = ColorStateList.valueOf(strokeNeutral)
+
+                sheetBinding.scrollChipsDecimales.visibility = View.VISIBLE
+                sheetBinding.scrollChipsEnteros.visibility = View.GONE
+                sheetBinding.tvTituloDosisCantidad.text = "Dosis decimal fraccionada (0.1 a 0.6) a descontar"
+                sheetBinding.etDosisCantidad.inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+            } else {
+                sheetBinding.btnModoEntero.setBackgroundColor(colorPrimary)
+                sheetBinding.btnModoEntero.setTextColor(colorWhite)
+                sheetBinding.btnModoEntero.strokeColor = ColorStateList.valueOf(colorPrimary)
+
+                sheetBinding.btnModoDecimal.setBackgroundColor(Color.TRANSPARENT)
+                sheetBinding.btnModoDecimal.setTextColor(colorMuted)
+                sheetBinding.btnModoDecimal.strokeColor = ColorStateList.valueOf(strokeNeutral)
+
+                sheetBinding.scrollChipsDecimales.visibility = View.GONE
+                sheetBinding.scrollChipsEnteros.visibility = View.VISIBLE
+                sheetBinding.tvTituloDosisCantidad.text = if (esObjetoActual) "Unidades (uds) a descontar del kit" else "Dosis entera a descontar del kit"
+                sheetBinding.etDosisCantidad.inputType = android.text.InputType.TYPE_CLASS_NUMBER
+            }
+        }
 
         // 1. Vías de administración oficiales (alineadas con los cambios de la web CBA)
-
         val vias = MedicamentoMaletin.VIAS_ADMINISTRACION_OFICIALES
-
         val viaAdapter = ArrayAdapter(this, android.R.layout.simple_dropdown_item_1line, vias)
-
         sheetBinding.autoCompleteVia.setAdapter(viaAdapter)
 
-
-
-        // Función para adaptar dinámicamente el selector de unidades (ml para líquidos, mg para pastillas/unidades enteras)
-
+        // Función para adaptar dinámicamente el selector de unidades (ml para líquidos, uds para objetos, mg para comprimidos)
         fun adaptarSelectorUnidades(via: String) {
-
             val med = medicamentoSeleccionado
+            esObjetoActual = MedicamentoMaletin.esObjetoOInsumo(med?.nombre, med?.presentacion, via)
+            esLiquidoActual = !esObjetoActual && MedicamentoMaletin.esPresentacionLiquida(via, med?.nombre, med?.presentacion)
 
-            val esLiquido = MedicamentoMaletin.esPresentacionLiquida(via, med?.nombre, med?.presentacion)
-
-            unidadMedidaActual = if (esLiquido) "ml" else "mg"
-
-
-
-            sheetBinding.tvTituloDosisCantidad.text = if (esLiquido) {
-
-                "Mililitros (ml) a descontar del kit"
-
-            } else {
-
-                "Miligramos (mg) a descontar del kit"
-
+            unidadMedidaActual = when {
+                esObjetoActual -> "uds"
+                esLiquidoActual -> "ml"
+                else -> "mg"
             }
-
-
 
             sheetBinding.tilDosisCantidad.suffixText = unidadMedidaActual
 
-
-
             if (med != null) {
-
-                val stockInt = med.cantidadDisponible.toInt()
-
-                sheetBinding.tvInfoStockDisponible.text = "✓ Stock disponible: $stockInt $unidadMedidaActual • Lote: ${med.lote}"
-
+                val stockStr = if (med.cantidadDisponible % 1.0 == 0.0) med.cantidadDisponible.toInt().toString() else String.format(Locale.US, "%.1f", med.cantidadDisponible)
+                sheetBinding.tvInfoStockDisponible.text = "✓ Stock disponible: $stockStr $unidadMedidaActual • Lote: ${med.lote}"
                 sheetBinding.tvInfoPresentacionVia.text = "Presentación: ${med.presentacion} • Vía: $via"
-
             }
 
-
-
-            // Adaptar etiquetas de los chips de dosis rápida
-
-            sheetBinding.chipDosis05.text = "1 $unidadMedidaActual"
-
+            // Adaptar etiquetas de los chips de dosis rápida enteros
+            val sufijoSingular = if (esObjetoActual) "ud" else unidadMedidaActual
+            sheetBinding.chipDosis05.text = "1 $sufijoSingular"
             sheetBinding.chipDosis10.text = "2 $unidadMedidaActual"
-
             sheetBinding.chipDosis15.text = "3 $unidadMedidaActual"
-
             sheetBinding.chipDosis20.text = "5 $unidadMedidaActual"
-
             sheetBinding.chipDosis50.text = "Máx disp."
 
+            // Adaptar etiquetas de los chips decimales (rango 0.1 a 0.6)
+            sheetBinding.chipDosisDec01.text = "0.1 $sufijoSingular"
+            sheetBinding.chipDosisDec02.text = "0.2 $unidadMedidaActual"
+            sheetBinding.chipDosisDec03.text = "0.3 $unidadMedidaActual"
+            sheetBinding.chipDosisDec04.text = "0.4 $unidadMedidaActual"
+            sheetBinding.chipDosisDec05.text = "0.5 $unidadMedidaActual"
+            sheetBinding.chipDosisDec06.text = "0.6 $unidadMedidaActual"
+
+            if (esObjetoActual) {
+                actualizarEstiloModos(false)
+            } else if (esLiquidoActual) {
+                actualizarEstiloModos(true)
+                val curVal = sheetBinding.etDosisCantidad.text.toString().trim()
+                if (curVal.isEmpty() || curVal == "1") {
+                    sheetBinding.etDosisCantidad.setText("0.5")
+                }
+            } else {
+                actualizarEstiloModos(modoDecimalActivo)
+            }
         }
 
 
@@ -4491,184 +4500,168 @@ class ActaAtencionActivity : AppCompatActivity() {
 
 
 
-        // 4. Stepper y chips de dosis M3 (Enteros)
+        // 4. Stepper, selector de modo y chips de dosis M3 (Decimales y Enteros)
+        sheetBinding.btnModoDecimal.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            actualizarEstiloModos(true)
+            val actual = sheetBinding.etDosisCantidad.text.toString().trim().replace(',', '.').toDoubleOrNull()
+            if (actual == null || actual >= 1.0) {
+                sheetBinding.etDosisCantidad.setText("0.5")
+            }
+        }
+
+        sheetBinding.btnModoEntero.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            actualizarEstiloModos(false)
+            val actual = sheetBinding.etDosisCantidad.text.toString().trim().replace(',', '.').toDoubleOrNull()
+            if (actual == null || actual < 1.0) {
+                sheetBinding.etDosisCantidad.setText("1")
+            } else {
+                sheetBinding.etDosisCantidad.setText(actual.toInt().toString())
+            }
+        }
 
         sheetBinding.btnDosisMenos.setOnClickListener {
-
             it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
-
-            val actual = sheetBinding.etDosisCantidad.text.toString().toIntOrNull() ?: 1
-
-            val nuevo = maxOf(1, actual - 1)
-
-            sheetBinding.etDosisCantidad.setText(nuevo.toString())
-
+            if (modoDecimalActivo) {
+                val actual = sheetBinding.etDosisCantidad.text.toString().trim().replace(',', '.').toDoubleOrNull() ?: 0.1
+                val nuevo = Math.round((actual - 0.1) * 10.0) / 10.0
+                val clamped = maxOf(0.1, nuevo)
+                sheetBinding.etDosisCantidad.setText(String.format(Locale.US, "%.1f", clamped))
+            } else {
+                val actual = sheetBinding.etDosisCantidad.text.toString().trim().toIntOrNull() ?: 1
+                val nuevo = maxOf(1, actual - 1)
+                sheetBinding.etDosisCantidad.setText(nuevo.toString())
+            }
         }
-
-
 
         sheetBinding.btnDosisMas.setOnClickListener {
-
             it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
-
-            val actual = sheetBinding.etDosisCantidad.text.toString().toIntOrNull() ?: 1
-
-            val maxStock = (medicamentoSeleccionado?.cantidadDisponible ?: 999.0).toInt()
-
-            val nuevo = minOf(maxStock, actual + 1)
-
-            sheetBinding.etDosisCantidad.setText(nuevo.toString())
-
+            val maxStock = medicamentoSeleccionado?.cantidadDisponible ?: 999.0
+            if (modoDecimalActivo) {
+                val actual = sheetBinding.etDosisCantidad.text.toString().trim().replace(',', '.').toDoubleOrNull() ?: 0.1
+                val nuevo = Math.round((actual + 0.1) * 10.0) / 10.0
+                val clamped = minOf(maxStock, nuevo)
+                sheetBinding.etDosisCantidad.setText(String.format(Locale.US, "%.1f", clamped))
+            } else {
+                val actual = sheetBinding.etDosisCantidad.text.toString().trim().toIntOrNull() ?: 1
+                val nuevo = minOf(maxStock.toInt(), actual + 1)
+                sheetBinding.etDosisCantidad.setText(nuevo.toString())
+            }
         }
 
-
-
-        sheetBinding.chipDosis05.setOnClickListener {
-
+        // Chips de rango decimal (0.1 a 0.6)
+        sheetBinding.chipDosisDec01.setOnClickListener {
             it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            sheetBinding.etDosisCantidad.setText("0.1")
+        }
+        sheetBinding.chipDosisDec02.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            sheetBinding.etDosisCantidad.setText("0.2")
+        }
+        sheetBinding.chipDosisDec03.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            sheetBinding.etDosisCantidad.setText("0.3")
+        }
+        sheetBinding.chipDosisDec04.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            sheetBinding.etDosisCantidad.setText("0.4")
+        }
+        sheetBinding.chipDosisDec05.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            sheetBinding.etDosisCantidad.setText("0.5")
+        }
+        sheetBinding.chipDosisDec06.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
+            sheetBinding.etDosisCantidad.setText("0.6")
+        }
 
+        // Chips enteros (1, 2, 3, 5, Máx)
+        sheetBinding.chipDosis05.setOnClickListener {
+            it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
             sheetBinding.etDosisCantidad.setText("1")
-
         }
 
         sheetBinding.chipDosis10.setOnClickListener {
-
             it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
-
             sheetBinding.etDosisCantidad.setText("2")
-
         }
 
         sheetBinding.chipDosis15.setOnClickListener {
-
             it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
-
             sheetBinding.etDosisCantidad.setText("3")
-
         }
 
         sheetBinding.chipDosis20.setOnClickListener {
-
             it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
-
             sheetBinding.etDosisCantidad.setText("5")
-
         }
 
         sheetBinding.chipDosis50.setOnClickListener {
-
             it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
-
-            val maxStock = (medicamentoSeleccionado?.cantidadDisponible ?: 1.0).toInt().coerceAtLeast(1)
-
-            sheetBinding.etDosisCantidad.setText(maxStock.toString())
-
+            val maxStock = medicamentoSeleccionado?.cantidadDisponible ?: 1.0
+            if (modoDecimalActivo) {
+                sheetBinding.etDosisCantidad.setText(String.format(Locale.US, "%.1f", maxStock))
+            } else {
+                sheetBinding.etDosisCantidad.setText(maxStock.toInt().coerceAtLeast(1).toString())
+            }
         }
-
-
 
         sheetBinding.btnCerrarBottomSheet.setOnClickListener {
-
             bottomSheet.dismiss()
-
         }
 
-
-
         // 5. Confirmar aplicación y descontar stock
-
         sheetBinding.btnConfirmarAplicar.setOnClickListener {
-
             val med = medicamentoSeleccionado
-
             if (med == null) {
-
                 sheetBinding.tilSelectorMedicamento.error = "Selecciona un medicamento del maletín"
-
                 return@setOnClickListener
-
             }
-
             sheetBinding.tilSelectorMedicamento.error = null
 
-
-
-            val dosis = sheetBinding.etDosisCantidad.text.toString().toIntOrNull()
-
-            if (dosis == null || dosis <= 0) {
-
-                sheetBinding.tilDosisCantidad.error = "Ingresa una cantidad entera válida (mínimo 1)"
-
+            val dosis = sheetBinding.etDosisCantidad.text.toString().trim().replace(',', '.').toDoubleOrNull()
+            if (dosis == null || dosis <= 0.0) {
+                sheetBinding.tilDosisCantidad.error = "Ingresa una cantidad válida (mínimo 0.1)"
                 return@setOnClickListener
-
             }
-
-            if (dosis > med.cantidadDisponible.toInt()) {
-
-                sheetBinding.tilDosisCantidad.error = "Supera el stock disponible (${med.cantidadDisponible.toInt()} $unidadMedidaActual)"
-
+            if (dosis > med.cantidadDisponible) {
+                val stockStr = if (med.cantidadDisponible % 1.0 == 0.0) med.cantidadDisponible.toInt().toString() else String.format(Locale.US, "%.1f", med.cantidadDisponible)
+                sheetBinding.tilDosisCantidad.error = "Supera el stock disponible ($stockStr $unidadMedidaActual)"
                 return@setOnClickListener
-
             }
-
             sheetBinding.tilDosisCantidad.error = null
 
-
-
             val via = sheetBinding.autoCompleteVia.text.toString().trim().ifEmpty { "Subcutánea (SC)" }
-
             val paciente = sheetBinding.autoCompletePaciente.text.toString().trim().ifEmpty { "Paciente" }
 
-
-
-            val exito = maletinManager.descontarStock(med.id, dosis.toDouble())
-
+            val exito = maletinManager.descontarStock(med.id, dosis)
             if (!exito) {
-
                 Toast.makeText(this, "No se pudo descontar del maletín (stock insuficiente)", Toast.LENGTH_SHORT).show()
-
                 return@setOnClickListener
-
             }
-
-
 
             it.performHapticFeedback(android.view.HapticFeedbackConstants.VIRTUAL_KEY)
 
-
+            val dosisFormateada = if (dosis % 1.0 == 0.0) dosis.toInt().toString() else String.format(Locale.US, "%.1f", dosis)
+            val unidadItem = if (dosis == 1.0 && esObjetoActual) "ud" else unidadMedidaActual
 
             val aplicado = MedicamentoAplicadoActa(
-
                 idMedicamento = med.id,
-
                 nombre = med.nombre,
-
                 concentracion = med.concentracion,
-
-                cantidad = dosis.toDouble(),
-
-                unidadMedida = unidadMedidaActual,
-
+                cantidad = dosis,
+                unidadMedida = unidadItem,
                 viaAdministracion = via,
-
                 pacienteDestino = paciente,
-
                 clientUuid = java.util.UUID.randomUUID().toString()
-
             )
-
             medicamentosAplicadosList.add(aplicado)
 
-
-
             // Redacción automática en etTratamiento
-
             if (sheetBinding.swSincronizarTratamientoTexto.isChecked) {
-
-                val textoRedactado = "Suministro de ${med.nombre} ($dosis $unidadMedidaActual - vía $via) a $paciente"
-
+                val textoRedactado = "Suministro de ${med.nombre} ($dosisFormateada $unidadItem - vía $via) a $paciente"
                 concatenarTextoEnCampo(binding.etTratamiento, textoRedactado)
-
             }
 
 
@@ -4723,21 +4716,15 @@ class ActaAtencionActivity : AppCompatActivity() {
 
 
 
-                val dosisTxt = if (item.cantidad % 1.0 == 0.0) item.cantidad.toInt().toString() else item.cantidad.toString()
-
-                itemBinding.tvNombreMedicamentoAplicado.text = "${item.nombre} • $dosisTxt ${item.unidadMedida}"
-
+                val dosisTxt = if (item.cantidad % 1.0 == 0.0) item.cantidad.toInt().toString() else String.format(Locale.US, "%.1f", item.cantidad)
+                val unidadTxt = if (item.cantidad == 1.0 && MedicamentoMaletin.esObjetoOInsumo(item.nombre)) "ud" else item.unidadMedida
+                itemBinding.tvNombreMedicamentoAplicado.text = "${item.nombre} • $dosisTxt $unidadTxt"
                 itemBinding.tvDetalleAplicacion.text = "Vía ${item.viaAdministracion} • Paciente: ${item.pacienteDestino ?: "General"}"
 
-
-
                 itemBinding.btnEliminarMedicamentoAplicado.setOnClickListener {
-
                     MaterialAlertDialogBuilder(this)
-
                         .setTitle("¿Remover medicamento?")
-
-                        .setMessage("Se devolverán $dosisTxt ${item.unidadMedida} de ${item.nombre} al maletín asignado.")
+                        .setMessage("Se devolverán $dosisTxt $unidadTxt de ${item.nombre} al maletín asignado.")
 
                         .setPositiveButton("Devolver al maletín") { dialog, _ ->
 
@@ -4925,870 +4912,532 @@ class ActaAtencionActivity : AppCompatActivity() {
 
 
 
-    private fun validarPaso1(): Boolean {
+    data class ErrorValidacionActa(
+        val paso: Int,
+        val nombrePaso: String,
+        val nombreCampo: String,
+        val mensajeError: String,
+        val vistaTarget: View
+    )
 
-        var valido = true
-
-
+    private fun obtenerPrimerErrorPaso1(): ErrorValidacionActa? {
+        var primerError: ErrorValidacionActa? = null
 
         val solicitud = binding.etSolicitudAtencion.text.toString().trim()
-
         if (solicitud.isEmpty()) {
-
             binding.tilSolicitudAtencion.error = "Campo obligatorio"
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(1, "Paso 1: Solicitud y Propietario", "Solicitud de atención", "Campo obligatorio", binding.tilSolicitudAtencion)
+            }
         } else {
-
             binding.tilSolicitudAtencion.error = null
-
         }
-
-
 
         val quienReporta = binding.autoCompleteQuienReporta.text.toString().trim()
-
         if (quienReporta.isEmpty() || quienReporta.equals("Seleccionar", ignoreCase = true)) {
-
             binding.tilQuienReporta.error = "Seleccione quién reporta el caso *"
-
-            valido = false
-
-        } else {
-
-            binding.tilQuienReporta.error = null
-
-            if (quienReporta.equals("Otro", ignoreCase = true)) {
-
-                val quienOtro = binding.etQuienReportaOtro.text.toString().trim()
-
-                if (quienOtro.isEmpty()) {
-
-                    binding.tilQuienReportaOtro.error = "Especifique quién reporta *"
-
-                    valido = false
-
-                } else if (!ActaFieldValidators.esNombreValido(quienOtro)) {
-
-                    binding.tilQuienReportaOtro.error = "Solo debe contener letras"
-
-                    valido = false
-
-                } else {
-
-                    binding.tilQuienReportaOtro.error = null
-
-                }
-
-            } else {
-
-                binding.tilQuienReportaOtro.error = null
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(1, "Paso 1: Solicitud y Propietario", "Quién reporta el caso", "Seleccione quién reporta el caso *", binding.tilQuienReporta)
             }
-
+        } else {
+            binding.tilQuienReporta.error = null
+            if (quienReporta.equals("Otro", ignoreCase = true)) {
+                val quienOtro = binding.etQuienReportaOtro.text.toString().trim()
+                if (quienOtro.isEmpty()) {
+                    binding.tilQuienReportaOtro.error = "Especifique quién reporta *"
+                    if (primerError == null) {
+                        primerError = ErrorValidacionActa(1, "Paso 1: Solicitud y Propietario", "Quién reporta (Otro)", "Especifique quién reporta *", binding.tilQuienReportaOtro)
+                    }
+                } else if (!ActaFieldValidators.esNombreValido(quienOtro)) {
+                    binding.tilQuienReportaOtro.error = "Solo debe contener letras"
+                    if (primerError == null) {
+                        primerError = ErrorValidacionActa(1, "Paso 1: Solicitud y Propietario", "Quién reporta (Otro)", "Solo debe contener letras", binding.tilQuienReportaOtro)
+                    }
+                } else {
+                    binding.tilQuienReportaOtro.error = null
+                }
+            } else {
+                binding.tilQuienReportaOtro.error = null
+            }
         }
-
-
 
         val lugarAtencion = binding.etLugarAtencion.text.toString().trim()
-
         if (lugarAtencion.isEmpty()) {
-
             binding.tvLugarAtencionStatus.text = "Requerido"
-
             binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#B91C1C"))
-
-            Toast.makeText(this, "Debe capturar la posición actual del lugar de atención.", Toast.LENGTH_SHORT).show()
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(1, "Paso 1: Solicitud y Propietario", "Posición GPS del lugar de atención", "Debe fijar la posición actual con el botón GPS", binding.btnCapturarUbicacion)
+            }
         } else {
-
             binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#047857"))
-
         }
-
-
 
         val nombre = binding.etPropietarioNombre.text.toString().trim()
-
         if (nombre.isEmpty()) {
-
             binding.tilPropietarioNombre.error = "Nombre requerido"
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(1, "Paso 1: Solicitud y Propietario", "Nombre del propietario", "Nombre requerido", binding.tilPropietarioNombre)
+            }
         } else if (!ActaFieldValidators.esNombreValido(nombre)) {
-
             binding.tilPropietarioNombre.error = "El nombre solo debe contener letras"
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(1, "Paso 1: Solicitud y Propietario", "Nombre del propietario", "El nombre solo debe contener letras", binding.tilPropietarioNombre)
+            }
         } else {
-
             binding.tilPropietarioNombre.error = null
-
         }
-
-
 
         val cedula = binding.etPropietarioCedula.text.toString().trim()
-
         if (cedula.isEmpty()) {
-
             binding.tilPropietarioCedula.error = "Cédula requerida"
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(1, "Paso 1: Solicitud y Propietario", "Cédula del propietario", "Cédula requerida", binding.tilPropietarioCedula)
+            }
         } else if (!ActaFieldValidators.esCedulaValida(cedula)) {
-
             binding.tilPropietarioCedula.error = "La cédula debe tener entre 6 y 15 dígitos numéricos"
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(1, "Paso 1: Solicitud y Propietario", "Cédula del propietario", "La cédula debe tener entre 6 y 15 dígitos numéricos", binding.tilPropietarioCedula)
+            }
         } else {
-
             binding.tilPropietarioCedula.error = null
-
         }
-
-
 
         val telefono = binding.etPropietarioTelefono.text.toString().trim()
-
         if (telefono.isEmpty()) {
-
             binding.tilPropietarioTelefono.error = "Teléfono requerido"
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(1, "Paso 1: Solicitud y Propietario", "Teléfono del propietario", "Teléfono requerido", binding.tilPropietarioTelefono)
+            }
         } else if (!ActaFieldValidators.esTelefonoValido(telefono)) {
-
             binding.tilPropietarioTelefono.error = "El teléfono debe tener entre 7 y 10 dígitos numéricos"
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(1, "Paso 1: Solicitud y Propietario", "Teléfono del propietario", "El teléfono debe tener entre 7 y 10 dígitos numéricos", binding.tilPropietarioTelefono)
+            }
         } else {
-
             binding.tilPropietarioTelefono.error = null
-
         }
-
-
 
         val email = binding.etPropietarioEmail.text.toString().trim()
-
         if (email.isNotEmpty() && !ActaFieldValidators.esEmailValido(email)) {
-
             binding.tilPropietarioEmail.error = "Formato de correo no válido (ej: usuario@correo.com)"
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(1, "Paso 1: Solicitud y Propietario", "Correo del propietario", "Formato de correo no válido (ej: usuario@correo.com)", binding.tilPropietarioEmail)
+            }
         } else {
-
             binding.tilPropietarioEmail.error = null
-
         }
-
-
 
         val barrio = binding.etPropietarioBarrio.text.toString().trim()
-
         if (barrio.isEmpty()) {
-
             binding.tilPropietarioBarrio.error = "Barrio requerido"
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(1, "Paso 1: Solicitud y Propietario", "Barrio del propietario", "Barrio requerido", binding.tilPropietarioBarrio)
+            }
         } else {
-
             binding.tilPropietarioBarrio.error = null
-
         }
-
-
 
         val direccion = binding.etPropietarioDireccion.text.toString().trim()
-
         if (direccion.isEmpty()) {
-
             binding.tilPropietarioDireccion.error = "Dirección requerida"
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(1, "Paso 1: Solicitud y Propietario", "Dirección del propietario", "Dirección requerida", binding.tilPropietarioDireccion)
+            }
         } else {
-
             binding.tilPropietarioDireccion.error = null
-
         }
 
-
-
-        if (!valido) {
-
-            MaterialAlertDialogBuilder(this)
-
-                .setIcon(R.drawable.warning_icon4)
-
-                .setTitle("Campos incompletos o con formato erróneo en Paso 1")
-
-                .setMessage("Por favor revise los campos señalados (cédula de 6 a 15 dígitos, nombres sin números, correo válido y teléfono) antes de continuar.")
-
-                .setPositiveButton("Revisar", null)
-
-                .show()
-
-        }
-
-        return valido
-
+        return primerError
     }
 
-
-
-    private fun validarPaso2(): Boolean {
-
-        var valido = true
-
-
-
+    private fun obtenerPrimerErrorPaso2(): ErrorValidacionActa? {
         if (animalBindingsList.isEmpty()) {
-
-            MaterialAlertDialogBuilder(this)
-
-                .setIcon(R.drawable.baseline_pets_24)
-
-                .setTitle("Sin pacientes agregados")
-
-                .setMessage("Debe agregar al menos un paciente/animal para registrar la atención clínica.")
-
-                .setPositiveButton("Agregar paciente") { dialog, _ ->
-
-                    dialog.dismiss()
-
-                    agregarFormularioAnimal()
-
-                }
-
-                .setNegativeButton("Cerrar", null)
-
-                .show()
-
-            return false
-
+            return ErrorValidacionActa(2, "Paso 2: Datos del Paciente", "Pacientes / Animales requeridos", "Debe agregar al menos un paciente/animal para registrar la atención clínica.", binding.btnAddAnimal)
         }
 
+        var primerError: ErrorValidacionActa? = null
 
-
-        for (itemBinding in animalBindingsList) {
+        animalBindingsList.forEachIndexed { index, itemBinding ->
+            val numAnimal = index + 1
+            val etiquetaAnimal = "Paciente #$numAnimal"
 
             val nombre = itemBinding.etPacienteNombreCard.text.toString().trim()
-
             if (nombre.isEmpty()) {
-
                 itemBinding.tilPacienteNombre.error = "Nombre requerido"
-
-                valido = false
-
+                if (primerError == null) {
+                    primerError = ErrorValidacionActa(2, "Paso 2: Datos del Paciente", "Nombre del paciente ($etiquetaAnimal)", "Nombre requerido", itemBinding.tilPacienteNombre)
+                }
             } else {
-
                 itemBinding.tilPacienteNombre.error = null
-
             }
-
-
 
             val especie = itemBinding.autoCompleteEspecieCard.text.toString().trim()
-
             if (especie.isEmpty() || especie.equals("Seleccionar", ignoreCase = true)) {
-
                 itemBinding.tilPacienteEspecie.error = "Seleccione la especie obligatoria"
-
-                valido = false
-
+                if (primerError == null) {
+                    primerError = ErrorValidacionActa(2, "Paso 2: Datos del Paciente", "Especie ($etiquetaAnimal)", "Seleccione la especie obligatoria", itemBinding.tilPacienteEspecie)
+                }
             } else {
-
                 itemBinding.tilPacienteEspecie.error = null
-
             }
-
-
 
             val raza = itemBinding.autoCompleteRazaCard.text.toString().trim()
-
             if (raza.isEmpty() || raza.equals("Seleccionar", ignoreCase = true)) {
-
                 itemBinding.tilPacienteRaza.error = "Seleccione la raza obligatoria"
-
-                valido = false
-
+                if (primerError == null) {
+                    primerError = ErrorValidacionActa(2, "Paso 2: Datos del Paciente", "Raza ($etiquetaAnimal)", "Seleccione la raza obligatoria", itemBinding.tilPacienteRaza)
+                }
             } else {
-
                 itemBinding.tilPacienteRaza.error = null
-
             }
-
-
 
             val sexo = itemBinding.autoCompleteSexoCard.text.toString().trim()
+            val sexoValido = sexo.isNotEmpty() &&
+                !sexo.equals("Seleccionar", ignoreCase = true) &&
+                !sexo.equals("Desconocido", ignoreCase = true) &&
+                (sexo.equals("Macho", ignoreCase = true) || sexo.equals("Hembra", ignoreCase = true))
 
-            if (sexo.isEmpty() || sexo.equals("Seleccionar", ignoreCase = true)) {
-
-                itemBinding.tilPacienteSexo.error = "Seleccione el sexo obligatorio *"
-
-                valido = false
-
+            if (!sexoValido) {
+                itemBinding.tilPacienteSexo.error = "El campo de sexo es obligatorio (Macho o Hembra) *"
+                if (primerError == null) {
+                    primerError = ErrorValidacionActa(2, "Paso 2: Datos del Paciente", "Sexo del paciente ($etiquetaAnimal)", "El campo de sexo es obligatorio (Macho o Hembra) *", itemBinding.tilPacienteSexo)
+                }
             } else {
-
                 itemBinding.tilPacienteSexo.error = null
-
             }
-
-
 
             val color = itemBinding.autoCompleteColorCard.text.toString().trim()
-
             if (color.isEmpty() || color.equals("Seleccionar", ignoreCase = true)) {
-
                 itemBinding.tilPacienteColor.error = "Ingrese o seleccione el color obligatorio *"
-
-                valido = false
-
+                if (primerError == null) {
+                    primerError = ErrorValidacionActa(2, "Paso 2: Datos del Paciente", "Color ($etiquetaAnimal)", "Ingrese o seleccione el color obligatorio *", itemBinding.tilPacienteColor)
+                }
             } else {
-
                 itemBinding.tilPacienteColor.error = null
-
             }
-
         }
-
-
 
         val anamnesis = binding.etAnamnesis.text.toString().trim()
-
         if (anamnesis.isEmpty()) {
-
             binding.tilAnamnesis.error = "Anamnesis requerida"
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(2, "Paso 2: Datos del Paciente", "Anamnesis clínica", "Anamnesis requerida", binding.tilAnamnesis)
+            }
         } else {
-
             binding.tilAnamnesis.error = null
-
         }
-
-
 
         val tratamiento = binding.etTratamiento.text.toString().trim()
-
         if (tratamiento.isEmpty()) {
-
             binding.tilTratamiento.error = "Tratamiento requerido"
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(2, "Paso 2: Datos del Paciente", "Tratamiento instaurado", "Tratamiento requerido", binding.tilTratamiento)
+            }
         } else {
-
             binding.tilTratamiento.error = null
-
         }
 
-
-
-        if (!valido) {
-
-            MaterialAlertDialogBuilder(this)
-
-                .setIcon(R.drawable.warning_icon4)
-
-                .setTitle("Datos clínicos incompletos")
-
-                .setMessage("Por favor complete los datos clínicos requeridos (diagnóstico, estado reproductivo y tratamiento) en el Paso 2.")
-
-                .setPositiveButton("Revisar", null)
-
-                .show()
-
-        }
-
-        return valido
-
+        return primerError
     }
 
-
-
-    private fun validarPaso3(): Boolean {
-
-        var valido = true
-
-
+    private fun obtenerPrimerErrorPaso3(): ErrorValidacionActa? {
+        var primerError: ErrorValidacionActa? = null
 
         val compromisos = binding.etCompromisos.text.toString().trim()
-
         if (compromisos.isEmpty()) {
-
             binding.tilCompromisos.error = "Especifique los compromisos o acuerdos"
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas", "Compromisos o acuerdos", "Especifique los compromisos o acuerdos", binding.tilCompromisos)
+            }
         } else {
-
             binding.tilCompromisos.error = null
-
         }
-
-
 
         val tipoPrueba = binding.autoCompleteTipoPrueba.text.toString().trim()
-
         val pruebas = binding.etPruebasComplementarias.text.toString().trim()
-
         val resultado = binding.etResultadoPruebas.text.toString().trim()
 
-
-
         if (examenesAgregadosList.isEmpty() && ((tipoPrueba.isNotEmpty() && !tipoPrueba.contains("Ninguna", ignoreCase = true)) || pruebas.isNotEmpty())) {
-
             if (resultado.isEmpty()) {
-
                 binding.tilResultadoPruebas.error = "Ingrese el resultado o presione '+ Añadir examen al acta'"
-
-                valido = false
-
+                if (primerError == null) {
+                    primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas", "Resultado de pruebas", "Ingrese el resultado o presione '+ Añadir examen al acta'", binding.tilResultadoPruebas)
+                }
             } else {
-
                 binding.tilResultadoPruebas.error = null
-
             }
-
         } else {
-
             binding.tilResultadoPruebas.error = null
-
         }
-
-
 
         val funcionarioNombre = binding.etFuncionarioNombre.text.toString().trim()
-
         if (funcionarioNombre.isEmpty()) {
-
             binding.tilFuncionarioNombre.error = "Nombre del funcionario requerido *"
-
-            valido = false
-
-        } else if (!ActaFieldValidators.esNombreValido(funcionarioNombre)) {
-
-            binding.tilFuncionarioNombre.error = "El nombre solo debe contener letras"
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas", "Nombre del funcionario", "Nombre del funcionario requerido *", binding.tilFuncionarioNombre)
+            }
         } else {
-
             binding.tilFuncionarioNombre.error = null
-
         }
-
-
-
-        val funcionarioCargo = binding.etFuncionarioCargo.text.toString().trim()
-
-        if (funcionarioCargo.isEmpty()) {
-
-            binding.tilFuncionarioCargo.error = "Cargo del funcionario requerido *"
-
-            valido = false
-
-        } else {
-
-            binding.tilFuncionarioCargo.error = null
-
-        }
-
-
-
-        val funcionarioMatricula = binding.etFuncionarioMatricula.text.toString().trim()
-
-        if (funcionarioMatricula.isEmpty()) {
-
-            binding.tilFuncionarioMatricula.error = "Matrícula profesional requerida *"
-
-            valido = false
-
-        } else {
-
-            binding.tilFuncionarioMatricula.error = null
-
-        }
-
-
 
         val funcionarioIdentificacion = binding.etFuncionarioIdentificacion.text.toString().trim()
-
         if (funcionarioIdentificacion.isNotEmpty() && !ActaFieldValidators.esCedulaValida(funcionarioIdentificacion)) {
-
             binding.tilFuncionarioIdentificacion.error = "La identificación debe tener entre 6 y 15 dígitos"
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas", "Cédula del funcionario", "La identificación debe tener entre 6 y 15 dígitos", binding.tilFuncionarioIdentificacion)
+            }
         } else {
-
             binding.tilFuncionarioIdentificacion.error = null
-
         }
-
-
 
         val notificadoNombre = binding.etNotificadoNombre.text.toString().trim()
-
         if (notificadoNombre.isNotEmpty() && !ActaFieldValidators.esNombreValido(notificadoNombre)) {
-
             binding.tilNotificadoNombre.error = "El nombre solo debe contener letras"
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas", "Nombre del notificado", "El nombre solo debe contener letras", binding.tilNotificadoNombre)
+            }
         } else {
-
             binding.tilNotificadoNombre.error = null
-
         }
-
-
 
         val notificadoIdentificacion = binding.etNotificadoIdentificacion.text.toString().trim()
-
         if (notificadoIdentificacion.isNotEmpty() && !ActaFieldValidators.esCedulaValida(notificadoIdentificacion)) {
-
             binding.tilNotificadoIdentificacion.error = "La identificación debe tener entre 6 y 15 dígitos"
-
-            valido = false
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas", "Cédula del notificado", "La identificación debe tener entre 6 y 15 dígitos", binding.tilNotificadoIdentificacion)
+            }
         } else {
-
             binding.tilNotificadoIdentificacion.error = null
-
         }
-
-
-
-        // Si el módulo de rescate está activo, validar campos obligatorios del rescate
 
         if (binding.swRequiereRescate.isChecked) {
-
             val motivoRescate = binding.autoCompleteMotivoRescate.text.toString().trim()
-
             if (motivoRescate.isEmpty()) {
-
                 binding.tilMotivoRescateDropdown.error = "Seleccione la causal de rescate *"
-
-                valido = false
-
+                if (primerError == null) {
+                    primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas (Rescate)", "Causal de rescate", "Seleccione la causal de rescate *", binding.tilMotivoRescateDropdown)
+                }
             } else {
-
                 binding.tilMotivoRescateDropdown.error = null
-
             }
-
-
 
             val personaAtiende = binding.etPersonaAtiendeRescatista.text.toString().trim()
-
             if (personaAtiende.isEmpty()) {
-
                 binding.tilPersonaAtiendeRescatista.error = "Persona que atiende requerida *"
-
-                valido = false
-
+                if (primerError == null) {
+                    primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas (Rescate)", "Persona que atiende rescate", "Persona que atiende requerida *", binding.tilPersonaAtiendeRescatista)
+                }
             } else if (!ActaFieldValidators.esNombreValido(personaAtiende)) {
-
                 binding.tilPersonaAtiendeRescatista.error = "El nombre solo debe contener letras"
-
-                valido = false
-
+                if (primerError == null) {
+                    primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas (Rescate)", "Persona que atiende rescate", "El nombre solo debe contener letras", binding.tilPersonaAtiendeRescatista)
+                }
             } else {
-
                 binding.tilPersonaAtiendeRescatista.error = null
-
             }
-
-
 
             val personaAtiendeCed = binding.etPersonaAtiendeCedula.text.toString().trim()
-
             if (personaAtiendeCed.isNotEmpty() && !ActaFieldValidators.esCedulaValida(personaAtiendeCed)) {
-
                 binding.tilPersonaAtiendeCedula.error = "La cédula debe tener entre 6 y 15 dígitos"
-
-                valido = false
-
+                if (primerError == null) {
+                    primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas (Rescate)", "Cédula de persona que atiende", "La cédula debe tener entre 6 y 15 dígitos", binding.tilPersonaAtiendeCedula)
+                }
             } else {
-
                 binding.tilPersonaAtiendeCedula.error = null
-
             }
-
-
 
             val personaAtiendeTel = binding.etPersonaAtiendeTelefono.text.toString().trim()
-
             if (personaAtiendeTel.isEmpty()) {
-
                 binding.tilPersonaAtiendeTelefono.error = "Teléfono de contacto requerido *"
-
-                valido = false
-
+                if (primerError == null) {
+                    primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas (Rescate)", "Teléfono de persona que atiende", "Teléfono de contacto requerido *", binding.tilPersonaAtiendeTelefono)
+                }
             } else if (!ActaFieldValidators.esTelefonoValido(personaAtiendeTel)) {
-
                 binding.tilPersonaAtiendeTelefono.error = "El teléfono debe tener entre 7 y 10 dígitos"
-
-                valido = false
-
+                if (primerError == null) {
+                    primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas (Rescate)", "Teléfono de persona que atiende", "El teléfono debe tener entre 7 y 10 dígitos", binding.tilPersonaAtiendeTelefono)
+                }
             } else {
-
                 binding.tilPersonaAtiendeTelefono.error = null
-
             }
-
-
 
             val barrioRescate = binding.etBarrioRescate.text.toString().trim()
-
             if (barrioRescate.isEmpty()) {
-
                 binding.tilBarrioRescate.error = "Barrio del rescate requerido *"
-
-                valido = false
-
+                if (primerError == null) {
+                    primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas (Rescate)", "Barrio del rescate", "Barrio del rescate requerido *", binding.tilBarrioRescate)
+                }
             } else {
-
                 binding.tilBarrioRescate.error = null
-
             }
-
-
 
             if (!binding.chipSinTestigo.isChecked) {
-
                 val testigo1Nombre = binding.etTestigo1Nombre.text.toString().trim()
-
                 if (testigo1Nombre.isNotEmpty() && !ActaFieldValidators.esNombreValido(testigo1Nombre)) {
-
                     binding.tilTestigo1Nombre.error = "El nombre solo debe contener letras"
-
-                    valido = false
-
+                    if (primerError == null) {
+                        primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas (Rescate)", "Nombre del testigo", "El nombre solo debe contener letras", binding.tilTestigo1Nombre)
+                    }
                 } else {
-
                     binding.tilTestigo1Nombre.error = null
-
                 }
-
-
 
                 val testigo1Cedula = binding.etTestigo1Cedula.text.toString().trim()
-
                 if (testigo1Cedula.isNotEmpty() && !ActaFieldValidators.esCedulaValida(testigo1Cedula)) {
-
                     binding.tilTestigo1Cedula.error = "La cédula debe tener entre 6 y 15 dígitos"
-
-                    valido = false
-
+                    if (primerError == null) {
+                        primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas (Rescate)", "Cédula del testigo", "La cédula debe tener entre 6 y 15 dígitos", binding.tilTestigo1Cedula)
+                    }
                 } else {
-
                     binding.tilTestigo1Cedula.error = null
-
                 }
-
-
 
                 val testigo1Tel = binding.etTestigo1Telefono.text.toString().trim()
-
                 if (testigo1Tel.isNotEmpty() && !ActaFieldValidators.esTelefonoValido(testigo1Tel)) {
-
                     binding.tilTestigo1Telefono.error = "El teléfono debe tener entre 7 y 10 dígitos"
-
-                    valido = false
-
+                    if (primerError == null) {
+                        primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas (Rescate)", "Teléfono del testigo", "El teléfono debe tener entre 7 y 10 dígitos", binding.tilTestigo1Telefono)
+                    }
                 } else {
-
                     binding.tilTestigo1Telefono.error = null
-
                 }
-
             } else {
-
                 binding.tilTestigo1Nombre.error = null
-
                 binding.tilTestigo1Cedula.error = null
-
                 binding.tilTestigo1Telefono.error = null
-
             }
-
-
 
             val obsRescate = binding.etObservacionesRescate.text.toString().trim()
-
             if (obsRescate.isEmpty()) {
-
                 binding.tilObservacionesRescate.error = "Observaciones del rescate requeridas *"
-
-                valido = false
-
+                if (primerError == null) {
+                    primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas (Rescate)", "Observaciones del rescate", "Observaciones del rescate requeridas *", binding.tilObservacionesRescate)
+                }
             } else {
-
                 binding.tilObservacionesRescate.error = null
-
             }
-
         }
-
-
 
         val tieneFirmaVet = binding.signatureNotificador.hasSignature()
-
         val tieneFirmaSol = binding.signatureNotificado.hasSignature()
-
         val requiereFirmaSol = !(binding.swRequiereRescate.isChecked && (binding.chipSinTestigo.isChecked || binding.etTestigo1Nombre.text.isNullOrBlank()))
 
-
-
         if (!tieneFirmaVet) {
-
             marcarErrorFirmaVeterinario(true)
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas", "Firma del médico veterinario", "La firma del médico veterinario es obligatoria", binding.cardFirmaNotificador)
+            }
         } else {
-
             limpiarErrorFirmaVeterinario()
-
         }
 
-
-
         if (requiereFirmaSol && !tieneFirmaSol) {
-
             marcarErrorFirmaSolicitante(true)
-
+            if (primerError == null) {
+                primerError = ErrorValidacionActa(3, "Paso 3: Cierre y Firmas", "Firma del solicitante / notificado", "La firma del solicitante o persona que atiende es obligatoria", binding.cardFirmaNotificado)
+            }
         } else {
-
             limpiarErrorFirmaSolicitante()
-
         }
 
-
-
-        if (!valido) {
-
-            MaterialAlertDialogBuilder(this)
-
-                .setIcon(R.drawable.warning_icon4)
-
-                .setTitle("Paso 3 incompleto")
-
-                .setMessage("Por favor complete los campos requeridos (compromisos o datos de rescate) antes de registrar el acta.")
-
-                .setPositiveButton("Revisar", null)
-
-                .show()
-
-            return false
-
-        }
-
-
-
-        // Si faltan ambas firmas
-
-        if (!tieneFirmaVet && (requiereFirmaSol && !tieneFirmaSol)) {
-
-            MaterialAlertDialogBuilder(this)
-
-                .setIcon(R.drawable.warning_icon4)
-
-                .setTitle(getString(R.string.alerta_firmas_ambas_titulo))
-
-                .setMessage(getString(R.string.alerta_firmas_ambas_mensaje))
-
-                .setPositiveButton("Revisar") { dialog, _ ->
-
-                    dialog.dismiss()
-
-                    binding.scrollForm.smoothScrollTo(0, binding.tvFirmasSeccionTitulo.top)
-
-                }
-
-                .show()
-
-            return false
-
-        }
-
-
-
-        // Si falta la firma del veterinario
-
-        if (!tieneFirmaVet) {
-
-            MaterialAlertDialogBuilder(this)
-
-                .setIcon(R.drawable.warning_icon4)
-
-                .setTitle(getString(R.string.alerta_firma_veterinario_titulo))
-
-                .setMessage(getString(R.string.alerta_firma_veterinario_mensaje))
-
-                .setPositiveButton("Revisar") { dialog, _ ->
-
-                    dialog.dismiss()
-
-                    binding.scrollForm.smoothScrollTo(0, binding.cardFirmaNotificador.top)
-
-                }
-
-                .show()
-
-            return false
-
-        }
-
-
-
-        // Si falta la firma del solicitante
-
-        if (requiereFirmaSol && !tieneFirmaSol) {
-
-            MaterialAlertDialogBuilder(this)
-
-                .setIcon(R.drawable.warning_icon4)
-
-                .setTitle(getString(R.string.alerta_firma_solicitante_titulo))
-
-                .setMessage(getString(R.string.alerta_firma_solicitante_mensaje))
-
-                .setPositiveButton("Revisar") { dialog, _ ->
-
-                    dialog.dismiss()
-
-                    binding.scrollForm.smoothScrollTo(0, binding.cardFirmaNotificado.top)
-
-                }
-
-                .show()
-
-            return false
-
-        }
-
-
-
-        return true
-
+        return primerError
     }
 
+    private fun obtenerPrimerErrorIntegral(): ErrorValidacionActa? {
+        return obtenerPrimerErrorPaso1()
+            ?: obtenerPrimerErrorPaso2()
+            ?: obtenerPrimerErrorPaso3()
+    }
 
+    private fun validarPaso1(): Boolean {
+        val error = obtenerPrimerErrorPaso1()
+        if (error != null) {
+            mostrarAlertaYRedirigir(error)
+            return false
+        }
+        return true
+    }
 
+    private fun validarPaso2(): Boolean {
+        val error = obtenerPrimerErrorPaso2()
+        if (error != null) {
+            mostrarAlertaYRedirigir(error)
+            return false
+        }
+        return true
+    }
+
+    private fun validarPaso3(): Boolean {
+        val error = obtenerPrimerErrorPaso3()
+        if (error != null) {
+            mostrarAlertaYRedirigir(error)
+            return false
+        }
+        return true
+    }
+
+    private fun mostrarAlertaYRedirigir(error: ErrorValidacionActa) {
+        val accionTexto = if (currentStep == 3) "Para finalizar y guardar el acta" else "Para avanzar en el acta"
+        MaterialAlertDialogBuilder(this)
+            .setIcon(R.drawable.warning_icon4)
+            .setTitle("Campo obligatorio pendiente")
+            .setMessage(
+                "$accionTexto, debe completar el siguiente campo obligatorio:\n\n" +
+                "• ${error.nombreCampo}\n" +
+                "  Ubicación: ${error.nombrePaso}\n\n" +
+                "Detalle: ${error.mensajeError}"
+            )
+            .setPositiveButton("Ir al campo") { dialog, _ ->
+                dialog.dismiss()
+                redirigirACampoInvalido(error)
+            }
+            .setNegativeButton("Cerrar", null)
+            .setOnCancelListener {
+                redirigirACampoInvalido(error)
+            }
+            .show()
+    }
+
+    private fun redirigirACampoInvalido(error: ErrorValidacionActa) {
+        val cambioPaso = (currentStep != error.paso)
+        if (cambioPaso) {
+            currentStep = error.paso
+            updateStepper()
+        }
+
+        if (error.vistaTarget == binding.btnAddAnimal && animalBindingsList.isEmpty()) {
+            agregarFormularioAnimal()
+        }
+
+        val delayMs = if (cambioPaso) 250L else 50L
+        binding.scrollForm.postDelayed({
+            try {
+                val rect = Rect()
+                error.vistaTarget.getDrawingRect(rect)
+                binding.scrollForm.offsetDescendantRectToMyCoords(error.vistaTarget, rect)
+                val margenSuperior = (90 * resources.displayMetrics.density).toInt()
+                val destinoY = maxOf(0, rect.top - margenSuperior)
+                binding.scrollForm.smoothScrollTo(0, destinoY)
+
+                error.vistaTarget.requestFocus()
+                if (error.vistaTarget is TextInputLayout) {
+                    error.vistaTarget.error = error.mensajeError
+                    error.vistaTarget.editText?.let { et ->
+                        et.requestFocus()
+                        et.setSelection(et.text?.length ?: 0)
+                        val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                        imm?.showSoftInput(et, InputMethodManager.SHOW_IMPLICIT)
+                    }
+                } else if (error.vistaTarget is EditText) {
+                    error.vistaTarget.setSelection(error.vistaTarget.text.length)
+                    val imm = getSystemService(Context.INPUT_METHOD_SERVICE) as? InputMethodManager
+                    imm?.showSoftInput(error.vistaTarget, InputMethodManager.SHOW_IMPLICIT)
+                }
+            } catch (e: Exception) {
+                error.vistaTarget.requestFocus()
+            }
+        }, delayMs)
+    }
     private fun marcarErrorFirmaVeterinario(mostrarError: Boolean) {
 
         if (mostrarError) {

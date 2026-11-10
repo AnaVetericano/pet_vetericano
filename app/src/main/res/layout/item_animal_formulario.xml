@@ -148,6 +148,7 @@
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
                 android:hint="@string/hint_sexo"
+                app:errorEnabled="true"
                 app:boxStrokeColor="@color/primary">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView

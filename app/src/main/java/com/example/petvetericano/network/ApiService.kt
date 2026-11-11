@@ -21,12 +21,17 @@ import com.example.petvetericano.models.ListadoPaginadoResponse
 import com.example.petvetericano.models.SincronizarOfflineRequest
 import com.example.petvetericano.models.SincronizarOfflineResponse
 import com.example.petvetericano.models.AlertasKitResponse
+import com.example.petvetericano.models.DictadoVozResponse
+import okhttp3.MultipartBody
+import okhttp3.RequestBody
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
 import retrofit2.http.Header
+import retrofit2.http.Multipart
 import retrofit2.http.PATCH
 import retrofit2.http.POST
+import retrofit2.http.Part
 import retrofit2.http.Path
 import retrofit2.http.Query
 
@@ -87,6 +92,16 @@ interface ApiService {
         @Header("Authorization") token: String,
         @Body request: com.example.petvetericano.models.SeguimientoPeticionVisitaRequest
     ): Response<com.example.petvetericano.models.CrearActaResponse>
+
+    // --- DICTADO POR VOZ CON INTELIGENCIA ARTIFICIAL (GEMINI) ---
+    @Multipart
+    @POST("peticiones/seguimiento/dictado-voz/")
+    suspend fun procesarDictadoVoz(
+        @Header("Authorization") token: String,
+        @Part audio: MultipartBody.Part,
+        @Part("form_id") formId: RequestBody? = null,
+        @Part("form_version") formVersion: RequestBody? = null
+    ): Response<DictadoVozResponse>
 
     @GET("peticiones/seguimiento/funcionarios/")
     suspend fun obtenerFuncionariosVisita(

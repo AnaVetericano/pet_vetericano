@@ -49,6 +49,8 @@ object ActaFormSnapshotMapper {
         medicamentosJson: String? = baseEntity.medicamentosJson,
         examenesJson: String? = baseEntity.examenesJson,
         evidenciasJson: String? = baseEntity.evidenciasJson,
+        datosDinamicosJson: String? = baseEntity.datosDinamicosJson,
+        formularioVersion: Int = baseEntity.formularioVersion,
         incluirFirmas: Boolean = true
     ): ActaLocalEntity {
         val firmaNotificador = if (incluirFirmas) {
@@ -162,7 +164,10 @@ object ActaFormSnapshotMapper {
             swLey1774_2016 = binding.etFundamentoLegal.text?.contains("1774 de 2016", ignoreCase = true) == true,
             swLey1801_2016 = binding.etFundamentoLegal.text?.contains("1801 de 2016", ignoreCase = true) == true,
             swLey2054_2020 = binding.etFundamentoLegal.text?.contains("2054 de 2020", ignoreCase = true) == true,
-            swLey2385_2024 = binding.etFundamentoLegal.text?.contains("2385 de 2024", ignoreCase = true) == true
+            swLey2385_2024 = binding.etFundamentoLegal.text?.contains("2385 de 2024", ignoreCase = true) == true,
+
+            formularioVersion = formularioVersion,
+            datosDinamicosJson = datosDinamicosJson
         )
     }
 

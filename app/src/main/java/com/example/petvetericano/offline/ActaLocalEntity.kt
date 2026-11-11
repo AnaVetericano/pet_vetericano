@@ -136,5 +136,9 @@ data class ActaLocalEntity(
     val swLey1774_2016: Boolean = false,
     val swLey1801_2016: Boolean = false,
     val swLey2054_2020: Boolean = false,
-    val swLey2385_2024: Boolean = false
+    val swLey2385_2024: Boolean = false,
+
+    // Formularios Dinámicos Inteligentes y Versionado
+    val formularioVersion: Int = 1,
+    val datosDinamicosJson: String? = null
 )

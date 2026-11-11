@@ -605,3 +605,64 @@ data class ExamenClinicoResponse(
     val estado: String?
 )
 
+// ==========================================
+// MODELOS PARA DICTADO POR VOZ CON IA (GEMINI)
+// ==========================================
+
+data class DictadoVozResponse(
+    @SerializedName("form_id")
+    val formId: String? = null,
+
+    @SerializedName("form_version")
+    val formVersion: Int? = null,
+
+    @SerializedName("status")
+    val status: String? = "draft",
+
+    @SerializedName("message")
+    val message: String? = null,
+
+    @SerializedName("extracted_summary")
+    val extractedSummary: String? = null,
+
+    @SerializedName("fields")
+    val fields: Map<String, CampoExtraidoVoice>? = null,
+
+    @SerializedName("warnings")
+    val warnings: List<String>? = null,
+
+    @SerializedName("requires_review")
+    val requiresReview: Boolean = true
+) : Serializable
+
+data class CampoExtraidoVoice(
+    @SerializedName("value")
+    val value: Any? = null,
+
+    @SerializedName("confidence")
+    val confidence: Float? = null,
+
+    @SerializedName("source")
+    val source: String? = "voice"
+) : Serializable {
+
+    fun asString(): String {
+        return when (val v = value) {
+            null -> ""
+            is String -> v
+            is Boolean -> if (v) "Sí" else "No"
+            else -> v.toString()
+        }
+    }
+
+    fun asBoolean(): Boolean {
+        return when (val v = value) {
+            is Boolean -> v
+            is String -> v.equals("true", ignoreCase = true) || v.equals("si", ignoreCase = true) || v.equals("sí", ignoreCase = true) || v.equals("1")
+            is Number -> v.toInt() == 1
+            else -> false
+        }
+    }
+}
+
+

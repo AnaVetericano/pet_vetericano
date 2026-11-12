@@ -293,8 +293,33 @@ data class SeguimientoResumenResponse(
     val idPeticion: Int? = null,
 
     @SerializedName("numero_radicado")
-    val numeroRadicado: String? = null
-)
+    val numeroRadicado: String? = null,
+
+    @SerializedName("nombre_paciente")
+    val nombrePaciente: String? = null,
+
+    @SerializedName("propietario_nombre")
+    val propietarioNombre: String? = null,
+
+    @SerializedName("tratamiento_realizado")
+    val tratamientoRealizado: String? = null,
+
+    @SerializedName("observacion")
+    val observacion: String? = null
+) {
+    /**
+     * Determina si este registro corresponde a un Acta de Seres Sintientes confirmada
+     * y no a un simple registro de cambio de estado ("Cambio de estado a '...'").
+     */
+    fun esActaSeresSintientesConfirmada(): Boolean {
+        if (!numeroRadicado.isNullOrBlank()) return true
+        val obs = observacion?.trim().orEmpty()
+        if (obs.startsWith("Cambio de estado a", ignoreCase = true)) return false
+        return !nombrePaciente.isNullOrBlank() ||
+            !propietarioNombre.isNullOrBlank() ||
+            !tratamientoRealizado.isNullOrBlank()
+    }
+}
 
 data class CrearActaResponse(
     @SerializedName("mensaje")

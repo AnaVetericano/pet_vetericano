@@ -121,6 +121,11 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
                 $COL_SW_GENITO_MASA_SECRECION INTEGER NOT NULL DEFAULT 0,
                 $COL_SW_GENITO_GESTANTE INTEGER NOT NULL DEFAULT 0,
                 $COL_SW_GENITO_CELO INTEGER NOT NULL DEFAULT 0,
+                $COL_COMENTARIO_RESPIRATORIO TEXT NOT NULL DEFAULT '',
+                $COL_COMENTARIO_DIGESTIVO TEXT NOT NULL DEFAULT '',
+                $COL_COMENTARIO_MUSCULO TEXT NOT NULL DEFAULT '',
+                $COL_COMENTARIO_DERMATO TEXT NOT NULL DEFAULT '',
+                $COL_COMENTARIO_GENITO TEXT NOT NULL DEFAULT '',
                 $COL_SW_LEY_84_1989 INTEGER NOT NULL DEFAULT 0,
                 $COL_SW_LEY_1638_2013 INTEGER NOT NULL DEFAULT 0,
                 $COL_SW_LEY_1774_2016 INTEGER NOT NULL DEFAULT 0,
@@ -148,11 +153,18 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
             db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_SW_MUSCULO_SARCOMA INTEGER NOT NULL DEFAULT 0")
             db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_SW_DERMATO_CARCINOMA_CUTANEO INTEGER NOT NULL DEFAULT 0")
         }
+        if (oldVersion < 4) {
+            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_COMENTARIO_RESPIRATORIO TEXT NOT NULL DEFAULT ''")
+            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_COMENTARIO_DIGESTIVO TEXT NOT NULL DEFAULT ''")
+            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_COMENTARIO_MUSCULO TEXT NOT NULL DEFAULT ''")
+            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_COMENTARIO_DERMATO TEXT NOT NULL DEFAULT ''")
+            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_COMENTARIO_GENITO TEXT NOT NULL DEFAULT ''")
+        }
     }
 
     companion object {
         const val DATABASE_NAME = "petvetericano_actas_offline.db"
-        const val DATABASE_VERSION = 3
+        const val DATABASE_VERSION = 4
 
         @Volatile
         private var instance: ActaLocalDbHelper? = null
@@ -266,6 +278,11 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
         const val COL_SW_GENITO_MASA_SECRECION = "sw_genito_masa_secrecion"
         const val COL_SW_GENITO_GESTANTE = "sw_genito_gestante"
         const val COL_SW_GENITO_CELO = "sw_genito_celo"
+        const val COL_COMENTARIO_RESPIRATORIO = "comentario_respiratorio"
+        const val COL_COMENTARIO_DIGESTIVO = "comentario_digestivo"
+        const val COL_COMENTARIO_MUSCULO = "comentario_musculo"
+        const val COL_COMENTARIO_DERMATO = "comentario_dermato"
+        const val COL_COMENTARIO_GENITO = "comentario_genito"
 
         // 6 Switches de Fundamento Legal
         const val COL_SW_LEY_84_1989 = "sw_ley_84_1989"
@@ -380,6 +397,11 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
                 put(COL_SW_GENITO_MASA_SECRECION, if (entity.swGenitoMasaSecrecion) 1 else 0)
                 put(COL_SW_GENITO_GESTANTE, if (entity.swGenitoGestante) 1 else 0)
                 put(COL_SW_GENITO_CELO, if (entity.swGenitoCelo) 1 else 0)
+                put(COL_COMENTARIO_RESPIRATORIO, entity.comentarioRespiratorio)
+                put(COL_COMENTARIO_DIGESTIVO, entity.comentarioDigestivo)
+                put(COL_COMENTARIO_MUSCULO, entity.comentarioMusculo)
+                put(COL_COMENTARIO_DERMATO, entity.comentarioDermato)
+                put(COL_COMENTARIO_GENITO, entity.comentarioGenito)
                 put(COL_SW_LEY_84_1989, if (entity.swLey84_1989) 1 else 0)
                 put(COL_SW_LEY_1638_2013, if (entity.swLey1638_2013) 1 else 0)
                 put(COL_SW_LEY_1774_2016, if (entity.swLey1774_2016) 1 else 0)
@@ -499,6 +521,11 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
                 swGenitoMasaSecrecion = cursor.getBooleanOrDefault(COL_SW_GENITO_MASA_SECRECION, false),
                 swGenitoGestante = cursor.getBooleanOrDefault(COL_SW_GENITO_GESTANTE, false),
                 swGenitoCelo = cursor.getBooleanOrDefault(COL_SW_GENITO_CELO, false),
+                comentarioRespiratorio = cursor.getStringOrDefault(COL_COMENTARIO_RESPIRATORIO, ""),
+                comentarioDigestivo = cursor.getStringOrDefault(COL_COMENTARIO_DIGESTIVO, ""),
+                comentarioMusculo = cursor.getStringOrDefault(COL_COMENTARIO_MUSCULO, ""),
+                comentarioDermato = cursor.getStringOrDefault(COL_COMENTARIO_DERMATO, ""),
+                comentarioGenito = cursor.getStringOrDefault(COL_COMENTARIO_GENITO, ""),
                 swLey84_1989 = cursor.getBooleanOrDefault(COL_SW_LEY_84_1989, false),
                 swLey1638_2013 = cursor.getBooleanOrDefault(COL_SW_LEY_1638_2013, false),
                 swLey1774_2016 = cursor.getBooleanOrDefault(COL_SW_LEY_1774_2016, false),

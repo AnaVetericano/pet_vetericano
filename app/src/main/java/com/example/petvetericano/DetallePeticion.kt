@@ -21,6 +21,7 @@ import com.bumptech.glide.Glide
 import com.example.petvetericano.databinding.ActivityDetallePeticionBinding
 import com.example.petvetericano.models.PeticionListResponse
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.offline.ActaLocalRepository
 import com.example.petvetericano.offline.NetworkUtils
 import com.example.petvetericano.offline.PeticionesCacheManager
 import kotlinx.coroutines.Dispatchers
@@ -55,6 +56,7 @@ class DetallePeticion : AppCompatActivity() {
     ) { result ->
         abriendoActa = false
         if (result.resultCode == RESULT_OK) {
+            actualizarBotonAtender(true)
             if (peticionId != -1) {
                 obtenerDetallePeticion(peticionId)
             }
@@ -178,6 +180,12 @@ class DetallePeticion : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         abriendoActa = false
+        if (peticionId > 0) {
+            val idVet = SharedPreferencesManager(this).getUserId()
+            if (ActaLocalRepository.getInstance(this).tieneActaConfirmadaLocal(peticionId, idVet)) {
+                actualizarBotonAtender(true)
+            }
+        }
         if (primeraVezOnResume) {
             primeraVezOnResume = false
             return
@@ -194,6 +202,8 @@ class DetallePeticion : AppCompatActivity() {
 
         lifecycleScope.launch(Dispatchers.IO) {
             var remoteSuccess = false
+            val tieneActaLocal = ActaLocalRepository.getInstance(this@DetallePeticion)
+                .tieneActaConfirmadaLocal(id, idVet)
 
             // 1) Fuente remota
             if (NetworkUtils.hayRedDisponible(this@DetallePeticion) && token.isNotEmpty()) {
@@ -205,7 +215,49 @@ class DetallePeticion : AppCompatActivity() {
                             PeticionesCacheManager.guardar(this@DetallePeticion, idVet, lista)
                         }
 
-                        val peticion = lista?.firstOrNull { it.id_peticion == id }
+                        var peticion = lista?.firstOrNull { it.id_peticion == id }
+                        if (peticion != null) {
+                            var tieneActaConfirmada = peticion.tiene_acta == true ||
+                                (peticion.id_seguimiento != null && peticion.id_seguimiento > 0) ||
+                                tieneActaLocal
+                            var idSegConfirmado = peticion.id_seguimiento
+
+                            if (!tieneActaConfirmada) {
+                                try {
+                                    val segResp = RetrofitClient.apiService.listarSeguimientosVisita(
+                                        token = "Bearer $token",
+                                        idPeticion = id
+                                    )
+                                    if (segResp.isSuccessful) {
+                                        val actaConfirmada = segResp.body().orEmpty().firstOrNull {
+                                            it.esActaSeresSintientesConfirmada()
+                                        }
+                                        if (actaConfirmada != null) {
+                                            tieneActaConfirmada = true
+                                            idSegConfirmado = actaConfirmada.idSeguimiento ?: idSegConfirmado
+                                        }
+                                    }
+                                } catch (_: Exception) {
+                                    // Si falla la consulta de seguimientos, se conserva el estado conocido
+                                }
+                            }
+
+                            if (tieneActaConfirmada) {
+                                peticion = peticion.copy(
+                                    tiene_acta = true,
+                                    id_seguimiento = idSegConfirmado
+                                )
+                                if (idVet > 0) {
+                                    PeticionesCacheManager.marcarTieneActa(
+                                        this@DetallePeticion,
+                                        idVet,
+                                        id,
+                                        idSegConfirmado
+                                    )
+                                }
+                            }
+                        }
+
                         withContext(Dispatchers.Main) {
                             if (peticion != null) {
                                 cargaRemotaExitosa = true
@@ -287,16 +339,11 @@ class DetallePeticion : AppCompatActivity() {
 
         binding.cardFotoEvidencia.visibility = View.GONE
 
-        val stLower = estadoActual.lowercase()
-        val tieneActa = tieneActaExtra == true ||
-            stLower.contains("tratamiento") ||
-            stLower.contains("observación") ||
-            stLower.contains("observacion") ||
-            stLower.contains("alta") ||
-            stLower.contains("atendida") ||
-            stLower.contains("resuelta") ||
-            stLower.contains("fallecido") ||
-            stLower.contains("transferido")
+        val idVet = SharedPreferencesManager(this).getUserId()
+        val tieneActaLocal = if (peticionId > 0) {
+            ActaLocalRepository.getInstance(this).tieneActaConfirmadaLocal(peticionId, idVet)
+        } else false
+        val tieneActa = tieneActaExtra == true || tieneActaLocal
 
         actualizarBotonAtender(tieneActa)
         datosCargados = true
@@ -355,17 +402,13 @@ class DetallePeticion : AppCompatActivity() {
             binding.cardFotoEvidencia.visibility = View.GONE
         }
 
-        // CONTROL DE ACTA ÚNICA: Validar si la petición ya fue atendida
-        val stLower = estadoActual.lowercase()
+        // CONTROL DE ACTA ÚNICA: Validar únicamente si el Acta de Seres Sintientes ya fue confirmada
+        val idVet = SharedPreferencesManager(this).getUserId()
+        val tieneActaLocal = ActaLocalRepository.getInstance(this)
+            .tieneActaConfirmadaLocal(peticion.id_peticion, idVet)
         val tieneActa = peticion.tiene_acta == true ||
-            stLower.contains("tratamiento") ||
-            stLower.contains("observación") ||
-            stLower.contains("observacion") ||
-            stLower.contains("alta") ||
-            stLower.contains("atendida") ||
-            stLower.contains("resuelta") ||
-            stLower.contains("fallecido") ||
-            stLower.contains("transferido")
+            (peticion.id_seguimiento != null && peticion.id_seguimiento > 0) ||
+            tieneActaLocal
 
         actualizarBotonAtender(tieneActa)
         datosCargados = true

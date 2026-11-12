@@ -41,16 +41,6 @@ class DetallePeticion : AppCompatActivity() {
     private var primeraVezOnResume: Boolean = true
     private var abriendoActa: Boolean = false
 
-    private val updateStatusLauncher = registerForActivityResult(
-        ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == RESULT_OK) {
-            if (peticionId != -1) {
-                obtenerDetallePeticion(peticionId)
-            }
-        }
-    }
-
     private val actaLauncher = registerForActivityResult(
         ActivityResultContracts.StartActivityForResult()
     ) { result ->
@@ -113,23 +103,6 @@ class DetallePeticion : AppCompatActivity() {
         } else {
             Toast.makeText(this, getString(R.string.acta_offline_id_peticion_invalido), Toast.LENGTH_SHORT).show()
         }
-
-        // CONFIGURACIÓN PARA ACTUALIZAR ESTADO DEL CASO (Desde botón o desde el badge)
-        val abrirActualizarEstado = {
-            if (!NetworkUtils.hayRedDisponible(this)) {
-                Toast.makeText(this, getString(R.string.acta_offline_requiere_conexion), Toast.LENGTH_SHORT).show()
-            } else {
-                val intent = Intent(this, UpdateStatusActivity::class.java).apply {
-                    putExtra("PETICION_ID", peticionId)
-                    putExtra("PETICION_CODIGO", binding.tvCodigoPeticion.text.toString())
-                    putExtra("ESTADO_ACTUAL", binding.tvBadgeEstado.text.toString())
-                }
-                updateStatusLauncher.launch(intent)
-            }
-        }
-
-        binding.btnActualizarEstado.setOnClickListener { abrirActualizarEstado() }
-        binding.tvBadgeEstado.setOnClickListener { abrirActualizarEstado() }
 
         // CONFIGURACIÓN DEL BOTÓN CORREGIR DIRECCIÓN CON ALERTA DE CONFIRMACIÓN (Material Design 3)
         binding.btnCorregirDireccion.setOnClickListener {

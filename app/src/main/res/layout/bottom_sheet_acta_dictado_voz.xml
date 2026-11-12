@@ -263,14 +263,24 @@
             android:textSize="13sp"
             android:layout_marginBottom="6dp" />
 
-        <!-- Lista scrollable de campos extraídos para edición humana -->
-        <androidx.recyclerview.widget.RecyclerView
-            android:id="@+id/rvCamposExtraidos"
+        <!-- Lista scrollable de campos extraídos para edición humana con altura máxima acotada -->
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:maxHeight="260dp"
-            android:nestedScrollingEnabled="true"
-            android:layout_marginBottom="12dp" />
+            android:layout_marginBottom="14dp">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvCamposExtraidos"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                app:layout_constrainedHeight="true"
+                app:layout_constraintHeight_max="300dp"
+                app:layout_constraintTop_toTopOf="parent"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                android:nestedScrollingEnabled="true" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <!-- Botones de Acción de Confirmación Humana -->
         <LinearLayout

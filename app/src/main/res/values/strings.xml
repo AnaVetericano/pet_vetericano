@@ -299,6 +299,7 @@
     <string name="lbl_masa_tumor_o_secrecion_genital">Masa, tumor o secreción genital</string>
     <string name="lbl_posible_hembra_gestante">Posible hembra gestante</string>
     <string name="lbl_hembra_en_celo">Hembra en celo</string>
+    <string name="hint_comentario_sistema_opcional">Comentario o detalle adicional (opcional)</string>
     <string name="hint_observaciones_sintesis_del_rescate">Observaciones síntesis del rescate</string>
     <string name="lbl_recepcion_en_centro_de_bienestar">Recepción en Centro de Bienestar Animal (CBA)</string>
     <string name="hint_veterinario_receptor_en_cba">Veterinario receptor en CBA</string>

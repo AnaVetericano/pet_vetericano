@@ -155,6 +155,11 @@ object ActaFormSnapshotMapper {
             swGenitoMasaSecrecion = binding.swGenitoMasaSecrecion.isChecked,
             swGenitoGestante = binding.swGenitoGestante.isChecked,
             swGenitoCelo = binding.swGenitoCelo.isChecked,
+            comentarioRespiratorio = binding.etComentarioRespiratorio.text?.toString()?.trim() ?: "",
+            comentarioDigestivo = binding.etComentarioDigestivo.text?.toString()?.trim() ?: "",
+            comentarioMusculo = binding.etComentarioMusculo.text?.toString()?.trim() ?: "",
+            comentarioDermato = binding.etComentarioDermato.text?.toString()?.trim() ?: "",
+            comentarioGenito = binding.etComentarioGenito.text?.toString()?.trim() ?: "",
 
             // Paso 3: Estado de Fundamento Legal (6 leyes)
             swLey84_1989 = binding.etFundamentoLegal.text?.contains("84 de 1989", ignoreCase = true) == true,
@@ -286,6 +291,11 @@ object ActaFormSnapshotMapper {
         binding.swGenitoMasaSecrecion.isChecked = entity.swGenitoMasaSecrecion
         binding.swGenitoGestante.isChecked = entity.swGenitoGestante
         binding.swGenitoCelo.isChecked = entity.swGenitoCelo
+        binding.etComentarioRespiratorio.setText(entity.comentarioRespiratorio)
+        binding.etComentarioDigestivo.setText(entity.comentarioDigestivo)
+        binding.etComentarioMusculo.setText(entity.comentarioMusculo)
+        binding.etComentarioDermato.setText(entity.comentarioDermato)
+        binding.etComentarioGenito.setText(entity.comentarioGenito)
 
         // ----------------------------------------------------
         // 5b. Paso 3: Fundamento Legal (reconstrucción si venía de borradores previos)

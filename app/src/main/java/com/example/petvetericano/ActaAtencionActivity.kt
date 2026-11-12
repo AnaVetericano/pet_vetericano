@@ -1555,6 +1555,11 @@ class ActaAtencionActivity : AppCompatActivity() {
 
 
         binding.etObservacionesRescate.aplicarFiltroTextoConLimite(1000, "Observaciones rescate")
+        binding.etComentarioRespiratorio.aplicarFiltroTextoConLimite(300, "Comentario sistema respiratorio")
+        binding.etComentarioDigestivo.aplicarFiltroTextoConLimite(300, "Comentario sistema digestivo")
+        binding.etComentarioMusculo.aplicarFiltroTextoConLimite(300, "Comentario sistema músculo-esquelético")
+        binding.etComentarioDermato.aplicarFiltroTextoConLimite(300, "Comentario sistema dermatológico")
+        binding.etComentarioGenito.aplicarFiltroTextoConLimite(300, "Comentario sistema génito-urinario")
 
         binding.etVeterinarioReceptor.aplicarFiltroSoloLetras(60, "Médico veterinario receptor")
 
@@ -2584,7 +2589,12 @@ class ActaAtencionActivity : AppCompatActivity() {
 
             binding.etObservacionesRescate,
 
-            binding.etObservacionesRecepcion
+            binding.etObservacionesRecepcion,
+            binding.etComentarioRespiratorio,
+            binding.etComentarioDigestivo,
+            binding.etComentarioMusculo,
+            binding.etComentarioDermato,
+            binding.etComentarioGenito
 
         )
 
@@ -6029,6 +6039,8 @@ class ActaAtencionActivity : AppCompatActivity() {
                 appendLine("   - Tos: ${siNo(binding.swRespiratorioTos.isChecked)}")
 
                 appendLine("   - Lagaña o lagrimeo: ${siNo(binding.swRespiratorioLaganeo.isChecked)}")
+                val comResp = binding.etComentarioRespiratorio.text?.toString()?.trim().orEmpty()
+                if (comResp.isNotEmpty()) appendLine("   - Comentario respiratorio: $comResp")
 
                 appendLine("2. Sistema Digestivo:")
 
@@ -6039,6 +6051,8 @@ class ActaAtencionActivity : AppCompatActivity() {
                 appendLine("   - Flaco o desnutrido: ${siNo(binding.swDigestivoDesnutrido.isChecked)}")
 
                 appendLine("   - Deshidratado: ${siNo(binding.swDigestivoDeshidratado.isChecked)}")
+                val comDig = binding.etComentarioDigestivo.text?.toString()?.trim().orEmpty()
+                if (comDig.isNotEmpty()) appendLine("   - Comentario digestivo: $comDig")
 
                 appendLine("3. Sistema Músculo Esquelético:")
 
@@ -6053,6 +6067,8 @@ class ActaAtencionActivity : AppCompatActivity() {
                 appendLine("   - Postrado: ${siNo(binding.swMusculoPostrado.isChecked)}")
 
                 appendLine("   - Sarcoma: ${siNo(binding.swMusculoSarcoma.isChecked)}")
+                val comMusc = binding.etComentarioMusculo.text?.toString()?.trim().orEmpty()
+                if (comMusc.isNotEmpty()) appendLine("   - Comentario músculo-esquelético: $comMusc")
 
                 appendLine("4. Sistema Dermatológico:")
 
@@ -6063,6 +6079,8 @@ class ActaAtencionActivity : AppCompatActivity() {
                 appendLine("   - Hectoparásitos: ${siNo(binding.swDermatoPulgas.isChecked)}")
 
                 appendLine("   - Carcinoma cutáneo: ${siNo(binding.swDermatoCarcinomaCutaneo.isChecked)}")
+                val comDerm = binding.etComentarioDermato.text?.toString()?.trim().orEmpty()
+                if (comDerm.isNotEmpty()) appendLine("   - Comentario dermatológico: $comDerm")
 
                 appendLine("5. Sistema Genitourinario:")
 
@@ -6071,6 +6089,8 @@ class ActaAtencionActivity : AppCompatActivity() {
                 appendLine("   - Se encuentra gestante: ${siNo(binding.swGenitoGestante.isChecked)}")
 
                 appendLine("   - Se encuentra en celo: ${siNo(binding.swGenitoCelo.isChecked)}")
+                val comGen = binding.etComentarioGenito.text?.toString()?.trim().orEmpty()
+                if (comGen.isNotEmpty()) appendLine("   - Comentario génito-urinario: $comGen")
 
                 appendLine()
 
@@ -7020,48 +7040,52 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                     val peticion = body?.firstOrNull { it.id_peticion == peticionId }
 
-                    val estado = peticion?.estado.orEmpty().lowercase()
+                    var yaAtendida = peticion?.tiene_acta == true ||
+                        (peticion?.id_seguimiento != null && peticion.id_seguimiento > 0)
 
-                    val yaAtendida = peticion?.tiene_acta == true ||
+                    var idSegConfirmado: Int? = peticion?.id_seguimiento
 
-                        estado.contains("tratamiento") ||
+                    if (!yaAtendida) {
+                        val segResponse = withTimeoutOrNull(3000L) {
+                            RetrofitClient.apiService.listarSeguimientosVisita(
+                                token = "Bearer $token",
+                                idPeticion = peticionId
+                            )
+                        }
+                        if (segResponse?.isSuccessful == true) {
+                            val actaConfirmada = segResponse.body().orEmpty().firstOrNull {
+                                it.esActaSeresSintientesConfirmada()
+                            }
+                            if (actaConfirmada != null) {
+                                yaAtendida = true
+                                idSegConfirmado = actaConfirmada.idSeguimiento ?: idSegConfirmado
+                            }
+                        }
+                    }
 
-                        estado.contains("observación") ||
-
-                        estado.contains("observacion") ||
-
-                        estado.contains("alta") ||
-
-                        estado.contains("atendida") ||
-
-                        estado.contains("resuelta")
-
-
-
-                    if (yaAtendida) {
-
-                        withContext(Dispatchers.Main) {
-
-                            MaterialAlertDialogBuilder(this@ActaAtencionActivity)
-
-                                .setIcon(R.drawable.ic_info_circle)
-
-                                .setTitle(R.string.acta_offline_dialog_ya_atendida_titulo)
-
-                                .setMessage(R.string.acta_offline_dialog_ya_atendida_acta_mensaje)
-
-                                .setCancelable(false)
-
-                                .setPositiveButton(R.string.acta_offline_dialog_boton_regresar) { _, _ ->
-
-                                    finish()
-
-                                }
-
-                                .show()
-
+                    if (yaAtendida && !actaEnviadaExitosamente && !enviandoActa) {
+                        if (idVet > 0) {
+                            PeticionesCacheManager.marcarTieneActa(
+                                this@ActaAtencionActivity,
+                                idVet,
+                                peticionId,
+                                idSegConfirmado
+                            )
                         }
 
+                        withContext(Dispatchers.Main) {
+                            if (!isFinishing && !isDestroyed && !actaEnviadaExitosamente && !enviandoActa) {
+                                MaterialAlertDialogBuilder(this@ActaAtencionActivity)
+                                    .setIcon(R.drawable.ic_info_circle)
+                                    .setTitle(R.string.acta_offline_dialog_ya_atendida_titulo)
+                                    .setMessage(R.string.acta_offline_dialog_ya_atendida_acta_mensaje)
+                                    .setCancelable(false)
+                                    .setPositiveButton(R.string.acta_offline_dialog_boton_regresar) { _, _ ->
+                                        finish()
+                                    }
+                                    .show()
+                            }
+                        }
                     }
 
                 }
@@ -7952,7 +7976,12 @@ class ActaAtencionActivity : AppCompatActivity() {
 
             binding.etHoraRecepcion,
 
-            binding.etObservacionesRecepcion
+            binding.etObservacionesRecepcion,
+            binding.etComentarioRespiratorio,
+            binding.etComentarioDigestivo,
+            binding.etComentarioMusculo,
+            binding.etComentarioDermato,
+            binding.etComentarioGenito
 
         )
 
@@ -8880,13 +8909,17 @@ class ActaAtencionActivity : AppCompatActivity() {
 
         edicionBloqueadaPorEstado = true
 
+        setResult(Activity.RESULT_OK)
+
         guardadoHandler.removeCallbacks(guardadoDebounceRunnable)
+
+        val idVet = obtenerIdVeterinarioActual()
 
         val actual = synchronized(dbWriteLock) {
 
             entidadBorradorActual
 
-                ?: actaLocalRepository.obtenerPorPeticionYVeterinario(peticionId, obtenerIdVeterinarioActual())
+                ?: actaLocalRepository.obtenerPorPeticionYVeterinario(peticionId, idVet)
 
         }
 
@@ -8917,6 +8950,26 @@ class ActaAtencionActivity : AppCompatActivity() {
                     ultimoError = null,
 
                     actualizadoEn = System.currentTimeMillis()
+
+                )
+
+            }
+
+        }
+
+        if (idVet > 0 && peticionId > 0) {
+
+            lifecycleScope.launch(Dispatchers.IO) {
+
+                PeticionesCacheManager.marcarTieneActa(
+
+                    this@ActaAtencionActivity,
+
+                    idVet,
+
+                    peticionId,
+
+                    actual?.idSeguimientoRemoto
 
                 )
 
@@ -9053,6 +9106,22 @@ class ActaAtencionActivity : AppCompatActivity() {
             if (idLocalParaEncolar > 0L) {
 
                 ActaSyncScheduler.enqueueOneTimeSync(applicationContext, idLocalParaEncolar)
+
+            }
+
+            if (idVet > 0 && peticionId > 0) {
+
+                PeticionesCacheManager.marcarTieneActa(
+
+                    this@ActaAtencionActivity,
+
+                    idVet,
+
+                    peticionId,
+
+                    idSeguimientoRemotoPrevio
+
+                )
 
             }
 

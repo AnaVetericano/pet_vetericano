@@ -129,6 +129,11 @@ data class ActaLocalEntity(
     val swGenitoMasaSecrecion: Boolean = false,
     val swGenitoGestante: Boolean = false,
     val swGenitoCelo: Boolean = false,
+    val comentarioRespiratorio: String = "",
+    val comentarioDigestivo: String = "",
+    val comentarioMusculo: String = "",
+    val comentarioDermato: String = "",
+    val comentarioGenito: String = "",
 
     // Paso 3: Switches de Fundamento Legal (6 leyes)
     val swLey84_1989: Boolean = false,

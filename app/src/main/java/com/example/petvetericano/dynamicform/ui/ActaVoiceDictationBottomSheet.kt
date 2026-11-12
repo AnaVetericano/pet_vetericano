@@ -292,6 +292,14 @@ class ActaVoiceDictationBottomSheet : BottomSheetDialogFragment() {
         binding.rvCamposExtraidos.layoutManager = LinearLayoutManager(requireContext())
         binding.rvCamposExtraidos.adapter = adapter
 
+        // Fijar altura acotada programáticamente para garantizar que los botones de confirmación sean 100% visibles
+        val alturaDeseadaPx = (260 * resources.displayMetrics.density).toInt()
+        val lp = binding.rvCamposExtraidos.layoutParams
+        if (lp != null) {
+            lp.height = alturaDeseadaPx
+            binding.rvCamposExtraidos.layoutParams = lp
+        }
+
         mostrarEstadoRevision()
     }
 

@@ -39,8 +39,10 @@ import com.example.petvetericano.databinding.BottomSheetAdjuntarEvidenciaBinding
 import com.example.petvetericano.models.TipoPeticionResponse
 import com.example.petvetericano.network.RetrofitClient
 import com.example.petvetericano.ui.reporte.BottomSheetConfirmarReporte
+import com.example.petvetericano.ui.reporte.BottomSheetPosiblesDuplicados
 import com.example.petvetericano.ui.reporte.CaptureVideoConLimites
 import com.example.petvetericano.ui.reporte.EvidenciaItemLocal
+import com.example.petvetericano.ui.reporte.EventoDuplicados
 import com.example.petvetericano.ui.reporte.MiniaturasAdapter
 import com.example.petvetericano.ui.reporte.ReporteCiudadanoViewModel
 import com.example.petvetericano.ui.reporte.ReporteDraftState
@@ -62,6 +64,7 @@ import com.google.android.gms.tasks.CancellationTokenSource
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.card.MaterialCardView
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.async
@@ -403,6 +406,10 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
             validarYRevisarReporte()
         }
 
+        binding.cbAutorizaFotoDuplicados.setOnCheckedChangeListener { _, marcado ->
+            viewModel.actualizarAutorizacionFotoDuplicados(marcado)
+        }
+
         val prefs = getSharedPreferences(prefsMapa, MODE_PRIVATE)
         val textoGuardado = prefs.getString(keyBusqueda, "")
         if (!textoGuardado.isNullOrBlank()) {
@@ -465,7 +472,56 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
                     }
                 }
 
+                launch {
+                    viewModel.eventosDuplicados.collect { evento ->
+                        when (evento) {
+                            EventoDuplicados.ContinuarConfirmacion -> {
+                                val sheet = supportFragmentManager.findFragmentByTag(
+                                    BottomSheetPosiblesDuplicados.TAG
+                                ) as? BottomSheetDialogFragment
+                                sheet?.dismissAllowingStateLoss()
+                                abrirConfirmacionReporte()
+                            }
+                            EventoDuplicados.MostrarAdvertencia -> {
+                                if (viewModel.uiState.value.candidatosDuplicados.isNotEmpty()) {
+                                    val existente = supportFragmentManager.findFragmentByTag(
+                                        BottomSheetPosiblesDuplicados.TAG
+                                    )
+                                    if (existente == null && !supportFragmentManager.isStateSaved) {
+                                        BottomSheetPosiblesDuplicados().show(
+                                            supportFragmentManager,
+                                            BottomSheetPosiblesDuplicados.TAG
+                                        )
+                                    }
+                                }
+                            }
+                            EventoDuplicados.MantenerBorrador -> {
+                                val sheet = supportFragmentManager.findFragmentByTag(
+                                    BottomSheetPosiblesDuplicados.TAG
+                                ) as? BottomSheetDialogFragment
+                                sheet?.dismissAllowingStateLoss()
+                                Snackbar.make(
+                                    binding.root,
+                                    R.string.reporte_dup_mensaje_ya_existe,
+                                    Snackbar.LENGTH_LONG
+                                ).apply {
+                                    setTextMaxLines(4)
+                                }.show()
+                            }
+                        }
+                    }
+                }
+
                 viewModel.uiState.collect { state ->
+                    binding.btnRevisarReporte.isEnabled = !state.verificandoDuplicados
+                    binding.btnRevisarReporte.setText(
+                        if (state.verificandoDuplicados) {
+                            R.string.reporte_dup_verificando
+                        } else {
+                            R.string.reporte_ux_btn_revisar_reporte
+                        }
+                    )
+
                     renderizarSeleccionTipo(state.tipoSeleccionado)
 
                     // Control de contenedores paso 1 y paso 2
@@ -485,6 +541,10 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
                         binding.rvMiniaturas.visibility = View.GONE
                     } else {
                         binding.rvMiniaturas.visibility = View.VISIBLE
+                    }
+                    binding.layoutAutorizaFoto.visibility = if (state.fotosCount > 0) View.VISIBLE else View.GONE
+                    if (binding.cbAutorizaFotoDuplicados.isChecked != state.autorizaFotoDuplicados) {
+                        binding.cbAutorizaFotoDuplicados.isChecked = state.autorizaFotoDuplicados
                     }
 
                     if (state.fotosCount >= 5 && state.videosCount >= 1) {
@@ -1076,6 +1136,15 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
             return
         }
 
+        if (RetrofitClient.authToken.isNullOrBlank()) {
+            SharedPreferencesManager(this).getAccessToken().trim().takeIf { it.isNotEmpty() }?.let {
+                RetrofitClient.authToken = it
+            }
+        }
+        viewModel.verificarDuplicadosAntesDeRevisar(hayConexionInternet(this))
+    }
+
+    private fun abrirConfirmacionReporte() {
         val existente = supportFragmentManager.findFragmentByTag(BottomSheetConfirmarReporte.TAG)
         if (existente == null && !supportFragmentManager.isStateSaved) {
             BottomSheetConfirmarReporte().show(supportFragmentManager, BottomSheetConfirmarReporte.TAG)

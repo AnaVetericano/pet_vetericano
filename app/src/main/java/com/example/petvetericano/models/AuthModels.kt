@@ -141,7 +141,8 @@ data class confirmarpeticion(
     val latitud: Double,
     val longitud: Double,
     val foto : String?,
-    val fotos: List<String>? = null
+    val fotos: List<String>? = null,
+    val fotos_autorizadas_duplicados: List<String>? = null
 )
 
 // Declaración única para actualizar perfil

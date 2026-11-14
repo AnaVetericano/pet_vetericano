@@ -3,6 +3,8 @@ package com.example.petvetericano.network
 import com.example.petvetericano.models.ActualizarPerfilRequest
 import com.example.petvetericano.models.AdopcionAnimalResponse
 import com.example.petvetericano.models.DashboardResponse
+import com.example.petvetericano.models.DetectarDuplicadosCiudadanoRequest
+import com.example.petvetericano.models.DetectarDuplicadosCiudadanoResponse
 import com.example.petvetericano.models.GenericResponse
 import com.example.petvetericano.models.GoogleLoginRequest
 import com.example.petvetericano.models.IniciarPeticionResponse
@@ -62,6 +64,11 @@ interface ApiService {
 
     @POST("peticiones/iniciar/")
     suspend fun enviarPeticion(@Body peticion: confirmarpeticion): Response<IniciarPeticionResponse>
+
+    @POST("peticiones/detectar-duplicados-ciudadano/")
+    suspend fun detectarDuplicadosCiudadano(
+        @Body request: DetectarDuplicadosCiudadanoRequest
+    ): Response<DetectarDuplicadosCiudadanoResponse>
 
     @PATCH("peticiones/{id}/estado/")
     suspend fun actualizarEstadoPeticion(

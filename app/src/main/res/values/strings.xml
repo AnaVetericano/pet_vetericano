@@ -743,4 +743,21 @@
     <string name="dashboard_ux_rol_veterinario">Rol: Veterinario</string>
     <string name="dashboard_ux_modo_oscuro">Modo oscuro</string>
     <string name="dashboard_ux_perfil">Mi perfil</string>
+    <!-- Deteccion de posibles duplicados en reporte ciudadano -->
+    <string name="reporte_dup_titulo">Encontramos un reporte similar</string>
+    <string name="reporte_dup_subtitulo">Ya existe un reporte parecido cerca de esta zona.</string>
+    <string name="reporte_dup_contador">Reporte %1$d de %2$d</string>
+    <string name="reporte_dup_sin_foto">Sin fotografía disponible</string>
+    <string name="reporte_dup_foto_descripcion">Fotografía del animal reportado anteriormente</string>
+    <string name="reporte_dup_chip_similitud_alta">Similitud alta</string>
+    <string name="reporte_dup_chip_similitud_media">Similitud media</string>
+    <string name="reporte_dup_chip_cercania_muy_cerca">Muy cerca de tu ubicación</string>
+    <string name="reporte_dup_chip_cercania_cerca">Cerca de tu ubicación</string>
+    <string name="reporte_dup_pregunta">¿Es este el animal que estás reportando?</string>
+    <string name="reporte_dup_btn_si">Sí, es el mismo animal</string>
+    <string name="reporte_dup_btn_no">No, es otro animal</string>
+    <string name="reporte_dup_mensaje_ya_existe">Entendido: no se enviará un reporte nuevo porque ya existe uno similar. Tu borrador sigue guardado y puedes editarlo o revisarlo de nuevo.</string>
+    <string name="reporte_dup_verificando">Verificando…</string>
+    <string name="reporte_dup_autoriza_foto_check">Autorizo que las fotografías de este reporte se muestren a otras personas, solo para ayudar a evitar reportes duplicados.</string>
+    <string name="reporte_dup_autoriza_foto_ayuda">Confirmo que en las fotografías aparece únicamente el animal (sin personas, rostros, documentos ni direcciones visibles). Es opcional: si no la marcas, tus fotos no se mostrarán a nadie.</string>
 </resources>

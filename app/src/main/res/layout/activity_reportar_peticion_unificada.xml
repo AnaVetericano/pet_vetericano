@@ -642,6 +642,38 @@
                     tools:listitem="@layout/item_evidencia_miniatura"
                     tools:visibility="visible" />
 
+                <!-- Autorizacion expresa para mostrar fotos en deteccion de duplicados -->
+                <LinearLayout
+                    android:id="@+id/layoutAutorizaFoto"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:orientation="vertical"
+                    android:visibility="gone"
+                    tools:visibility="visible">
+
+                    <com.google.android.material.checkbox.MaterialCheckBox
+                        android:id="@+id/cbAutorizaFotoDuplicados"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:minHeight="48dp"
+                        android:checked="false"
+                        android:fontFamily="@font/nunito"
+                        android:text="@string/reporte_dup_autoriza_foto_check"
+                        android:textColor="@color/text_primary"
+                        android:textSize="16sp" />
+
+                    <TextView
+                        android:id="@+id/tvAutorizaFotoAyuda"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:fontFamily="@font/nunito"
+                        android:text="@string/reporte_dup_autoriza_foto_ayuda"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="14sp" />
+                </LinearLayout>
+
             </LinearLayout>
         </androidx.core.widget.NestedScrollView>
 

@@ -18,7 +18,8 @@ object ReporteEncolador {
         direccion: String?,
         latitud: Double,
         longitud: Double,
-        evidencias: List<Pair<String, Boolean>>
+        evidencias: List<Pair<String, Boolean>>,
+        autorizarFotosDuplicados: Boolean = false
     ): Long? = withContext(Dispatchers.IO) {
         val appContext = context.applicationContext
         val prefs = SharedPreferencesManager(appContext)
@@ -52,7 +53,8 @@ object ReporteEncolador {
                         EvidenciaReporteItem(
                             path = archivoDestino.absolutePath,
                             esVideo = esVideo,
-                            urlRemota = null
+                            urlRemota = null,
+                            autorizaDuplicados = autorizarFotosDuplicados && !esVideo
                         )
                     )
                     index++

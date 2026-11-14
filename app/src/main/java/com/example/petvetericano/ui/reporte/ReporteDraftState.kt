@@ -3,6 +3,7 @@ package com.example.petvetericano.ui.reporte
 import androidx.annotation.DrawableRes
 import androidx.annotation.StringRes
 import com.example.petvetericano.R
+import com.example.petvetericano.models.CandidatoDuplicado
 import java.text.Normalizer
 import java.util.Locale
 
@@ -65,6 +66,7 @@ data class ReporteDraftState(
     // Pantalla 2: Descripcion y Multimedia (preparado para R2)
     val descripcion: String = "",
     val evidencias: List<EvidenciaItemLocal> = emptyList(),
+    val autorizaFotoDuplicados: Boolean = false,
 
     // Captura pendiente para SavedStateHandle (preparado para R2)
     val pendingCameraFilePath: String? = null,
@@ -76,7 +78,12 @@ data class ReporteDraftState(
     @get:StringRes val mensajeCargaUbicacionResId: Int = R.string.reporte_offline_cargando_direccion,
     val estaEnviando: Boolean = false,
     val hayConexionInternet: Boolean = true,
-    @get:StringRes val errorValidacionResId: Int? = null
+    @get:StringRes val errorValidacionResId: Int? = null,
+
+    // Verificacion de posibles duplicados
+    val verificandoDuplicados: Boolean = false,
+    val candidatosDuplicados: List<CandidatoDuplicado> = emptyList(),
+    val indiceCandidatoDuplicado: Int = 0
 ) {
     val fotosCount: Int get() = evidencias.count { !it.esVideo }
     val videosCount: Int get() = evidencias.count { it.esVideo }

@@ -76,6 +76,9 @@ import com.example.petvetericano.models.CrearSolicitudKitRequest
 import com.example.petvetericano.models.ItemSolicitudInput
 
 import com.example.petvetericano.models.SolicitudKitOffline
+import com.example.petvetericano.dynamicform.DynamicFormState
+import com.example.petvetericano.dynamicform.ActaFormBinder
+import com.example.petvetericano.dynamicform.ui.ActaVoiceDictationBottomSheet
 
 import com.google.android.material.bottomsheet.BottomSheetDialog
 
@@ -218,6 +221,10 @@ class ActaAtencionActivity : AppCompatActivity() {
     private var currentStep = 1
 
     private var peticionId: Int = -1
+
+    // Formularios Dinámicos Inteligentes y Dictado por Voz (Gemini AI)
+    private val dynamicFormState = DynamicFormState()
+    private var formBinder: ActaFormBinder? = null
 
 
 
@@ -674,6 +681,10 @@ class ActaAtencionActivity : AppCompatActivity() {
         setupEvidenciaMultimedia()
 
         cargarCatalogosBackend()
+
+        setupDynamicFormEngine()
+
+        setupDictadoPorVoz()
 
 
 
@@ -1165,6 +1176,93 @@ class ActaAtencionActivity : AppCompatActivity() {
     }
 
 
+
+    private fun setupDynamicFormEngine() {
+        formBinder = ActaFormBinder(binding, dynamicFormState)
+        formBinder?.inicializar()
+    }
+
+    private fun setupDictadoPorVoz() {
+        binding.btnDictarVoz.setOnClickListener {
+            if (edicionBloqueadaPorEstado) {
+                Toast.makeText(this, "El acta está en modo solo lectura.", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
+            val bottomSheet = ActaVoiceDictationBottomSheet.newInstance { campos, confianzas ->
+                aplicarBorradorVozAlFormulario(campos, confianzas)
+            }
+            bottomSheet.show(supportFragmentManager, ActaVoiceDictationBottomSheet.TAG)
+        }
+    }
+
+    private fun aplicarBorradorVozAlFormulario(
+        campos: Map<String, Any?>,
+        confianzas: Map<String, Float?>
+    ) {
+        try {
+            huboInteraccionUsuario = true
+            usuarioHaEditado = true
+
+            // 1. Aplicar al motor reactivo de formularios dinámicos
+            dynamicFormState.applyVoiceExtraction(campos, confianzas, overwriteExisting = true)
+
+            // 2. Volcar hacia los componentes visuales existentes de la actividad
+            formBinder?.inyectarHaciaVistas()
+
+            // 3. Manejo de tarjeta de paciente si la IA detectó información del animal
+            val nombrePac = campos["nombre_paciente"]?.toString()?.trim()
+            val especiePac = campos["paciente_especie"]?.toString()?.trim()
+            val razaPac = campos["paciente_raza"]?.toString()?.trim()
+            val sexoPac = campos["paciente_sexo"]?.toString()?.trim()
+            val colorPac = campos["paciente_color"]?.toString()?.trim()
+            val edadPac = campos["paciente_edad"]?.toString()?.trim()
+            val pesoPac = campos["peso_paciente"]?.toString()?.trim()
+            val esterilizadoRaw = campos["esterilizacion_paciente"]
+
+            val esterilizadoStr = when (esterilizadoRaw) {
+                true, "true", "Sí", "si", "1" -> "Si"
+                else -> "No"
+            }
+
+            if (!nombrePac.isNullOrBlank() || !especiePac.isNullOrBlank()) {
+                if (animalBindingsList.isEmpty()) {
+                    val cardState = AnimalCardState(
+                        nombre = nombrePac ?: "Sin nombre",
+                        especie = if (!especiePac.isNullOrBlank()) especiePac else "Canino",
+                        raza = if (!razaPac.isNullOrBlank()) razaPac else "Mestizo",
+                        sexo = if (!sexoPac.isNullOrBlank()) sexoPac else "Macho",
+                        color = colorPac ?: "",
+                        edadTexto = edadPac ?: "",
+                        peso = pesoPac ?: "",
+                        esterilizado = esterilizadoStr
+                    )
+                    agregarFormularioAnimal(cardState)
+                } else {
+                    val firstCard = animalBindingsList.first()
+                    if (!nombrePac.isNullOrBlank()) firstCard.etPacienteNombreCard.setText(nombrePac)
+                    if (!especiePac.isNullOrBlank()) firstCard.autoCompleteEspecieCard.setText(especiePac, false)
+                    if (!razaPac.isNullOrBlank()) firstCard.autoCompleteRazaCard.setText(razaPac, false)
+                    if (!sexoPac.isNullOrBlank()) firstCard.autoCompleteSexoCard.setText(sexoPac, false)
+                    if (!colorPac.isNullOrBlank()) firstCard.autoCompleteColorCard.setText(colorPac, false)
+                    if (!edadPac.isNullOrBlank()) firstCard.etPacienteEdadCard.setText(edadPac)
+                    if (!pesoPac.isNullOrBlank()) firstCard.etPacientePesoCard.setText(pesoPac)
+                    if (!esterilizadoStr.isNullOrBlank()) firstCard.autoCompleteEsterilizadoCard.setText(esterilizadoStr, false)
+                }
+            }
+
+            // 4. Guardar borrador localmente de manera segura
+            guardarBorradorSincrono(incluirFirmas = false)
+
+            Toast.makeText(
+                this,
+                "✓ Borrador de voz aplicado exitosamente al acta. Revisa los campos y continúa.",
+                Toast.LENGTH_LONG
+            ).show()
+        } catch (e: Exception) {
+            android.util.Log.e("ActaAtencionActivity", "Error al aplicar borrador de voz: ${e.message}", e)
+            Toast.makeText(this, "Aviso: los datos de voz se aplicaron parcialmente.", Toast.LENGTH_SHORT).show()
+        }
+    }
 
     private fun setupToolbar() {
 
@@ -1667,6 +1765,8 @@ class ActaAtencionActivity : AppCompatActivity() {
 
             }
 
+            formBinder?.notificarCambioVista("requiere_rescate", isChecked)
+
             programarGuardado()
 
         }
@@ -1716,6 +1816,8 @@ class ActaAtencionActivity : AppCompatActivity() {
                 binding.tilTestigo1Telefono.isEnabled = true
 
             }
+
+            formBinder?.notificarCambioVista("chip_sin_testigo", isChecked)
 
             programarGuardado()
 
@@ -8177,6 +8279,10 @@ class ActaAtencionActivity : AppCompatActivity() {
 
 
 
+        formBinder?.capturarHaciaEstado()
+        val dynJson = dynamicFormState.toJson()
+        val dynVer = dynamicFormState.definition.version
+
         return ActaFormSnapshotMapper.capturar(
 
             binding = binding,
@@ -8196,6 +8302,10 @@ class ActaAtencionActivity : AppCompatActivity() {
             examenesJson = examenesJson,
 
             evidenciasJson = evidenciasJson,
+
+            datosDinamicosJson = dynJson,
+
+            formularioVersion = dynVer,
 
             incluirFirmas = incluirFirmas
 
@@ -8608,6 +8718,13 @@ class ActaAtencionActivity : AppCompatActivity() {
             ActaFormSnapshotMapper.restaurar(binding, entidadNormalizada)
 
             sincronizarLabelsSwitches()
+
+            if (!entidadNormalizada.datosDinamicosJson.isNullOrBlank()) {
+                dynamicFormState.restoreFromJson(entidadNormalizada.datosDinamicosJson)
+            } else {
+                formBinder?.capturarHaciaEstado()
+            }
+            formBinder?.aplicarVisibilidad()
 
 
 

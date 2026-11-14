@@ -132,6 +132,8 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
                 $COL_SW_LEY_1801_2016 INTEGER NOT NULL DEFAULT 0,
                 $COL_SW_LEY_2054_2020 INTEGER NOT NULL DEFAULT 0,
                 $COL_SW_LEY_2385_2024 INTEGER NOT NULL DEFAULT 0,
+                $COL_FORMULARIO_VERSION INTEGER NOT NULL DEFAULT 1,
+                $COL_DATOS_DINAMICOS_JSON TEXT,
                 
                 UNIQUE($COL_ID_PETICION, $COL_ID_VETERINARIO)
             )
@@ -153,18 +155,45 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
             db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_SW_MUSCULO_SARCOMA INTEGER NOT NULL DEFAULT 0")
             db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_SW_DERMATO_CARCINOMA_CUTANEO INTEGER NOT NULL DEFAULT 0")
         }
-        if (oldVersion < 4) {
-            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_COMENTARIO_RESPIRATORIO TEXT NOT NULL DEFAULT ''")
-            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_COMENTARIO_DIGESTIVO TEXT NOT NULL DEFAULT ''")
-            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_COMENTARIO_MUSCULO TEXT NOT NULL DEFAULT ''")
-            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_COMENTARIO_DERMATO TEXT NOT NULL DEFAULT ''")
-            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $COL_COMENTARIO_GENITO TEXT NOT NULL DEFAULT ''")
+        if (oldVersion < 5) {
+            val existingColumns = getExistingColumns(db, TABLE_ACTAS)
+            addColumnIfMissing(db, existingColumns, COL_COMENTARIO_RESPIRATORIO, "TEXT NOT NULL DEFAULT ''")
+            addColumnIfMissing(db, existingColumns, COL_COMENTARIO_DIGESTIVO, "TEXT NOT NULL DEFAULT ''")
+            addColumnIfMissing(db, existingColumns, COL_COMENTARIO_MUSCULO, "TEXT NOT NULL DEFAULT ''")
+            addColumnIfMissing(db, existingColumns, COL_COMENTARIO_DERMATO, "TEXT NOT NULL DEFAULT ''")
+            addColumnIfMissing(db, existingColumns, COL_COMENTARIO_GENITO, "TEXT NOT NULL DEFAULT ''")
+            addColumnIfMissing(db, existingColumns, COL_FORMULARIO_VERSION, "INTEGER NOT NULL DEFAULT 1")
+            addColumnIfMissing(db, existingColumns, COL_DATOS_DINAMICOS_JSON, "TEXT")
+        }
+    }
+
+    private fun getExistingColumns(db: SQLiteDatabase, tableName: String): Set<String> {
+        val columns = mutableSetOf<String>()
+        db.rawQuery("PRAGMA table_info($tableName)", null).use { cursor ->
+            val nameIndex = cursor.getColumnIndex("name")
+            while (cursor.moveToNext()) {
+                if (nameIndex >= 0) {
+                    columns.add(cursor.getString(nameIndex))
+                }
+            }
+        }
+        return columns
+    }
+
+    private fun addColumnIfMissing(
+        db: SQLiteDatabase,
+        existingColumns: Set<String>,
+        columnName: String,
+        columnDefinition: String
+    ) {
+        if (!existingColumns.contains(columnName)) {
+            db.execSQL("ALTER TABLE $TABLE_ACTAS ADD COLUMN $columnName $columnDefinition")
         }
     }
 
     companion object {
         const val DATABASE_NAME = "petvetericano_actas_offline.db"
-        const val DATABASE_VERSION = 4
+        const val DATABASE_VERSION = 5
 
         @Volatile
         private var instance: ActaLocalDbHelper? = null
@@ -292,6 +321,10 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
         const val COL_SW_LEY_2054_2020 = "sw_ley_2054_2020"
         const val COL_SW_LEY_2385_2024 = "sw_ley_2385_2024"
 
+        // Formularios Dinámicos y Versionado
+        const val COL_FORMULARIO_VERSION = "formulario_version"
+        const val COL_DATOS_DINAMICOS_JSON = "datos_dinamicos_json"
+
         fun toContentValues(entity: ActaLocalEntity): ContentValues {
             return ContentValues().apply {
                 if (entity.idLocal > 0L) {
@@ -408,6 +441,9 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
                 put(COL_SW_LEY_1801_2016, if (entity.swLey1801_2016) 1 else 0)
                 put(COL_SW_LEY_2054_2020, if (entity.swLey2054_2020) 1 else 0)
                 put(COL_SW_LEY_2385_2024, if (entity.swLey2385_2024) 1 else 0)
+
+                put(COL_FORMULARIO_VERSION, entity.formularioVersion)
+                put(COL_DATOS_DINAMICOS_JSON, entity.datosDinamicosJson)
             }
         }
 
@@ -531,7 +567,9 @@ class ActaLocalDbHelper private constructor(context: Context) : SQLiteOpenHelper
                 swLey1774_2016 = cursor.getBooleanOrDefault(COL_SW_LEY_1774_2016, false),
                 swLey1801_2016 = cursor.getBooleanOrDefault(COL_SW_LEY_1801_2016, false),
                 swLey2054_2020 = cursor.getBooleanOrDefault(COL_SW_LEY_2054_2020, false),
-                swLey2385_2024 = cursor.getBooleanOrDefault(COL_SW_LEY_2385_2024, false)
+                swLey2385_2024 = cursor.getBooleanOrDefault(COL_SW_LEY_2385_2024, false),
+                formularioVersion = cursor.getIntOrDefault(COL_FORMULARIO_VERSION, 1),
+                datosDinamicosJson = cursor.getStringOrNull(COL_DATOS_DINAMICOS_JSON)
             )
         }
 

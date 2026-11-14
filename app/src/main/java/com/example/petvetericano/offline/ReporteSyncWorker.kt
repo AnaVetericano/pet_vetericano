@@ -182,7 +182,8 @@ class ReporteSyncWorker(
             latitud = reporte.latitud.toDoubleOrNull() ?: 0.0,
             longitud = reporte.longitud.toDoubleOrNull() ?: 0.0,
             foto = urlsRemotas.firstOrNull(),
-            fotos = urlsRemotas
+            fotos = urlsRemotas,
+            fotos_autorizadas_duplicados = fotosAutorizadasParaEnvio(listaEvidencias).takeIf { it.isNotEmpty() }
         )
 
         // Ejecutar POST

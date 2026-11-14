@@ -4,8 +4,11 @@ import android.content.ContentValues
 import android.content.Context
 import android.database.Cursor
 import android.util.Log
-import org.json.JSONArray
-import org.json.JSONObject
+import com.google.gson.JsonArray
+import com.google.gson.JsonElement
+import com.google.gson.JsonNull
+import com.google.gson.JsonObject
+import com.google.gson.JsonParser
 import java.util.UUID
 
 /**
@@ -25,7 +28,8 @@ enum class EstadoReporteLocal {
 data class EvidenciaReporteItem(
     val path: String,
     val esVideo: Boolean,
-    val urlRemota: String? = null
+    val urlRemota: String? = null,
+    val autorizaDuplicados: Boolean = false
 )
 
 /**
@@ -60,46 +64,89 @@ data class ReporteLocalEntity(
 object ReporteEvidenciasParser {
     private const val TAG = "ReporteEvidenciasParser"
 
+    private fun JsonObject.optString(key: String, default: String = ""): String {
+        val el: JsonElement = get(key) ?: return default
+        return if (el.isJsonPrimitive) el.asString else default
+    }
+
+    private fun JsonObject.optBoolean(key: String, default: Boolean = false): Boolean {
+        val el: JsonElement = get(key) ?: return default
+        if (!el.isJsonPrimitive) return default
+        val prim = el.asJsonPrimitive
+        return when {
+            prim.isBoolean -> prim.asBoolean
+            prim.isString -> when (prim.asString.lowercase()) {
+                "true" -> true
+                "false" -> false
+                else -> default
+            }
+            else -> default
+        }
+    }
+
     fun parsear(json: String?): List<EvidenciaReporteItem> {
         if (json.isNullOrBlank()) return emptyList()
         val resultado = mutableListOf<EvidenciaReporteItem>()
         try {
-            val array = JSONArray(json)
-            for (i in 0 until array.length()) {
-                val obj = array.getJSONObject(i)
+            val root = JsonParser.parseString(json)
+            if (!root.isJsonArray) return emptyList()
+            val array = root.asJsonArray
+            for (element in array) {
+                val obj = element.asJsonObject
                 val path = obj.optString("path", "")
                 val esVideo = obj.optBoolean("esVideo", false)
-                val urlRemota = if (obj.has("urlRemota") && !obj.isNull("urlRemota")) {
-                    obj.optString("urlRemota").takeIf { it.isNotBlank() }
+                val urlEl = obj.get("urlRemota")
+                val urlRemota = if (urlEl != null && !urlEl.isJsonNull && urlEl.isJsonPrimitive) {
+                    urlEl.asString.takeIf { it.isNotBlank() }
                 } else {
                     null
                 }
+                val autorizaDuplicados = obj.optBoolean("autorizaDuplicados", false)
                 if (path.isNotBlank()) {
-                    resultado.add(EvidenciaReporteItem(path, esVideo, urlRemota))
+                    resultado.add(EvidenciaReporteItem(path, esVideo, urlRemota, autorizaDuplicados))
                 }
             }
         } catch (e: Exception) {
-            Log.e(TAG, "Error parseando evidencias JSON: ${e.message}")
+            try {
+                Log.e(TAG, "Error parseando evidencias JSON: ${e.message}")
+            } catch (_: Throwable) {
+                // En pruebas JVM sin Android runtime, Log.e no está mockeado.
+            }
         }
         return resultado
     }
 
     fun serializar(lista: List<EvidenciaReporteItem>): String {
-        val array = JSONArray()
+        val array = JsonArray()
         for (item in lista) {
-            val obj = JSONObject().apply {
-                put("path", item.path)
-                put("esVideo", item.esVideo)
+            val obj = JsonObject().apply {
+                addProperty("path", item.path)
+                addProperty("esVideo", item.esVideo)
                 if (!item.urlRemota.isNullOrBlank()) {
-                    put("urlRemota", item.urlRemota)
+                    addProperty("urlRemota", item.urlRemota)
                 } else {
-                    put("urlRemota", JSONObject.NULL)
+                    add("urlRemota", JsonNull.INSTANCE)
                 }
+                addProperty("autorizaDuplicados", item.autorizaDuplicados)
             }
-            array.put(obj)
+            array.add(obj)
         }
         return array.toString()
     }
+}
+
+/**
+ * Devuelve las URLs remotas HTTPS (sin duplicados, en orden y máx. 5) de las fotos
+ * autorizadas expresamente para mostrarse en la detección ciudadana de duplicados.
+ */
+fun fotosAutorizadasParaEnvio(lista: List<EvidenciaReporteItem>): List<String> {
+    return lista.asSequence()
+        .filter { it.autorizaDuplicados && !it.esVideo }
+        .mapNotNull { it.urlRemota?.trim() }
+        .filter { it.isNotEmpty() && it.startsWith("https://") }
+        .distinct()
+        .take(5)
+        .toList()
 }
 
 /**

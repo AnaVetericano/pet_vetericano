@@ -9,9 +9,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvetericano.R
+import com.example.petvetericano.models.CandidatoDuplicado
 import com.example.petvetericano.models.TipoPeticionResponse
+import com.example.petvetericano.network.RetrofitClient
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -41,6 +44,11 @@ private const val KEY_EVIDENCIAS_IS_VIDEO = "key_reporte_evidencias_is_video"
 private const val KEY_PENDING_CAM_PATH = "key_reporte_pending_cam_path"
 private const val KEY_PENDING_CAM_URI = "key_reporte_pending_cam_uri"
 private const val KEY_PENDING_CAM_IS_VIDEO = "key_reporte_pending_cam_is_video"
+private const val KEY_AUTORIZA_FOTO_DUPLICADOS = "key_reporte_autoriza_foto_dup"
+
+internal fun autorizacionEfectiva(autoriza: Boolean, fotosCount: Int): Boolean {
+    return autoriza && fotosCount > 0
+}
 
 class ReporteCiudadanoViewModel(
     private val savedStateHandle: SavedStateHandle
@@ -51,6 +59,27 @@ class ReporteCiudadanoViewModel(
 
     private val _resultadoEnvioChannel = Channel<ResultadoEnvio>(Channel.BUFFERED)
     val resultadoEnvio = _resultadoEnvioChannel.receiveAsFlow()
+
+    private val verificadorPorDefecto: VerificadorDuplicados by lazy {
+        VerificadorDuplicados(
+            llamada = { request ->
+                RetrofitClient.apiService.detectarDuplicadosCiudadano(request)
+            }
+        )
+    }
+    private var verificadorOverride: VerificadorDuplicados? = null
+    internal var verificador: VerificadorDuplicados
+        get() = verificadorOverride ?: verificadorPorDefecto
+        set(value) {
+            verificadorOverride = value
+        }
+
+    private val _eventosDuplicadosChannel = Channel<EventoDuplicados>(Channel.BUFFERED)
+    val eventosDuplicados: Flow<EventoDuplicados> = _eventosDuplicadosChannel.receiveAsFlow()
+
+    private var firmaConsulta: String? = null
+    private var candidatosCacheados: List<CandidatoDuplicado> = emptyList()
+    private var firmaDescartada: String? = null
 
     init {
         val idTipo = savedStateHandle.get<Int>(KEY_ID_TIPO)
@@ -67,6 +96,7 @@ class ReporteCiudadanoViewModel(
         val pendPath = savedStateHandle.get<String>(KEY_PENDING_CAM_PATH)
         val pendUri = savedStateHandle.get<String>(KEY_PENDING_CAM_URI)
         val pendIsVideo = savedStateHandle.get<Boolean>(KEY_PENDING_CAM_IS_VIDEO) ?: false
+        val autorizaFotoDup = savedStateHandle.get<Boolean>(KEY_AUTORIZA_FOTO_DUPLICADOS) ?: false
 
         val evidenciasIniciales = mutableListOf<EvidenciaItemLocal>()
         if (paths != null && isVideos != null && paths.size == isVideos.size) {
@@ -106,6 +136,7 @@ class ReporteCiudadanoViewModel(
                 ubicacionSeleccionadaPorUsuario = ubicacionUsuario,
                 descripcion = desc,
                 evidencias = evidenciasIniciales,
+                autorizaFotoDuplicados = autorizaFotoDup,
                 pendingCameraFilePath = pendPath,
                 pendingCameraUriString = pendUri,
                 pendingCameraEsVideo = pendIsVideo
@@ -126,7 +157,7 @@ class ReporteCiudadanoViewModel(
 
     fun actualizarDescripcion(texto: String) {
         savedStateHandle[KEY_DESCRIPCION] = texto
-        _uiState.update { it.copy(descripcion = texto) }
+        _uiState.update { limpiarDuplicadosSiFirmaCambio(it.copy(descripcion = texto)) }
     }
 
     fun guardarPendingCamera(filePath: String, uriString: String, esVideo: Boolean) {
@@ -155,6 +186,11 @@ class ReporteCiudadanoViewModel(
         }
     }
 
+    fun actualizarAutorizacionFotoDuplicados(valor: Boolean) {
+        savedStateHandle[KEY_AUTORIZA_FOTO_DUPLICADOS] = valor
+        _uiState.update { it.copy(autorizaFotoDuplicados = valor) }
+    }
+
     fun agregarEvidencia(item: EvidenciaItemLocal) {
         _uiState.update { state ->
             val nuevaLista = state.evidencias + item
@@ -168,7 +204,15 @@ class ReporteCiudadanoViewModel(
         _uiState.update { state ->
             val nuevaLista = state.evidencias.filterNot { it.id == id }
             sincronizarEvidenciasSavedState(nuevaLista)
-            state.copy(evidencias = nuevaLista)
+            val quedanFotos = nuevaLista.any { !it.esVideo }
+            val nuevaAutorizacion = if (quedanFotos) state.autorizaFotoDuplicados else false
+            if (!quedanFotos) {
+                savedStateHandle[KEY_AUTORIZA_FOTO_DUPLICADOS] = false
+            }
+            state.copy(
+                evidencias = nuevaLista,
+                autorizaFotoDuplicados = nuevaAutorizacion
+            )
         }
         return itemAEliminar
     }
@@ -235,13 +279,15 @@ class ReporteCiudadanoViewModel(
         savedStateHandle[KEY_UBICACION_USUARIO] = true
 
         _uiState.update {
-            it.copy(
-                latitud = lat,
-                longitud = lng,
-                direccionTexto = direccion,
-                ubicacionSeleccionadaPorUsuario = true,
-                isLoadingUbicacion = false,
-                errorValidacionResId = null
+            limpiarDuplicadosSiFirmaCambio(
+                it.copy(
+                    latitud = lat,
+                    longitud = lng,
+                    direccionTexto = direccion,
+                    ubicacionSeleccionadaPorUsuario = true,
+                    isLoadingUbicacion = false,
+                    errorValidacionResId = null
+                )
             )
         }
     }
@@ -363,8 +409,151 @@ class ReporteCiudadanoViewModel(
         savedStateHandle.remove<String>(KEY_DESCRIPCION)
         savedStateHandle.remove<ArrayList<String>>(KEY_EVIDENCIAS_PATHS)
         savedStateHandle.remove<BooleanArray>(KEY_EVIDENCIAS_IS_VIDEO)
+        savedStateHandle.remove<Boolean>(KEY_AUTORIZA_FOTO_DUPLICADOS)
         limpiarPendingCamera()
+        firmaConsulta = null
+        candidatosCacheados = emptyList()
+        firmaDescartada = null
         _uiState.value = ReporteDraftState()
+    }
+
+    fun verificarDuplicadosAntesDeRevisar(hayConexion: Boolean) {
+        val state = _uiState.value
+        if (state.verificandoDuplicados) return
+
+        val lat = state.latitud
+        val lng = state.longitud
+        if (!hayConexion || lat == null || lng == null) {
+            emitirEventoDuplicado(EventoDuplicados.ContinuarConfirmacion)
+            return
+        }
+
+        val firma = calcularFirmaDuplicados(state.descripcion, lat, lng)
+        if (firma == firmaDescartada) {
+            emitirEventoDuplicado(EventoDuplicados.ContinuarConfirmacion)
+            return
+        }
+
+        if (firma == firmaConsulta) {
+            if (candidatosCacheados.isNotEmpty()) {
+                _uiState.update {
+                    it.copy(
+                        candidatosDuplicados = candidatosCacheados,
+                        indiceCandidatoDuplicado = 0
+                    )
+                }
+                emitirEventoDuplicado(EventoDuplicados.MostrarAdvertencia)
+            } else {
+                emitirEventoDuplicado(EventoDuplicados.ContinuarConfirmacion)
+            }
+            return
+        }
+
+        _uiState.update { it.copy(verificandoDuplicados = true) }
+        viewModelScope.launch {
+            try {
+                val resultado = verificador.verificar(state.descripcion, lat, lng)
+                val estadoActual = _uiState.value
+                val latActual = estadoActual.latitud
+                val lngActual = estadoActual.longitud
+                val firmaActual = if (latActual != null && lngActual != null) {
+                    calcularFirmaDuplicados(estadoActual.descripcion, latActual, lngActual)
+                } else {
+                    null
+                }
+                if (firmaActual != firma) {
+                    _eventosDuplicadosChannel.send(EventoDuplicados.ContinuarConfirmacion)
+                    return@launch
+                }
+
+                when (resultado) {
+                    is ResultadoVerificacion.ConCoincidencias -> {
+                        firmaConsulta = firma
+                        candidatosCacheados = resultado.candidatos
+                        _uiState.update {
+                            it.copy(
+                                candidatosDuplicados = resultado.candidatos,
+                                indiceCandidatoDuplicado = 0
+                            )
+                        }
+                        _eventosDuplicadosChannel.send(EventoDuplicados.MostrarAdvertencia)
+                    }
+                    is ResultadoVerificacion.SinCoincidencias -> {
+                        firmaConsulta = firma
+                        candidatosCacheados = emptyList()
+                        _uiState.update {
+                            it.copy(
+                                candidatosDuplicados = emptyList(),
+                                indiceCandidatoDuplicado = 0
+                            )
+                        }
+                        _eventosDuplicadosChannel.send(EventoDuplicados.ContinuarConfirmacion)
+                    }
+                    is ResultadoVerificacion.NoDisponible -> {
+                        _eventosDuplicadosChannel.send(EventoDuplicados.ContinuarConfirmacion)
+                    }
+                }
+            } finally {
+                _uiState.update { it.copy(verificandoDuplicados = false) }
+            }
+        }
+    }
+
+    fun responderCandidatoNo() {
+        val state = _uiState.value
+        val siguienteIndice = state.indiceCandidatoDuplicado + 1
+        if (siguienteIndice < state.candidatosDuplicados.size) {
+            _uiState.update { it.copy(indiceCandidatoDuplicado = siguienteIndice) }
+        } else {
+            firmaDescartada = firmaConsulta
+            _uiState.update {
+                it.copy(
+                    candidatosDuplicados = emptyList(),
+                    indiceCandidatoDuplicado = 0
+                )
+            }
+            emitirEventoDuplicado(EventoDuplicados.ContinuarConfirmacion)
+        }
+    }
+
+    fun responderCandidatoSi() {
+        _uiState.update {
+            it.copy(
+                candidatosDuplicados = emptyList(),
+                indiceCandidatoDuplicado = 0
+            )
+        }
+        emitirEventoDuplicado(EventoDuplicados.MantenerBorrador)
+    }
+
+    fun cancelarAdvertenciaDuplicados() {
+        _uiState.update {
+            it.copy(
+                candidatosDuplicados = emptyList(),
+                indiceCandidatoDuplicado = 0
+            )
+        }
+    }
+
+    private fun emitirEventoDuplicado(evento: EventoDuplicados) {
+        if (_eventosDuplicadosChannel.trySend(evento).isFailure) {
+            viewModelScope.launch { _eventosDuplicadosChannel.send(evento) }
+        }
+    }
+
+    private fun limpiarDuplicadosSiFirmaCambio(state: ReporteDraftState): ReporteDraftState {
+        val lat = state.latitud
+        val lng = state.longitud
+        val firmaActual = if (lat != null && lng != null) {
+            calcularFirmaDuplicados(state.descripcion, lat, lng)
+        } else {
+            null
+        }
+        return if (firmaActual != firmaConsulta) {
+            state.copy(candidatosDuplicados = emptyList(), indiceCandidatoDuplicado = 0)
+        } else {
+            state
+        }
     }
 
     fun enviarReporte(context: Context) {
@@ -393,6 +582,7 @@ class ReporteCiudadanoViewModel(
                 .filter { File(it.localPath).exists() }
                 .map { Pair(it.localPath, it.esVideo) }
 
+            val autorizarFotos = autorizacionEfectiva(state.autorizaFotoDuplicados, state.fotosCount)
             val idLocal = withContext(Dispatchers.IO + NonCancellable) {
                 ReporteEncolador.encolar(
                     context = appContext,
@@ -402,7 +592,8 @@ class ReporteCiudadanoViewModel(
                     direccion = dirFinal,
                     latitud = latitud,
                     longitud = longitud,
-                    evidencias = evidenciasList
+                    evidencias = evidenciasList,
+                    autorizarFotosDuplicados = autorizarFotos
                 )
             }
 

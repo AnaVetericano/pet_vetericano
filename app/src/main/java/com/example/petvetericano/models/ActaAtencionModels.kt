@@ -644,8 +644,17 @@ data class DictadoVozResponse(
     @SerializedName("status")
     val status: String? = "draft",
 
+    @SerializedName("error_code")
+    val errorCode: String? = null,
+
+    @SerializedName("error")
+    val error: String? = null,
+
     @SerializedName("message")
     val message: String? = null,
+
+    @SerializedName("transcripcion")
+    val transcripcion: String? = null,
 
     @SerializedName("extracted_summary")
     val extractedSummary: String? = null,

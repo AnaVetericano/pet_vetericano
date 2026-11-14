@@ -91,4 +91,22 @@ object RetrofitClient {
             .build()
             .create(ApiService::class.java)
     }
+
+    private val dictadoOkHttpClient by lazy {
+        okHttpClient.newBuilder()
+            .connectTimeout(20, TimeUnit.SECONDS)
+            .readTimeout(60, TimeUnit.SECONDS)
+            .writeTimeout(60, TimeUnit.SECONDS)
+            .callTimeout(65, TimeUnit.SECONDS)
+            .build()
+    }
+
+    val dictadoApiService: ApiService by lazy {
+        Retrofit.Builder()
+            .baseUrl(BASE_URL)
+            .client(dictadoOkHttpClient)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+            .create(ApiService::class.java)
+    }
 }

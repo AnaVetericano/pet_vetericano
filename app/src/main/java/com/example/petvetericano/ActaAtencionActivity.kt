@@ -1183,70 +1183,246 @@ class ActaAtencionActivity : AppCompatActivity() {
     }
 
     private fun setupDictadoPorVoz() {
+        supportFragmentManager.setFragmentResultListener(
+            ActaVoiceDictationBottomSheet.REQUEST_KEY,
+            this
+        ) { _, bundle ->
+            @Suppress("DEPRECATION", "UNCHECKED_CAST")
+            val campos = bundle.getSerializable(ActaVoiceDictationBottomSheet.RESULT_CAMPOS) as? Map<String, Any?>
+                ?: return@setFragmentResultListener
+            @Suppress("DEPRECATION", "UNCHECKED_CAST")
+            val confianzas = bundle.getSerializable(ActaVoiceDictationBottomSheet.RESULT_CONFIANZAS) as? Map<String, Float?>
+                ?: emptyMap()
+            val sobrescribir = bundle.getStringArrayList(ActaVoiceDictationBottomSheet.RESULT_SOBRESCRIBIR)?.toSet()
+                ?: emptySet()
+            aplicarBorradorVozAlFormulario(campos, confianzas, sobrescribir)
+        }
+
         binding.btnDictarVoz.setOnClickListener {
             if (edicionBloqueadaPorEstado) {
-                Toast.makeText(this, "El acta está en modo solo lectura.", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, getString(R.string.reporte_ux_dictado_solo_lectura), Toast.LENGTH_SHORT).show()
                 return@setOnClickListener
             }
-            val bottomSheet = ActaVoiceDictationBottomSheet.newInstance { campos, confianzas ->
-                aplicarBorradorVozAlFormulario(campos, confianzas)
+            if (supportFragmentManager.findFragmentByTag(ActaVoiceDictationBottomSheet.TAG) != null) {
+                return@setOnClickListener
             }
+
+            val valoresActuales = hashMapOf<String, String>()
+            fun putIfFilled(fieldId: String, raw: CharSequence?) {
+                val str = raw?.toString()?.trim().orEmpty()
+                if (str.isNotEmpty() && !str.equals("Seleccionar", ignoreCase = true)) {
+                    valoresActuales[fieldId] = str
+                }
+            }
+
+            putIfFilled("numero_radicado", binding.etRadicado.text)
+            putIfFilled("fecha_atencion", binding.etFechaAtencion.text)
+            putIfFilled("solicitud_atencion_por", binding.etSolicitudAtencion.text)
+            putIfFilled("quien_reporta", binding.autoCompleteQuienReporta.text)
+            putIfFilled("quien_reporta_otro", binding.etQuienReportaOtro.text)
+            putIfFilled("propietario_nombre", binding.etPropietarioNombre.text)
+            putIfFilled("propietario_cedula", binding.etPropietarioCedula.text)
+            putIfFilled("propietario_telefono", binding.etPropietarioTelefono.text)
+            putIfFilled("propietario_email", binding.etPropietarioEmail.text)
+            putIfFilled("propietario_barrio", binding.etPropietarioBarrio.text)
+            putIfFilled("propietario_direccion", binding.etPropietarioDireccion.text)
+            putIfFilled("lugar_atencion", binding.etLugarAtencion.text)
+            putIfFilled("frecuencia_cardiaca", binding.etFrecuenciaCardiaca.text)
+            putIfFilled("frecuencia_respiratoria", binding.etFrecuenciaRespiratoria.text)
+            putIfFilled("mucosas", binding.etMucosas.text)
+            putIfFilled("anamnesis_descripcion_queja", binding.etAnamnesis.text)
+            putIfFilled("tratamiento_realizado", binding.etTratamiento.text)
+            if (binding.swDesparasitacion.isChecked) {
+                valoresActuales["desparasitacion"] = getString(R.string.reporte_ux_dictado_si)
+            }
+            putIfFilled("tipo_prueba", binding.autoCompleteTipoPrueba.text)
+            putIfFilled("pruebas_complementarias", binding.etPruebasComplementarias.text)
+            putIfFilled("resultado_pruebas", binding.etResultadoPruebas.text)
+            putIfFilled("compromisos", binding.etCompromisos.text)
+            putIfFilled("plazo_dias_cumplimiento", binding.etPlazoDias.text)
+
+            val fundLegal = binding.etFundamentoLegal.text?.toString()?.trim().orEmpty()
+            val fundModificado = dynamicFormState.getFieldValue("fundamento_legal")?.modifiedByUser == true
+            if (fundLegal.isNotEmpty() && (fundModificado || !fundLegal.equals("Ley 1774 de 2016", ignoreCase = true))) {
+                valoresActuales["fundamento_legal"] = fundLegal
+            }
+
+            val estCierre = binding.autoCompleteEstadoCierre.text?.toString()?.trim().orEmpty()
+            val estModificado = dynamicFormState.getFieldValue("estado_cierre")?.modifiedByUser == true
+            if (estCierre.isNotEmpty() && !estCierre.equals("Seleccionar", ignoreCase = true) &&
+                (estModificado || !estCierre.equals("En tratamiento", ignoreCase = true))
+            ) {
+                valoresActuales["estado_cierre"] = estCierre
+            }
+
+            putIfFilled("observacion", binding.etObservaciones.text)
+            if (binding.swRequiereRescate.isChecked) {
+                valoresActuales["requiere_rescate"] = getString(R.string.reporte_ux_dictado_si)
+            }
+            putIfFilled("motivo_rescate", binding.autoCompleteMotivoRescate.text)
+            putIfFilled("persona_atiende_rescatista", binding.etPersonaAtiendeRescatista.text)
+            putIfFilled("barrio_rescate", binding.etBarrioRescate.text)
+            putIfFilled("observaciones_rescate", binding.etObservacionesRescate.text)
+
+            val switchesActivos = listOf(
+                "sw_respiratorio_moco" to binding.swRespiratorioMoco.isChecked,
+                "sw_respiratorio_dificultad" to binding.swRespiratorioDificultad.isChecked,
+                "sw_respiratorio_tos" to binding.swRespiratorioTos.isChecked,
+                "sw_respiratorio_laganeo" to binding.swRespiratorioLaganeo.isChecked,
+                "sw_digestivo_vomito" to binding.swDigestivoVomito.isChecked,
+                "sw_digestivo_diarrea" to binding.swDigestivoDiarrea.isChecked,
+                "sw_digestivo_desnutrido" to binding.swDigestivoDesnutrido.isChecked,
+                "sw_digestivo_deshidratado" to binding.swDigestivoDeshidratado.isChecked,
+                "sw_musculo_caida_patas" to binding.swMusculoCaidaPatas.isChecked,
+                "sw_musculo_cojo" to binding.swMusculoCojo.isChecked,
+                "sw_musculo_herida_abierta" to binding.swMusculoHeridaAbierta.isChecked,
+                "sw_musculo_gusanos" to binding.swMusculoGusanos.isChecked,
+                "sw_musculo_postrado" to binding.swMusculoPostrado.isChecked,
+                "sw_dermato_peladuras" to binding.swDermatoPeladuras.isChecked,
+                "sw_dermato_heridas_sangre" to binding.swDermatoHeridasSangre.isChecked,
+                "sw_dermato_pulgas" to binding.swDermatoPulgas.isChecked
+            )
+            for ((swId, checked) in switchesActivos) {
+                if (checked) {
+                    valoresActuales[swId] = getString(R.string.reporte_ux_dictado_si)
+                }
+            }
+
+            animalBindingsList.firstOrNull()?.let { firstCard ->
+                putIfFilled("nombre_paciente", firstCard.etPacienteNombreCard.text)
+                putIfFilled("paciente_especie", firstCard.autoCompleteEspecieCard.text)
+                putIfFilled("paciente_raza", firstCard.autoCompleteRazaCard.text)
+                putIfFilled("paciente_sexo", firstCard.autoCompleteSexoCard.text)
+                putIfFilled("paciente_color", firstCard.autoCompleteColorCard.text)
+                putIfFilled("paciente_edad", firstCard.etPacienteEdadCard.text)
+                putIfFilled("peso_paciente", firstCard.etPacientePesoCard.text)
+                val estCard = firstCard.autoCompleteEsterilizadoCard.text?.toString()?.trim().orEmpty()
+                if (estCard.equals("Si", ignoreCase = true) || estCard.equals("Sí", ignoreCase = true)) {
+                    valoresActuales["esterilizacion_paciente"] = getString(R.string.reporte_ux_dictado_si)
+                }
+            }
+
+            val bottomSheet = ActaVoiceDictationBottomSheet.newInstance(valoresActuales)
             bottomSheet.show(supportFragmentManager, ActaVoiceDictationBottomSheet.TAG)
         }
     }
 
     private fun aplicarBorradorVozAlFormulario(
         campos: Map<String, Any?>,
-        confianzas: Map<String, Float?>
+        confianzas: Map<String, Float?>,
+        sobrescribirIds: Set<String> = emptySet()
     ) {
         try {
+            if (campos.isEmpty()) return
+
             huboInteraccionUsuario = true
             usuarioHaEditado = true
 
-            // 1. Aplicar al motor reactivo de formularios dinámicos
-            dynamicFormState.applyVoiceExtraction(campos, confianzas, overwriteExisting = true)
+            // Preservar valores actuales escritos manualmente en las vistas antes de inyectar
+            formBinder?.capturarHaciaEstado()
+
+            // Aplicar solo campos aprobados; sobrescribir únicamente si estaba vacío/default o el usuario lo confirmó
+            val camposNoConflicto = mutableMapOf<String, Any?>()
+            val camposSobrescribir = mutableMapOf<String, Any?>()
+
+            for ((fieldId, valor) in campos) {
+                if (valor == null) continue
+                val defField = dynamicFormState.definition.findField(fieldId)
+                val currentFieldVal = dynamicFormState.getFieldValue(fieldId)
+                val esDefaultIntacto = defField?.defaultValue != null &&
+                    currentFieldVal?.value?.toString()?.equals(defField.defaultValue.toString(), ignoreCase = true) == true &&
+                    currentFieldVal.modifiedByUser != true
+
+                if (sobrescribirIds.contains(fieldId) || esDefaultIntacto) {
+                    camposSobrescribir[fieldId] = valor
+                } else {
+                    camposNoConflicto[fieldId] = valor
+                }
+            }
+
+            if (camposNoConflicto.isNotEmpty()) {
+                dynamicFormState.applyVoiceExtraction(camposNoConflicto, confianzas, overwriteExisting = false)
+            }
+            if (camposSobrescribir.isNotEmpty()) {
+                dynamicFormState.applyVoiceExtraction(camposSobrescribir, confianzas, overwriteExisting = true)
+            }
 
             // 2. Volcar hacia los componentes visuales existentes de la actividad
             formBinder?.inyectarHaciaVistas()
 
-            // 3. Manejo de tarjeta de paciente si la IA detectó información del animal
-            val nombrePac = campos["nombre_paciente"]?.toString()?.trim()
-            val especiePac = campos["paciente_especie"]?.toString()?.trim()
-            val razaPac = campos["paciente_raza"]?.toString()?.trim()
-            val sexoPac = campos["paciente_sexo"]?.toString()?.trim()
-            val colorPac = campos["paciente_color"]?.toString()?.trim()
-            val edadPac = campos["paciente_edad"]?.toString()?.trim()
-            val pesoPac = campos["peso_paciente"]?.toString()?.trim()
-            val esterilizadoRaw = campos["esterilizacion_paciente"]
-
-            val esterilizadoStr = when (esterilizadoRaw) {
-                true, "true", "Sí", "si", "1" -> "Si"
-                else -> "No"
+            // 3. Manejo de tarjeta de paciente sin inventar valores por defecto
+            val nombrePac = campos["nombre_paciente"]?.toString()?.trim()?.takeIf { it.isNotEmpty() }
+            val especiePac = campos["paciente_especie"]?.toString()?.trim()?.takeIf { it.isNotEmpty() }
+            val razaPac = campos["paciente_raza"]?.toString()?.trim()?.takeIf { it.isNotEmpty() }
+            val sexoPac = campos["paciente_sexo"]?.toString()?.trim()?.takeIf { it.isNotEmpty() }
+            val colorPac = campos["paciente_color"]?.toString()?.trim()?.takeIf { it.isNotEmpty() }
+            val edadPac = campos["paciente_edad"]?.toString()?.trim()?.takeIf { it.isNotEmpty() }
+            val pesoPac = campos["peso_paciente"]?.toString()?.trim()?.takeIf { it.isNotEmpty() }
+            val esterilizadoStr = if (campos.containsKey("esterilizacion_paciente")) {
+                when (campos["esterilizacion_paciente"]) {
+                    true, "true", "Sí", "Si", "si", "1" -> "Si"
+                    false, "false", "No", "no", "0" -> "No"
+                    else -> null
+                }
+            } else {
+                null
             }
 
-            if (!nombrePac.isNullOrBlank() || !especiePac.isNullOrBlank()) {
+            val hayDatosPaciente = listOf(
+                nombrePac, especiePac, razaPac, sexoPac, colorPac, edadPac, pesoPac, esterilizadoStr
+            ).any { it != null }
+
+            if (hayDatosPaciente) {
                 if (animalBindingsList.isEmpty()) {
                     val cardState = AnimalCardState(
-                        nombre = nombrePac ?: "Sin nombre",
-                        especie = if (!especiePac.isNullOrBlank()) especiePac else "Canino",
-                        raza = if (!razaPac.isNullOrBlank()) razaPac else "Mestizo",
-                        sexo = if (!sexoPac.isNullOrBlank()) sexoPac else "Macho",
+                        nombre = nombrePac ?: "",
+                        especie = especiePac ?: "",
+                        raza = razaPac ?: "",
+                        sexo = sexoPac ?: "",
                         color = colorPac ?: "",
+                        edadNumero = "",
+                        edadUnidad = "",
                         edadTexto = edadPac ?: "",
                         peso = pesoPac ?: "",
-                        esterilizado = esterilizadoStr
+                        esterilizado = esterilizadoStr ?: ""
                     )
                     agregarFormularioAnimal(cardState)
                 } else {
                     val firstCard = animalBindingsList.first()
-                    if (!nombrePac.isNullOrBlank()) firstCard.etPacienteNombreCard.setText(nombrePac)
-                    if (!especiePac.isNullOrBlank()) firstCard.autoCompleteEspecieCard.setText(especiePac, false)
-                    if (!razaPac.isNullOrBlank()) firstCard.autoCompleteRazaCard.setText(razaPac, false)
-                    if (!sexoPac.isNullOrBlank()) firstCard.autoCompleteSexoCard.setText(sexoPac, false)
-                    if (!colorPac.isNullOrBlank()) firstCard.autoCompleteColorCard.setText(colorPac, false)
-                    if (!edadPac.isNullOrBlank()) firstCard.etPacienteEdadCard.setText(edadPac)
-                    if (!pesoPac.isNullOrBlank()) firstCard.etPacientePesoCard.setText(pesoPac)
-                    if (!esterilizadoStr.isNullOrBlank()) firstCard.autoCompleteEsterilizadoCard.setText(esterilizadoStr, false)
+                    fun puedeAplicarEnTarjeta(fieldId: String, textoActual: CharSequence?): Boolean {
+                        val actual = textoActual?.toString()?.trim().orEmpty()
+                        val estaVacio = actual.isEmpty() || actual.equals("Seleccionar", ignoreCase = true)
+                        return estaVacio || sobrescribirIds.contains(fieldId)
+                    }
+
+                    if (nombrePac != null && puedeAplicarEnTarjeta("nombre_paciente", firstCard.etPacienteNombreCard.text)) {
+                        firstCard.etPacienteNombreCard.setText(nombrePac)
+                    }
+                    if (especiePac != null && puedeAplicarEnTarjeta("paciente_especie", firstCard.autoCompleteEspecieCard.text)) {
+                        firstCard.autoCompleteEspecieCard.setText(especiePac, false)
+                    }
+                    if (razaPac != null && puedeAplicarEnTarjeta("paciente_raza", firstCard.autoCompleteRazaCard.text)) {
+                        firstCard.autoCompleteRazaCard.setText(razaPac, false)
+                    }
+                    if (sexoPac != null && puedeAplicarEnTarjeta("paciente_sexo", firstCard.autoCompleteSexoCard.text)) {
+                        firstCard.autoCompleteSexoCard.setText(sexoPac, false)
+                    }
+                    if (colorPac != null && puedeAplicarEnTarjeta("paciente_color", firstCard.autoCompleteColorCard.text)) {
+                        firstCard.autoCompleteColorCard.setText(colorPac, false)
+                    }
+                    if (edadPac != null && puedeAplicarEnTarjeta("paciente_edad", firstCard.etPacienteEdadCard.text)) {
+                        firstCard.etPacienteEdadCard.setText(edadPac)
+                    }
+                    if (pesoPac != null && puedeAplicarEnTarjeta("peso_paciente", firstCard.etPacientePesoCard.text)) {
+                        firstCard.etPacientePesoCard.setText(pesoPac)
+                    }
+                    if (esterilizadoStr != null) {
+                        val estActual = firstCard.autoCompleteEsterilizadoCard.text?.toString()?.trim().orEmpty()
+                        val esDefaultNo = estActual.isEmpty() || estActual.equals("No", ignoreCase = true)
+                        if (esDefaultNo || sobrescribirIds.contains("esterilizacion_paciente")) {
+                            firstCard.autoCompleteEsterilizadoCard.setText(esterilizadoStr, false)
+                        }
+                    }
                 }
             }
 
@@ -1255,12 +1431,12 @@ class ActaAtencionActivity : AppCompatActivity() {
 
             Toast.makeText(
                 this,
-                "✓ Borrador de voz aplicado exitosamente al acta. Revisa los campos y continúa.",
+                getString(R.string.reporte_ux_dictado_aplicado_ok),
                 Toast.LENGTH_LONG
             ).show()
         } catch (e: Exception) {
-            android.util.Log.e("ActaAtencionActivity", "Error al aplicar borrador de voz: ${e.message}", e)
-            Toast.makeText(this, "Aviso: los datos de voz se aplicaron parcialmente.", Toast.LENGTH_SHORT).show()
+            android.util.Log.e("ActaAtencionActivity", "Error al aplicar borrador de voz", e)
+            Toast.makeText(this, getString(R.string.reporte_ux_dictado_aplicado_parcial), Toast.LENGTH_SHORT).show()
         }
     }
 

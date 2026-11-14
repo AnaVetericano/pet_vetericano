@@ -20,9 +20,9 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
+        android:layout_marginBottom="12dp"
         android:gravity="center_vertical"
-        android:layout_marginBottom="12dp">
+        android:orientation="horizontal">
 
         <com.google.android.material.card.MaterialCardView
             style="?attr/materialCardViewFilledStyle"
@@ -38,6 +38,7 @@
                 android:layout_width="24dp"
                 android:layout_height="24dp"
                 android:layout_gravity="center"
+                android:importantForAccessibility="no"
                 android:src="@drawable/baseline_mic_24"
                 app:tint="@color/primary" />
         </com.google.android.material.card.MaterialCardView>
@@ -54,7 +55,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/nunito_bold"
-                android:text="Dictado por Voz Inteligente (IA)"
+                android:text="@string/reporte_ux_dictado_titulo"
                 android:textColor="@color/text_primary"
                 android:textSize="16sp" />
 
@@ -63,16 +64,17 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:fontFamily="@font/nunito"
-                android:text="Describe la visita, paciente y hallazgos. Gemini completará el acta."
+                android:text="@string/reporte_ux_dictado_subtitulo"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
         </LinearLayout>
 
         <ImageButton
             android:id="@+id/btnCerrarSheet"
-            android:layout_width="36dp"
-            android:layout_height="36dp"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
             android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/reporte_ux_dictado_cd_cerrar"
             android:src="@drawable/baseline_close_24"
             app:tint="@color/text_muted" />
     </LinearLayout>
@@ -84,17 +86,20 @@
         android:id="@+id/layoutGrabacion"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:gravity="center_horizontal"
-        android:paddingVertical="16dp">
+        android:orientation="vertical"
+        android:paddingVertical="12dp">
 
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardBotonMic"
             style="?attr/materialCardViewFilledStyle"
-            android:layout_width="84dp"
-            android:layout_height="84dp"
+            android:layout_width="88dp"
+            android:layout_height="88dp"
+            android:clickable="true"
+            android:contentDescription="@string/reporte_ux_dictado_cd_icono_mic"
+            android:focusable="true"
             app:cardBackgroundColor="@color/primary_soft"
-            app:cardCornerRadius="42dp"
+            app:cardCornerRadius="44dp"
             app:cardElevation="2dp"
             app:strokeColor="@color/primary"
             app:strokeWidth="2dp">
@@ -104,45 +109,112 @@
                 android:layout_width="40dp"
                 android:layout_height="40dp"
                 android:layout_gravity="center"
+                android:importantForAccessibility="no"
                 android:src="@drawable/baseline_mic_24"
                 app:tint="@color/primary" />
         </com.google.android.material.card.MaterialCardView>
 
-        <TextView
-            android:id="@+id/tvTiempoGrabacion"
+        <LinearLayout
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:fontFamily="@font/nunito_bold"
-            android:text="00:00"
-            android:textColor="@color/text_primary"
-            android:textSize="22sp" />
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvTiempoGrabacion"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/nunito_bold"
+                android:text="@string/reporte_ux_dictado_tiempo_inicial"
+                android:textColor="@color/text_primary"
+                android:textSize="24sp" />
+
+            <TextView
+                android:id="@+id/tvLimiteTiempo"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:fontFamily="@font/nunito"
+                android:text="@string/reporte_ux_dictado_tiempo_limite"
+                android:textColor="@color/text_muted"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <com.google.android.material.progressindicator.LinearProgressIndicator
+            android:id="@+id/pbNivelAudio"
+            android:layout_width="200dp"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:contentDescription="@string/reporte_ux_dictado_cd_nivel_audio"
+            android:max="100"
+            android:progress="0"
+            app:indicatorColor="@color/primary"
+            app:trackColor="@color/primary_light"
+            app:trackCornerRadius="4dp"
+            app:trackThickness="6dp" />
 
         <TextView
             android:id="@+id/tvEstadoGrabacion"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="8dp"
             android:fontFamily="@font/nunito"
-            android:text="Toca el micrófono para comenzar a grabar"
+            android:gravity="center"
+            android:text="@string/reporte_ux_dictado_estado_listo"
             android:textColor="@color/text_secondary"
             android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/tvAvisoGrabacion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:fontFamily="@font/nunito_bold"
+            android:gravity="center"
+            android:textColor="@color/radix_amber_text"
+            android:textSize="12sp"
+            android:visibility="gone"
+            tools:text="Quedan menos de 20 segundos."
+            tools:visibility="visible" />
+
+        <com.google.android.material.card.MaterialCardView
+            style="?attr/materialCardViewFilledStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            app:cardBackgroundColor="@color/input_background"
+            app:cardCornerRadius="12dp"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp">
+
+            <TextView
+                android:id="@+id/tvInstruccionEjemplo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/nunito"
+                android:padding="10dp"
+                android:text="@string/reporte_ux_dictado_instruccion_ejemplo"
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+        </com.google.android.material.card.MaterialCardView>
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="20dp">
+            android:layout_marginTop="16dp"
+            android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCancelarGrabacion"
                 style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_weight="1"
+                android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
-                android:text="Cancelar"
+                android:layout_weight="1"
                 android:fontFamily="@font/nunito_bold"
+                android:minHeight="48dp"
+                android:text="@string/reporte_ux_dictado_btn_continuar_manual"
                 android:textAllCaps="false"
                 android:textColor="@color/text_secondary"
                 app:cornerRadius="12dp"
@@ -152,11 +224,12 @@
                 android:id="@+id/btnAccionGrabacion"
                 style="?attr/materialButtonStyle"
                 android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_weight="1"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
-                android:text="Iniciar Grabación"
+                android:layout_weight="1"
                 android:fontFamily="@font/nunito_bold"
+                android:minHeight="48dp"
+                android:text="@string/reporte_ux_dictado_btn_iniciar"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 app:backgroundTint="@color/primary"
@@ -171,15 +244,16 @@
         android:id="@+id/layoutProcesando"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:gravity="center"
-        android:paddingVertical="32dp"
+        android:orientation="vertical"
+        android:paddingVertical="28dp"
         android:visibility="gone"
         tools:visibility="gone">
 
         <com.google.android.material.progressindicator.CircularProgressIndicator
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:contentDescription="@string/reporte_ux_dictado_procesando_titulo"
             android:indeterminate="true"
             app:indicatorColor="@color/primary"
             app:trackColor="@color/primary_light"
@@ -191,19 +265,36 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:fontFamily="@font/nunito_bold"
-            android:text="Interpretando narración y extrayendo campos con Gemini AI..."
+            android:text="@string/reporte_ux_dictado_procesando_titulo"
             android:textAlignment="center"
             android:textColor="@color/text_primary"
             android:textSize="14sp" />
 
         <TextView
+            android:id="@+id/tvSubmensajeProcesando"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:fontFamily="@font/nunito"
-            android:text="Estructurando datos según la normativa del acta..."
+            android:text="@string/reporte_ux_dictado_procesando_subtitulo"
+            android:textAlignment="center"
             android:textColor="@color/text_secondary"
             android:textSize="12sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnCancelarProcesamiento"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:fontFamily="@font/nunito_bold"
+            android:minWidth="140dp"
+            android:minHeight="48dp"
+            android:text="@string/reporte_ux_dictado_btn_cancelar_procesamiento"
+            android:textAllCaps="false"
+            android:textColor="@color/text_secondary"
+            app:cornerRadius="12dp"
+            app:strokeColor="@color/input_stroke" />
     </LinearLayout>
 
     <!-- ======================================================== -->
@@ -222,7 +313,7 @@
             style="?attr/materialCardViewFilledStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="10dp"
+            android:layout_marginBottom="8dp"
             app:cardBackgroundColor="@color/primary_soft"
             app:cardCornerRadius="12dp"
             app:strokeColor="@color/primary_light"
@@ -232,13 +323,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="12dp">
+                android:padding="10dp">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:fontFamily="@font/nunito_bold"
-                    android:text="Resumen de la Narración"
+                    android:text="@string/reporte_ux_dictado_resumen_titulo"
                     android:textColor="@color/primary"
                     android:textSize="12sp" />
 
@@ -248,28 +339,108 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="2dp"
                     android:fontFamily="@font/nunito"
-                    android:text="Se extrajeron datos clínicos del paciente y del propietario."
                     android:textColor="@color/text_primary"
-                    android:textSize="13sp" />
+                    android:textSize="13sp"
+                    tools:text="Se extrajeron datos clínicos del paciente y del propietario." />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Transcripción literal escuchada -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardTranscripcionLiteral"
+            style="?attr/materialCardViewFilledStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/input_background"
+            app:cardCornerRadius="12dp"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp"
+            tools:visibility="visible">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/nunito_bold"
+                    android:text="@string/reporte_ux_dictado_transcripcion_titulo"
+                    android:textColor="@color/text_secondary"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tvTranscripcionLiteral"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="@font/nunito"
+                    android:maxLines="4"
+                    android:ellipsize="end"
+                    android:textColor="@color/text_primary"
+                    android:textSize="12sp"
+                    tools:text="Canino macho llamado Rocky..." />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Advertencias de IA -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardAdvertenciasDictado"
+            style="?attr/materialCardViewFilledStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp"
+            android:visibility="gone"
+            app:cardBackgroundColor="@color/radix_amber_bg"
+            app:cardCornerRadius="12dp"
+            app:strokeColor="@color/radix_amber_border"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="10dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/nunito_bold"
+                    android:text="@string/reporte_ux_dictado_advertencias_titulo"
+                    android:textColor="@color/radix_amber_text"
+                    android:textSize="11sp" />
+
+                <TextView
+                    android:id="@+id/tvAdvertenciasDictado"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="@font/nunito"
+                    android:textColor="@color/radix_amber_text"
+                    android:textSize="12sp" />
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="6dp"
             android:fontFamily="@font/nunito_bold"
-            android:text="Campos extraídos para revisión y edición:"
+            android:text="@string/reporte_ux_dictado_campos_titulo"
             android:textColor="@color/text_primary"
-            android:textSize="13sp"
-            android:layout_marginBottom="6dp" />
+            android:textSize="13sp" />
 
-        <!-- Lista scrollable de campos extraídos para edición humana con altura acotada a 260dp -->
+        <!-- Lista scrollable de campos extraídos agrupados -->
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvCamposExtraidos"
             android:layout_width="match_parent"
             android:layout_height="260dp"
-            android:nestedScrollingEnabled="true"
-            android:layout_marginBottom="14dp" />
+            android:layout_marginBottom="10dp"
+            android:nestedScrollingEnabled="true" />
 
         <!-- Botones de Acción de Confirmación Humana -->
         <LinearLayout
@@ -281,11 +452,12 @@
                 android:id="@+id/btnDescartarBorrador"
                 style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_weight="1"
+                android:layout_height="wrap_content"
                 android:layout_marginEnd="6dp"
-                android:text="Volver a Grabar"
+                android:layout_weight="1"
                 android:fontFamily="@font/nunito_bold"
+                android:minHeight="48dp"
+                android:text="@string/reporte_ux_dictado_btn_reintentar_grabacion"
                 android:textAllCaps="false"
                 android:textColor="@color/text_secondary"
                 app:cornerRadius="12dp"
@@ -295,16 +467,31 @@
                 android:id="@+id/btnAplicarBorrador"
                 style="?attr/materialButtonStyle"
                 android:layout_width="0dp"
-                android:layout_height="46dp"
-                android:layout_weight="1"
+                android:layout_height="wrap_content"
                 android:layout_marginStart="6dp"
-                android:text="Aplicar al Acta"
+                android:layout_weight="1"
                 android:fontFamily="@font/nunito_bold"
+                android:minHeight="48dp"
+                android:text="@string/reporte_ux_dictado_btn_confirmar_deshabilitado"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 app:backgroundTint="@color/radix_grass_solid"
                 app:cornerRadius="12dp" />
         </LinearLayout>
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnContinuarManualRevision"
+            style="?attr/materialButtonOutlinedStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:fontFamily="@font/nunito_bold"
+            android:minHeight="48dp"
+            android:text="@string/reporte_ux_dictado_btn_continuar_manual"
+            android:textAllCaps="false"
+            android:textColor="@color/text_secondary"
+            app:cornerRadius="12dp"
+            app:strokeColor="@color/card_stroke" />
     </LinearLayout>
 
     <!-- ======================================================== -->
@@ -314,15 +501,17 @@
         android:id="@+id/layoutError"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
         android:gravity="center"
-        android:paddingVertical="20dp"
+        android:orientation="vertical"
+        android:paddingVertical="16dp"
         android:visibility="gone"
         tools:visibility="gone">
 
         <ImageView
+            android:id="@+id/ivErrorDictado"
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:contentDescription="@string/reporte_ux_dictado_cd_icono_error"
             android:src="@drawable/warning_icon4" />
 
         <TextView
@@ -331,32 +520,58 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
             android:fontFamily="@font/nunito_bold"
-            android:text="No fue posible procesar el audio"
+            android:gravity="center"
+            android:text="@string/reporte_ux_dictado_error_generico_titulo"
             android:textColor="@color/text_primary"
             android:textSize="15sp" />
 
         <TextView
             android:id="@+id/tvMensajeError"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="4dp"
+            android:layout_marginTop="6dp"
             android:fontFamily="@font/nunito"
-            android:text="Ocurrió un inconveniente al conectar con el servicio. Puede continuar diligenciando manualmente."
+            android:text="@string/reporte_ux_dictado_error_generico_msg"
             android:textAlignment="center"
             android:textColor="@color/text_secondary"
-            android:textSize="12sp" />
+            android:textSize="13sp" />
 
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnReintentarError"
-            style="?attr/materialButtonStyle"
-            android:layout_width="wrap_content"
-            android:layout_height="44dp"
-            android:layout_marginTop="16dp"
-            android:text="Intentar de Nuevo"
-            android:fontFamily="@font/nunito_bold"
-            android:textAllCaps="false"
-            app:cornerRadius="12dp"
-            app:backgroundTint="@color/primary" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnContinuarManualError"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/nunito_bold"
+                android:minHeight="48dp"
+                android:text="@string/reporte_ux_dictado_btn_continuar_manual"
+                android:textAllCaps="false"
+                android:textColor="@color/text_secondary"
+                app:cornerRadius="12dp"
+                app:strokeColor="@color/input_stroke" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnReintentarError"
+                style="?attr/materialButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:fontFamily="@font/nunito_bold"
+                android:minHeight="48dp"
+                android:text="@string/reporte_ux_dictado_btn_reintentar"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/primary"
+                app:cornerRadius="12dp" />
+        </LinearLayout>
     </LinearLayout>
 
 </LinearLayout>

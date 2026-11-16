@@ -149,6 +149,7 @@ data class DetectarDuplicadosCiudadanoRequest(
     val descripcion: String? = null,
     val latitud: Double? = null,
     val longitud: Double? = null,
+    
     val foto: String? = null,
     val fotos: List<String>? = null
 )

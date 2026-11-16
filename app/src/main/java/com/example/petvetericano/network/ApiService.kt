@@ -21,6 +21,8 @@ import com.example.petvetericano.models.ListadoPaginadoResponse
 import com.example.petvetericano.models.SincronizarOfflineRequest
 import com.example.petvetericano.models.SincronizarOfflineResponse
 import com.example.petvetericano.models.AlertasKitResponse
+import com.example.petvetericano.models.DetectarDuplicadosCiudadanoRequest
+import com.example.petvetericano.models.DetectarDuplicadosCiudadanoResponse
 import retrofit2.Response
 import retrofit2.http.Body
 import retrofit2.http.GET
@@ -59,6 +61,11 @@ interface ApiService {
     // --- PETICIONES / REPORTES ---
     @GET("peticiones/tipos/")
     suspend fun obtenerTiposPeticion(): Response<List<TipoPeticionResponse>>
+
+    @POST("peticiones/detectar-duplicados-ciudadano/")
+    suspend fun detectarDuplicadosCiudadano(
+        @Body request: DetectarDuplicadosCiudadanoRequest
+    ): Response<DetectarDuplicadosCiudadanoResponse>
 
     @POST("peticiones/iniciar/")
     suspend fun enviarPeticion(@Body peticion: confirmarpeticion): Response<IniciarPeticionResponse>

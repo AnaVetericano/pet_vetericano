@@ -4,29 +4,43 @@ import android.content.Context
 import android.location.Address
 import android.location.Geocoder
 import android.os.Build
+import android.os.SystemClock
+import android.util.Log
 import androidx.annotation.StringRes
+import com.example.petvetericano.BuildConfig
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.petvetericano.R
+import com.example.petvetericano.SharedPreferencesManager
+import com.example.petvetericano.models.DetectarDuplicadosCiudadanoRequest
 import com.example.petvetericano.models.TipoPeticionResponse
+import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.offline.CloudinaryUploadHelper
+import com.example.petvetericano.offline.NetworkUtils
+import com.example.petvetericano.offline.ReporteEncolador
+import com.example.petvetericano.offline.ResultadoSubida
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeoutOrNull
 import java.io.File
 import java.util.Locale
 import kotlin.coroutines.resume
-import com.example.petvetericano.offline.ReporteEncolador
-import kotlinx.coroutines.NonCancellable
-import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.receiveAsFlow
 
+private const val TAG_DUPLICADOS_IA = "DuplicadosDINOv2"
+private const val CLOUDINARY_PRECHECK_TIMEOUT_MS = 25_000L
+private const val DETECTAR_DUPLICADOS_TIMEOUT_MS = 28_000L
 private const val KEY_ID_TIPO = "key_reporte_id_tipo"
 private const val KEY_NOMBRE_TIPO = "key_reporte_nombre_tipo"
 private const val KEY_LATITUD = "key_reporte_latitud"
@@ -38,6 +52,8 @@ private const val KEY_PASO_ACTUAL = "key_reporte_paso_actual"
 private const val KEY_DESCRIPCION = "key_reporte_descripcion"
 private const val KEY_EVIDENCIAS_PATHS = "key_reporte_evidencias_paths"
 private const val KEY_EVIDENCIAS_IS_VIDEO = "key_reporte_evidencias_is_video"
+private const val KEY_EVIDENCIAS_URLS = "key_reporte_evidencias_urls"
+private const val KEY_AUTORIZAR_FOTOS_DUPLICADOS = "key_reporte_autorizar_fotos_duplicados"
 private const val KEY_PENDING_CAM_PATH = "key_reporte_pending_cam_path"
 private const val KEY_PENDING_CAM_URI = "key_reporte_pending_cam_uri"
 private const val KEY_PENDING_CAM_IS_VIDEO = "key_reporte_pending_cam_is_video"
@@ -64,6 +80,8 @@ class ReporteCiudadanoViewModel(
         val desc = savedStateHandle.get<String>(KEY_DESCRIPCION) ?: ""
         val paths = savedStateHandle.get<ArrayList<String>>(KEY_EVIDENCIAS_PATHS)
         val isVideos = savedStateHandle.get<BooleanArray>(KEY_EVIDENCIAS_IS_VIDEO)
+        val urlsRemotas = savedStateHandle.get<ArrayList<String>>(KEY_EVIDENCIAS_URLS)
+        val autorizarFotosDuplicados = savedStateHandle.get<Boolean>(KEY_AUTORIZAR_FOTOS_DUPLICADOS) ?: false
         val pendPath = savedStateHandle.get<String>(KEY_PENDING_CAM_PATH)
         val pendUri = savedStateHandle.get<String>(KEY_PENDING_CAM_URI)
         val pendIsVideo = savedStateHandle.get<Boolean>(KEY_PENDING_CAM_IS_VIDEO) ?: false
@@ -74,12 +92,14 @@ class ReporteCiudadanoViewModel(
                 val f = File(paths[i])
                 if (f.exists() && f.length() > 0L) {
                     val esVid = isVideos[i]
+                    val urlGuardada = urlsRemotas?.getOrNull(i)?.takeIf { it.isNotBlank() }
                     evidenciasIniciales.add(
                         EvidenciaItemLocal(
                             id = f.name,
                             localPath = f.absolutePath,
                             uriString = "",
-                            esVideo = esVid
+                            esVideo = esVid,
+                            urlRemota = urlGuardada
                         )
                     )
                 }
@@ -106,6 +126,7 @@ class ReporteCiudadanoViewModel(
                 ubicacionSeleccionadaPorUsuario = ubicacionUsuario,
                 descripcion = desc,
                 evidencias = evidenciasIniciales,
+                autorizarFotosDuplicados = autorizarFotosDuplicados,
                 pendingCameraFilePath = pendPath,
                 pendingCameraUriString = pendUri,
                 pendingCameraEsVideo = pendIsVideo
@@ -184,11 +205,18 @@ class ReporteCiudadanoViewModel(
         }
     }
 
+    fun actualizarAutorizarFotosDuplicados(autorizado: Boolean) {
+        savedStateHandle[KEY_AUTORIZAR_FOTOS_DUPLICADOS] = autorizado
+        _uiState.update { it.copy(autorizarFotosDuplicados = autorizado) }
+    }
+
     private fun sincronizarEvidenciasSavedState(lista: List<EvidenciaItemLocal>) {
         val paths = ArrayList(lista.map { it.localPath })
         val isVideos = lista.map { it.esVideo }.toBooleanArray()
+        val urls = ArrayList(lista.map { it.urlRemota.orEmpty() })
         savedStateHandle[KEY_EVIDENCIAS_PATHS] = paths
         savedStateHandle[KEY_EVIDENCIAS_IS_VIDEO] = isVideos
+        savedStateHandle[KEY_EVIDENCIAS_URLS] = urls
     }
 
     fun seleccionarTipo(item: TipoReporteItem) {
@@ -363,8 +391,179 @@ class ReporteCiudadanoViewModel(
         savedStateHandle.remove<String>(KEY_DESCRIPCION)
         savedStateHandle.remove<ArrayList<String>>(KEY_EVIDENCIAS_PATHS)
         savedStateHandle.remove<BooleanArray>(KEY_EVIDENCIAS_IS_VIDEO)
+        savedStateHandle.remove<ArrayList<String>>(KEY_EVIDENCIAS_URLS)
+        savedStateHandle.remove<Boolean>(KEY_AUTORIZAR_FOTOS_DUPLICADOS)
         limpiarPendingCamera()
         _uiState.value = ReporteDraftState()
+    }
+
+    /**
+     * Consulta preventivamente el endpoint ciudadano de duplicados (fail-open ante fallo o sin red).
+     * Si el reporte incluye fotografias, reutiliza o sube primero la foto principal a Cloudinary
+     * guardando la URL remota en el borrador para evitar cargas duplicadas en ReporteSyncWorker.
+     */
+    suspend fun verificarDuplicadosAntesDeConfirmar(context: Context): AlertaDuplicadoUiModel? {
+        val estadoActual = _uiState.value
+        if (estadoActual.estaVerificandoDuplicados || estadoActual.estaEnviando) {
+            Log.w(
+                TAG_DUPLICADOS_IA,
+                "Verificacion omitida: verificando=${estadoActual.estaVerificandoDuplicados}, enviando=${estadoActual.estaEnviando}"
+            )
+            return null
+        }
+
+        val appContext = context.applicationContext
+        if (!NetworkUtils.hayRedDisponible(appContext)) {
+            Log.i(TAG_DUPLICADOS_IA, "Sin red validada; continuando en modo offline (fail-open).")
+            return null
+        }
+
+        val token = SharedPreferencesManager(appContext).getAccessToken()
+            .ifEmpty { RetrofitClient.authToken ?: "" }
+            .trim()
+        if (token.isEmpty()) {
+            Log.w(TAG_DUPLICADOS_IA, "Token JWT ausente en verificacion preventiva (fail-open).")
+            return null
+        }
+
+        val lat = estadoActual.latitud
+        val lng = estadoActual.longitud
+        val gpsValido = lat != null && lng != null && (kotlin.math.abs(lat) > 1e-6 || kotlin.math.abs(lng) > 1e-6)
+        val descripcionLimpia = estadoActual.descripcion.trim()
+        val fotosLocales = estadoActual.evidencias.filter { !it.esVideo && File(it.localPath).exists() }
+        val fotosConUrlRemota = estadoActual.evidencias.filter {
+            !it.esVideo && !it.urlRemota.isNullOrBlank() && it.urlRemota!!.trim().startsWith("http")
+        }
+        if (!gpsValido && fotosLocales.isEmpty() && fotosConUrlRemota.isEmpty()) {
+            Log.i(
+                TAG_DUPLICADOS_IA,
+                "Criterios insuficientes para verificar (fotos=0, gpsValido=false, descLen=${descripcionLimpia.length})."
+            )
+            return null
+        }
+
+        _uiState.update { it.copy(estaVerificandoDuplicados = true) }
+        val tInicio = SystemClock.elapsedRealtime()
+        return try {
+            RetrofitClient.init(appContext)
+            RetrofitClient.authToken = token
+
+            // Reutilizar URLs ya subidas y subir fotos nuevas pendientes (hasta 3 imagenes por consulta)
+            val urlsFotos = mutableListOf<String>()
+            for (fotoLocal in fotosLocales) {
+                if (urlsFotos.size >= 3) break
+                val urlExistente = fotoLocal.urlRemota?.trim()?.takeIf { it.startsWith("http") }
+                if (urlExistente != null) {
+                    urlsFotos.add(urlExistente)
+                    continue
+                }
+                val tCloud = SystemClock.elapsedRealtime()
+                val urlSubida = withTimeoutOrNull(CLOUDINARY_PRECHECK_TIMEOUT_MS) {
+                    withContext(Dispatchers.IO) {
+                        CloudinaryUploadHelper.ensureInitialized(appContext)
+                        when (val res = CloudinaryUploadHelper.subir(appContext, fotoLocal.localPath, esVideo = false)) {
+                            is ResultadoSubida.Exito -> res.secureUrl.trim().takeIf { it.startsWith("http") }
+                            is ResultadoSubida.ErrorRed -> {
+                                Log.w(TAG_DUPLICADOS_IA, "ErrorRed Cloudinary pre-check: ${res.mensaje}")
+                                null
+                            }
+                            is ResultadoSubida.ErrorPermanente -> {
+                                Log.w(TAG_DUPLICADOS_IA, "ErrorPermanente Cloudinary pre-check: ${res.mensaje}")
+                                null
+                            }
+                            is ResultadoSubida.ArchivoNoExiste -> {
+                                Log.w(TAG_DUPLICADOS_IA, "Archivo local no encontrado para pre-check Cloudinary.")
+                                null
+                            }
+                        }
+                    }
+                }
+                val msCloud = SystemClock.elapsedRealtime() - tCloud
+                if (urlSubida != null) {
+                    urlsFotos.add(urlSubida)
+                    actualizarUrlRemotaEvidencia(fotoLocal.id, urlSubida)
+                    Log.i(TAG_DUPLICADOS_IA, "Pre-subida Cloudinary OK en ${msCloud}ms (fotos=${urlsFotos.size}).")
+                } else {
+                    Log.w(TAG_DUPLICADOS_IA, "Pre-subida Cloudinary fallo/timeout tras ${msCloud}ms.")
+                }
+            }
+
+            for (ev in fotosConUrlRemota) {
+                if (urlsFotos.size >= 3) break
+                val urlLimpia = ev.urlRemota?.trim() ?: continue
+                if (!urlsFotos.contains(urlLimpia)) {
+                    urlsFotos.add(urlLimpia)
+                }
+            }
+
+            if (fotosLocales.isNotEmpty() && urlsFotos.isEmpty() && !gpsValido) {
+                Log.w(TAG_DUPLICADOS_IA, "No se obtuvo URL de Cloudinary para las ${fotosLocales.size} foto(s) y no hay GPS válido; fail-open.")
+                return null
+            }
+            if (fotosLocales.isNotEmpty() && urlsFotos.isEmpty() && gpsValido) {
+                Log.w(TAG_DUPLICADOS_IA, "Sin URL Cloudinary en pre-check; se consultará detectar-duplicados-ciudadano solo por proximidad GPS.")
+            }
+
+            val request = DetectarDuplicadosCiudadanoRequest(
+                descripcion = descripcionLimpia.takeIf { it.isNotEmpty() },
+                latitud = if (gpsValido) lat else null,
+                longitud = if (gpsValido) lng else null,
+                foto = urlsFotos.firstOrNull(),
+                fotos = urlsFotos.takeIf { it.isNotEmpty() }
+            )
+
+            Log.i(
+                TAG_DUPLICADOS_IA,
+                "Consultando detectar-duplicados-ciudadano en ${BuildConfig.API_BASE_URL} (fotos=${urlsFotos.size}, gpsValido=$gpsValido)."
+            )
+
+            val tBackend = SystemClock.elapsedRealtime()
+            val response = withTimeoutOrNull(DETECTAR_DUPLICADOS_TIMEOUT_MS) {
+                withContext(Dispatchers.IO) {
+                    RetrofitClient.apiService.detectarDuplicadosCiudadano(request)
+                }
+            }
+            val msBackend = SystemClock.elapsedRealtime() - tBackend
+            if (response == null) {
+                Log.w(TAG_DUPLICADOS_IA, "Timeout (${DETECTAR_DUPLICADOS_TIMEOUT_MS}ms) esperando detectar-duplicados-ciudadano; fail-open.")
+                return null
+            }
+
+            if (!response.isSuccessful) {
+                Log.w(
+                    TAG_DUPLICADOS_IA,
+                    "Respuesta HTTP no exitosa de detectar-duplicados-ciudadano: code=${response.code()} en ${msBackend}ms."
+                )
+                return null
+            }
+
+            val body = response.body()
+            val alerta = DuplicadoCiudadanoPolicy.extraerAlertaVisual(body)
+            Log.i(
+                TAG_DUPLICADOS_IA,
+                "Respuesta HTTP ${response.code()} en ${msBackend}ms (totalMs=${SystemClock.elapsedRealtime() - tInicio}): " +
+                    "posible=${body?.posible_duplicado}, candidatos=${body?.total_candidatos}, " +
+                    "pct=${alerta?.porcentajeSimilitudVisual}, tieneFoto=${alerta?.fotoAutorizadaUrl != null}"
+            )
+            alerta
+        } catch (ce: CancellationException) {
+            throw ce
+        } catch (e: Exception) {
+            Log.w(TAG_DUPLICADOS_IA, "Excepcion en verificacion preventiva (${e.javaClass.simpleName}): ${e.message}")
+            null
+        } finally {
+            _uiState.update { it.copy(estaVerificandoDuplicados = false) }
+        }
+    }
+
+    private fun actualizarUrlRemotaEvidencia(evidenciaId: String, urlRemota: String) {
+        _uiState.update { state ->
+            val nuevaLista = state.evidencias.map { ev ->
+                if (ev.id == evidenciaId) ev.copy(urlRemota = urlRemota) else ev
+            }
+            sincronizarEvidenciasSavedState(nuevaLista)
+            state.copy(evidencias = nuevaLista)
+        }
     }
 
     fun enviarReporte(context: Context) {
@@ -389,9 +588,13 @@ class ReporteCiudadanoViewModel(
                 else -> appContext.getString(R.string.reporte_offline_ubicacion_no_seleccionada)
             }
 
-            val evidenciasList = state.evidencias
-                .filter { File(it.localPath).exists() }
-                .map { Pair(it.localPath, it.esVideo) }
+            val evidenciasValidas = state.evidencias.filter { File(it.localPath).exists() }
+            val evidenciasList = evidenciasValidas.map { Pair(it.localPath, it.esVideo) }
+            val urlsRemotasPorPath = evidenciasValidas
+                .mapNotNull { ev ->
+                    ev.urlRemota?.trim()?.takeIf { it.isNotEmpty() }?.let { ev.localPath to it }
+                }
+                .toMap()
 
             val idLocal = withContext(Dispatchers.IO + NonCancellable) {
                 ReporteEncolador.encolar(
@@ -402,7 +605,9 @@ class ReporteCiudadanoViewModel(
                     direccion = dirFinal,
                     latitud = latitud,
                     longitud = longitud,
-                    evidencias = evidenciasList
+                    evidencias = evidenciasList,
+                    urlsRemotasPorPath = urlsRemotasPorPath,
+                    autorizarFotosDuplicados = state.autorizarFotosDuplicados
                 )
             }
 

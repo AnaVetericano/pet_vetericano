@@ -48,7 +48,8 @@ data class EvidenciaItemLocal(
     val uriString: String,
     val esVideo: Boolean,
     val duracionSegundos: Int = 0,
-    val tamanoBytes: Long = 0L
+    val tamanoBytes: Long = 0L,
+    val urlRemota: String? = null
 )
 
 data class ReporteDraftState(
@@ -65,6 +66,7 @@ data class ReporteDraftState(
     // Pantalla 2: Descripcion y Multimedia (preparado para R2)
     val descripcion: String = "",
     val evidencias: List<EvidenciaItemLocal> = emptyList(),
+    val autorizarFotosDuplicados: Boolean = false,
 
     // Captura pendiente para SavedStateHandle (preparado para R2)
     val pendingCameraFilePath: String? = null,
@@ -74,6 +76,7 @@ data class ReporteDraftState(
     // Control de UI
     val isLoadingUbicacion: Boolean = false,
     @get:StringRes val mensajeCargaUbicacionResId: Int = R.string.reporte_offline_cargando_direccion,
+    val estaVerificandoDuplicados: Boolean = false,
     val estaEnviando: Boolean = false,
     val hayConexionInternet: Boolean = true,
     @get:StringRes val errorValidacionResId: Int? = null

@@ -51,7 +51,8 @@ data class ReporteLocalEntity(
     val codigoError: Int? = null,
     val idPeticionRemota: Int? = null,
     val numeroRadicado: String? = null,
-    val enviadoEn: Long? = null
+    val enviadoEn: Long? = null,
+    val autorizarFotosDuplicados: Boolean = false
 )
 
 /**
@@ -153,6 +154,7 @@ class ReporteLocalRepository private constructor(context: Context) {
                 if (entity.idPeticionRemota != null) put(ReporteLocalDbHelper.COL_ID_PETICION_REMOTA, entity.idPeticionRemota) else putNull(ReporteLocalDbHelper.COL_ID_PETICION_REMOTA)
                 put(ReporteLocalDbHelper.COL_NUMERO_RADICADO, entity.numeroRadicado)
                 if (entity.enviadoEn != null) put(ReporteLocalDbHelper.COL_ENVIADO_EN, entity.enviadoEn) else putNull(ReporteLocalDbHelper.COL_ENVIADO_EN)
+                put(ReporteLocalDbHelper.COL_AUTORIZAR_FOTOS_DUPLICADOS, if (entity.autorizarFotosDuplicados) 1 else 0)
             }
             val id = db.insertOrThrow(ReporteLocalDbHelper.TABLE_REPORTES, null, cv)
             db.setTransactionSuccessful()
@@ -612,6 +614,9 @@ class ReporteLocalRepository private constructor(context: Context) {
         val colEnviadoEn = cursor.getColumnIndexOrThrow(ReporteLocalDbHelper.COL_ENVIADO_EN)
         val enviadoEn = if (cursor.isNull(colEnviadoEn)) null else cursor.getLong(colEnviadoEn)
 
+        val colAutorizarFotos = cursor.getColumnIndex(ReporteLocalDbHelper.COL_AUTORIZAR_FOTOS_DUPLICADOS)
+        val autorizarFotosDuplicados = colAutorizarFotos >= 0 && cursor.getInt(colAutorizarFotos) == 1
+
         return ReporteLocalEntity(
             idLocal = idLocal,
             uuid = uuid,
@@ -632,7 +637,8 @@ class ReporteLocalRepository private constructor(context: Context) {
             codigoError = codigoError,
             idPeticionRemota = idPeticionRemota,
             numeroRadicado = numeroRadicado,
-            enviadoEn = enviadoEn
+            enviadoEn = enviadoEn,
+            autorizarFotosDuplicados = autorizarFotosDuplicados
         )
     }
 }

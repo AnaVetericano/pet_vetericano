@@ -70,6 +70,10 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.material)
     implementation(libs.androidx.work.runtime.ktx)
+    // Notificaciones push (contrato v1 §7) y detección de primer plano para la recuperación REST
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
+    implementation(libs.androidx.lifecycle.process)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)

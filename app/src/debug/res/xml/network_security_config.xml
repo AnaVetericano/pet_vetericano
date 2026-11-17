@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+    SOLO build debug (sustituye a main/res/xml/network_security_config.xml).
+    Permite HTTP hacia el backend local (127.0.0.1 con adb reverse, 10.0.2.2 en emulador o una IP de LAN
+    pasada con -PVETERICANO_DEV_API_URL) y CAs de usuario para proxys de depuración.
+    La build release no incluye este archivo: allí no hay texto plano ni CAs de usuario.
+-->
+<network-security-config>
+    <base-config cleartextTrafficPermitted="true">
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="user" />
+        </trust-anchors>
+    </base-config>
+
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">up.railway.app</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="@raw/isrg_root_x1" />
+            <certificates src="user" />
+        </trust-anchors>
+    </domain-config>
+</network-security-config>

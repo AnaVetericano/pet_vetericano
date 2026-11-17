@@ -2,6 +2,7 @@ package com.example.petvetericano
 
 import android.content.Context
 import android.content.SharedPreferences
+import com.example.petvetericano.notificaciones.FcmTokenManager
 import com.example.petvetericano.offline.PeticionesCacheManager
 
 class SharedPreferencesManager(context: Context) {
@@ -180,6 +181,8 @@ class SharedPreferencesManager(context: Context) {
 
     // Limpiar sesión completa
     fun clearSession() {
+        // Desactiva el token FCM en el backend con la sesión actual antes de borrarla (best-effort, no bloquea).
+        FcmTokenManager.desactivarEnLogout(appContext)
         val currentUserId = getUserId()
         if (currentUserId > 0) {
             MaletinManager.limpiarCacheUsuario(appContext, currentUserId)

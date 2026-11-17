@@ -2,17 +2,13 @@ package com.example.petvetericano.network
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.util.Log
 import com.example.petvetericano.BuildConfig
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
-import java.security.SecureRandom
-import java.security.cert.X509Certificate
 import java.util.concurrent.TimeUnit
-import javax.net.ssl.SSLContext
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
 
 object RetrofitClient {
 
@@ -32,33 +28,23 @@ object RetrofitClient {
         appContext = context.applicationContext
     }
 
-    private val loggingInterceptor = HttpLoggingInterceptor().apply {
-        level = HttpLoggingInterceptor.Level.BODY
+    // Logs HTTP: cuerpo completo solo en debug (con tokens/contraseñas enmascarados); nada en release.
+    // El header Authorization se oculta siempre.
+    private val loggingInterceptor = HttpLoggingInterceptor(LoggerHttpSeguro).apply {
+        level = if (BuildConfig.DEBUG) {
+            HttpLoggingInterceptor.Level.BODY
+        } else {
+            HttpLoggingInterceptor.Level.NONE
+        }
+        redactHeader("Authorization")
     }
 
-    @SuppressLint("CustomX509TrustManager")
-    internal val trustAllCerts = arrayOf<TrustManager>(
-        object : X509TrustManager {
-            @SuppressLint("TrustAllX509TrustManager")
-            override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-
-            @SuppressLint("TrustAllX509TrustManager")
-            override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
-
-            override fun getAcceptedIssuers(): Array<X509Certificate> = arrayOf()
-        }
-    )
-
-    internal val sslContext by lazy {
-        SSLContext.getInstance("TLS").apply {
-            init(null, trustAllCerts, SecureRandom())
-        }
-    }
-
+    // TLS: validación estándar del sistema (cadena de confianza + hostname) en los dos clientes.
+    // Las anclas de confianza están en res/xml/network_security_config.xml, que incluye
+    // ISRG Root X1 (res/raw/isrg_root_x1.pem) para *.up.railway.app en Android 7.0 (API 24).
+    // Detrás de un proxy que intercepte TLS se debe instalar su CA como CA de usuario (solo debug).
     internal val cleanClient: OkHttpClient by lazy {
         OkHttpClient.Builder()
-            .sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as X509TrustManager)
-            .hostnameVerifier { _, _ -> true }
             .connectTimeout(15, TimeUnit.SECONDS)
             .readTimeout(15, TimeUnit.SECONDS)
             .build()
@@ -66,10 +52,6 @@ object RetrofitClient {
 
     private val okHttpClient by lazy {
         OkHttpClient.Builder()
-            // Evita CertPathValidatorException: Trust anchor for certification path not found
-            // en redes con proxy/firewall o dispositivos sin el certificado intermedio Let's Encrypt YE2
-            .sslSocketFactory(sslContext.socketFactory, trustAllCerts[0] as X509TrustManager)
-            .hostnameVerifier { _, _ -> true }
             // Inyecta el token automáticamente usando la variable estática
             .addInterceptor(AuthInterceptor { authToken })
             .authenticator(TokenAuthenticator { appContext })
@@ -85,12 +67,63 @@ object RetrofitClient {
             .create()
     }
 
-    val apiService: ApiService by lazy {
+    private val retrofit: Retrofit by lazy {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(okHttpClient)
             .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
-            .create(ApiService::class.java)
+    }
+
+    val apiService: ApiService by lazy {
+        retrofit.create(ApiService::class.java)
+    }
+
+    /** REST central de notificaciones (contrato v1 §6), mismo cliente autenticado. */
+    val notificacionesApi: NotificacionesApi by lazy {
+        retrofit.create(NotificacionesApi::class.java)
+    }
+}
+
+/** Logger de OkHttp que enmascara secretos del cuerpo antes de escribir en Logcat (solo se usa en debug). */
+private object LoggerHttpSeguro : HttpLoggingInterceptor.Logger {
+    private const val TAG = "OkHttp"
+    private const val MAX_POR_LINEA = 4000
+
+    override fun log(message: String) {
+        val limpio = enmascararSecretosHttp(message)
+        if (limpio.length <= MAX_POR_LINEA) {
+            Log.d(TAG, limpio)
+            return
+        }
+        var inicio = 0
+        while (inicio < limpio.length) {
+            val fin = minOf(limpio.length, inicio + MAX_POR_LINEA)
+            Log.d(TAG, limpio.substring(inicio, fin))
+            inicio = fin
+        }
+    }
+}
+
+private val REGEX_SECRETOS_JSON = Regex(
+    "\"(token|access|refresh|access_token|refresh_token|id_token|password|nueva_password|codigo)\"\\s*:\\s*\"([^\"]*)\""
+)
+private val CLAVES_OCULTAS_COMPLETAS = setOf("password", "nueva_password", "codigo")
+
+/**
+ * Enmascara en un texto JSON los valores de tokens (deja solo los últimos 6 caracteres) y de
+ * contraseñas/códigos (los oculta del todo). Pensado para logs de depuración.
+ */
+internal fun enmascararSecretosHttp(texto: String): String {
+    if (texto.isEmpty()) return texto
+    return REGEX_SECRETOS_JSON.replace(texto) { coincidencia ->
+        val clave = coincidencia.groupValues[1]
+        val valor = coincidencia.groupValues[2]
+        val oculto = if (clave in CLAVES_OCULTAS_COMPLETAS || valor.length <= 12) {
+            "***"
+        } else {
+            "***" + valor.takeLast(6)
+        }
+        "\"$clave\":\"$oculto\""
     }
 }

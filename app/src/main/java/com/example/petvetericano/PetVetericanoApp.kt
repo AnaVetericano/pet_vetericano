@@ -13,6 +13,7 @@ import com.example.petvetericano.network.SesionExpiradaManager
 import com.example.petvetericano.notificaciones.FcmTokenManager
 import com.example.petvetericano.notificaciones.NotificacionesRepository
 import com.example.petvetericano.notificaciones.VetericanoMessagingService
+import com.example.petvetericano.realtime.WebSocketConnectionManager
 
 /**
  * Clase principal de Application para PetVetericano.
@@ -47,10 +48,16 @@ class PetVetericanoApp : Application() {
     private fun configurarNotificaciones() {
         crearCanalNotificaciones()
         FcmTokenManager.init(this)
+        WebSocketConnectionManager.init(this)
         ProcessLifecycleOwner.get().lifecycle.addObserver(object : DefaultLifecycleObserver {
             override fun onStart(owner: LifecycleOwner) {
                 FcmTokenManager.asegurarRegistroEnSegundoPlano(this@PetVetericanoApp)
                 NotificacionesRepository.recuperarPendientesEnSegundoPlano(this@PetVetericanoApp)
+                WebSocketConnectionManager.onForeground()
+            }
+
+            override fun onStop(owner: LifecycleOwner) {
+                WebSocketConnectionManager.onBackground()
             }
         })
     }

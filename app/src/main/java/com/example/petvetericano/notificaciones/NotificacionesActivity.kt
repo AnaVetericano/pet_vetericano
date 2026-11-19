@@ -8,13 +8,20 @@ import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.MainActivity
 import com.example.petvetericano.R
 import com.example.petvetericano.databinding.ActivityNotificacionesBinding
 import com.example.petvetericano.models.NotificacionItem
+import com.example.petvetericano.realtime.CategoriaEventoWs
+import com.example.petvetericano.realtime.WebSocketRepository
 import com.google.android.material.snackbar.Snackbar
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 
 /**
@@ -61,7 +68,24 @@ class NotificacionesActivity : AppCompatActivity() {
         binding.btnMarcarTodas.setOnClickListener { marcarTodas() }
         binding.btnReintentarNotificaciones.setOnClickListener { cargar(mostrarProgreso = true) }
 
+        observarEventosRealtime()
         cargar(mostrarProgreso = true)
+    }
+
+    @OptIn(FlowPreview::class)
+    private fun observarEventosRealtime() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                WebSocketRepository.eventos
+                    .filter {
+                        it.categoria == CategoriaEventoWs.NP ||
+                            it.eventType == "notificacion.leida" ||
+                            it.eventType == "notificacion.todas_leidas"
+                    }
+                    .debounce(1_000L)
+                    .collect { cargar(mostrarProgreso = false) }
+            }
+        }
     }
 
     override fun onNewIntent(intent: Intent) {

@@ -4,6 +4,7 @@ import android.content.Context
 import android.content.SharedPreferences
 import com.example.petvetericano.notificaciones.FcmTokenManager
 import com.example.petvetericano.offline.PeticionesCacheManager
+import com.example.petvetericano.realtime.WebSocketConnectionManager
 
 class SharedPreferencesManager(context: Context) {
     private val appContext: Context = context.applicationContext
@@ -181,7 +182,8 @@ class SharedPreferencesManager(context: Context) {
 
     // Limpiar sesión completa
     fun clearSession() {
-        // Desactiva el token FCM en el backend con la sesión actual antes de borrarla (best-effort, no bloquea).
+        // Cierra la conexión WebSocket y desactiva el token FCM en el backend antes de borrar la sesión.
+        WebSocketConnectionManager.onLogout()
         FcmTokenManager.desactivarEnLogout(appContext)
         val currentUserId = getUserId()
         if (currentUserId > 0) {

@@ -9,7 +9,9 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.adapters.PetitionAdapter
 import com.example.petvetericano.databinding.ActivityPetitionsListBinding
@@ -18,7 +20,12 @@ import com.example.petvetericano.network.RetrofitClient
 import com.example.petvetericano.models.PeticionListResponse
 import com.example.petvetericano.offline.NetworkUtils
 import com.example.petvetericano.offline.PeticionesCacheManager
+import com.example.petvetericano.realtime.EventosMovilesRelevantes
+import com.example.petvetericano.realtime.WebSocketRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
@@ -43,7 +50,20 @@ class PetitionsListActivity : AppCompatActivity() {
         setupBottomNavigation()
         setupTabs()
         setupSearch()
+        observarEventosRealtime()
         fetchPeticiones()
+    }
+
+    @OptIn(FlowPreview::class)
+    private fun observarEventosRealtime() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                WebSocketRepository.eventos
+                    .filter { it.eventType in EventosMovilesRelevantes.EVENTOS_PETICIONES }
+                    .debounce(1_000L)
+                    .collect { fetchPeticiones() }
+            }
+        }
     }
 
     override fun onResume() {

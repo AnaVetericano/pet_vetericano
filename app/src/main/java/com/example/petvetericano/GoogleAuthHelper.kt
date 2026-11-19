@@ -34,6 +34,7 @@ import com.example.petvetericano.models.LoginResponse
 import com.example.petvetericano.models.RegisterRequest
 import com.example.petvetericano.network.RetrofitClient
 import com.example.petvetericano.notificaciones.FcmTokenManager
+import com.example.petvetericano.realtime.WebSocketConnectionManager
 import com.example.petvetericano.offline.ActaLocalRepository
 import com.example.petvetericano.offline.ActaSyncScheduler
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
@@ -804,8 +805,9 @@ object GoogleAuthHelper {
         prefs.saveUserId(datos.idUsuario)
         prefs.saveUserRole(datos.idRol)
 
-        // Notificaciones: registra el token FCM, pide el permiso y recupera NP por REST.
+        // Notificaciones: registra el token FCM, pide el permiso, recupera NP por REST y conecta WS.
         FcmTokenManager.onLoginExitoso(activity.applicationContext)
+        WebSocketConnectionManager.onLoginExitoso(activity.applicationContext)
 
         val rolStr = if (datos.idRol == inicio_sesion.ROL_VETERINARIO) "Médico Veterinario" else "Ciudadano"
         val nombreMostrar = datos.nombre?.trim().orEmpty()

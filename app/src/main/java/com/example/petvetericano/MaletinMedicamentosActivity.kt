@@ -15,8 +15,13 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.databinding.ActivityMaletinMedicamentosBinding
 import com.example.petvetericano.models.MedicamentoMaletin
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.realtime.EventosMovilesRelevantes
+import com.example.petvetericano.realtime.WebSocketRepository
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.FlowPreview
+import kotlinx.coroutines.flow.debounce
+import kotlinx.coroutines.flow.filter
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -46,9 +51,22 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
 
         // 1. Cargar inmediatamente datos locales reactivos desde StateFlow (0 ms, sin parpadeo)
         observarMedicamentosFlow()
+        observarEventosRealtime()
 
         // 2. Sincronización silenciosa en segundo plano al abrir la pantalla
         sincronizarMaletin(forzar = false)
+    }
+
+    @OptIn(FlowPreview::class)
+    private fun observarEventosRealtime() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                WebSocketRepository.eventos
+                    .filter { it.eventType in EventosMovilesRelevantes.EVENTOS_KIT_INVENTARIO }
+                    .debounce(1_000L)
+                    .collect { sincronizarMaletin(forzar = true) }
+            }
+        }
     }
 
     override fun onResume() {

@@ -46,8 +46,15 @@ object NotificacionesRepository {
     private const val INTERVALO_MIN_RECUPERACION_MS = 15_000L
 
     private val lockMostradas = Any()
+    private val clavesEnVuelo = mutableSetOf<String>()
     private val mutexRecuperacion = Mutex()
-    private val mainHandler = Handler(Looper.getMainLooper())
+    private val mainHandler by lazy { Handler(Looper.getMainLooper()) }
+
+    /** Almacenamiento acotado de claves mostradas (inyectable en pruebas JVM de concurrencia). */
+    internal interface AlmacenClavesMostradas {
+        fun leer(): List<String>
+        fun guardar(claves: List<String>)
+    }
 
     @Volatile
     private var ultimaRecuperacionMs = 0L
@@ -144,10 +151,11 @@ object NotificacionesRepository {
             if (porMostrar.isEmpty()) return
 
             if (porMostrar.size <= MAX_NOTIFICACIONES_INDIVIDUALES) {
-                val mostradas = porMostrar.filter { item ->
-                    VetericanoMessagingService.mostrarNotificacion(app, NotificacionesMapper.desdeItem(item))
+                porMostrar.forEach { item ->
+                    mostrarUnaVez(app, item.clave) {
+                        VetericanoMessagingService.mostrarNotificacion(app, NotificacionesMapper.desdeItem(item))
+                    }
                 }
-                marcarMostradas(app, mostradas.mapNotNull { it.clave })
             } else if (VetericanoMessagingService.mostrarResumen(app, porMostrar.size)) {
                 marcarMostradas(app, porMostrar.mapNotNull { it.clave })
             }
@@ -188,6 +196,67 @@ object NotificacionesRepository {
 
     // ------------------------------------------------------------------ claves mostradas (acotado)
 
+    /**
+     * Operación atómica compartida por FCM, WebSocket y recuperación REST para presentar una NP
+     * como máximo una vez por clave canónica (`sis-*` / `pet-*`).
+     *
+     * - Comprueba y reserva la clave bajo `lockMostradas` antes de invocar `mostrar()`.
+     * - Si otro hilo ya mostró o está mostrando la misma clave, omite la invocación.
+     * - Persiste la clave en SharedPreferences solo tras una presentación exitosa (`true`).
+     * - Si `mostrar()` devuelve `false` o lanza excepción, libera la reserva para permitir reintento.
+     */
+    fun mostrarUnaVez(context: Context, clave: String?, mostrar: () -> Boolean): Boolean {
+        val app = context.applicationContext
+        val almacen = object : AlmacenClavesMostradas {
+            override fun leer(): List<String> = leerListaMostradas(app)
+            override fun guardar(claves: List<String>) {
+                prefs(app).edit()
+                    .putString(KEY_CLAVES_MOSTRADAS, NotificacionesMapper.serializarClaves(claves))
+                    .apply()
+            }
+        }
+        return mostrarUnaVezInterno(clave, almacen, MAX_CLAVES_MOSTRADAS, mostrar)
+    }
+
+    internal fun mostrarUnaVezInterno(
+        clave: String?,
+        almacen: AlmacenClavesMostradas,
+        maxClaves: Int = MAX_CLAVES_MOSTRADAS,
+        mostrar: () -> Boolean
+    ): Boolean {
+        val claveLimpia = clave?.trim()?.takeIf { it.isNotEmpty() } ?: return mostrar()
+        val reservada = synchronized(lockMostradas) {
+            if (claveLimpia in clavesEnVuelo || claveLimpia in almacen.leer()) {
+                false
+            } else {
+                clavesEnVuelo.add(claveLimpia)
+                true
+            }
+        }
+        if (!reservada) {
+            logDebug("NP $claveLimpia ya mostrada; se omite")
+            return false
+        }
+        return try {
+            val mostrada = mostrar()
+            if (mostrada) {
+                synchronized(lockMostradas) {
+                    val nuevas = NotificacionesMapper.agregarAcotado(
+                        almacen.leer(),
+                        listOf(claveLimpia),
+                        maxClaves
+                    )
+                    almacen.guardar(nuevas)
+                }
+            }
+            mostrada
+        } finally {
+            synchronized(lockMostradas) {
+                clavesEnVuelo.remove(claveLimpia)
+            }
+        }
+    }
+
     fun leerClavesMostradas(context: Context): Set<String> = synchronized(lockMostradas) {
         leerListaMostradas(context).toSet()
     }
@@ -218,6 +287,11 @@ object NotificacionesRepository {
     }
 
     internal fun logDebug(mensaje: String) {
-        if (BuildConfig.DEBUG) Log.d(TAG, mensaje)
+        if (!BuildConfig.DEBUG) return
+        try {
+            Log.d(TAG, mensaje)
+        } catch (_: RuntimeException) {
+            // En pruebas unitarias JVM android.util.Log no está mockeado.
+        }
     }
 }

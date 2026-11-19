@@ -51,14 +51,8 @@ class VetericanoMessagingService : FirebaseMessagingService() {
             cuerpoNotificacion = message.notification?.body
         ) ?: return
 
-        val clave = push.clave
-        if (clave != null && NotificacionesRepository.yaMostrada(app, clave)) {
-            NotificacionesRepository.logDebug("NP $clave ya mostrada; se omite")
-            NotificacionesRepository.notificarNuevaNotificacion()
-            return
-        }
-        if (mostrarNotificacion(app, push) && clave != null) {
-            NotificacionesRepository.marcarMostradas(app, listOf(clave))
+        NotificacionesRepository.mostrarUnaVez(app, push.clave) {
+            mostrarNotificacion(app, push)
         }
         NotificacionesRepository.notificarNuevaNotificacion()
     }

@@ -27,6 +27,12 @@ object WebSocketRepository {
         fun yaMostrada(clave: String): Boolean
         fun marcarMostrada(clave: String)
         fun mostrarNotificacionNp(evento: WebSocketEvent): Boolean
+        fun mostrarUnaVezNp(clave: String?, evento: WebSocketEvent): Boolean {
+            if (clave != null && yaMostrada(clave)) return false
+            val ok = mostrarNotificacionNp(evento)
+            if (ok && clave != null) marcarMostrada(clave)
+            return ok
+        }
         fun notificarBandeja()
         fun cancelarNotificacion(clave: String)
         fun cancelarTodasNotificaciones()
@@ -87,6 +93,13 @@ object WebSocketRepository {
                 return VetericanoMessagingService.mostrarNotificacion(app, NotificacionesMapper.desdeItem(item))
             }
 
+            override fun mostrarUnaVezNp(clave: String?, evento: WebSocketEvent): Boolean {
+                val item = evento.itemNp ?: return false
+                return NotificacionesRepository.mostrarUnaVez(app, clave) {
+                    VetericanoMessagingService.mostrarNotificacion(app, NotificacionesMapper.desdeItem(item))
+                }
+            }
+
             override fun notificarBandeja() {
                 NotificacionesRepository.notificarNuevaNotificacion()
             }
@@ -138,12 +151,8 @@ object WebSocketRepository {
             }
 
             evento.categoria == CategoriaEventoWs.NP -> {
-                val clave = evento.claveCanonica
-                val yaExistiaEnSistema = clave != null && efectos.yaMostrada(clave)
-                if (!yaExistiaEnSistema && evento.itemNp != null) {
-                    if (efectos.mostrarNotificacionNp(evento) && clave != null) {
-                        efectos.marcarMostrada(clave)
-                    }
+                if (evento.itemNp != null) {
+                    efectos.mostrarUnaVezNp(evento.claveCanonica, evento)
                 }
                 efectos.notificarBandeja()
                 _eventos.tryEmit(evento)

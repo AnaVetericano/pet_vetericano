@@ -1,9 +1,37 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <base-config cleartextTrafficPermitted="true">
+    <!-- Por defecto: solo HTTPS y solo las CAs del sistema. -->
+    <base-config cleartextTrafficPermitted="false">
         <trust-anchors>
             <certificates src="system" />
-            <certificates src="user" />
         </trust-anchors>
     </base-config>
+
+    <!--
+        Backend en Railway (*.up.railway.app). La cadena de producción es
+        *.up.railway.app ← LE YE2 ← ISRG Root YE ← ISRG Root X2 (firmada en cruz por) ← ISRG Root X1.
+        ISRG Root X1 solo está en el almacén de Android desde 7.1.1 (API 25); con minSdk 24 se incluye
+        en la app (exportada del cacerts del JDK, SHA-256
+        96:BC:EC:06:26:49:76:F3:74:60:77:9A:CF:28:C5:A7:CF:E8:A3:C0:AA:E1:1A:8F:FC:EE:05:C0:BD:DF:08:C6).
+    -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">up.railway.app</domain>
+        <trust-anchors>
+            <certificates src="system" />
+            <certificates src="@raw/isrg_root_x1" />
+        </trust-anchors>
+    </domain-config>
+
+    <!--
+        Release: sin texto plano en ningún host. El desarrollo por HTTP (127.0.0.1 con adb reverse,
+        10.0.2.2 en emulador o una IP de LAN) se habilita SOLO en la build debug:
+        app/src/debug/res/xml/network_security_config.xml (sustituye a este archivo en debug).
+    -->
+
+    <!-- Solo en builds depurables: confiar además en CAs de usuario (proxys de depuración). -->
+    <debug-overrides>
+        <trust-anchors>
+            <certificates src="user" />
+        </trust-anchors>
+    </debug-overrides>
 </network-security-config>

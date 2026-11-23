@@ -11,6 +11,8 @@ import com.example.petvetericano.models.LoginRequest
 import com.example.petvetericano.models.TokenData
 import com.example.petvetericano.network.RetrofitClient
 import com.example.petvetericano.network.SesionExpiradaManager
+import com.example.petvetericano.notificaciones.FcmTokenManager
+import com.example.petvetericano.realtime.WebSocketConnectionManager
 import com.example.petvetericano.offline.ActaLocalRepository
 import com.example.petvetericano.offline.ActaSyncScheduler
 import kotlinx.coroutines.CoroutineScope
@@ -212,6 +214,10 @@ class inicio_sesion : AppCompatActivity() {
                         }
                         prefs.saveUserId(datos.idUsuario)
                         prefs.saveUserRole(datos.idRol)
+
+                        // Notificaciones: registra el token FCM, pide el permiso, recupera NP por REST y conecta WS.
+                        FcmTokenManager.onLoginExitoso(applicationContext)
+                        WebSocketConnectionManager.onLoginExitoso(applicationContext)
 
                         encolarSincronizacionActasPendientes(datos.idUsuario)
 

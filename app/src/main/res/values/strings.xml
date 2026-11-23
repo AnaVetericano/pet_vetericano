@@ -762,4 +762,24 @@
     <string name="duplicado_ciudadano_btn_cancelar_nuevo_envio">Cancelar nuevo envío</string>
     <string name="duplicado_ciudadano_btn_volver_borrador">Volver</string>
     <string name="duplicado_ciudadano_toast_cancelado">Envío cancelado porque ya existe un reporte similar.</string>
+    <!-- Notificaciones v1 (FCM + bandeja REST) -->
+    <string name="notif_canal_id" translatable="false">vetericano_notificaciones</string>
+    <string name="notif_canal_nombre">Notificaciones de Vetericano</string>
+    <string name="notif_canal_descripcion">Asignaciones, solicitudes y avisos de tu cuenta</string>
+    <string name="notif_bandeja_titulo">Notificaciones</string>
+    <string name="notif_btn_marcar_todas">Marcar todas</string>
+    <string name="notif_btn_reintentar">Reintentar</string>
+    <string name="notif_vacio_titulo">No tienes notificaciones</string>
+    <string name="notif_vacio_subtitulo">Aquí verás las asignaciones, solicitudes y avisos de tu cuenta.</string>
+    <string name="notif_error_titulo">No se pudieron cargar las notificaciones</string>
+    <string name="notif_error_cargar">Revisa tu conexión e inténtalo de nuevo.</string>
+    <string name="notif_error_marcar">No se pudo actualizar la notificación. Inténtalo de nuevo.</string>
+    <string name="notif_subtitulo_no_leidas">%1$d sin leer</string>
+    <string name="notif_subtitulo_al_dia">Todo al día</string>
+    <string name="notif_badge_urgente">URGENTE</string>
+    <string name="notif_cd_volver">Volver</string>
+    <string name="notif_cd_item_no_leida">No leída: %1$s</string>
+    <string name="notif_cd_item_leida">Leída: %1$s</string>
+    <string name="notif_resumen_titulo">Tienes notificaciones nuevas</string>
+    <string name="notif_resumen_texto">%1$d notificaciones sin leer. Toca para verlas.</string>
 </resources>

@@ -48,7 +48,9 @@ data class LoginResponse(
     val tokens: TokenData,
     @SerializedName("es_nuevo_usuario") val esNuevoUsuario: Boolean? = false,
     @SerializedName("foto_perfil") val fotoPerfil: String? = null,
-    val foto: String? = null
+    val foto: String? = null,
+    val telefono: String? = null,
+    @SerializedName("matricula_profesional") val matriculaProfesional: String? = null
 )
 
 data class TokenData(
@@ -141,8 +143,7 @@ data class confirmarpeticion(
     val latitud: Double,
     val longitud: Double,
     val foto : String?,
-    val fotos: List<String>? = null,
-    val fotos_autorizadas_duplicados: List<String>? = null
+    val fotos: List<String>? = null
 )
 
 data class DetectarDuplicadosCiudadanoRequest(

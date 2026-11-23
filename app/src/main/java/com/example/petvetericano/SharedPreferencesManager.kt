@@ -8,10 +8,9 @@ class SharedPreferencesManager(context: Context) {
     private val appContext: Context = context.applicationContext
     private val prefs: SharedPreferences =
         context.getSharedPreferences("PetVetericanoPrefs", Context.MODE_PRIVATE)
-    private val googlePrefs: SharedPreferences =
-        context.getSharedPreferences("PetVetericanoGoogleAuthPrefs", Context.MODE_PRIVATE)
 
     companion object {
+        private const val GOOGLE_LEGACY_PREFS_NAME = "PetVetericanoGoogleAuthPrefs"
         private const val MAX_LENGTH_NOMBRE = 50
         private const val MAX_LENGTH_APELLIDO = 50
         private const val MAX_LENGTH_EMAIL = 100
@@ -20,57 +19,11 @@ class SharedPreferencesManager(context: Context) {
         private const val MAX_LENGTH_MATRICULA = 15
     }
 
-    fun saveGoogleAccountPassword(email: String, password: String) {
-        if (email.isNotEmpty() && password.isNotEmpty()) {
-            val cleanEmail = email.lowercase().trim()
-            googlePrefs.edit().putString("GOOGLE_CRED_$cleanEmail", password).apply()
-            saveKnownGoogleAccount(cleanEmail)
-        }
-    }
-
-    fun getGoogleAccountPassword(email: String): String {
-        if (email.isEmpty()) return ""
-        return googlePrefs.getString("GOOGLE_CRED_${email.lowercase().trim()}", "") ?: ""
-    }
-
-    fun saveKnownGoogleAccount(email: String) {
-        val cleanEmail = email.lowercase().trim()
-        if (cleanEmail.isEmpty() || !cleanEmail.contains("@")) return
-        val actuales = googlePrefs.getStringSet("DEVICE_GOOGLE_ACCOUNTS_V2", emptySet())?.toMutableSet()
-            ?: mutableSetOf()
-        actuales.add(cleanEmail)
-        googlePrefs.edit().putStringSet("DEVICE_GOOGLE_ACCOUNTS_V2", actuales).apply()
-    }
-
-    fun getKnownGoogleAccounts(): List<String> {
-        // Limpiar clave anterior si existía para evitar correos precargados de pruebas previas
-        if (googlePrefs.contains("KNOWN_GOOGLE_ACCOUNTS")) {
-            googlePrefs.edit().remove("KNOWN_GOOGLE_ACCOUNTS").apply()
-        }
-
-        val resultado = linkedSetOf<String>()
-
-        // 1. Cuentas seleccionadas o agregadas por el usuario en este dispositivo
-        googlePrefs.getStringSet("DEVICE_GOOGLE_ACCOUNTS_V2", emptySet())?.forEach { email ->
-            val clean = email.lowercase().trim()
-            if (clean.contains("@")) resultado.add(clean)
-        }
-
-        // 2. Cuentas que ya tienen credencial vinculada en este dispositivo
-        googlePrefs.all.keys.forEach { key ->
-            if (key.startsWith("GOOGLE_CRED_")) {
-                val clean = key.removePrefix("GOOGLE_CRED_").lowercase().trim()
-                if (clean.contains("@")) resultado.add(clean)
-            }
-        }
-
-        // 3. Último correo activo en sesión de este dispositivo si existe
-        val currentEmail = getUserEmail().lowercase().trim()
-        if (currentEmail.contains("@")) {
-            resultado.add(currentEmail)
-        }
-
-        return resultado.toList()
+    fun limpiarDatosGoogleLegacy() {
+        appContext.getSharedPreferences(GOOGLE_LEGACY_PREFS_NAME, Context.MODE_PRIVATE)
+            .edit()
+            .clear()
+            .apply()
     }
 
     fun saveUserData(name: String, email: String, phone: String) {
@@ -83,9 +36,6 @@ class SharedPreferencesManager(context: Context) {
             if (cleanEmail.isNotEmpty()) putString("USER_EMAIL", cleanEmail)
             if (cleanPhone.isNotEmpty()) putString("USER_PHONE", cleanPhone)
             apply()
-        }
-        if (cleanEmail.isNotEmpty()) {
-            saveKnownGoogleAccount(cleanEmail)
         }
     }
 
@@ -186,6 +136,7 @@ class SharedPreferencesManager(context: Context) {
             PeticionesCacheManager.limpiarCacheVeterinario(appContext, currentUserId)
         }
         prefs.edit().clear().apply()
+        limpiarDatosGoogleLegacy()
         try {
             val legacyFile = java.io.File(appContext.filesDir, "profile_picture.jpg")
             if (legacyFile.exists()) legacyFile.delete()

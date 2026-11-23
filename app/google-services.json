@@ -1,6 +1,7 @@
 {
   "project_info": {
     "project_number": "414064158617",
+    "firebase_url": "https://petvetericano-default-rtdb.firebaseio.com",
     "project_id": "petvetericano",
     "storage_bucket": "petvetericano.firebasestorage.app"
   },
@@ -12,7 +13,20 @@
           "package_name": "com.example.petvetericano"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "414064158617-vqebf0gb77dtuc27jrq40s6r9ochdbef.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.petvetericano",
+            "certificate_hash": "a5e89a6b6bd4891e5290dae1fcb706086efe9a90"
+          }
+        },
+        {
+          "client_id": "414064158617-fdj5ffqrrl19i56d51ioeb5g2k8ieak6.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBxLoejDg_n1vXD5ADLZT2epktscxQaZrU"
@@ -20,7 +34,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "414064158617-fdj5ffqrrl19i56d51ioeb5g2k8ieak6.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

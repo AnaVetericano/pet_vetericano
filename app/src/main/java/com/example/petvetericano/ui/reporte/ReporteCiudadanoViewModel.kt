@@ -53,7 +53,6 @@ private const val KEY_DESCRIPCION = "key_reporte_descripcion"
 private const val KEY_EVIDENCIAS_PATHS = "key_reporte_evidencias_paths"
 private const val KEY_EVIDENCIAS_IS_VIDEO = "key_reporte_evidencias_is_video"
 private const val KEY_EVIDENCIAS_URLS = "key_reporte_evidencias_urls"
-private const val KEY_AUTORIZAR_FOTOS_DUPLICADOS = "key_reporte_autorizar_fotos_duplicados"
 private const val KEY_PENDING_CAM_PATH = "key_reporte_pending_cam_path"
 private const val KEY_PENDING_CAM_URI = "key_reporte_pending_cam_uri"
 private const val KEY_PENDING_CAM_IS_VIDEO = "key_reporte_pending_cam_is_video"
@@ -81,7 +80,6 @@ class ReporteCiudadanoViewModel(
         val paths = savedStateHandle.get<ArrayList<String>>(KEY_EVIDENCIAS_PATHS)
         val isVideos = savedStateHandle.get<BooleanArray>(KEY_EVIDENCIAS_IS_VIDEO)
         val urlsRemotas = savedStateHandle.get<ArrayList<String>>(KEY_EVIDENCIAS_URLS)
-        val autorizarFotosDuplicados = savedStateHandle.get<Boolean>(KEY_AUTORIZAR_FOTOS_DUPLICADOS) ?: false
         val pendPath = savedStateHandle.get<String>(KEY_PENDING_CAM_PATH)
         val pendUri = savedStateHandle.get<String>(KEY_PENDING_CAM_URI)
         val pendIsVideo = savedStateHandle.get<Boolean>(KEY_PENDING_CAM_IS_VIDEO) ?: false
@@ -126,7 +124,6 @@ class ReporteCiudadanoViewModel(
                 ubicacionSeleccionadaPorUsuario = ubicacionUsuario,
                 descripcion = desc,
                 evidencias = evidenciasIniciales,
-                autorizarFotosDuplicados = autorizarFotosDuplicados,
                 pendingCameraFilePath = pendPath,
                 pendingCameraUriString = pendUri,
                 pendingCameraEsVideo = pendIsVideo
@@ -203,11 +200,6 @@ class ReporteCiudadanoViewModel(
                 evidencias = lista
             )
         }
-    }
-
-    fun actualizarAutorizarFotosDuplicados(autorizado: Boolean) {
-        savedStateHandle[KEY_AUTORIZAR_FOTOS_DUPLICADOS] = autorizado
-        _uiState.update { it.copy(autorizarFotosDuplicados = autorizado) }
     }
 
     private fun sincronizarEvidenciasSavedState(lista: List<EvidenciaItemLocal>) {
@@ -392,7 +384,6 @@ class ReporteCiudadanoViewModel(
         savedStateHandle.remove<ArrayList<String>>(KEY_EVIDENCIAS_PATHS)
         savedStateHandle.remove<BooleanArray>(KEY_EVIDENCIAS_IS_VIDEO)
         savedStateHandle.remove<ArrayList<String>>(KEY_EVIDENCIAS_URLS)
-        savedStateHandle.remove<Boolean>(KEY_AUTORIZAR_FOTOS_DUPLICADOS)
         limpiarPendingCamera()
         _uiState.value = ReporteDraftState()
     }
@@ -606,8 +597,7 @@ class ReporteCiudadanoViewModel(
                     latitud = latitud,
                     longitud = longitud,
                     evidencias = evidenciasList,
-                    urlsRemotasPorPath = urlsRemotasPorPath,
-                    autorizarFotosDuplicados = state.autorizarFotosDuplicados
+                    urlsRemotasPorPath = urlsRemotasPorPath
                 )
             }
 

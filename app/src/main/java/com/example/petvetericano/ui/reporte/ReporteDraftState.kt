@@ -66,7 +66,6 @@ data class ReporteDraftState(
     // Pantalla 2: Descripcion y Multimedia (preparado para R2)
     val descripcion: String = "",
     val evidencias: List<EvidenciaItemLocal> = emptyList(),
-    val autorizarFotosDuplicados: Boolean = false,
 
     // Captura pendiente para SavedStateHandle (preparado para R2)
     val pendingCameraFilePath: String? = null,

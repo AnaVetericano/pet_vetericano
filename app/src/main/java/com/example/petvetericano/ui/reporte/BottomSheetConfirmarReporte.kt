@@ -139,19 +139,6 @@ class BottomSheetConfirmarReporte : BottomSheetDialogFragment() {
         val hayConexion = hayConexionInternet(requireContext())
         binding.layoutAvisoSinConexion.visibility = if (hayConexion) View.GONE else View.VISIBLE
 
-        if (state.fotosCount > 0) {
-            binding.cardConsentimientoFotos.visibility = View.VISIBLE
-            binding.cbAutorizarFotosDuplicados.isChecked = state.autorizarFotosDuplicados
-            binding.cbAutorizarFotosDuplicados.setOnCheckedChangeListener { _, isChecked ->
-                viewModel.actualizarAutorizarFotosDuplicados(isChecked)
-            }
-        } else {
-            binding.cardConsentimientoFotos.visibility = View.GONE
-            if (state.autorizarFotosDuplicados) {
-                viewModel.actualizarAutorizarFotosDuplicados(false)
-            }
-        }
-
         binding.btnEditarTipo.setOnClickListener {
             dismiss()
             (activity as? reportar_peticion)?.navegarDesdeModal(DestinoEdicion.TIPO)
@@ -203,7 +190,6 @@ class BottomSheetConfirmarReporte : BottomSheetDialogFragment() {
         binding.btnEditarUbicacion.isEnabled = !ocupado
         binding.btnEditarDescripcion.isEnabled = !ocupado
         binding.btnEditarAdjuntos.isEnabled = !ocupado
-        binding.cbAutorizarFotosDuplicados.isEnabled = !ocupado
         isCancelable = !ocupado
         (dialog as? BottomSheetDialog)?.behavior?.isHideable = !ocupado
 

@@ -2,7 +2,6 @@ package com.example.petvetericano.ui.reporte
 
 import com.example.petvetericano.models.CandidatoDuplicadoCiudadano
 import com.example.petvetericano.models.DetectarDuplicadosCiudadanoResponse
-import com.example.petvetericano.offline.EvidenciaReporteItem
 import kotlin.math.roundToInt
 
 /**
@@ -21,7 +20,7 @@ data class AlertaDuplicadoUiModel(
 )
 
 /**
- * Reglas puras de privacidad, fail-open y consentimiento para deteccion preventiva de duplicados.
+ * Reglas puras de privacidad y fail-open para deteccion preventiva de duplicados.
  */
 object DuplicadoCiudadanoPolicy {
 
@@ -52,7 +51,8 @@ object DuplicadoCiudadanoPolicy {
     }
 
     /**
-     * Devuelve la URL de fotografia unicamente cuando el backend confirmo autorizacion expresa.
+     * Devuelve la URL de fotografia unicamente cuando el backend permitio devolverla
+     * y cumple con esquema HTTP(S).
      */
     fun obtenerUrlFotoAutorizada(candidato: CandidatoDuplicadoCiudadano): String? {
         if (!candidato.tiene_fotografia) return null
@@ -75,29 +75,5 @@ object DuplicadoCiudadanoPolicy {
             val redondeado = (acotado * 10.0).roundToInt() / 10.0
             "$redondeado %"
         }
-    }
-
-    /**
-     * Construye `fotos_autorizadas_duplicados` respetando consentimiento explicito del usuario
-     * y excluyendo videos y rutas locales no subidas.
-     */
-    fun construirFotosAutorizadasParaEnvio(
-        consentimientoOtorgado: Boolean,
-        evidencias: List<EvidenciaReporteItem>
-    ): List<String>? {
-        if (!consentimientoOtorgado) return null
-        val urlsFotos = evidencias
-            .asSequence()
-            .filter { !it.esVideo }
-            .mapNotNull { it.urlRemota?.trim() }
-            .filter { url ->
-                url.isNotEmpty() &&
-                    (url.startsWith("https://", ignoreCase = true) ||
-                        url.startsWith("http://", ignoreCase = true))
-            }
-            .distinct()
-            .take(5)
-            .toList()
-        return urlsFotos.takeIf { it.isNotEmpty() }
     }
 }

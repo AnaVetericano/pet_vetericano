@@ -70,7 +70,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <!-- Fotografia previa autorizada -->
+            <!-- Fotografia previa devuelta por el backend -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardFotoAutorizada"
                 style="?attr/materialCardViewOutlinedStyle"
@@ -93,7 +93,7 @@
                     android:scaleType="centerCrop" />
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- Aviso discreto cuando no hay foto autorizada -->
+            <!-- Aviso discreto cuando el backend no devuelve fotografia -->
             <LinearLayout
                 android:id="@+id/layoutFotoPrivada"
                 android:layout_width="match_parent"

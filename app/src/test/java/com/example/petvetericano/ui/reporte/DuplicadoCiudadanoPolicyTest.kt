@@ -1,9 +1,9 @@
 package com.example.petvetericano.ui.reporte
 
 import com.example.petvetericano.models.CandidatoDuplicadoCiudadano
+import com.example.petvetericano.models.DetectarDuplicadosCiudadanoRequest
 import com.example.petvetericano.models.DetectarDuplicadosCiudadanoResponse
 import com.example.petvetericano.models.confirmarpeticion
-import com.example.petvetericano.offline.EvidenciaReporteItem
 import com.google.gson.GsonBuilder
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -120,52 +120,28 @@ class DuplicadoCiudadanoPolicyTest {
     }
 
     @Test
-    fun construirFotosAutorizadas_respetaConsentimientoYExcluyeVideos() {
-        val evidencias = listOf(
-            EvidenciaReporteItem(
-                path = "/data/foto1.jpg",
-                esVideo = false,
-                urlRemota = "https://res.cloudinary.com/demo/image/upload/foto1.jpg"
-            ),
-            EvidenciaReporteItem(
-                path = "/data/video1.mp4",
-                esVideo = true,
-                urlRemota = "https://res.cloudinary.com/demo/video/upload/video1.mp4"
-            ),
-            EvidenciaReporteItem(
-                path = "/data/foto_local_sin_subir.jpg",
-                esVideo = false,
-                urlRemota = null
-            ),
-            EvidenciaReporteItem(
-                path = "/data/foto1_dup.jpg",
-                esVideo = false,
-                urlRemota = "https://res.cloudinary.com/demo/image/upload/foto1.jpg"
-            ),
-            EvidenciaReporteItem(
-                path = "/data/foto2.jpg",
-                esVideo = false,
-                urlRemota = "https://res.cloudinary.com/demo/image/upload/foto2.jpg"
-            )
-        )
-
-        // Sin consentimiento explicito: null siempre (fail-closed)
-        assertNull(DuplicadoCiudadanoPolicy.construirFotosAutorizadasParaEnvio(false, evidencias))
-
-        // Con consentimiento explicito: solo URLs remotas HTTP(S) unicas de imagenes
-        val autorizadas = DuplicadoCiudadanoPolicy.construirFotosAutorizadasParaEnvio(true, evidencias)
-        assertEquals(
-            listOf(
+    fun detectarDuplicadosCiudadanoRequest_serializaTextoGpsEFotosCorrectamente() {
+        val request = DetectarDuplicadosCiudadanoRequest(
+            descripcion = "Perro herido cerca del parque central",
+            latitud = 4.651234,
+            longitud = -74.062345,
+            foto = "https://res.cloudinary.com/demo/image/upload/foto1.jpg",
+            fotos = listOf(
                 "https://res.cloudinary.com/demo/image/upload/foto1.jpg",
                 "https://res.cloudinary.com/demo/image/upload/foto2.jpg"
-            ),
-            autorizadas
+            )
         )
+        val json = gson.toJson(request)
+        assertTrue(json.contains("\"descripcion\":\"Perro herido cerca del parque central\""))
+        assertTrue(json.contains("\"latitud\":4.651234"))
+        assertTrue(json.contains("\"longitud\":-74.062345"))
+        assertTrue(json.contains("\"foto\":\"https://res.cloudinary.com/demo/image/upload/foto1.jpg\""))
+        assertTrue(json.contains("\"fotos\":[\"https://res.cloudinary.com/demo/image/upload/foto1.jpg\",\"https://res.cloudinary.com/demo/image/upload/foto2.jpg\"]"))
     }
 
     @Test
-    fun confirmarPeticion_serializaFotosAutorizadasDuplicadosCorrectamente() {
-        val conAutorizacion = confirmarpeticion(
+    fun confirmarPeticion_serializaSinCampoFotosAutorizadasDuplicados() {
+        val peticion = confirmarpeticion(
             id_tipo = 1,
             id_estado = 1,
             responsable = 7,
@@ -175,15 +151,45 @@ class DuplicadoCiudadanoPolicyTest {
             latitud = 4.651234,
             longitud = -74.062345,
             foto = "https://res.cloudinary.com/demo/image/upload/foto1.jpg",
-            fotos = listOf("https://res.cloudinary.com/demo/image/upload/foto1.jpg"),
-            fotos_autorizadas_duplicados = listOf("https://res.cloudinary.com/demo/image/upload/foto1.jpg")
+            fotos = listOf("https://res.cloudinary.com/demo/image/upload/foto1.jpg")
         )
-        val jsonCon = gson.toJson(conAutorizacion)
-        assertTrue(jsonCon.contains("\"fotos_autorizadas_duplicados\":[\"https://res.cloudinary.com/demo/image/upload/foto1.jpg\"]"))
+        val json = gson.toJson(peticion)
+        assertFalse(json.contains("fotos_autorizadas_duplicados"))
+        assertTrue(json.contains("\"foto\":\"https://res.cloudinary.com/demo/image/upload/foto1.jpg\""))
+        assertTrue(json.contains("\"fotos\":[\"https://res.cloudinary.com/demo/image/upload/foto1.jpg\"]"))
+    }
 
-        val sinAutorizacion = conAutorizacion.copy(fotos_autorizadas_duplicados = null)
-        val jsonSin = gson.toJson(sinAutorizacion)
-        assertTrue(jsonSin.contains("\"fotos_autorizadas_duplicados\":null"))
+    @Test
+    fun deserializarRespuestaClasicaConFotoPermitida_exponeUrlAutomaticamente() {
+        val rawJson = """
+            {
+                "advertencia_duplicado": true,
+                "posible_duplicado": true,
+                "total_candidatos": 1,
+                "mensaje": "Se encontraron reportes similares.",
+                "posibles_duplicados": [
+                    {
+                        "coincidencia_texto": true,
+                        "coincidencia_gps": true,
+                        "cercania": "muy_cerca",
+                        "similitud": "alta",
+                        "foto": "https://res.cloudinary.com/demo/image/upload/e_blur_faces/c_fill,g_auto,w_480,h_360,q_auto,f_auto/v1/previo.jpg",
+                        "tiene_fotografia": true
+                    }
+                ]
+            }
+        """.trimIndent()
+
+        val response = gson.fromJson(rawJson, DetectarDuplicadosCiudadanoResponse::class.java)
+        val alerta = DuplicadoCiudadanoPolicy.extraerAlertaVisual(response)
+
+        assertNotNull(alerta)
+        assertEquals(
+            "https://res.cloudinary.com/demo/image/upload/e_blur_faces/c_fill,g_auto,w_480,h_360,q_auto,f_auto/v1/previo.jpg",
+            alerta!!.fotoAutorizadaUrl
+        )
+        assertEquals("muy_cerca", alerta.cercania)
+        assertEquals("alta", alerta.similitudTexto)
     }
 
     @Test

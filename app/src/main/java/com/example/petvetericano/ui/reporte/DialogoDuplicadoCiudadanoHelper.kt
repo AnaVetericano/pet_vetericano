@@ -11,7 +11,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 /**
  * Dialogo preventivo Material 3 que informa al ciudadano sobre un posible reporte previo
- * cercano y visualmente similar, respetando estrictamente la privacidad de fotografias.
+ * cercano y visualmente similar, mostrando su fotografia cuando el backend la devuelve.
  */
 object DialogoDuplicadoCiudadanoHelper {
 
@@ -28,7 +28,7 @@ object DialogoDuplicadoCiudadanoHelper {
             binding.tvResumenDuplicado.text = resumen
         }
 
-        // Privacidad: cargar imagen exclusivamente si backend devolvio fotografia autorizada
+        // Cargar fotografia del reporte previo automaticamente si el backend la devuelve
         val urlSegura = alerta.fotoAutorizadaUrl
         if (!urlSegura.isNullOrBlank()) {
             binding.cardFotoAutorizada.visibility = View.VISIBLE

@@ -55,13 +55,22 @@ class ExampleUnitTest {
     }
 
     @Test
-    fun passwordDeterministicaGoogle_cumpleReglasDeSeguridad() {
-        val pass1 = GoogleAuthHelper.generarPasswordGoogleDeterministica("usuario@gmail.com")
-        val pass2 = GoogleAuthHelper.generarPasswordGoogleDeterministica("USUARIO@gmail.com")
-        assertEquals(pass1, pass2)
-        assertTrue(pass1.length >= 8)
-        assertTrue(Regex("[A-Z]").containsMatchIn(pass1))
-        assertTrue(Regex("[0-9]").containsMatchIn(pass1))
+    fun googleIdToken_rechazaMarcadorLocalYAceptaJwtCompacto() {
+        assertFalse(GoogleAuthHelper.esIdTokenJwtValido("android_account:usuario@gmail.com"))
+        assertFalse(GoogleAuthHelper.esIdTokenJwtValido("ANDROID_ACCOUNT:usuario@gmail.com"))
+        assertFalse(GoogleAuthHelper.esIdTokenJwtValido(""))
+        assertFalse(GoogleAuthHelper.esIdTokenJwtValido("no-es-jwt"))
+        assertTrue(GoogleAuthHelper.esIdTokenJwtValido("eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMjMifQ.c2lnbmF0dXJl"))
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun construirGoogleLoginRequest_rechazaMarcadorInseguroAndroidAccount() {
+        GoogleAuthHelper.construirGoogleLoginRequest(
+            GoogleAuthHelper.CredencialGoogleExtraida(
+                idToken = "android_account:usuario@gmail.com",
+                email = "usuario@gmail.com"
+            )
+        )
     }
 
     @Test

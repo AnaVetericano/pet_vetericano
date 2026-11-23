@@ -19,8 +19,7 @@ object ReporteEncolador {
         latitud: Double,
         longitud: Double,
         evidencias: List<Pair<String, Boolean>>,
-        urlsRemotasPorPath: Map<String, String> = emptyMap(),
-        autorizarFotosDuplicados: Boolean = false
+        urlsRemotasPorPath: Map<String, String> = emptyMap()
     ): Long? = withContext(Dispatchers.IO) {
         val appContext = context.applicationContext
         val prefs = SharedPreferencesManager(appContext)
@@ -80,8 +79,7 @@ object ReporteEncolador {
                 longitud = lonStr,
                 direccion = direccion,
                 evidenciasJson = evidenciasJson,
-                estado = EstadoReporteLocal.PENDIENTE,
-                autorizarFotosDuplicados = autorizarFotosDuplicados
+                estado = EstadoReporteLocal.PENDIENTE
             )
 
             val repo = ReporteLocalRepository.getInstance(appContext)

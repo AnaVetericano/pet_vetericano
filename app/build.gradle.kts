@@ -25,14 +25,36 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        val googleWebClientId = (project.findProperty("VETERICANO_GOOGLE_WEB_CLIENT_ID") as? String)
+            ?.trim()
+            ?.replace("\"", "")
+            .orEmpty()
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     buildTypes {
+        val productionApiUrl = "https://backendvetericano-production.up.railway.app/api/"
+        debug {
+            // Por defecto apunta a Railway; para Django local usar -PVETERICANO_DEV_API_URL=http://127.0.0.1:8000/api/ (con `adb reverse tcp:8000 tcp:8000`) o http://10.0.2.2:8000/api/
+            val devApiUrl = (project.findProperty("VETERICANO_DEV_API_URL") as? String)
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { if (it.endsWith("/")) it else "$it/" }
+                ?: productionApiUrl
+            buildConfigField("String", "API_BASE_URL", "\"$devApiUrl\"")
+        }
         release {
+            buildConfigField(
+                "String",
+                "API_BASE_URL",
+                "\"$productionApiUrl\""
+            )
             optimization {
                 enable = false
             }

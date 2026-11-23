@@ -2,6 +2,7 @@ package com.example.petvetericano.network
 
 import android.annotation.SuppressLint
 import android.content.Context
+import com.example.petvetericano.BuildConfig
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -16,9 +17,10 @@ import javax.net.ssl.X509TrustManager
 object RetrofitClient {
 
     // =================================================================
-    // 🚦 ENTORNO DE PRODUCCIÓN (Railway - Celular físico)
+    // 🚦 ENTORNO DE PRODUCCIÓN (Railway) y DEV LOCAL (BuildConfig)
     // =================================================================
-    internal const val BASE_URL = "https://backendvetericano-production.up.railway.app/api/"
+    internal const val PRODUCTION_BASE_URL = "https://backendvetericano-production.up.railway.app/api/"
+    internal val BASE_URL: String = BuildConfig.API_BASE_URL
 
     // Variable estática global para almacenar el token de acceso
     var authToken: String? = null

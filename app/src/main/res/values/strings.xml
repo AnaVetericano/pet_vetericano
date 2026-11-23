@@ -743,4 +743,23 @@
     <string name="dashboard_ux_rol_veterinario">Rol: Veterinario</string>
     <string name="dashboard_ux_modo_oscuro">Modo oscuro</string>
     <string name="dashboard_ux_perfil">Mi perfil</string>
+    <!-- Deteccion preventiva de duplicados ciudadanos con IA -->
+    <string name="duplicado_ciudadano_verificando">Verificando posibles reportes similares…</string>
+    <string name="duplicado_ciudadano_titulo">Posible reporte similar en la zona</string>
+    <string name="duplicado_ciudadano_subtitulo_defecto">Encontramos un reporte previo cerca de esta ubicación con características parecidas.</string>
+    <string name="duplicado_ciudadano_pregunta">¿Es el mismo animal?</string>
+    <string name="duplicado_ciudadano_cd_foto">Fotografía del reporte previo</string>
+    <string name="duplicado_ciudadano_foto_privada">No hay fotografía disponible para mostrar de este reporte previo.</string>
+    <string name="duplicado_ciudadano_similitud_visual">Similitud visual estimada: %1$s</string>
+    <string name="duplicado_ciudadano_similitud_visual_sin_porcentaje">Coincidencia visual detectada (nivel: %1$s)</string>
+    <string name="duplicado_ciudadano_similitud_visual_no_disponible">Similitud visual: No disponible (alerta por proximidad GPS)</string>
+    <string name="duplicado_ciudadano_cercania_muy_cerca">Ubicación: Muy cerca de este punto</string>
+    <string name="duplicado_ciudadano_cercania_cerca">Ubicación: Cerca de esta zona</string>
+    <string name="duplicado_ciudadano_cercania_general">Ubicación: Proximidad GPS coincidente</string>
+    <string name="duplicado_ciudadano_btn_si_mismo">Sí es</string>
+    <string name="duplicado_ciudadano_btn_no_continuar">No es</string>
+    <string name="duplicado_ciudadano_aviso_ya_existe">Ya existe un reporte previo para este caso en la zona. No es necesario enviar uno nuevo.</string>
+    <string name="duplicado_ciudadano_btn_cancelar_nuevo_envio">Cancelar nuevo envío</string>
+    <string name="duplicado_ciudadano_btn_volver_borrador">Volver</string>
+    <string name="duplicado_ciudadano_toast_cancelado">Envío cancelado porque ya existe un reporte similar.</string>
 </resources>

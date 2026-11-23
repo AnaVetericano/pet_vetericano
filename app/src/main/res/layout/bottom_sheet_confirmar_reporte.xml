@@ -384,7 +384,20 @@
             app:cornerRadius="16dp"
             app:elevation="2dp" />
 
-        <!-- Spinner de progreso de envio -->
+        <!-- Spinner de progreso de envio / verificacion preventiva -->
+        <TextView
+            android:id="@+id/tvEstadoVerificacionDuplicados"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:fontFamily="@font/nunito"
+            android:gravity="center"
+            android:text="@string/duplicado_ciudadano_verificando"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp"
+            android:visibility="gone"
+            tools:visibility="visible" />
+
         <ProgressBar
             android:id="@+id/pbEnvio"
             android:layout_width="32dp"

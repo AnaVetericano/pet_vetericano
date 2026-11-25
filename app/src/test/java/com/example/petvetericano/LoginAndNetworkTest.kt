@@ -1,5 +1,9 @@
 package com.example.petvetericano
 
+import androidx.credentials.exceptions.GetCredentialCancellationException
+import androidx.credentials.exceptions.GetCredentialCustomException
+import androidx.credentials.exceptions.GetCredentialProviderConfigurationException
+import androidx.credentials.exceptions.NoCredentialException
 import com.example.petvetericano.models.LoginResponse
 import com.example.petvetericano.network.AuthInterceptor
 import com.example.petvetericano.network.RetrofitClient
@@ -271,6 +275,63 @@ class LoginAndNetworkTest {
         assertEquals("MV-555", parsed.matriculaProfesional)
         assertEquals("acc-jwt", parsed.tokens.access)
         assertEquals("ref-jwt", parsed.tokens.refresh)
+    }
+
+    @Test
+    fun mapearExcepcionCredentialManager_noTragaFallosOAuthDisfrazadosDeCancelacion() {
+        val sha1Local = "69:61:DF:AD:0F:93:CD:01:2D:3D:A5:63:3E:F3:C2:D6:E2:F9:D8:ED"
+
+        // 1. Cancelación dentro del fallback GetSignInWithGoogleOption tras NoCredentialException ([28444]/[16])
+        val resFallbackCancel = GoogleAuthHelper.mapearExcepcionCredentialManager(
+            e = GetCredentialCancellationException("activity is cancelled by the user."),
+            vinoDeFallbackNoCredential = true,
+            duracionMs = 3500L,
+            sha1Actual = sha1Local
+        )
+        assertTrue(resFallbackCancel is GoogleAuthHelper.ResultadoObtenerToken.Error)
+        val msgFallback = (resFallbackCancel as GoogleAuthHelper.ResultadoObtenerToken.Error).mensajeUsuario
+        assertTrue(msgFallback.contains("SHA-1", ignoreCase = true))
+        assertTrue(msgFallback.contains(sha1Local))
+
+        // 2. Cancelación legítima del usuario en el selector primario (> 1800ms y sin fallback)
+        val resUserCancel = GoogleAuthHelper.mapearExcepcionCredentialManager(
+            e = GetCredentialCancellationException("user cancelled"),
+            vinoDeFallbackNoCredential = false,
+            duracionMs = 4200L,
+            sha1Actual = sha1Local
+        )
+        assertTrue(resUserCancel is GoogleAuthHelper.ResultadoObtenerToken.Cancelado)
+
+        // 3. Error explícito [28444] / DeveloperError / UNREGISTERED_ON_API_CONSOLE
+        val resDevError = GoogleAuthHelper.mapearExcepcionCredentialManager(
+            e = GetCredentialCustomException("TYPE_DEVELOPER_ERROR", "[28444] Developer console is not set up correctly."),
+            vinoDeFallbackNoCredential = false,
+            duracionMs = 500L,
+            sha1Actual = sha1Local
+        )
+        assertTrue(resDevError is GoogleAuthHelper.ResultadoObtenerToken.Error)
+        val msgDev = (resDevError as GoogleAuthHelper.ResultadoObtenerToken.Error).mensajeUsuario
+        assertTrue(msgDev.contains("OAuth", ignoreCase = true))
+        assertTrue(msgDev.contains(sha1Local))
+
+        // 4. Falta proveedor / Play Services
+        val resProvider = GoogleAuthHelper.mapearExcepcionCredentialManager(
+            e = GetCredentialProviderConfigurationException("no provider"),
+            vinoDeFallbackNoCredential = false,
+            duracionMs = 100L,
+            sha1Actual = sha1Local
+        )
+        assertTrue(resProvider is GoogleAuthHelper.ResultadoObtenerToken.Error)
+
+        // 5. NoCredentialException incluye el SHA-1 actual para diagnóstico
+        val resNoCred = GoogleAuthHelper.mapearExcepcionCredentialManager(
+            e = NoCredentialException("No credentials available"),
+            vinoDeFallbackNoCredential = true,
+            duracionMs = 900L,
+            sha1Actual = sha1Local
+        )
+        assertTrue(resNoCred is GoogleAuthHelper.ResultadoObtenerToken.Error)
+        assertTrue((resNoCred as GoogleAuthHelper.ResultadoObtenerToken.Error).mensajeUsuario.contains(sha1Local))
     }
 
     private class FakeChain(private val initialRequest: Request) : Interceptor.Chain {

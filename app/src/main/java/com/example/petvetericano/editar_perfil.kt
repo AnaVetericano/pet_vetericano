@@ -14,6 +14,8 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.widget.doOnTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityEditarPerfilBinding
+import com.example.petvetericano.facial.FacialProfileHelper
+import com.example.petvetericano.facial.ReconocimientoFacialActivity
 import com.example.petvetericano.models.ActualizarPerfilRequest
 import com.example.petvetericano.network.RetrofitClient
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -53,6 +55,16 @@ class editar_perfil : AppCompatActivity() {
         uri?.let { previsualizarFotoSeleccionada(it) }
     }
 
+    private val enrolarFacialLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            actualizarEstadoFacialUi()
+            if (result.resultCode == RESULT_OK) {
+                val msg = result.data?.getStringExtra(ReconocimientoFacialActivity.EXTRA_RESULTADO_MENSAJE)
+                    ?: getString(R.string.facial_enrolado_ok)
+                Snackbar.make(binding.root, msg, Snackbar.LENGTH_LONG).show()
+            }
+        }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -63,6 +75,7 @@ class editar_perfil : AppCompatActivity() {
 
         configurarFiltrosDeCampos()
         setupDarkMode()
+        setupReconocimientoFacial()
         cargarDatosPerfil()
         sincronizarConApi()
         setupMenuListeners()
@@ -88,10 +101,31 @@ class editar_perfil : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        actualizarEstadoFacialUi()
         if (!hayCambiosSinGuardar() && !guardando) {
             cargarDatosPerfil()
             sincronizarConApi()
         }
+    }
+
+    private fun setupReconocimientoFacial() {
+        actualizarEstadoFacialUi()
+        binding.cardReconocimientoFacial.setOnClickListener {
+            FacialProfileHelper.manejarClickConfiguracionFacial(
+                activity = this,
+                enrolarLauncher = enrolarFacialLauncher,
+                onEstadoActualizado = { mensaje ->
+                    actualizarEstadoFacialUi()
+                    if (!mensaje.isNullOrBlank()) {
+                        Snackbar.make(binding.root, mensaje, Snackbar.LENGTH_LONG).show()
+                    }
+                }
+            )
+        }
+    }
+
+    private fun actualizarEstadoFacialUi() {
+        binding.tvEstadoFacial.text = FacialProfileHelper.textoEstadoPerfil(this, prefs.getUserId())
     }
 
     /**

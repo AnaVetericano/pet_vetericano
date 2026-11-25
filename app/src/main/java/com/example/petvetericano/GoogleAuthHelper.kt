@@ -31,6 +31,7 @@ import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.GetCredentialProviderConfigurationException
 import androidx.credentials.exceptions.NoCredentialException
 import androidx.lifecycle.lifecycleScope
+import com.example.petvetericano.facial.FacialStorageManager
 import com.example.petvetericano.models.GoogleLoginRequest
 import com.example.petvetericano.models.LoginRequest
 import com.example.petvetericano.models.LoginResponse
@@ -1045,6 +1046,15 @@ object GoogleAuthHelper {
         prefs.saveAccessToken(accessToken)
         if (refreshToken.isNotEmpty()) {
             prefs.saveRefreshToken(refreshToken)
+            FacialStorageManager(activity).actualizarRefreshTokenSiCoincide(
+                userId = datos.idUsuario,
+                nuevoRefreshToken = refreshToken,
+                nombre = datos.nombre ?: credencial.nombre,
+                apellido = datos.apellido ?: credencial.apellido,
+                fotoPerfil = datos.fotoPerfil ?: datos.foto,
+                telefono = datos.telefono?.trim(),
+                matriculaProfesional = datos.matriculaProfesional
+            )
         }
         prefs.saveUserId(datos.idUsuario)
         prefs.saveUserRole(datos.idRol)

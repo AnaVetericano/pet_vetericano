@@ -76,11 +76,32 @@
                     android:textSize="11sp" />
             </LinearLayout>
 
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDictarVoz"
+                style="?attr/materialButtonTonalStyle"
+                android:layout_width="wrap_content"
+                android:layout_height="36dp"
+                android:layout_marginStart="8dp"
+                android:fontFamily="@font/nunito_bold"
+                android:paddingHorizontal="10dp"
+                android:paddingVertical="0dp"
+                android:text="Dictar IA"
+                android:textColor="@color/primary"
+                android:textSize="11sp"
+                app:backgroundTint="@color/primary_soft"
+                app:cornerRadius="10dp"
+                app:icon="@drawable/baseline_mic_24"
+                app:iconSize="16dp"
+                app:iconTint="@color/primary"
+                app:strokeColor="@color/primary_light"
+                app:strokeWidth="1dp" />
+
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardBadgeRescateActivo"
                 style="?attr/materialCardViewFilledStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
                 app:cardBackgroundColor="@color/radix_amber_bg"
                 app:cardCornerRadius="8dp"
                 app:strokeColor="@color/radix_amber_border"

@@ -1,0 +1,362 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_bottom_sheet_m3"
+    android:orientation="vertical"
+    android:paddingHorizontal="20dp"
+    android:paddingBottom="24dp">
+
+    <!-- Indicador superior de arrastre nativo Material Design 3 -->
+    <com.google.android.material.bottomsheet.BottomSheetDragHandleView
+        android:id="@+id/dragHandleDictado"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        app:tint="@color/text_muted" />
+
+    <!-- CABECERA PRINCIPAL -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical"
+        android:layout_marginBottom="12dp">
+
+        <com.google.android.material.card.MaterialCardView
+            style="?attr/materialCardViewFilledStyle"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            app:cardBackgroundColor="@color/primary_soft"
+            app:cardCornerRadius="12dp"
+            app:strokeColor="@color/primary_light"
+            app:strokeWidth="1dp">
+
+            <ImageView
+                android:id="@+id/ivIconoMic"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
+                android:layout_gravity="center"
+                android:src="@drawable/baseline_mic_24"
+                app:tint="@color/primary" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="12dp"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvTituloDictado"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/nunito_bold"
+                android:text="Dictado por Voz Inteligente (IA)"
+                android:textColor="@color/text_primary"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/tvSubtituloDictado"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/nunito"
+                android:text="Describe la visita, paciente y hallazgos. Gemini completará el acta."
+                android:textColor="@color/text_secondary"
+                android:textSize="12sp" />
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btnCerrarSheet"
+            android:layout_width="36dp"
+            android:layout_height="36dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/baseline_close_24"
+            app:tint="@color/text_muted" />
+    </LinearLayout>
+
+    <!-- ======================================================== -->
+    <!-- ESTADO 1: GRABACIÓN DE AUDIO                             -->
+    <!-- ======================================================== -->
+    <LinearLayout
+        android:id="@+id/layoutGrabacion"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center_horizontal"
+        android:paddingVertical="16dp">
+
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/cardBotonMic"
+            style="?attr/materialCardViewFilledStyle"
+            android:layout_width="84dp"
+            android:layout_height="84dp"
+            app:cardBackgroundColor="@color/primary_soft"
+            app:cardCornerRadius="42dp"
+            app:cardElevation="2dp"
+            app:strokeColor="@color/primary"
+            app:strokeWidth="2dp">
+
+            <ImageView
+                android:id="@+id/ivMicPrincipal"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
+                android:layout_gravity="center"
+                android:src="@drawable/baseline_mic_24"
+                app:tint="@color/primary" />
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:id="@+id/tvTiempoGrabacion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:fontFamily="@font/nunito_bold"
+            android:text="00:00"
+            android:textColor="@color/text_primary"
+            android:textSize="22sp" />
+
+        <TextView
+            android:id="@+id/tvEstadoGrabacion"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:fontFamily="@font/nunito"
+            android:text="Toca el micrófono para comenzar a grabar"
+            android:textColor="@color/text_secondary"
+            android:textSize="13sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="20dp">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnCancelarGrabacion"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="Cancelar"
+                android:fontFamily="@font/nunito_bold"
+                android:textAllCaps="false"
+                android:textColor="@color/text_secondary"
+                app:cornerRadius="12dp"
+                app:strokeColor="@color/input_stroke" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAccionGrabacion"
+                style="?attr/materialButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:text="Iniciar Grabación"
+                android:fontFamily="@font/nunito_bold"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/primary"
+                app:cornerRadius="12dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ======================================================== -->
+    <!-- ESTADO 2: PROCESAMIENTO CON GEMINI IA                    -->
+    <!-- ======================================================== -->
+    <LinearLayout
+        android:id="@+id/layoutProcesando"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingVertical="32dp"
+        android:visibility="gone"
+        tools:visibility="gone">
+
+        <com.google.android.material.progressindicator.CircularProgressIndicator
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:indeterminate="true"
+            app:indicatorColor="@color/primary"
+            app:trackColor="@color/primary_light"
+            app:trackThickness="4dp" />
+
+        <TextView
+            android:id="@+id/tvMensajeProcesando"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:fontFamily="@font/nunito_bold"
+            android:text="Interpretando narración y extrayendo campos con Gemini AI..."
+            android:textAlignment="center"
+            android:textColor="@color/text_primary"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:fontFamily="@font/nunito"
+            android:text="Estructurando datos según la normativa del acta..."
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp" />
+    </LinearLayout>
+
+    <!-- ======================================================== -->
+    <!-- ESTADO 3: REVISIÓN DEL BORRADOR GENERADO POR IA          -->
+    <!-- ======================================================== -->
+    <LinearLayout
+        android:id="@+id/layoutRevisionBorrador"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        tools:visibility="visible">
+
+        <!-- Tarjeta de Resumen Detectado -->
+        <com.google.android.material.card.MaterialCardView
+            style="?attr/materialCardViewFilledStyle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="10dp"
+            app:cardBackgroundColor="@color/primary_soft"
+            app:cardCornerRadius="12dp"
+            app:strokeColor="@color/primary_light"
+            app:strokeWidth="1dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="12dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="@font/nunito_bold"
+                    android:text="Resumen de la Narración"
+                    android:textColor="@color/primary"
+                    android:textSize="12sp" />
+
+                <TextView
+                    android:id="@+id/tvResumenNarracion"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="2dp"
+                    android:fontFamily="@font/nunito"
+                    android:text="Se extrajeron datos clínicos del paciente y del propietario."
+                    android:textColor="@color/text_primary"
+                    android:textSize="13sp" />
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/nunito_bold"
+            android:text="Campos extraídos para revisión y edición:"
+            android:textColor="@color/text_primary"
+            android:textSize="13sp"
+            android:layout_marginBottom="6dp" />
+
+        <!-- Lista scrollable de campos extraídos para edición humana con altura acotada a 260dp -->
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvCamposExtraidos"
+            android:layout_width="match_parent"
+            android:layout_height="260dp"
+            android:nestedScrollingEnabled="true"
+            android:layout_marginBottom="14dp" />
+
+        <!-- Botones de Acción de Confirmación Humana -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDescartarBorrador"
+                style="?attr/materialButtonOutlinedStyle"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="6dp"
+                android:text="Volver a Grabar"
+                android:fontFamily="@font/nunito_bold"
+                android:textAllCaps="false"
+                android:textColor="@color/text_secondary"
+                app:cornerRadius="12dp"
+                app:strokeColor="@color/input_stroke" />
+
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnAplicarBorrador"
+                style="?attr/materialButtonStyle"
+                android:layout_width="0dp"
+                android:layout_height="46dp"
+                android:layout_weight="1"
+                android:layout_marginStart="6dp"
+                android:text="Aplicar al Acta"
+                android:fontFamily="@font/nunito_bold"
+                android:textAllCaps="false"
+                android:textColor="@color/white"
+                app:backgroundTint="@color/radix_grass_solid"
+                app:cornerRadius="12dp" />
+        </LinearLayout>
+    </LinearLayout>
+
+    <!-- ======================================================== -->
+    <!-- ESTADO 4: ERROR CONTROLADO                               -->
+    <!-- ======================================================== -->
+    <LinearLayout
+        android:id="@+id/layoutError"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:gravity="center"
+        android:paddingVertical="20dp"
+        android:visibility="gone"
+        tools:visibility="gone">
+
+        <ImageView
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:src="@drawable/warning_icon4" />
+
+        <TextView
+            android:id="@+id/tvTituloError"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:fontFamily="@font/nunito_bold"
+            android:text="No fue posible procesar el audio"
+            android:textColor="@color/text_primary"
+            android:textSize="15sp" />
+
+        <TextView
+            android:id="@+id/tvMensajeError"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:fontFamily="@font/nunito"
+            android:text="Ocurrió un inconveniente al conectar con el servicio. Puede continuar diligenciando manualmente."
+            android:textAlignment="center"
+            android:textColor="@color/text_secondary"
+            android:textSize="12sp" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnReintentarError"
+            style="?attr/materialButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="44dp"
+            android:layout_marginTop="16dp"
+            android:text="Intentar de Nuevo"
+            android:fontFamily="@font/nunito_bold"
+            android:textAllCaps="false"
+            app:cornerRadius="12dp"
+            app:backgroundTint="@color/primary" />
+    </LinearLayout>
+
+</LinearLayout>

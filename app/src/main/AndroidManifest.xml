@@ -11,6 +11,7 @@
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
     <uses-permission android:name="android.permission.CAMERA" />
+    <uses-permission android:name="android.permission.RECORD_AUDIO" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 
     <application
@@ -140,6 +141,12 @@
             android:name=".notificaciones.NotificacionesActivity"
             android:exported="false"
             android:windowSoftInputMode="adjustResize" />
+
+        <!-- Reconocimiento facial on-device (CameraX + ML Kit + MobileFaceNet) -->
+        <activity
+            android:name=".facial.ReconocimientoFacialActivity"
+            android:exported="false"
+            android:screenOrientation="portrait" />
 
         <service
             android:name=".notificaciones.VetericanoMessagingService"

@@ -65,6 +65,60 @@ class ActaLocalRepository(private val dbHelper: ActaLocalDbHelper) {
     }
 
     /**
+     * Verifica si una petición ya cuenta con un Acta de Seres Sintientes confirmada localmente
+     * (en estado ENVIADA, PENDIENTE_ENVIO, ENVIANDO, ERROR_REINTENTABLE, o con id_seguimiento_remoto).
+     * Los borradores (BORRADOR) no cuentan como acta confirmada.
+     */
+    fun tieneActaConfirmadaLocal(idPeticion: Int, idVeterinario: Int): Boolean {
+        if (idPeticion <= 0) return false
+        val db = dbHelper.readableDatabase
+        val whereClause = if (idVeterinario > 0) {
+            """
+            ${ActaLocalDbHelper.COL_ID_PETICION} = ? AND ${ActaLocalDbHelper.COL_ID_VETERINARIO} = ? AND (
+                ${ActaLocalDbHelper.COL_ESTADO_SINCRONIZACION} IN (?, ?, ?, ?) OR
+                ${ActaLocalDbHelper.COL_ID_SEGUIMIENTO_REMOTO} IS NOT NULL
+            )
+            """.trimIndent()
+        } else {
+            """
+            ${ActaLocalDbHelper.COL_ID_PETICION} = ? AND (
+                ${ActaLocalDbHelper.COL_ESTADO_SINCRONIZACION} IN (?, ?, ?, ?) OR
+                ${ActaLocalDbHelper.COL_ID_SEGUIMIENTO_REMOTO} IS NOT NULL
+            )
+            """.trimIndent()
+        }
+        val whereArgs = if (idVeterinario > 0) {
+            arrayOf(
+                idPeticion.toString(),
+                idVeterinario.toString(),
+                EstadoSincronizacionActa.ENVIADA.name,
+                EstadoSincronizacionActa.PENDIENTE_ENVIO.name,
+                EstadoSincronizacionActa.ENVIANDO.name,
+                EstadoSincronizacionActa.ERROR_REINTENTABLE.name
+            )
+        } else {
+            arrayOf(
+                idPeticion.toString(),
+                EstadoSincronizacionActa.ENVIADA.name,
+                EstadoSincronizacionActa.PENDIENTE_ENVIO.name,
+                EstadoSincronizacionActa.ENVIANDO.name,
+                EstadoSincronizacionActa.ERROR_REINTENTABLE.name
+            )
+        }
+        val cursor = db.query(
+            ActaLocalDbHelper.TABLE_ACTAS,
+            arrayOf(ActaLocalDbHelper.COL_ID_LOCAL),
+            whereClause,
+            whereArgs,
+            null,
+            null,
+            null,
+            "1"
+        )
+        return cursor.use { it.moveToFirst() }
+    }
+
+    /**
      * Obtiene un acta específica por su clave primaria local (id_local).
      */
     fun obtenerPorIdLocal(idLocal: Long): ActaLocalEntity? {

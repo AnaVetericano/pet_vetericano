@@ -1254,6 +1254,34 @@
                                 android:layout_height="wrap_content"
                                 android:checked="false" />
                         </LinearLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilComentarioRespiratorio"
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:hint="@string/hint_comentario_sistema_opcional"
+                            app:boxCornerRadiusBottomEnd="10dp"
+                            app:boxCornerRadiusBottomStart="10dp"
+                            app:boxCornerRadiusTopEnd="10dp"
+                            app:boxCornerRadiusTopStart="10dp"
+                            app:boxStrokeColor="@color/card_stroke">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etComentarioRespiratorio"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/nunito"
+                                android:gravity="top|start"
+                                android:inputType="textCapSentences|textMultiLine"
+                                android:maxLines="2"
+                                android:minLines="1"
+                                android:paddingHorizontal="12dp"
+                                android:paddingVertical="8dp"
+                                android:textColor="@color/text_primary"
+                                android:textSize="12sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -1406,6 +1434,34 @@
                                 android:layout_height="wrap_content"
                                 android:checked="false" />
                         </LinearLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilComentarioDigestivo"
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:hint="@string/hint_comentario_sistema_opcional"
+                            app:boxCornerRadiusBottomEnd="10dp"
+                            app:boxCornerRadiusBottomStart="10dp"
+                            app:boxCornerRadiusTopEnd="10dp"
+                            app:boxCornerRadiusTopStart="10dp"
+                            app:boxStrokeColor="@color/card_stroke">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etComentarioDigestivo"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/nunito"
+                                android:gravity="top|start"
+                                android:inputType="textCapSentences|textMultiLine"
+                                android:maxLines="2"
+                                android:minLines="1"
+                                android:paddingHorizontal="12dp"
+                                android:paddingVertical="8dp"
+                                android:textColor="@color/text_primary"
+                                android:textSize="12sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -1620,6 +1676,34 @@
                                 android:layout_height="wrap_content"
                                 android:checked="false" />
                         </LinearLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilComentarioMusculo"
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:hint="@string/hint_comentario_sistema_opcional"
+                            app:boxCornerRadiusBottomEnd="10dp"
+                            app:boxCornerRadiusBottomStart="10dp"
+                            app:boxCornerRadiusTopEnd="10dp"
+                            app:boxCornerRadiusTopStart="10dp"
+                            app:boxStrokeColor="@color/card_stroke">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etComentarioMusculo"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/nunito"
+                                android:gravity="top|start"
+                                android:inputType="textCapSentences|textMultiLine"
+                                android:maxLines="2"
+                                android:minLines="1"
+                                android:paddingHorizontal="12dp"
+                                android:paddingVertical="8dp"
+                                android:textColor="@color/text_primary"
+                                android:textSize="12sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -1772,6 +1856,34 @@
                                 android:layout_height="wrap_content"
                                 android:checked="false" />
                         </LinearLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilComentarioDermato"
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:hint="@string/hint_comentario_sistema_opcional"
+                            app:boxCornerRadiusBottomEnd="10dp"
+                            app:boxCornerRadiusBottomStart="10dp"
+                            app:boxCornerRadiusTopEnd="10dp"
+                            app:boxCornerRadiusTopStart="10dp"
+                            app:boxStrokeColor="@color/card_stroke">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etComentarioDermato"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/nunito"
+                                android:gravity="top|start"
+                                android:inputType="textCapSentences|textMultiLine"
+                                android:maxLines="2"
+                                android:minLines="1"
+                                android:paddingHorizontal="12dp"
+                                android:paddingVertical="8dp"
+                                android:textColor="@color/text_primary"
+                                android:textSize="12sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -1893,6 +2005,34 @@
                                 android:layout_height="wrap_content"
                                 android:checked="false" />
                         </LinearLayout>
+
+                        <com.google.android.material.textfield.TextInputLayout
+                            android:id="@+id/tilComentarioGenito"
+                            style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:hint="@string/hint_comentario_sistema_opcional"
+                            app:boxCornerRadiusBottomEnd="10dp"
+                            app:boxCornerRadiusBottomStart="10dp"
+                            app:boxCornerRadiusTopEnd="10dp"
+                            app:boxCornerRadiusTopStart="10dp"
+                            app:boxStrokeColor="@color/card_stroke">
+
+                            <com.google.android.material.textfield.TextInputEditText
+                                android:id="@+id/etComentarioGenito"
+                                android:layout_width="match_parent"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/nunito"
+                                android:gravity="top|start"
+                                android:inputType="textCapSentences|textMultiLine"
+                                android:maxLines="2"
+                                android:minLines="1"
+                                android:paddingHorizontal="12dp"
+                                android:paddingVertical="8dp"
+                                android:textColor="@color/text_primary"
+                                android:textSize="12sp" />
+                        </com.google.android.material.textfield.TextInputLayout>
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 

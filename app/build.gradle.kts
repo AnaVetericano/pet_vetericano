@@ -25,14 +25,71 @@ android {
         versionCode = 1
         versionName = "1.0"
 
+        val googleWebClientId = (project.findProperty("VETERICANO_GOOGLE_WEB_CLIENT_ID") as? String)
+            ?.trim()
+            ?.replace("\"", "")
+            .orEmpty()
+        buildConfigField("String", "GOOGLE_WEB_CLIENT_ID", "\"$googleWebClientId\"")
+
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
     buildFeatures {
         viewBinding = true
+        buildConfig = true
     }
 
     buildTypes {
+        val productionApiUrl = "https://backendvetericano-production.up.railway.app/api/"
+        debug {
+            // Por defecto apunta a Railway; para Django local usar -PVETERICANO_DEV_API_URL=http://127.0.0.1:8000/api/ (con `adb reverse tcp:8000 tcp:8000`) o http://10.0.2.2:8000/api/
+            val devApiUrl = (project.findProperty("VETERICANO_DEV_API_URL") as? String)
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?.let { if (it.endsWith("/")) it else "$it/" }
+                ?: productionApiUrl
+            buildConfigField("String", "API_BASE_URL", "\"$devApiUrl\"")
+
+            // WebSocket local (emulador: 10.0.2.2:8002; dispositivo físico: -PVETERICANO_DEV_WS_URL=ws://<ip>:8002/ws/notificaciones/)
+            val devWsUrl = (project.findProperty("VETERICANO_DEV_WS_URL") as? String)
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?: "ws://10.0.2.2:8002/ws/notificaciones/"
+            val devWsHabilitado = (project.findProperty("VETERICANO_WS_HABILITADO") as? String)
+                ?.trim()
+                ?.equals("true", ignoreCase = true)
+                ?: false
+            val wsClientId = (project.findProperty("VETERICANO_WS_CLIENT_ID") as? String)
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?: "android-petvetericano"
+            buildConfigField("String", "WS_URL", "\"$devWsUrl\"")
+            buildConfigField("boolean", "WS_HABILITADO", devWsHabilitado.toString())
+            buildConfigField("String", "WS_CLIENT_ID", "\"$wsClientId\"")
+        }
         release {
+            buildConfigField(
+                "String",
+                "API_BASE_URL",
+                "\"$productionApiUrl\""
+            )
+            // En release únicamente se permite wss://; apagado por defecto hasta existir dominio WS validado.
+            val releaseWsUrl = (project.findProperty("VETERICANO_RELEASE_WS_URL") as? String)
+                ?.trim()
+                ?.takeIf { it.startsWith("wss://", ignoreCase = true) }
+                ?: ""
+            val releaseWsHabilitado = releaseWsUrl.isNotEmpty() && (
+                (project.findProperty("VETERICANO_RELEASE_WS_HABILITADO") as? String)
+                    ?.trim()
+                    ?.equals("true", ignoreCase = true)
+                    ?: false
+            )
+            val wsClientId = (project.findProperty("VETERICANO_WS_CLIENT_ID") as? String)
+                ?.trim()
+                ?.takeIf { it.isNotEmpty() }
+                ?: "android-petvetericano"
+            buildConfigField("String", "WS_URL", "\"$releaseWsUrl\"")
+            buildConfigField("boolean", "WS_HABILITADO", releaseWsHabilitado.toString())
+            buildConfigField("String", "WS_CLIENT_ID", "\"$wsClientId\"")
             optimization {
                 enable = false
             }
@@ -56,6 +113,10 @@ dependencies {
     implementation(libs.googleid)
     implementation(libs.material)
     implementation(libs.androidx.work.runtime.ktx)
+    // Notificaciones push (contrato v1 §7) y detección de primer plano para la recuperación REST
+    implementation(platform(libs.firebase.bom))
+    implementation(libs.firebase.messaging)
+    implementation(libs.androidx.lifecycle.process)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.espresso.core)
     androidTestImplementation(libs.androidx.junit)

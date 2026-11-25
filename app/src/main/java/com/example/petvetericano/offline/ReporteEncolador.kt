@@ -18,7 +18,8 @@ object ReporteEncolador {
         direccion: String?,
         latitud: Double,
         longitud: Double,
-        evidencias: List<Pair<String, Boolean>>
+        evidencias: List<Pair<String, Boolean>>,
+        urlsRemotasPorPath: Map<String, String> = emptyMap()
     ): Long? = withContext(Dispatchers.IO) {
         val appContext = context.applicationContext
         val prefs = SharedPreferencesManager(appContext)
@@ -48,11 +49,16 @@ object ReporteEncolador {
                     archivoOrigen.copyTo(archivoDestino, overwrite = true)
                     archivoOrigen.delete()
 
+                    val urlPrevia = (urlsRemotasPorPath[rutaOrigen]
+                        ?: urlsRemotasPorPath[archivoOrigen.absolutePath])
+                        ?.trim()
+                        ?.takeIf { it.isNotEmpty() }
+
                     listaNuevasEvidencias.add(
                         EvidenciaReporteItem(
                             path = archivoDestino.absolutePath,
                             esVideo = esVideo,
-                            urlRemota = null
+                            urlRemota = urlPrevia
                         )
                     )
                     index++

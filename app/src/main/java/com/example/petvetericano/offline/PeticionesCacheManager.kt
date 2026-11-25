@@ -32,12 +32,59 @@ object PeticionesCacheManager {
         peticiones: List<PeticionListResponse>
     ) = withContext(Dispatchers.IO) {
         if (idVeterinario <= 0 || peticiones.isEmpty()) return@withContext
-        val json = gson.toJson(peticiones)
+        val previas = obtenerTodas(context, idVeterinario).associateBy { it.id_peticion }
+        val repo = ActaLocalRepository.getInstance(context)
+        val consolidadas = peticiones.map { pet ->
+            val previa = previas[pet.id_peticion]
+            val tieneActaLocal = repo.tieneActaConfirmadaLocal(pet.id_peticion, idVeterinario)
+            val tieneActaConsolidado = (pet.tiene_acta == true) ||
+                (previa?.tiene_acta == true) ||
+                tieneActaLocal
+            val idSegConsolidado = pet.id_seguimiento ?: previa?.id_seguimiento
+            if (tieneActaConsolidado != pet.tiene_acta || idSegConsolidado != pet.id_seguimiento) {
+                pet.copy(
+                    tiene_acta = tieneActaConsolidado,
+                    id_seguimiento = idSegConsolidado
+                )
+            } else {
+                pet
+            }
+        }
+        val json = gson.toJson(consolidadas)
         val prefs = getPrefs(context, idVeterinario)
         prefs.edit()
             .putString(KEY_LISTA_PETICIONES, json)
             .putLong(KEY_HORA_GUARDADO, System.currentTimeMillis())
             .apply()
+    }
+
+    suspend fun marcarTieneActa(
+        context: Context,
+        idVeterinario: Int,
+        idPeticion: Int,
+        idSeguimiento: Int? = null
+    ) = withContext(Dispatchers.IO) {
+        if (idVeterinario <= 0 || idPeticion <= 0) return@withContext
+        val todas = obtenerTodas(context, idVeterinario)
+        if (todas.isEmpty()) return@withContext
+        var modificado = false
+        val actualizadas = todas.map { pet ->
+            if (pet.id_peticion == idPeticion) {
+                modificado = true
+                pet.copy(
+                    tiene_acta = true,
+                    id_seguimiento = idSeguimiento ?: pet.id_seguimiento
+                )
+            } else {
+                pet
+            }
+        }
+        if (modificado) {
+            val json = gson.toJson(actualizadas)
+            getPrefs(context, idVeterinario).edit()
+                .putString(KEY_LISTA_PETICIONES, json)
+                .apply()
+        }
     }
 
     suspend fun obtenerPorId(

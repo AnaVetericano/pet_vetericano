@@ -48,7 +48,9 @@ data class LoginResponse(
     val tokens: TokenData,
     @SerializedName("es_nuevo_usuario") val esNuevoUsuario: Boolean? = false,
     @SerializedName("foto_perfil") val fotoPerfil: String? = null,
-    val foto: String? = null
+    val foto: String? = null,
+    val telefono: String? = null,
+    @SerializedName("matricula_profesional") val matriculaProfesional: String? = null
 )
 
 data class TokenData(
@@ -142,6 +144,39 @@ data class confirmarpeticion(
     val longitud: Double,
     val foto : String?,
     val fotos: List<String>? = null
+)
+
+data class DetectarDuplicadosCiudadanoRequest(
+    val descripcion: String? = null,
+    val latitud: Double? = null,
+    val longitud: Double? = null,
+    
+    val foto: String? = null,
+    val fotos: List<String>? = null
+)
+
+data class CandidatoDuplicadoCiudadano(
+    val coincidencia_texto: Boolean = false,
+    val coincidencia_gps: Boolean = false,
+    val cercania: String? = null,
+    val similitud: String? = null,
+    val foto: String? = null,
+    val tiene_fotografia: Boolean = false,
+    val coincidencia_imagen: Boolean? = null,
+    val porcentaje_similitud_visual: Double? = null,
+    val similitud_visual: String? = null,
+    val metodo_imagen: String? = null,
+    val es_certeza_identidad: Boolean? = null,
+    val tipo_metrica_visual: String? = null,
+    val advertencia_metrica_visual: String? = null
+)
+
+data class DetectarDuplicadosCiudadanoResponse(
+    val advertencia_duplicado: Boolean = false,
+    val posible_duplicado: Boolean = false,
+    val total_candidatos: Int = 0,
+    val mensaje: String? = null,
+    val posibles_duplicados: List<CandidatoDuplicadoCiudadano> = emptyList()
 )
 
 // Declaración única para actualizar perfil

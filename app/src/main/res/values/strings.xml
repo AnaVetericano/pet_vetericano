@@ -299,6 +299,7 @@
     <string name="lbl_masa_tumor_o_secrecion_genital">Masa, tumor o secreción genital</string>
     <string name="lbl_posible_hembra_gestante">Posible hembra gestante</string>
     <string name="lbl_hembra_en_celo">Hembra en celo</string>
+    <string name="hint_comentario_sistema_opcional">Comentario o detalle adicional (opcional)</string>
     <string name="hint_observaciones_sintesis_del_rescate">Observaciones síntesis del rescate</string>
     <string name="lbl_recepcion_en_centro_de_bienestar">Recepción en Centro de Bienestar Animal (CBA)</string>
     <string name="hint_veterinario_receptor_en_cba">Veterinario receptor en CBA</string>
@@ -742,4 +743,43 @@
     <string name="dashboard_ux_rol_veterinario">Rol: Veterinario</string>
     <string name="dashboard_ux_modo_oscuro">Modo oscuro</string>
     <string name="dashboard_ux_perfil">Mi perfil</string>
+    <!-- Deteccion preventiva de duplicados ciudadanos con IA -->
+    <string name="duplicado_ciudadano_verificando">Verificando posibles reportes similares…</string>
+    <string name="duplicado_ciudadano_titulo">Posible reporte similar en la zona</string>
+    <string name="duplicado_ciudadano_subtitulo_defecto">Encontramos un reporte previo cerca de esta ubicación con características parecidas.</string>
+    <string name="duplicado_ciudadano_pregunta">¿Es el mismo animal?</string>
+    <string name="duplicado_ciudadano_cd_foto">Fotografía del reporte previo</string>
+    <string name="duplicado_ciudadano_foto_privada">No hay fotografía disponible para mostrar de este reporte previo.</string>
+    <string name="duplicado_ciudadano_similitud_visual">Similitud visual estimada: %1$s</string>
+    <string name="duplicado_ciudadano_similitud_visual_sin_porcentaje">Coincidencia visual detectada (nivel: %1$s)</string>
+    <string name="duplicado_ciudadano_similitud_visual_no_disponible">Similitud visual: No disponible (alerta por proximidad GPS)</string>
+    <string name="duplicado_ciudadano_cercania_muy_cerca">Ubicación: Muy cerca de este punto</string>
+    <string name="duplicado_ciudadano_cercania_cerca">Ubicación: Cerca de esta zona</string>
+    <string name="duplicado_ciudadano_cercania_general">Ubicación: Proximidad GPS coincidente</string>
+    <string name="duplicado_ciudadano_btn_si_mismo">Sí es</string>
+    <string name="duplicado_ciudadano_btn_no_continuar">No es</string>
+    <string name="duplicado_ciudadano_aviso_ya_existe">Ya existe un reporte previo para este caso en la zona. No es necesario enviar uno nuevo.</string>
+    <string name="duplicado_ciudadano_btn_cancelar_nuevo_envio">Cancelar nuevo envío</string>
+    <string name="duplicado_ciudadano_btn_volver_borrador">Volver</string>
+    <string name="duplicado_ciudadano_toast_cancelado">Envío cancelado porque ya existe un reporte similar.</string>
+    <!-- Notificaciones v1 (FCM + bandeja REST) -->
+    <string name="notif_canal_id" translatable="false">vetericano_notificaciones</string>
+    <string name="notif_canal_nombre">Notificaciones de Vetericano</string>
+    <string name="notif_canal_descripcion">Asignaciones, solicitudes y avisos de tu cuenta</string>
+    <string name="notif_bandeja_titulo">Notificaciones</string>
+    <string name="notif_btn_marcar_todas">Marcar todas</string>
+    <string name="notif_btn_reintentar">Reintentar</string>
+    <string name="notif_vacio_titulo">No tienes notificaciones</string>
+    <string name="notif_vacio_subtitulo">Aquí verás las asignaciones, solicitudes y avisos de tu cuenta.</string>
+    <string name="notif_error_titulo">No se pudieron cargar las notificaciones</string>
+    <string name="notif_error_cargar">Revisa tu conexión e inténtalo de nuevo.</string>
+    <string name="notif_error_marcar">No se pudo actualizar la notificación. Inténtalo de nuevo.</string>
+    <string name="notif_subtitulo_no_leidas">%1$d sin leer</string>
+    <string name="notif_subtitulo_al_dia">Todo al día</string>
+    <string name="notif_badge_urgente">URGENTE</string>
+    <string name="notif_cd_volver">Volver</string>
+    <string name="notif_cd_item_no_leida">No leída: %1$s</string>
+    <string name="notif_cd_item_leida">Leída: %1$s</string>
+    <string name="notif_resumen_titulo">Tienes notificaciones nuevas</string>
+    <string name="notif_resumen_texto">%1$d notificaciones sin leer. Toca para verlas.</string>
 </resources>

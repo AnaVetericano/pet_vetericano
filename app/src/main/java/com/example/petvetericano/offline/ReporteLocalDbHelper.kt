@@ -43,7 +43,8 @@ class ReporteLocalDbHelper private constructor(context: Context) : SQLiteOpenHel
                 $COL_CODIGO_ERROR INTEGER,
                 $COL_ID_PETICION_REMOTA INTEGER,
                 $COL_NUMERO_RADICADO TEXT,
-                $COL_ENVIADO_EN INTEGER
+                $COL_ENVIADO_EN INTEGER,
+                $COL_AUTORIZAR_FOTOS_DUPLICADOS INTEGER NOT NULL DEFAULT 0
             )
         """.trimIndent()
         db.execSQL(sql)
@@ -51,12 +52,16 @@ class ReporteLocalDbHelper private constructor(context: Context) : SQLiteOpenHel
     }
 
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
-        // En futuras versiones incrementales se aplican migraciones con ALTER TABLE
+        if (oldVersion < 2) {
+            db.execSQL(
+                "ALTER TABLE $TABLE_REPORTES ADD COLUMN $COL_AUTORIZAR_FOTOS_DUPLICADOS INTEGER NOT NULL DEFAULT 0"
+            )
+        }
     }
 
     companion object {
         const val DATABASE_NAME = "petvetericano_reportes_offline.db"
-        const val DATABASE_VERSION = 1
+        const val DATABASE_VERSION = 2
 
         const val TABLE_REPORTES = "reportes_locales"
 
@@ -80,6 +85,7 @@ class ReporteLocalDbHelper private constructor(context: Context) : SQLiteOpenHel
         const val COL_ID_PETICION_REMOTA = "id_peticion_remota"
         const val COL_NUMERO_RADICADO = "numero_radicado"
         const val COL_ENVIADO_EN = "enviado_en"
+        const val COL_AUTORIZAR_FOTOS_DUPLICADOS = "autorizar_fotos_duplicados"
 
         @Volatile
         private var instance: ReporteLocalDbHelper? = null

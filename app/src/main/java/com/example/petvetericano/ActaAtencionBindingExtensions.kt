@@ -204,6 +204,17 @@ val ActivityActaAtencionBinding.tvEstadoGenitoGestante: TextView get() = layoutP
 val ActivityActaAtencionBinding.swGenitoCelo: MaterialSwitch get() = layoutPaso3.swGenitoCelo
 val ActivityActaAtencionBinding.tvEstadoGenitoCelo: TextView get() = layoutPaso3.tvEstadoGenitoCelo
 
+val ActivityActaAtencionBinding.tilComentarioRespiratorio: TextInputLayout get() = layoutPaso3.tilComentarioRespiratorio
+val ActivityActaAtencionBinding.etComentarioRespiratorio: TextInputEditText get() = layoutPaso3.etComentarioRespiratorio
+val ActivityActaAtencionBinding.tilComentarioDigestivo: TextInputLayout get() = layoutPaso3.tilComentarioDigestivo
+val ActivityActaAtencionBinding.etComentarioDigestivo: TextInputEditText get() = layoutPaso3.etComentarioDigestivo
+val ActivityActaAtencionBinding.tilComentarioMusculo: TextInputLayout get() = layoutPaso3.tilComentarioMusculo
+val ActivityActaAtencionBinding.etComentarioMusculo: TextInputEditText get() = layoutPaso3.etComentarioMusculo
+val ActivityActaAtencionBinding.tilComentarioDermato: TextInputLayout get() = layoutPaso3.tilComentarioDermato
+val ActivityActaAtencionBinding.etComentarioDermato: TextInputEditText get() = layoutPaso3.etComentarioDermato
+val ActivityActaAtencionBinding.tilComentarioGenito: TextInputLayout get() = layoutPaso3.tilComentarioGenito
+val ActivityActaAtencionBinding.etComentarioGenito: TextInputEditText get() = layoutPaso3.etComentarioGenito
+
 val ActivityActaAtencionBinding.tilObservacionesRescate: TextInputLayout get() = layoutPaso3.tilObservacionesRescate
 val ActivityActaAtencionBinding.etObservacionesRescate: TextInputEditText get() = layoutPaso3.etObservacionesRescate
 val ActivityActaAtencionBinding.tilVeterinarioReceptor: TextInputLayout get() = layoutPaso3.tilVeterinarioReceptor

@@ -91,6 +91,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
     private var ctsUbicacion: CancellationTokenSource? = null
     private var ubicacionJob: Job? = null
     private var reporteEncoladoExitoso = false
+    private var descartandoBorrador = false
 
     fun marcarReporteEncoladoExitoso() {
         reporteEncoladoExitoso = true
@@ -283,6 +284,11 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         setContentView(binding.root)
 
         ReporteMediaHelper.purgarDraftsAntiguos(this)
+        RetrofitClient.init(applicationContext)
+        val tokenGuardado = SharedPreferencesManager(this).getAccessToken().trim()
+        if (tokenGuardado.isNotEmpty() && RetrofitClient.authToken.isNullOrBlank()) {
+            RetrofitClient.authToken = tokenGuardado
+        }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this)
 
@@ -791,7 +797,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
 
     override fun onPause() {
         super.onPause()
-        if (reporteEncoladoExitoso) return
+        if (reporteEncoladoExitoso || descartandoBorrador) return
         val textoActual = binding.etSearch.text?.toString().orEmpty()
         val prefs = getSharedPreferences(prefsMapa, MODE_PRIVATE)
         val editor = prefs.edit()
@@ -989,6 +995,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun guardarMultimediaEnPrefs() {
+        if (reporteEncoladoExitoso || descartandoBorrador) return
         val prefs = getSharedPreferences(prefsMultimedia, MODE_PRIVATE)
         val editor = prefs.edit()
         val paths = mutableListOf<String>()
@@ -1086,23 +1093,7 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         if (reporteEncoladoExitoso) return
         marcarReporteEncoladoExitoso()
 
-        val sheet = supportFragmentManager.findFragmentByTag(BottomSheetConfirmarReporte.TAG) as? BottomSheetDialogFragment
-        sheet?.dismissAllowingStateLoss()
-
-        viewModel.limpiarBorrador()
-
-        getSharedPreferences("MisReportesPrefs", Context.MODE_PRIVATE).edit().clear().apply()
-        getSharedPreferences("MapaOffline", Context.MODE_PRIVATE).edit().clear().apply()
-        getSharedPreferences("ReporteOfflineMultimedia", Context.MODE_PRIVATE).edit().clear().apply()
-        getSharedPreferences("ReporteOffline", Context.MODE_PRIVATE).edit().clear().apply()
-
-        try {
-            val draftDir = File(filesDir, "reporte_drafts")
-            draftDir.listFiles()?.forEach { f ->
-                if (f.isFile) f.delete()
-            }
-        } catch (_: Exception) {
-        }
+        limpiarBorradorYArchivos()
 
         val conn = hayConexionInternet(this)
         val nuevoIntent = Intent(this, reporte_enviado::class.java).apply {
@@ -1111,6 +1102,40 @@ class reportar_peticion : AppCompatActivity(), OnMapReadyCallback {
         }
         startActivity(nuevoIntent)
         finish()
+    }
+
+    /**
+     * Cancela el envio actual cuando el ciudadano confirma que el animal ya fue reportado,
+     * descartando el borrador sin encolar una nueva peticion.
+     */
+    fun cancelarReportePorDuplicado() {
+        if (reporteEncoladoExitoso || descartandoBorrador) return
+        descartandoBorrador = true
+        binding.etSearch.text?.clear()
+        binding.etDescripcion.text?.clear()
+        limpiarBorradorYArchivos()
+        Toast.makeText(this, R.string.duplicado_ciudadano_toast_cancelado, Toast.LENGTH_LONG).show()
+        finish()
+    }
+
+    private fun limpiarBorradorYArchivos() {
+        val sheet = supportFragmentManager.findFragmentByTag(BottomSheetConfirmarReporte.TAG) as? BottomSheetDialogFragment
+        sheet?.dismissAllowingStateLoss()
+
+        viewModel.limpiarBorrador()
+
+        getSharedPreferences("MisReportesPrefs", Context.MODE_PRIVATE).edit().clear().commit()
+        getSharedPreferences("MapaOffline", Context.MODE_PRIVATE).edit().clear().commit()
+        getSharedPreferences("ReporteOfflineMultimedia", Context.MODE_PRIVATE).edit().clear().commit()
+        getSharedPreferences("ReporteOffline", Context.MODE_PRIVATE).edit().clear().commit()
+
+        try {
+            val draftDir = File(filesDir, "reporte_drafts")
+            draftDir.listFiles()?.forEach { f ->
+                if (f.isFile) f.delete()
+            }
+        } catch (_: Exception) {
+        }
     }
 
     private fun hayConexionInternet(context: Context): Boolean {

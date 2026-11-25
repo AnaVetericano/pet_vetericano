@@ -55,13 +55,22 @@ class ExampleUnitTest {
     }
 
     @Test
-    fun passwordDeterministicaGoogle_cumpleReglasDeSeguridad() {
-        val pass1 = GoogleAuthHelper.generarPasswordGoogleDeterministica("usuario@gmail.com")
-        val pass2 = GoogleAuthHelper.generarPasswordGoogleDeterministica("USUARIO@gmail.com")
-        assertEquals(pass1, pass2)
-        assertTrue(pass1.length >= 8)
-        assertTrue(Regex("[A-Z]").containsMatchIn(pass1))
-        assertTrue(Regex("[0-9]").containsMatchIn(pass1))
+    fun googleIdToken_rechazaMarcadorLocalYAceptaJwtCompacto() {
+        assertFalse(GoogleAuthHelper.esIdTokenJwtValido("android_account:usuario@gmail.com"))
+        assertFalse(GoogleAuthHelper.esIdTokenJwtValido("ANDROID_ACCOUNT:usuario@gmail.com"))
+        assertFalse(GoogleAuthHelper.esIdTokenJwtValido(""))
+        assertFalse(GoogleAuthHelper.esIdTokenJwtValido("no-es-jwt"))
+        assertTrue(GoogleAuthHelper.esIdTokenJwtValido("eyJhbGciOiJSUzI1NiJ9.eyJzdWIiOiIxMjMifQ.c2lnbmF0dXJl"))
+    }
+
+    @Test(expected = IllegalArgumentException::class)
+    fun construirGoogleLoginRequest_rechazaMarcadorInseguroAndroidAccount() {
+        GoogleAuthHelper.construirGoogleLoginRequest(
+            GoogleAuthHelper.CredencialGoogleExtraida(
+                idToken = "android_account:usuario@gmail.com",
+                email = "usuario@gmail.com"
+            )
+        )
     }
 
     @Test
@@ -157,5 +166,40 @@ class ExampleUnitTest {
         // Medicamentos normales deben mantener ml o mg según presentación/vía
         assertEquals("mg", MedicamentoMaletin.obtenerUnidadMedida(via = "Oral", presentacion = "Tableta", nombre = "Amoxicilina"))
         assertEquals("ml", MedicamentoMaletin.obtenerUnidadMedida(via = "Intravenosa (IV)", presentacion = "Frasco ampolla", nombre = "Solución Salina"))
+    }
+
+    @Test
+    fun actaRescate_comentariosSistemasOpcionales_incluyeSoloCuandoNoEstanVacios() {
+        val entitySinComentarios = com.example.petvetericano.offline.ActaLocalEntity(
+            idPeticion = 10,
+            idVeterinario = 5,
+            requiereRescate = true
+        )
+        assertEquals("", entitySinComentarios.comentarioRespiratorio)
+        assertEquals("", entitySinComentarios.comentarioDigestivo)
+        assertEquals("", entitySinComentarios.comentarioMusculo)
+        assertEquals("", entitySinComentarios.comentarioDermato)
+        assertEquals("", entitySinComentarios.comentarioGenito)
+
+        val requestSinComentarios = com.example.petvetericano.offline.ActaRequestBuilder.build(entitySinComentarios, emptyList(), emptyList(), false)
+        assertFalse(requestSinComentarios.anamnesisDescripcionQueja.contains("Comentario respiratorio:"))
+        assertFalse(requestSinComentarios.anamnesisDescripcionQueja.contains("Comentario digestivo:"))
+        assertFalse(requestSinComentarios.anamnesisDescripcionQueja.contains("Comentario músculo-esquelético:"))
+        assertFalse(requestSinComentarios.anamnesisDescripcionQueja.contains("Comentario dermatológico:"))
+        assertFalse(requestSinComentarios.anamnesisDescripcionQueja.contains("Comentario génito-urinario:"))
+
+        val entityConComentarios = entitySinComentarios.copy(
+            comentarioRespiratorio = "Estertores leves en pulmón derecho",
+            comentarioDigestivo = "Mucosa oral levemente pálida",
+            comentarioMusculo = "Claudicación grado II miembro posterior",
+            comentarioDermato = "Alopecia focal en dorso",
+            comentarioGenito = "Sin secreción activa al momento"
+        )
+        val requestConComentarios = com.example.petvetericano.offline.ActaRequestBuilder.build(entityConComentarios, emptyList(), emptyList(), false)
+        assertTrue(requestConComentarios.anamnesisDescripcionQueja.contains("   - Comentario respiratorio: Estertores leves en pulmón derecho"))
+        assertTrue(requestConComentarios.anamnesisDescripcionQueja.contains("   - Comentario digestivo: Mucosa oral levemente pálida"))
+        assertTrue(requestConComentarios.anamnesisDescripcionQueja.contains("   - Comentario músculo-esquelético: Claudicación grado II miembro posterior"))
+        assertTrue(requestConComentarios.anamnesisDescripcionQueja.contains("   - Comentario dermatológico: Alopecia focal en dorso"))
+        assertTrue(requestConComentarios.anamnesisDescripcionQueja.contains("   - Comentario génito-urinario: Sin secreción activa al momento"))
     }
 }

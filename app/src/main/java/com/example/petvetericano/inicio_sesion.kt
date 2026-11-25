@@ -8,13 +8,19 @@ import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityInicioSesionBinding
 import android.util.Log
 import com.example.petvetericano.models.LoginRequest
+import com.example.petvetericano.models.TokenData
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.network.SesionExpiradaManager
+import com.example.petvetericano.notificaciones.FcmTokenManager
+import com.example.petvetericano.realtime.WebSocketConnectionManager
 import com.example.petvetericano.offline.ActaLocalRepository
 import com.example.petvetericano.offline.ActaSyncScheduler
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import java.io.IOException
+import java.net.SocketTimeoutException
 
 class inicio_sesion : AppCompatActivity() {
 
@@ -23,6 +29,76 @@ class inicio_sesion : AppCompatActivity() {
     companion object {
         const val ROL_VETERINARIO = 3
         private const val TAG = "inicio_sesion"
+
+        internal fun resolverMensajeErrorHttp(code: Int, errorRaw: String?): String {
+            if (code in 500..599) {
+                return "Error del servidor ($code). Intenta nuevamente más tarde."
+            }
+
+            if (code == 404) {
+                return "Servicio de inicio de sesión no disponible (404)."
+            }
+
+            val mensajeJson = extraerMensajeJsonSeguro(errorRaw)
+            if (!mensajeJson.isNullOrEmpty()) {
+                return mensajeJson
+            }
+
+            return if (code == 400 || code == 401 || code == 403) {
+                "Correo o contraseña incorrectos"
+            } else {
+                "No se pudo iniciar sesión (código $code)"
+            }
+        }
+
+        internal fun resolverMensajeErrorExcepcion(e: Throwable): String {
+            return when (e) {
+                is SocketTimeoutException ->
+                    "Tiempo de espera agotado al conectar con el servidor. Verifica tu conexión e intenta nuevamente."
+                is IOException ->
+                    "Error de conexión con el servidor. Verifica tu acceso a internet e intenta nuevamente."
+                else ->
+                    "No se pudo procesar la respuesta del servidor. Intenta nuevamente."
+            }
+        }
+
+        private fun extraerMensajeJsonSeguro(errorRaw: String?): String? {
+            if (errorRaw.isNullOrBlank()) return null
+            val trimmed = errorRaw.trim()
+            if (!trimmed.startsWith("{")) return null
+
+            return try {
+                val json = com.google.gson.JsonParser.parseString(trimmed).asJsonObject
+                val candidatos = listOfNotNull(
+                    extraerPrimerTextoArray(json, "non_field_errors"),
+                    extraerTextoCampo(json, "detail"),
+                    extraerTextoCampo(json, "error"),
+                    extraerTextoCampo(json, "mensaje"),
+                    extraerPrimerTextoArray(json, "email"),
+                    extraerPrimerTextoArray(json, "password")
+                )
+                candidatos
+                    .map { it.trim() }
+                    .firstOrNull { it.isNotEmpty() && it != "null" }
+                    ?.take(200)
+            } catch (_: Exception) {
+                null
+            }
+        }
+
+        private fun extraerTextoCampo(json: com.google.gson.JsonObject, clave: String): String? {
+            val el = json.get(clave) ?: return null
+            return if (el.isJsonPrimitive) el.asString else null
+        }
+
+        private fun extraerPrimerTextoArray(json: com.google.gson.JsonObject, clave: String): String? {
+            val el = json.get(clave) ?: return null
+            if (!el.isJsonArray) return null
+            val arr = el.asJsonArray
+            if (arr.size() == 0) return null
+            val first = arr.get(0)
+            return if (first != null && first.isJsonPrimitive) first.asString else null
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -100,21 +176,29 @@ class inicio_sesion : AppCompatActivity() {
         }
 
         val loginRequest = LoginRequest(email = email, password = password)
+        binding.btnIniciarSesion.isEnabled = false
+        binding.btnGoogleLogin.isEnabled = false
 
         lifecycleScope.launch {
             try {
+                // Evita que un token previo vencido/inválido en memoria interfiera con /usuarios/login/
+                RetrofitClient.authToken = null
                 val respuesta = RetrofitClient.apiService.login(loginRequest)
 
                 if (respuesta.isSuccessful) {
                     val datos = respuesta.body()
+                    val tokens: TokenData? = datos?.tokens
+                    val accessToken = tokens?.access?.trim().orEmpty()
+                    val refreshToken = tokens?.refresh?.trim().orEmpty()
 
-                    if (datos != null) {
+                    if (datos != null && accessToken.isNotEmpty()) {
                         val rolStr = if (datos.idRol == ROL_VETERINARIO) "Médico Veterinario" else "Ciudadano"
                         val nombreMostrar = datos.nombre?.trim().orEmpty()
                         val saludo = if (nombreMostrar.isNotEmpty()) "¡Hola, $rolStr $nombreMostrar! Bienvenido." else "¡Hola, $rolStr! Bienvenido."
                         Toast.makeText(this@inicio_sesion, saludo, Toast.LENGTH_SHORT).show()
 
-                        RetrofitClient.authToken = datos.tokens.access
+                        RetrofitClient.authToken = accessToken
+                        SesionExpiradaManager.refreshMuerto = null
 
                         val prefs = SharedPreferencesManager(this@inicio_sesion)
                         prefs.saveUserData(
@@ -124,12 +208,16 @@ class inicio_sesion : AppCompatActivity() {
                         )
                         prefs.saveUserLastName(datos.apellido ?: "")
                         prefs.saveProfileImagePath(datos.fotoPerfil ?: datos.foto ?: "")
-                        prefs.saveAccessToken(datos.tokens.access)
-                        if (!datos.tokens.refresh.isNullOrEmpty()) {
-                            prefs.saveRefreshToken(datos.tokens.refresh)
+                        prefs.saveAccessToken(accessToken)
+                        if (refreshToken.isNotEmpty()) {
+                            prefs.saveRefreshToken(refreshToken)
                         }
                         prefs.saveUserId(datos.idUsuario)
                         prefs.saveUserRole(datos.idRol)
+
+                        // Notificaciones: registra el token FCM, pide el permiso, recupera NP por REST y conecta WS.
+                        FcmTokenManager.onLoginExitoso(applicationContext)
+                        WebSocketConnectionManager.onLoginExitoso(applicationContext)
 
                         encolarSincronizacionActasPendientes(datos.idUsuario)
 
@@ -139,27 +227,54 @@ class inicio_sesion : AppCompatActivity() {
                             Intent(this@inicio_sesion, bienvenida::class.java)
                         }
 
-                        intent.putExtra("TOKEN", datos.tokens.access)
+                        intent.putExtra("TOKEN", accessToken)
                         intent.putExtra("EMAIL", datos.email)
                         intent.putExtra("ID_ROL", datos.idRol)
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
 
                         startActivity(intent)
+                    } else {
+                        Log.w(TAG, "Respuesta exitosa de login sin cuerpo o token de acceso")
+                        GoogleAuthHelper.mostrarMensajeMD3(
+                            this@inicio_sesion,
+                            "Respuesta inválida del servidor. Intenta nuevamente.",
+                            esError = true
+                        )
                     }
                 } else {
-                    val errorRaw = respuesta.errorBody()?.string()
-                    val msgError = try {
-                        val json = org.json.JSONObject(errorRaw ?: "")
-                        json.optJSONArray("non_field_errors")?.optString(0)
-                            ?: json.optString("detail").takeIf { it.isNotEmpty() }
-                            ?: "Correo o contraseña incorrectos"
+                    val code = respuesta.code()
+                    val errorRaw = try {
+                        respuesta.errorBody()?.string()
                     } catch (_: Exception) {
-                        "Correo o contraseña incorrectos"
+                        null
                     }
+                    if (code in 500..599) {
+                        Log.e(TAG, "Error del servidor durante inicio de sesión: HTTP $code")
+                    } else {
+                        Log.w(TAG, "Inicio de sesión rechazado: HTTP $code")
+                    }
+                    val msgError = resolverMensajeErrorHttp(code, errorRaw)
                     GoogleAuthHelper.mostrarMensajeMD3(this@inicio_sesion, msgError, esError = true)
                 }
+            } catch (e: IOException) {
+                Log.w(TAG, "Fallo de conexión durante inicio de sesión: ${e.javaClass.simpleName}")
+                GoogleAuthHelper.mostrarMensajeMD3(
+                    this@inicio_sesion,
+                    resolverMensajeErrorExcepcion(e),
+                    esError = true
+                )
             } catch (e: Exception) {
-                GoogleAuthHelper.mostrarMensajeMD3(this@inicio_sesion, "Error de conexión con el servidor", esError = true)
+                Log.e(TAG, "Error inesperado durante inicio de sesión: ${e.javaClass.simpleName}")
+                GoogleAuthHelper.mostrarMensajeMD3(
+                    this@inicio_sesion,
+                    resolverMensajeErrorExcepcion(e),
+                    esError = true
+                )
+            } finally {
+                if (!isFinishing && !isDestroyed) {
+                    binding.btnIniciarSesion.isEnabled = true
+                    binding.btnGoogleLogin.isEnabled = true
+                }
             }
         }
     }

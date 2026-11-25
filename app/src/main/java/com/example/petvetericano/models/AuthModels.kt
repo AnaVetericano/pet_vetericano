@@ -226,14 +226,33 @@ data class JuridicoResponse(
 
 // --- Adopciones ---
 data class AdopcionAnimalResponse(
-    val id: Int,
-    val nombre: String,
-    val raza: String?,
-    val descripcion: String?,
-    val imagen: String?,
-    val disponible: Boolean,
+    val id: Int = 0,
+    val nombre: String? = null,
+    val raza: String? = null,
+    val descripcion: String? = null,
+    val imagen: String? = null,
+    val estado: String? = null,
+    val disponible: Boolean? = null,
+    @SerializedName("disponible_adopcion") val disponibleAdopcion: Boolean? = null,
+    val fecha: String? = null,
     @SerializedName("fecha_creacion") val fechaCreacion: String? = null
-)
+) {
+    /**
+     * Compatible tanto con el contrato real de `/api/adopciones/` (`estado = "Disponible"`)
+     * enviado al salir de Historia Clínica Web como con banderas booleanas directas.
+     */
+    val esDisponible: Boolean
+        get() {
+            if (disponible != null) return disponible
+            if (disponibleAdopcion != null) return disponibleAdopcion
+            val estadoNorm = estado?.trim()?.lowercase() ?: return false
+            return estadoNorm == "disponible" ||
+                estadoNorm == "disponible para adopción" ||
+                estadoNorm == "disponible para adopcion" ||
+                estadoNorm == "apto para adopción" ||
+                estadoNorm == "apto para adopcion"
+        }
+}
 
 // peticion
 data class Petition(

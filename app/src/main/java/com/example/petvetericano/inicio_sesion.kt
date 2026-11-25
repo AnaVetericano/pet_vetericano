@@ -3,10 +3,14 @@ package com.example.petvetericano
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityInicioSesionBinding
 import android.util.Log
+import com.example.petvetericano.facial.FacialAuthSessionHelper
+import com.example.petvetericano.facial.FacialStorageManager
+import com.example.petvetericano.facial.ReconocimientoFacialActivity
 import com.example.petvetericano.models.LoginRequest
 import com.example.petvetericano.models.TokenData
 import com.example.petvetericano.network.RetrofitClient
@@ -21,10 +25,24 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.io.IOException
 import java.net.SocketTimeoutException
+import java.util.Locale
+import kotlin.math.ceil
 
 class inicio_sesion : AppCompatActivity() {
 
     private lateinit var binding: ActivityInicioSesionBinding
+
+    private val facialVerifyLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode == RESULT_OK) {
+                completarLoginConRostro()
+            } else {
+                val msg = result.data?.getStringExtra(ReconocimientoFacialActivity.EXTRA_RESULTADO_MENSAJE)
+                if (!msg.isNullOrBlank()) {
+                    GoogleAuthHelper.mostrarMensajeMD3(this@inicio_sesion, msg, esError = true)
+                }
+            }
+        }
 
     companion object {
         const val ROL_VETERINARIO = 3
@@ -127,6 +145,10 @@ class inicio_sesion : AppCompatActivity() {
             iniciarSesionConGoogle()
         }
 
+        binding.btnFacialLogin.setOnClickListener {
+            iniciarSesionConRostro()
+        }
+
         binding.txtRegistrarse.setOnClickListener {
             val intent = Intent(this, Registro::class.java)
             startActivity(intent)
@@ -145,6 +167,7 @@ class inicio_sesion : AppCompatActivity() {
                 onEstadoCarga = { cargando ->
                     binding.btnGoogleLogin.isEnabled = !cargando
                     binding.btnIniciarSesion.isEnabled = !cargando
+                    binding.btnFacialLogin.isEnabled = !cargando
                     binding.btnGoogleLogin.text = if (cargando) {
                         "Conectando con Google..."
                     } else {
@@ -152,6 +175,104 @@ class inicio_sesion : AppCompatActivity() {
                     }
                 }
             )
+        }
+    }
+
+    private fun iniciarSesionConRostro() {
+        val storage = FacialStorageManager(this)
+        val perfil = storage.obtenerPerfilFacial()
+        if (perfil == null || perfil.refreshToken.isBlank()) {
+            GoogleAuthHelper.mostrarMensajeMD3(
+                this,
+                getString(R.string.facial_no_configurado),
+                esError = false
+            )
+            return
+        }
+
+        val bloqueoMs = storage.obtenerBloqueoRestanteMs()
+        if (bloqueoMs > 0L) {
+            val seg = ceil(bloqueoMs / 1000.0).toInt().coerceAtLeast(1)
+            GoogleAuthHelper.mostrarMensajeMD3(
+                this,
+                getString(R.string.facial_error_bloqueo, seg),
+                esError = true
+            )
+            return
+        }
+
+        val emailIngresado = binding.editTextText.text?.toString()?.trim()?.lowercase(Locale.ROOT).orEmpty()
+        if (emailIngresado.isNotEmpty() && emailIngresado != perfil.email.trim().lowercase(Locale.ROOT)) {
+            GoogleAuthHelper.mostrarMensajeMD3(
+                this,
+                getString(R.string.facial_cuenta_distinta, FacialStorageManager.enmascararCorreo(perfil.email)),
+                esError = true
+            )
+            return
+        }
+
+        facialVerifyLauncher.launch(ReconocimientoFacialActivity.crearIntentVerificar(this))
+    }
+
+    private fun completarLoginConRostro() {
+        val perfil = FacialStorageManager(this).obtenerPerfilFacial()
+        if (perfil == null) {
+            GoogleAuthHelper.mostrarMensajeMD3(
+                this,
+                getString(R.string.facial_no_configurado),
+                esError = true
+            )
+            return
+        }
+
+        binding.btnIniciarSesion.isEnabled = false
+        binding.btnGoogleLogin.isEnabled = false
+        binding.btnFacialLogin.isEnabled = false
+        binding.btnFacialLogin.text = getString(R.string.facial_verificando_servidor)
+
+        lifecycleScope.launch {
+            try {
+                when (val resultado = FacialAuthSessionHelper.completarSesionConPerfilVerificado(this@inicio_sesion, perfil)) {
+                    is FacialAuthSessionHelper.ResultadoLoginFacial.Exito -> {
+                        val rolStr = if (resultado.idRol == ROL_VETERINARIO) "Médico Veterinario" else "Ciudadano"
+                        val nombreMostrar = resultado.nombre.trim()
+                        val saludo = if (nombreMostrar.isNotEmpty()) {
+                            "¡Hola, $rolStr $nombreMostrar! Bienvenido."
+                        } else {
+                            "¡Hola, $rolStr! Bienvenido."
+                        }
+                        Toast.makeText(this@inicio_sesion, saludo, Toast.LENGTH_SHORT).show()
+
+                        val destino = if (resultado.idRol == ROL_VETERINARIO) {
+                            Intent(this@inicio_sesion, dahsboard_veterianrio::class.java)
+                        } else {
+                            Intent(this@inicio_sesion, bienvenida::class.java)
+                        }
+                        destino.putExtra("TOKEN", resultado.accessToken)
+                        destino.putExtra("EMAIL", resultado.email)
+                        destino.putExtra("ID_ROL", resultado.idRol)
+                        destino.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                        startActivity(destino)
+                        finish()
+                    }
+                    is FacialAuthSessionHelper.ResultadoLoginFacial.RequiereLoginManual -> {
+                        if (binding.editTextText.text.isNullOrBlank()) {
+                            binding.editTextText.setText(perfil.email)
+                        }
+                        GoogleAuthHelper.mostrarMensajeMD3(this@inicio_sesion, resultado.mensaje, esError = true)
+                    }
+                    is FacialAuthSessionHelper.ResultadoLoginFacial.ErrorRed -> {
+                        GoogleAuthHelper.mostrarMensajeMD3(this@inicio_sesion, resultado.mensaje, esError = true)
+                    }
+                }
+            } finally {
+                if (!isFinishing && !isDestroyed) {
+                    binding.btnIniciarSesion.isEnabled = true
+                    binding.btnGoogleLogin.isEnabled = true
+                    binding.btnFacialLogin.isEnabled = true
+                    binding.btnFacialLogin.setText(R.string.facial_btn_iniciar_sesion)
+                }
+            }
         }
     }
 
@@ -178,6 +299,7 @@ class inicio_sesion : AppCompatActivity() {
         val loginRequest = LoginRequest(email = email, password = password)
         binding.btnIniciarSesion.isEnabled = false
         binding.btnGoogleLogin.isEnabled = false
+        binding.btnFacialLogin.isEnabled = false
 
         lifecycleScope.launch {
             try {
@@ -211,6 +333,15 @@ class inicio_sesion : AppCompatActivity() {
                         prefs.saveAccessToken(accessToken)
                         if (refreshToken.isNotEmpty()) {
                             prefs.saveRefreshToken(refreshToken)
+                            FacialStorageManager(this@inicio_sesion).actualizarRefreshTokenSiCoincide(
+                                userId = datos.idUsuario,
+                                nuevoRefreshToken = refreshToken,
+                                nombre = datos.nombre,
+                                apellido = datos.apellido,
+                                fotoPerfil = datos.fotoPerfil ?: datos.foto,
+                                telefono = datos.telefono,
+                                matriculaProfesional = datos.matriculaProfesional
+                            )
                         }
                         prefs.saveUserId(datos.idUsuario)
                         prefs.saveUserRole(datos.idRol)
@@ -274,6 +405,7 @@ class inicio_sesion : AppCompatActivity() {
                 if (!isFinishing && !isDestroyed) {
                     binding.btnIniciarSesion.isEnabled = true
                     binding.btnGoogleLogin.isEnabled = true
+                    binding.btnFacialLogin.isEnabled = true
                 }
             }
         }

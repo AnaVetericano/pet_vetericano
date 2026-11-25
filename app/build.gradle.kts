@@ -38,6 +38,10 @@ android {
         buildConfig = true
     }
 
+    androidResources {
+        noCompress += "tflite"
+    }
+
     buildTypes {
         val productionApiUrl = "https://backendvetericano-production.up.railway.app/api/"
         debug {
@@ -142,10 +146,14 @@ dependencies {
     //depen de los graficos
 
     implementation("com.github.PhilJay:MPAndroidChart:v3.1.0")
-        // ... tus otras dependencias
-    implementation ("com.squareup.retrofit2:retrofit:2.9.0")
-    implementation ("com.squareup.retrofit2:converter-gson:2.9.0")
 
+    // Reconocimiento facial on-device (CameraX + ML Kit Face Detection + LiteRT / MobileFaceNet)
+    implementation(libs.androidx.camera.core)
+    implementation(libs.androidx.camera.camera2)
+    implementation(libs.androidx.camera.lifecycle)
+    implementation(libs.androidx.camera.view)
+    implementation(libs.mlkit.face.detection)
+    implementation(libs.litert)
 
     //cloudinary
     implementation("com.cloudinary:cloudinary-android:2.5.0")

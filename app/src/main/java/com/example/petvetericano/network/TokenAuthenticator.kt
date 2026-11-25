@@ -3,6 +3,7 @@ package com.example.petvetericano.network
 import android.content.Context
 import android.util.Log
 import com.example.petvetericano.SharedPreferencesManager
+import com.example.petvetericano.facial.FacialStorageManager
 import okhttp3.Authenticator
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.Request
@@ -134,6 +135,10 @@ class TokenAuthenticator(
                 prefs.saveAccessToken(newAccess)
                 if (!newRefresh.isNullOrEmpty()) {
                     prefs.saveRefreshToken(newRefresh)
+                    FacialStorageManager(context).actualizarRefreshTokenSiCoincide(
+                        userId = prefs.getUserId(),
+                        nuevoRefreshToken = newRefresh
+                    )
                 }
                 RetrofitClient.authToken = newAccess
 

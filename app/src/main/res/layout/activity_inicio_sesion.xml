@@ -238,6 +238,32 @@
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/layoutDividerGoogle" />
 
+        <!-- Botón Iniciar sesión con rostro (on-device ML Kit + MobileFaceNet) -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnFacialLogin"
+            style="@style/Widget.Material3.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="56dp"
+            android:layout_marginTop="12dp"
+            android:fontFamily="@font/nunito"
+            android:text="@string/facial_btn_iniciar_sesion"
+            android:textAllCaps="false"
+            android:textColor="@color/blue"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            app:backgroundTint="@color/card_background"
+            app:cornerRadius="16dp"
+            app:icon="@drawable/ic_face_recognition"
+            app:iconGravity="textStart"
+            app:iconPadding="12dp"
+            app:iconSize="22dp"
+            app:iconTint="@color/blue"
+            app:strokeColor="@color/blue"
+            app:strokeWidth="1.5dp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/btnGoogleLogin" />
+
         <TextView
             android:id="@+id/txtRegistrarse"
             android:layout_width="wrap_content"
@@ -251,7 +277,7 @@
             android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btnGoogleLogin" />
+            app:layout_constraintTop_toBottomOf="@id/btnFacialLogin" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

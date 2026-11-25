@@ -24,6 +24,10 @@ class Registro : AppCompatActivity() {
 
         prefs = SharedPreferencesManager(this)
 
+        // Estado limpio antes de iniciar registro manual o con Google
+        RetrofitClient.authToken = null
+        com.example.petvetericano.network.SesionExpiradaManager.refreshMuerto = null
+
         binding.btnSignUp.setOnClickListener {
             registrarUsuario()
         }
@@ -45,12 +49,14 @@ class Registro : AppCompatActivity() {
                 activity = this@Registro,
                 esFlujoRegistro = true,
                 onEstadoCarga = { cargando ->
-                    binding.btnGoogleSignUp.isEnabled = !cargando
-                    binding.btnSignUp.isEnabled = !cargando
-                    binding.btnGoogleSignUp.text = if (cargando) {
-                        "Registrando con Google..."
-                    } else {
-                        getString(R.string.registrarse_con_google)
+                    if (!isFinishing && !isDestroyed) {
+                        binding.btnGoogleSignUp.isEnabled = !cargando
+                        binding.btnSignUp.isEnabled = !cargando
+                        binding.btnGoogleSignUp.text = if (cargando) {
+                            "Registrando con Google..."
+                        } else {
+                            getString(R.string.registrarse_con_google)
+                        }
                     }
                 }
             )
@@ -115,9 +121,11 @@ class Registro : AppCompatActivity() {
         }
 
         binding.btnSignUp.isEnabled = false
+        binding.btnGoogleSignUp.isEnabled = false
 
         lifecycleScope.launch {
             try {
+                RetrofitClient.authToken = null
                 val request = RegisterRequest(
                     email = email,
                     identificacion = identificacion,
@@ -148,7 +156,10 @@ class Registro : AppCompatActivity() {
             } catch (e: Exception) {
                 GoogleAuthHelper.mostrarMensajeMD3(this@Registro, "Error de conexión con el servidor", esError = true)
             } finally {
-                binding.btnSignUp.isEnabled = true
+                if (!isFinishing && !isDestroyed) {
+                    binding.btnSignUp.isEnabled = true
+                    binding.btnGoogleSignUp.isEnabled = true
+                }
             }
         }
     }

@@ -23,6 +23,14 @@
           }
         },
         {
+          "client_id": "414064158617-vqebf0gb77dtuc27jrq40s6r9ochdbef.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.petvetericano",
+            "certificate_hash": "6961dfad0f93cd012d3da5633ef3c2d6e2f9d8ed"
+          }
+        },
+        {
           "client_id": "414064158617-fdj5ffqrrl19i56d51ioeb5g2k8ieak6.apps.googleusercontent.com",
           "client_type": 3
         }

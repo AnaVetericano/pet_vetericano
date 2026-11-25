@@ -165,13 +165,15 @@ class inicio_sesion : AppCompatActivity() {
                 activity = this@inicio_sesion,
                 esFlujoRegistro = false,
                 onEstadoCarga = { cargando ->
-                    binding.btnGoogleLogin.isEnabled = !cargando
-                    binding.btnIniciarSesion.isEnabled = !cargando
-                    binding.btnFacialLogin.isEnabled = !cargando
-                    binding.btnGoogleLogin.text = if (cargando) {
-                        "Conectando con Google..."
-                    } else {
-                        getString(R.string.continuar_con_google)
+                    if (!isFinishing && !isDestroyed) {
+                        binding.btnGoogleLogin.isEnabled = !cargando
+                        binding.btnIniciarSesion.isEnabled = !cargando
+                        binding.btnFacialLogin.isEnabled = !cargando
+                        binding.btnGoogleLogin.text = if (cargando) {
+                            "Conectando con Google..."
+                        } else {
+                            getString(R.string.continuar_con_google)
+                        }
                     }
                 }
             )

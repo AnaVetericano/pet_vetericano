@@ -6,6 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_screen"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:padding="28dp"
     tools:context=".reporte_enviado">
 
@@ -115,11 +117,11 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="24dp"
-            app:cardBackgroundColor="@color/primary_soft"
+            app:cardBackgroundColor="@color/input_background"
             app:cardCornerRadius="18dp"
             app:cardElevation="0dp"
-            app:strokeColor="@color/primary_light"
-            app:strokeWidth="1.5dp">
+            app:strokeColor="@color/input_stroke"
+            app:strokeWidth="1dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -158,6 +160,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:orientation="vertical"
         app:layout_constraintBottom_toBottomOf="parent">
 
@@ -166,6 +170,8 @@
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:fontFamily="@font/nunito"
+            android:outlineSpotShadowColor="@color/primary_dark"
+            android:stateListAnimator="@animator/anim_levitate_button"
             android:text="@string/lbl_contactar_cba"
             android:textAllCaps="false"
             android:textColor="@color/darkblue"
@@ -173,7 +179,8 @@
             android:textStyle="bold"
             app:backgroundTint="@color/yellow"
             app:cornerRadius="16dp"
-            app:elevation="2dp" />
+            app:elevation="4dp"
+            tools:targetApi="p" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/regremen"
@@ -182,14 +189,19 @@
             android:layout_height="54dp"
             android:layout_marginTop="12dp"
             android:fontFamily="@font/nunito"
+            android:outlineSpotShadowColor="@color/primary_dark"
+            android:stateListAnimator="@animator/anim_levitate_button"
             android:text="@string/lbl_volver_al_menu_principal"
             android:textAllCaps="false"
             android:textColor="@color/blue"
             android:textSize="15sp"
             android:textStyle="bold"
+            app:backgroundTint="@color/card_background"
             app:cornerRadius="16dp"
+            app:elevation="3dp"
             app:strokeColor="@color/blue"
-            app:strokeWidth="1.5dp" />
+            app:strokeWidth="1.5dp"
+            tools:targetApi="p" />
     </LinearLayout>
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -71,6 +71,8 @@
         android:id="@+id/layoutSearchFilter"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:orientation="horizontal"
         android:paddingHorizontal="24dp"
         android:layout_marginTop="8dp"
@@ -101,11 +103,15 @@
             android:layout_marginStart="12dp"
             android:clickable="true"
             android:focusable="true"
+            android:outlineAmbientShadowColor="@color/primary_dark"
+            android:outlineSpotShadowColor="@color/primary_dark"
+            android:stateListAnimator="@animator/anim_levitate_card"
             app:cardBackgroundColor="@color/card_background"
             app:cardCornerRadius="12dp"
-            app:cardElevation="0dp"
+            app:cardElevation="3dp"
             app:strokeColor="@color/card_stroke"
-            app:strokeWidth="1dp">
+            app:strokeWidth="1dp"
+            tools:targetApi="p">
 
             <ImageView
                 android:layout_width="24dp"
@@ -122,8 +128,11 @@
         android:id="@+id/scrollTabs"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:scrollbars="none"
         android:layout_marginTop="16dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:paddingHorizontal="20dp"
+        android:scrollbars="none"
         app:layout_constraintTop_toBottomOf="@id/layoutSearchFilter"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
@@ -132,60 +141,72 @@
             android:id="@+id/layoutTabs"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:background="@drawable/bg_segment_sunk"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:orientation="horizontal"
-            android:paddingHorizontal="24dp">
+            android:padding="4dp">
 
             <TextView
                 android:id="@+id/tabTodas"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_marginEnd="4dp"
+                android:background="@drawable/bg_segment_active"
                 android:clickable="true"
+                android:elevation="2dp"
                 android:focusable="true"
-                android:fontFamily="@font/nunito_display"
+                android:fontFamily="@font/nunito_bold"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="8dp"
                 android:text="@string/lbl_todas"
-                android:textColor="@color/blue"
-                android:textSize="15sp"
-                android:textStyle="bold" />
+                android:textColor="@color/primary"
+                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/tabPendientes"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_marginEnd="4dp"
+                android:background="@android:color/transparent"
                 android:clickable="true"
                 android:focusable="true"
-                android:fontFamily="@font/nunito_display"
+                android:fontFamily="@font/nunito"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="8dp"
                 android:text="@string/lbl_pendientes"
-                android:textColor="@color/text_muted"
-                android:textSize="15sp" />
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/tabEnProceso"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_marginEnd="4dp"
+                android:background="@android:color/transparent"
                 android:clickable="true"
                 android:focusable="true"
-                android:fontFamily="@font/nunito_display"
+                android:fontFamily="@font/nunito"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="8dp"
                 android:text="@string/lbl_en_proceso"
-                android:textColor="@color/text_muted"
-                android:textSize="15sp" />
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
 
             <TextView
                 android:id="@+id/tabAtendidas"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="24dp"
-                android:background="?attr/selectableItemBackgroundBorderless"
+                android:layout_marginEnd="0dp"
+                android:background="@android:color/transparent"
                 android:clickable="true"
                 android:focusable="true"
-                android:fontFamily="@font/nunito_display"
+                android:fontFamily="@font/nunito"
+                android:paddingHorizontal="14dp"
+                android:paddingVertical="8dp"
                 android:text="@string/lbl_atendidas_2"
-                android:textColor="@color/text_muted"
-                android:textSize="15sp" />
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
         </LinearLayout>
     </HorizontalScrollView>
 
@@ -197,6 +218,7 @@
         android:layout_marginTop="12dp"
         android:paddingHorizontal="20dp"
         android:paddingBottom="16dp"
+        android:clipChildren="false"
         android:clipToPadding="false"
         app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
         app:layout_constraintTop_toBottomOf="@id/scrollTabs"

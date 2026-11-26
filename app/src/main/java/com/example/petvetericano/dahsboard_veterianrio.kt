@@ -1,7 +1,6 @@
 package com.example.petvetericano
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -522,19 +521,19 @@ class dahsboard_veterianrio : AppCompatActivity() {
 
         if (asignadas > 0) {
             entries.add(PieEntry(asignadas.toFloat(), ""))
-            colores.add(Color.parseColor("#4141A5")) // primary (azul)
+            colores.add(ContextCompat.getColor(this, R.color.grafico_asignadas))
         }
         if (enTratamiento > 0) {
             entries.add(PieEntry(enTratamiento.toFloat(), ""))
-            colores.add(Color.parseColor("#F1B800")) // secondary / en tratamiento (amarillo)
+            colores.add(ContextCompat.getColor(this, R.color.grafico_en_tratamiento))
         }
         if (atendidas > 0) {
             entries.add(PieEntry(atendidas.toFloat(), ""))
-            colores.add(Color.parseColor("#10B981")) // success / atendidas (verde)
+            colores.add(ContextCompat.getColor(this, R.color.grafico_atendidas))
         }
         if (transferidas > 0) {
             entries.add(PieEntry(transferidas.toFloat(), ""))
-            colores.add(Color.parseColor("#6D28D9")) // morado transferido
+            colores.add(ContextCompat.getColor(this, R.color.grafico_transferidas))
         }
 
         if (entries.isEmpty()) {

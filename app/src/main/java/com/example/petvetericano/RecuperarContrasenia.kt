@@ -23,6 +23,10 @@ class RecuperarContrasenia(context: Context) : Dialog(context) {
     init {
         // 1. Asignar el diseño XML del modal
         setContentView(R.layout.dialog_recuperar_contrasenia)
+        window?.setLayout(
+            android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+            android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+        )
 
         // 2. Fondo transparente para esquinas redondeadas
         window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))

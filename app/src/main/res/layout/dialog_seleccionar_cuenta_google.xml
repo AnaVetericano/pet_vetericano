@@ -14,6 +14,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_tarjeta"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:elevation="12dp"
             android:orientation="vertical"
             android:padding="22dp">
@@ -22,6 +24,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -31,7 +35,7 @@
                     android:layout_marginEnd="12dp"
                     app:cardBackgroundColor="@color/primary_soft"
                     app:cardCornerRadius="12dp"
-                    app:cardElevation="0dp"
+                    app:cardElevation="2dp"
                     app:strokeColor="@color/primary_light"
                     app:strokeWidth="1dp">
 
@@ -123,7 +127,7 @@
                     app:boxCornerRadiusBottomStart="16dp"
                     app:boxCornerRadiusTopEnd="16dp"
                     app:boxCornerRadiusTopStart="16dp"
-                    app:boxStrokeColor="@color/blue"
+                    app:boxStrokeColor="@color/selector_input_stroke"
                     app:boxStrokeWidth="1.5dp"
                     app:boxStrokeWidthFocused="2dp"
                     app:endIconMode="clear_text"
@@ -212,6 +216,7 @@
                     android:layout_height="44dp"
                     android:layout_marginTop="2dp"
                     android:fontFamily="@font/nunito"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_sincronizar_otra_cuenta_del_telefono"
                     android:textAllCaps="false"
                     android:textColor="@color/blue"
@@ -231,6 +236,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -242,12 +249,15 @@
                     android:layout_marginEnd="8dp"
                     android:layout_weight="1"
                     android:fontFamily="@font/nunito"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/btn_cancelar"
                     android:textAllCaps="false"
                     android:textColor="@color/text_secondary"
                     android:textSize="14sp"
                     android:textStyle="bold"
+                    app:backgroundTint="@color/card_background"
                     app:cornerRadius="14dp"
+                    app:elevation="3dp"
                     app:strokeColor="@color/primary_light"
                     app:strokeWidth="1.5dp" />
 
@@ -258,14 +268,15 @@
                     android:layout_marginStart="8dp"
                     android:layout_weight="1"
                     android:fontFamily="@font/nunito"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/btn_aceptar"
                     android:textAllCaps="false"
                     android:textColor="@color/white"
                     android:textSize="14sp"
                     android:textStyle="bold"
-                    app:backgroundTint="@color/blue"
+                    app:backgroundTint="@color/primary"
                     app:cornerRadius="14dp"
-                    app:elevation="2dp" />
+                    app:elevation="4dp" />
             </LinearLayout>
 
         </LinearLayout>

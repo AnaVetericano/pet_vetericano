@@ -14,8 +14,10 @@
         android:layout_height="wrap_content"
         android:background="@color/card_background"
         android:elevation="2dp"
+        android:outlineSpotShadowColor="@color/primary_dark"
         android:paddingHorizontal="16dp"
-        android:paddingVertical="12dp">
+        android:paddingVertical="12dp"
+        tools:targetApi="p">
 
         <ImageButton
             android:id="@+id/btnAtras"
@@ -50,13 +52,16 @@
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="match_parent">
+            android:layout_height="match_parent"
+            android:clipChildren="false"
+            android:clipToPadding="false">
 
             <!-- LISTA DE ANIMALES -->
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/recyclerViewAnimales"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:clipChildren="false"
                 android:clipToPadding="false"
                 android:padding="16dp" />
 

@@ -36,8 +36,13 @@
                 android:id="@+id/layoutVideoOverlay"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
-                android:background="#40000000"
                 android:visibility="gone">
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:alpha="0.25"
+                    android:background="@color/black" />
 
                 <!-- Ícono central Play -->
                 <ImageView
@@ -76,7 +81,7 @@
         android:layout_height="24dp"
         android:layout_gravity="top|end"
         android:background="@drawable/circle_blue"
-        android:backgroundTint="#EF4444"
+        android:backgroundTint="@color/error"
         android:contentDescription="@string/cd_eliminar_archivo"
         android:elevation="4dp"
         android:padding="4dp"

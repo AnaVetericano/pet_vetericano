@@ -257,17 +257,27 @@ class bienvenida : AppCompatActivity() {
             container.childCount
         }
 
+        val density = resources.displayMetrics.density
         val cardMisReportes = MaterialCardView(this).apply {
             id = View.generateViewId()
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT
             ).apply {
-                topMargin = (16 * resources.displayMetrics.density).toInt()
+                topMargin = (16 * density).toInt()
             }
-            radius = 16 * resources.displayMetrics.density
-            cardElevation = 0f
-            strokeWidth = (1 * resources.displayMetrics.density).toInt()
+            radius = 16 * density
+            cardElevation = 3f * density
+            stateListAnimator = android.animation.AnimatorInflater.loadStateListAnimator(
+                this@bienvenida,
+                R.animator.anim_levitate_card
+            )
+            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
+                val shadowColor = ContextCompat.getColor(this@bienvenida, R.color.primary_dark)
+                outlineSpotShadowColor = shadowColor
+                outlineAmbientShadowColor = shadowColor
+            }
+            strokeWidth = (1 * density).toInt()
             setStrokeColor(ContextCompat.getColorStateList(this@bienvenida, R.color.card_stroke))
             setCardBackgroundColor(ContextCompat.getColorStateList(this@bienvenida, R.color.card_background))
             isClickable = true
@@ -276,15 +286,16 @@ class bienvenida : AppCompatActivity() {
             val content = LinearLayout(this@bienvenida).apply {
                 orientation = LinearLayout.HORIZONTAL
                 gravity = Gravity.CENTER_VERTICAL
-                val p16 = (16 * resources.displayMetrics.density).toInt()
+                val p16 = (16 * density).toInt()
                 setPadding(p16, p16, p16, p16)
 
                 val iconContainer = MaterialCardView(this@bienvenida).apply {
-                    val size = (44 * resources.displayMetrics.density).toInt()
+                    val size = (44 * density).toInt()
                     layoutParams = LinearLayout.LayoutParams(size, size)
-                    radius = 22 * resources.displayMetrics.density
-                    cardElevation = 0f
-                    strokeWidth = 0
+                    radius = 22 * density
+                    cardElevation = 2f * density
+                    strokeWidth = (1f * density).toInt()
+                    strokeColor = ContextCompat.getColor(this@bienvenida, R.color.card_stroke)
                     setCardBackgroundColor(ContextCompat.getColorStateList(this@bienvenida, R.color.primary_light))
 
                     val ivIcon = ImageView(this@bienvenida).apply {

@@ -254,7 +254,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
             binding.tvLugarAtencionStatus.text = "Sin permiso"
 
-            binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#B91C1C"))
+            binding.tvLugarAtencionStatus.setTextColor(ContextCompat.getColor(this, R.color.radix_tomato_text))
 
         }
 
@@ -2319,7 +2319,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                                 binding.tvLugarAtencionStatus.text = "Error GPS"
 
-                                binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#B91C1C"))
+                                binding.tvLugarAtencionStatus.setTextColor(ContextCompat.getColor(this, R.color.radix_tomato_text))
 
                                 Toast.makeText(this, "No se pudo obtener la señal GPS actual.", Toast.LENGTH_SHORT).show()
 
@@ -2335,7 +2335,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                     binding.tvLugarAtencionStatus.text = "Error GPS"
 
-                    binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#B91C1C"))
+                    binding.tvLugarAtencionStatus.setTextColor(ContextCompat.getColor(this, R.color.radix_tomato_text))
 
                     Toast.makeText(this, "Error al capturar ubicación: ${e.message}", Toast.LENGTH_SHORT).show()
 
@@ -2345,7 +2345,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
             binding.tvLugarAtencionStatus.text = "Sin permiso"
 
-            binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#B91C1C"))
+            binding.tvLugarAtencionStatus.setTextColor(ContextCompat.getColor(this, R.color.radix_tomato_text))
 
         }
 
@@ -2371,7 +2371,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                 binding.tvLugarAtencionStatus.text = "Guardada"
 
-                binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#047857"))
+                binding.tvLugarAtencionStatus.setTextColor(ContextCompat.getColor(this, R.color.radix_grass_text))
 
                 Toast.makeText(this, "Ubicación fijada correctamente", Toast.LENGTH_SHORT).show()
 
@@ -4403,10 +4403,12 @@ class ActaAtencionActivity : AppCompatActivity() {
                 sheetBinding.btnModoDecimal.setBackgroundColor(colorPrimary)
                 sheetBinding.btnModoDecimal.setTextColor(colorWhite)
                 sheetBinding.btnModoDecimal.strokeColor = ColorStateList.valueOf(colorPrimary)
+                sheetBinding.btnModoDecimal.elevation = 3f * resources.displayMetrics.density
 
                 sheetBinding.btnModoEntero.setBackgroundColor(Color.TRANSPARENT)
                 sheetBinding.btnModoEntero.setTextColor(colorMuted)
                 sheetBinding.btnModoEntero.strokeColor = ColorStateList.valueOf(strokeNeutral)
+                sheetBinding.btnModoEntero.elevation = 0f
 
                 sheetBinding.scrollChipsDecimales.visibility = View.VISIBLE
                 sheetBinding.scrollChipsEnteros.visibility = View.GONE
@@ -4416,10 +4418,12 @@ class ActaAtencionActivity : AppCompatActivity() {
                 sheetBinding.btnModoEntero.setBackgroundColor(colorPrimary)
                 sheetBinding.btnModoEntero.setTextColor(colorWhite)
                 sheetBinding.btnModoEntero.strokeColor = ColorStateList.valueOf(colorPrimary)
+                sheetBinding.btnModoEntero.elevation = 3f * resources.displayMetrics.density
 
                 sheetBinding.btnModoDecimal.setBackgroundColor(Color.TRANSPARENT)
                 sheetBinding.btnModoDecimal.setTextColor(colorMuted)
                 sheetBinding.btnModoDecimal.strokeColor = ColorStateList.valueOf(strokeNeutral)
+                sheetBinding.btnModoDecimal.elevation = 0f
 
                 sheetBinding.scrollChipsDecimales.visibility = View.GONE
                 sheetBinding.scrollChipsEnteros.visibility = View.VISIBLE
@@ -5072,12 +5076,12 @@ class ActaAtencionActivity : AppCompatActivity() {
         val lugarAtencion = binding.etLugarAtencion.text.toString().trim()
         if (lugarAtencion.isEmpty()) {
             binding.tvLugarAtencionStatus.text = "Requerido"
-            binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#B91C1C"))
+            binding.tvLugarAtencionStatus.setTextColor(ContextCompat.getColor(this, R.color.radix_tomato_text))
             if (primerError == null) {
                 primerError = ErrorValidacionActa(1, "Paso 1: Solicitud y Propietario", "Posición GPS del lugar de atención", "Debe fijar la posición actual con el botón GPS", binding.btnCapturarUbicacion)
             }
         } else {
-            binding.tvLugarAtencionStatus.setTextColor(Color.parseColor("#047857"))
+            binding.tvLugarAtencionStatus.setTextColor(ContextCompat.getColor(this, R.color.radix_grass_text))
         }
 
         val nombre = binding.etPropietarioNombre.text.toString().trim()

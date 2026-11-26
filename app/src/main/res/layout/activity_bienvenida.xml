@@ -7,6 +7,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_screen"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     tools:context=".bienvenida">
 
     <!-- Header con Saludo -->
@@ -93,6 +95,8 @@
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/layoutHeader"
         app:layout_constraintBottom_toTopOf="@id/cardNavegacionInferior"
@@ -102,6 +106,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:orientation="vertical"
             android:paddingHorizontal="20dp"
             android:paddingBottom="16dp">
@@ -127,14 +133,21 @@
                 android:layout_marginTop="16dp"
                 android:clickable="true"
                 android:focusable="true"
+                android:outlineAmbientShadowColor="@color/primary_dark"
+                android:outlineSpotShadowColor="@color/primary_dark"
+                android:stateListAnimator="@animator/anim_levitate_card"
                 app:cardBackgroundColor="@color/yellow"
                 app:cardCornerRadius="20dp"
-                app:cardElevation="1dp"
-                app:strokeWidth="0dp">
+                app:cardElevation="5dp"
+                app:strokeColor="@color/secondary_dark"
+                app:strokeWidth="1dp"
+                tools:targetApi="p">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:padding="22dp">
@@ -171,8 +184,9 @@
                         android:layout_marginStart="12dp"
                         app:cardBackgroundColor="@color/card_background"
                         app:cardCornerRadius="36dp"
-                        app:cardElevation="0dp"
-                        app:strokeWidth="0dp">
+                        app:cardElevation="2dp"
+                        app:strokeColor="@color/card_stroke"
+                        app:strokeWidth="1dp">
 
                         <ImageView
                             android:id="@+id/ivIconoReportar"
@@ -197,6 +211,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
                 android:baselineAligned="false"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:orientation="horizontal">
 
                 <!-- CARD ADOPCION -->
@@ -208,15 +224,21 @@
                     android:layout_weight="1"
                     android:clickable="true"
                     android:focusable="true"
+                    android:outlineAmbientShadowColor="@color/primary_dark"
+                    android:outlineSpotShadowColor="@color/primary_dark"
+                    android:stateListAnimator="@animator/anim_levitate_card"
                     app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="16dp"
-                    app:cardElevation="0dp"
+                    app:cardElevation="3dp"
                     app:strokeColor="@color/card_stroke"
-                    app:strokeWidth="1dp">
+                    app:strokeWidth="1dp"
+                    tools:targetApi="p">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:padding="16dp">
@@ -226,8 +248,9 @@
                             android:layout_height="56dp"
                             app:cardBackgroundColor="@color/primary_light"
                             app:cardCornerRadius="28dp"
-                            app:cardElevation="0dp"
-                            app:strokeWidth="0dp">
+                            app:cardElevation="2dp"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp">
 
                             <ImageView
                                 android:id="@+id/ivIconoAdopcion"
@@ -273,15 +296,21 @@
                     android:layout_weight="1"
                     android:clickable="true"
                     android:focusable="true"
+                    android:outlineAmbientShadowColor="@color/primary_dark"
+                    android:outlineSpotShadowColor="@color/primary_dark"
+                    android:stateListAnimator="@animator/anim_levitate_card"
                     app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="16dp"
-                    app:cardElevation="0dp"
+                    app:cardElevation="3dp"
                     app:strokeColor="@color/card_stroke"
-                    app:strokeWidth="1dp">
+                    app:strokeWidth="1dp"
+                    tools:targetApi="p">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
                         android:gravity="center"
                         android:orientation="vertical"
                         android:padding="16dp">
@@ -291,8 +320,9 @@
                             android:layout_height="56dp"
                             app:cardBackgroundColor="@color/secondary_light"
                             app:cardCornerRadius="28dp"
-                            app:cardElevation="0dp"
-                            app:strokeWidth="0dp">
+                            app:cardElevation="2dp"
+                            app:strokeColor="@color/card_stroke"
+                            app:strokeWidth="1dp">
 
                             <ImageView
                                 android:id="@+id/ivIconoVoluntariado"
@@ -351,12 +381,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="260dp"
                 android:layout_marginTop="12dp"
+                android:outlineSpotShadowColor="@color/primary_dark"
                 android:visibility="gone"
                 app:cardBackgroundColor="@color/card_background"
                 app:cardCornerRadius="20dp"
-                app:cardElevation="2dp"
+                app:cardElevation="3dp"
                 app:strokeColor="@color/card_stroke"
-                app:strokeWidth="1dp">
+                app:strokeWidth="1dp"
+                tools:targetApi="p">
 
                 <androidx.viewpager2.widget.ViewPager2
                     android:id="@+id/eventosViewPager"
@@ -385,19 +417,23 @@
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="16dp"
+        android:outlineSpotShadowColor="@color/primary_dark"
         app:cardBackgroundColor="@color/card_background"
         app:cardCornerRadius="24dp"
-        app:cardElevation="3dp"
+        app:cardElevation="6dp"
         app:strokeColor="@color/card_stroke"
         app:strokeWidth="1dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        tools:targetApi="p">
 
         <LinearLayout
             android:id="@+id/layoutNavegacion"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:paddingHorizontal="8dp">
@@ -420,7 +456,9 @@
             <FrameLayout
                 android:layout_width="0dp"
                 android:layout_height="48dp"
-                android:layout_weight="1">
+                android:layout_weight="1"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardNavPrincipal"
@@ -429,10 +467,13 @@
                     android:layout_gravity="center"
                     android:clickable="true"
                     android:focusable="true"
+                    android:outlineSpotShadowColor="@color/primary_dark"
+                    android:stateListAnimator="@animator/anim_levitate_card"
                     app:cardBackgroundColor="@color/yellow"
                     app:cardCornerRadius="24dp"
-                    app:cardElevation="2dp"
-                    app:strokeWidth="0dp">
+                    app:cardElevation="3dp"
+                    app:strokeWidth="0dp"
+                    tools:targetApi="p">
 
                     <ImageView
                         android:id="@+id/ivNavPrincipal"

@@ -1,19 +1,24 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.google.android.material.card.MaterialCardView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    style="?attr/materialCardViewOutlinedStyle"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginBottom="16dp"
+    android:outlineAmbientShadowColor="@color/primary_dark"
+    android:outlineSpotShadowColor="@color/primary_dark"
     app:cardBackgroundColor="@color/card_background"
     app:cardCornerRadius="16dp"
-    app:cardElevation="0dp"
+    app:cardElevation="3dp"
     app:strokeColor="@color/card_stroke"
-    app:strokeWidth="1dp">
+    app:strokeWidth="1dp"
+    tools:targetApi="p">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:orientation="vertical"
         android:padding="16dp">
 
@@ -53,6 +58,7 @@
                 android:insetBottom="0dp"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="0dp"
+                android:stateListAnimator="@animator/anim_levitate_button"
                 android:text="@string/btn_eliminar"
                 android:textAllCaps="false"
                 android:textColor="@color/radix_tomato_text"
@@ -74,7 +80,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="6dp"
             android:hint="@string/hint_nombre_del_paciente"
-            app:boxStrokeColor="@color/primary"
+            app:boxBackgroundColor="@color/input_background"
+            app:boxStrokeColor="@color/selector_input_stroke"
             app:hintTextColor="@color/primary"
             app:startIconDrawable="@drawable/baseline_pets_24"
             app:startIconTint="@color/primary">
@@ -104,6 +111,7 @@
                 android:insetBottom="0dp"
                 android:paddingHorizontal="10dp"
                 android:paddingVertical="3dp"
+                android:stateListAnimator="@animator/anim_levitate_button"
                 android:text="@string/lbl_sin_nombre_callejero"
                 android:textAllCaps="false"
                 android:textSize="11sp"
@@ -130,7 +138,8 @@
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
                 android:hint="@string/hint_especie"
-                app:boxStrokeColor="@color/primary">
+                app:boxBackgroundColor="@color/input_background"
+                app:boxStrokeColor="@color/selector_input_stroke">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
                     android:id="@+id/autoCompleteEspecieCard"
@@ -149,7 +158,8 @@
                 android:layout_weight="1"
                 android:hint="@string/hint_sexo"
                 app:errorEnabled="true"
-                app:boxStrokeColor="@color/primary">
+                app:boxBackgroundColor="@color/input_background"
+                app:boxStrokeColor="@color/selector_input_stroke">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
                     android:id="@+id/autoCompleteSexoCard"
@@ -176,7 +186,8 @@
                 android:layout_marginEnd="6dp"
                 android:layout_weight="1"
                 android:hint="@string/hint_raza"
-                app:boxStrokeColor="@color/primary">
+                app:boxBackgroundColor="@color/input_background"
+                app:boxStrokeColor="@color/selector_input_stroke">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
                     android:id="@+id/autoCompleteRazaCard"
@@ -194,7 +205,8 @@
                 android:layout_marginStart="6dp"
                 android:layout_weight="1"
                 android:hint="@string/hint_color"
-                app:boxStrokeColor="@color/primary">
+                app:boxBackgroundColor="@color/input_background"
+                app:boxStrokeColor="@color/selector_input_stroke">
 
                 <com.google.android.material.textfield.MaterialAutoCompleteTextView
                     android:id="@+id/autoCompleteColorCard"
@@ -212,9 +224,10 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
-            app:cardBackgroundColor="@color/bg_screen"
+            app:cardBackgroundColor="@color/input_background"
             app:cardCornerRadius="12dp"
-            app:strokeColor="@color/card_stroke"
+            app:cardElevation="0dp"
+            app:strokeColor="@color/input_stroke"
             app:strokeWidth="1dp">
 
             <LinearLayout
@@ -250,6 +263,7 @@
                         android:insetRight="0dp"
                         android:insetBottom="0dp"
                         android:padding="0dp"
+                        android:stateListAnimator="@animator/anim_levitate_button"
                         app:icon="@drawable/ic_remove"
                         app:iconGravity="textStart"
                         app:iconSize="16dp"
@@ -265,7 +279,8 @@
                         android:layout_width="60dp"
                         android:layout_height="wrap_content"
                         android:layout_marginHorizontal="6dp"
-                        app:boxStrokeColor="@color/primary">
+                        app:boxBackgroundColor="@color/input_background"
+                        app:boxStrokeColor="@color/selector_input_stroke">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etEdadNumero"
@@ -289,6 +304,7 @@
                         android:insetRight="0dp"
                         android:insetBottom="0dp"
                         android:padding="0dp"
+                        android:stateListAnimator="@animator/anim_levitate_button"
                         app:icon="@drawable/ic_add"
                         app:iconGravity="textStart"
                         app:iconSize="16dp"
@@ -306,7 +322,8 @@
                         android:layout_marginStart="8dp"
                         android:layout_weight="1"
                         android:hint="@string/hint_unidad"
-                        app:boxStrokeColor="@color/primary">
+                        app:boxBackgroundColor="@color/input_background"
+                        app:boxStrokeColor="@color/selector_input_stroke">
 
                         <com.google.android.material.textfield.MaterialAutoCompleteTextView
                             android:id="@+id/autoCompleteEdadUnidad"
@@ -340,6 +357,7 @@
                             android:insetBottom="0dp"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="3dp"
+                            android:stateListAnimator="@animator/anim_levitate_button"
                             android:text="@string/lbl_cachorro_6_m"
                             android:textAllCaps="false"
                             android:textSize="11sp"
@@ -360,6 +378,7 @@
                             android:insetBottom="0dp"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="3dp"
+                            android:stateListAnimator="@animator/anim_levitate_button"
                             android:text="@string/lbl_adulto_2_a"
                             android:textAllCaps="false"
                             android:textSize="11sp"
@@ -380,6 +399,7 @@
                             android:insetBottom="0dp"
                             android:paddingHorizontal="10dp"
                             android:paddingVertical="3dp"
+                            android:stateListAnimator="@animator/anim_levitate_button"
                             android:text="@string/lbl_senior_9_a"
                             android:textAllCaps="false"
                             android:textSize="11sp"
@@ -399,7 +419,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:hint="@string/hint_edad_calculada_para_el_acta"
-                    app:boxStrokeColor="@color/primary">
+                    app:boxBackgroundColor="@color/input_background"
+                    app:boxStrokeColor="@color/selector_input_stroke">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etPacienteEdadCard"
@@ -427,7 +448,8 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:hint="@string/hint_peso_estimado"
-                app:boxStrokeColor="@color/primary"
+                app:boxBackgroundColor="@color/input_background"
+                app:boxStrokeColor="@color/selector_input_stroke"
                 app:suffixText="kg">
 
                 <com.google.android.material.textfield.TextInputEditText
@@ -450,6 +472,7 @@
                 android:padding="0dp"
                 android:layout_marginStart="8dp"
                 android:fontFamily="@font/nunito_bold"
+                android:stateListAnimator="@animator/anim_levitate_button"
                 android:text="@string/btn_decrement_1"
                 android:textSize="12sp"
                 android:textColor="@color/primary"
@@ -469,6 +492,7 @@
                 android:padding="0dp"
                 android:layout_marginStart="6dp"
                 android:fontFamily="@font/nunito_bold"
+                android:stateListAnimator="@animator/anim_levitate_button"
                 android:text="@string/btn_increment_1"
                 android:textSize="12sp"
                 android:textColor="@color/primary"
@@ -485,7 +509,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:hint="@string/hint_esta_esterilizado"
-            app:boxStrokeColor="@color/primary">
+            app:boxBackgroundColor="@color/input_background"
+            app:boxStrokeColor="@color/selector_input_stroke">
 
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/autoCompleteEsterilizadoCard"
@@ -502,7 +527,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="@string/hint_caracteristicas_adicionales_u_observaciones"
-            app:boxStrokeColor="@color/primary">
+            app:boxBackgroundColor="@color/input_background"
+            app:boxStrokeColor="@color/selector_input_stroke">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPacienteDescripcionCard"

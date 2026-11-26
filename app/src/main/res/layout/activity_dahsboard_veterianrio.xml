@@ -21,11 +21,15 @@
             android:id="@+id/scrollDashboard"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:fillViewport="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:orientation="vertical"
                 android:paddingHorizontal="20dp"
                 android:paddingTop="24dp"
@@ -131,15 +135,17 @@
 
                 <!-- Tarjeta del Gráfico Material Design 3 -->
                 <com.google.android.material.card.MaterialCardView
-                    style="?attr/materialCardViewFilledStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="20dp"
+                    android:outlineAmbientShadowColor="@color/primary_dark"
+                    android:outlineSpotShadowColor="@color/primary_dark"
                     app:cardCornerRadius="18dp"
-                    app:cardElevation="1dp"
+                    app:cardElevation="3dp"
                     app:cardBackgroundColor="@color/card_background"
                     app:strokeColor="@color/card_stroke"
-                    app:strokeWidth="1dp">
+                    app:strokeWidth="1dp"
+                    tools:targetApi="p">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -259,21 +265,26 @@
                 <!-- Tarjeta Principal: Maletín con Medicamentos -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardMaletinMedicamentos"
-                    style="?attr/materialCardViewFilledStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:clickable="true"
                     android:focusable="true"
+                    android:outlineAmbientShadowColor="@color/primary_dark"
+                    android:outlineSpotShadowColor="@color/primary_dark"
+                    android:stateListAnimator="@animator/anim_levitate_card"
                     app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="18dp"
-                    app:cardElevation="2dp"
+                    app:cardElevation="4dp"
                     app:strokeColor="@color/card_stroke"
-                    app:strokeWidth="1dp">
+                    app:strokeWidth="1dp"
+                    tools:targetApi="p">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
                         android:orientation="vertical"
                         android:padding="16dp">
 
@@ -281,6 +292,8 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:clipChildren="false"
+                            android:clipToPadding="false"
                             android:gravity="center_vertical"
                             android:orientation="horizontal">
 
@@ -288,7 +301,8 @@
                             <FrameLayout
                                 android:layout_width="54dp"
                                 android:layout_height="54dp"
-                                android:background="@drawable/bg_maletin_icon_container">
+                                android:background="@drawable/bg_maletin_icon_container"
+                                android:elevation="2dp">
 
                                 <ImageView
                                     android:layout_width="32dp"
@@ -355,8 +369,10 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:background="@drawable/bg_surface_sunk"
                             android:gravity="center_vertical"
-                            android:orientation="horizontal">
+                            android:orientation="horizontal"
+                            android:padding="12dp">
 
                             <!-- Conteo Total -->
                             <LinearLayout
@@ -436,17 +452,20 @@
                 <!-- Botón de Acción Principal Material Design 3 -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/btnPeticiones"
-                    style="?attr/materialCardViewFilledStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:clickable="true"
                     android:focusable="true"
+                    android:outlineAmbientShadowColor="@color/primary_dark"
+                    android:outlineSpotShadowColor="@color/primary_dark"
+                    android:stateListAnimator="@animator/anim_levitate_card"
                     app:cardBackgroundColor="@color/primary"
-                    app:cardElevation="2dp"
+                    app:cardElevation="4dp"
                     app:cardCornerRadius="16dp"
-                    app:strokeColor="@color/card_background"
-                    app:strokeWidth="0dp">
+                    app:strokeColor="@color/primary_variant"
+                    app:strokeWidth="1dp"
+                    tools:targetApi="p">
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="52dp"
@@ -472,15 +491,17 @@
                 <!-- TARJETA 1: PENDIENTES DE ATENCIÓN ACTIVA (M3) -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardPendientes"
-                    style="?attr/materialCardViewFilledStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
+                    android:outlineAmbientShadowColor="@color/primary_dark"
+                    android:outlineSpotShadowColor="@color/primary_dark"
                     app:cardCornerRadius="18dp"
-                    app:cardElevation="1dp"
+                    app:cardElevation="3dp"
                     app:cardBackgroundColor="@color/card_background"
                     app:strokeColor="@color/card_stroke"
-                    app:strokeWidth="1dp">
+                    app:strokeWidth="1dp"
+                    tools:targetApi="p">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -566,16 +587,18 @@
                 <!-- TARJETA 2: CASOS TRANSFERIDOS A OTRO CENTRO (SECCIÓN SEPARADA M3) -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardTransferidas"
-                    style="?attr/materialCardViewFilledStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="20dp"
+                    android:outlineAmbientShadowColor="@color/primary_dark"
+                    android:outlineSpotShadowColor="@color/primary_dark"
                     app:cardCornerRadius="18dp"
-                    app:cardElevation="1dp"
+                    app:cardElevation="3dp"
                     app:cardBackgroundColor="@color/card_background"
                     app:strokeColor="@color/card_stroke"
-                    app:strokeWidth="1dp">
+                    app:strokeWidth="1dp"
+                    tools:targetApi="p">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -634,14 +657,17 @@
         android:layout_marginStart="24dp"
         android:layout_marginEnd="24dp"
         android:layout_marginBottom="16dp"
+        android:outlineAmbientShadowColor="@color/primary_dark"
+        android:outlineSpotShadowColor="@color/primary_dark"
         app:cardBackgroundColor="@color/card_background"
         app:cardCornerRadius="24dp"
-        app:cardElevation="3dp"
+        app:cardElevation="6dp"
         app:strokeColor="@color/card_stroke"
         app:strokeWidth="1dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        tools:targetApi="p">
 
         <LinearLayout
             android:id="@+id/layoutNavegacion"

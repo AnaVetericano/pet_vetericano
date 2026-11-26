@@ -12,6 +12,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:paddingHorizontal="28dp"
         android:paddingVertical="32dp">
 
@@ -60,11 +62,10 @@
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="24dp"
-            app:cardBackgroundColor="@color/input_background"
+            app:cardBackgroundColor="@android:color/transparent"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
-            app:strokeColor="@color/input_stroke"
-            app:strokeWidth="1.5dp"
+            app:strokeWidth="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/txtregistercontinue">
@@ -72,6 +73,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:addStatesFromChildren="true"
+                android:background="@drawable/bg_field_sunk"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingHorizontal="16dp">
@@ -103,11 +106,10 @@
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="12dp"
-            app:cardBackgroundColor="@color/input_background"
+            app:cardBackgroundColor="@android:color/transparent"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
-            app:strokeColor="@color/input_stroke"
-            app:strokeWidth="1.5dp"
+            app:strokeWidth="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/cardEmail">
@@ -115,6 +117,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:addStatesFromChildren="true"
+                android:background="@drawable/bg_field_sunk"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingHorizontal="16dp">
@@ -146,11 +150,10 @@
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="12dp"
-            app:cardBackgroundColor="@color/input_background"
+            app:cardBackgroundColor="@android:color/transparent"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
-            app:strokeColor="@color/input_stroke"
-            app:strokeWidth="1.5dp"
+            app:strokeWidth="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/cardId">
@@ -158,6 +161,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:addStatesFromChildren="true"
+                android:background="@drawable/bg_field_sunk"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingHorizontal="16dp">
@@ -189,11 +194,10 @@
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="12dp"
-            app:cardBackgroundColor="@color/input_background"
+            app:cardBackgroundColor="@android:color/transparent"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
-            app:strokeColor="@color/input_stroke"
-            app:strokeWidth="1.5dp"
+            app:strokeWidth="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/cardName">
@@ -201,6 +205,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:addStatesFromChildren="true"
+                android:background="@drawable/bg_field_sunk"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingHorizontal="16dp">
@@ -232,11 +238,10 @@
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="12dp"
-            app:cardBackgroundColor="@color/input_background"
+            app:cardBackgroundColor="@android:color/transparent"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
-            app:strokeColor="@color/input_stroke"
-            app:strokeWidth="1.5dp"
+            app:strokeWidth="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/cardApellido">
@@ -244,6 +249,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:addStatesFromChildren="true"
+                android:background="@drawable/bg_field_sunk"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingHorizontal="16dp">
@@ -283,8 +290,8 @@
             app:boxCornerRadiusBottomStart="16dp"
             app:boxCornerRadiusTopEnd="16dp"
             app:boxCornerRadiusTopStart="16dp"
-            app:boxStrokeColor="@color/blue"
-            app:boxStrokeWidth="1.5dp"
+            app:boxStrokeColor="@color/selector_input_stroke"
+            app:boxStrokeWidth="1dp"
             app:boxStrokeWidthFocused="2dp"
             app:endIconMode="password_toggle"
             app:endIconTint="@color/blue"
@@ -350,6 +357,9 @@
             android:layout_height="56dp"
             android:layout_marginTop="16dp"
             android:fontFamily="@font/nunito"
+            android:outlineAmbientShadowColor="@color/primary_dark"
+            android:outlineSpotShadowColor="@color/primary_dark"
+            android:stateListAnimator="@animator/anim_levitate_button"
             android:text="@string/btn_sign_login_register"
             android:textAllCaps="false"
             android:textColor="@color/white"
@@ -357,10 +367,11 @@
             android:textStyle="bold"
             app:backgroundTint="@color/blue"
             app:cornerRadius="16dp"
-            app:elevation="3dp"
+            app:elevation="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/layoutLoginRedirect" />
+            app:layout_constraintTop_toBottomOf="@+id/layoutLoginRedirect"
+            tools:targetApi="p" />
 
         <!-- Separador O continúa con -->
         <LinearLayout
@@ -405,6 +416,9 @@
             android:layout_marginTop="12dp"
             android:layout_marginBottom="16dp"
             android:fontFamily="@font/nunito"
+            android:outlineAmbientShadowColor="@color/primary_dark"
+            android:outlineSpotShadowColor="@color/primary_dark"
+            android:stateListAnimator="@animator/anim_levitate_button"
             android:text="@string/registrarse_con_google"
             android:textAllCaps="false"
             android:textColor="@color/text_primary"
@@ -412,6 +426,7 @@
             android:textStyle="bold"
             app:backgroundTint="@color/card_background"
             app:cornerRadius="16dp"
+            app:elevation="3dp"
             app:icon="@drawable/ic_google"
             app:iconGravity="textStart"
             app:iconPadding="12dp"
@@ -422,7 +437,8 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/layoutDividerGoogleRegistro" />
+            app:layout_constraintTop_toBottomOf="@+id/layoutDividerGoogleRegistro"
+            tools:targetApi="p" />
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </ScrollView>

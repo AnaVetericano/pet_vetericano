@@ -1,7 +1,6 @@
 package com.example.petvetericano
 
 import android.content.Intent
-import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -9,6 +8,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -206,16 +206,23 @@ class PetitionsListActivity : AppCompatActivity() {
 
     private fun actualizarEstiloTabs(tabActiva: TextView) {
         val tabs = listOf(binding.tabTodas, binding.tabPendientes, binding.tabEnProceso, binding.tabAtendidas)
-        val colorActivo = ContextCompat.getColor(this, R.color.blue)
-        val colorInactivo = ContextCompat.getColor(this, R.color.text_muted)
+        val colorActivo = ContextCompat.getColor(this, R.color.primary)
+        val colorInactivo = ContextCompat.getColor(this, R.color.text_secondary)
+        val typefaceActivo = ResourcesCompat.getFont(this, R.font.nunito_bold)
+        val typefaceInactivo = ResourcesCompat.getFont(this, R.font.nunito)
+        val elevacionActiva = 2f * resources.displayMetrics.density
 
         for (tab in tabs) {
             if (tab == tabActiva) {
+                tab.setBackgroundResource(R.drawable.bg_segment_active)
+                tab.elevation = elevacionActiva
                 tab.setTextColor(colorActivo)
-                tab.typeface = Typeface.DEFAULT_BOLD
+                tab.typeface = typefaceActivo
             } else {
+                tab.setBackgroundResource(android.R.color.transparent)
+                tab.elevation = 0f
                 tab.setTextColor(colorInactivo)
-                tab.typeface = Typeface.DEFAULT
+                tab.typeface = typefaceInactivo
             }
         }
     }

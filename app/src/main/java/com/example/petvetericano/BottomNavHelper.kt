@@ -69,10 +69,18 @@ object BottomNavHelper {
         }
     }
 
+    private fun ejecutarNavegacion(
+        onBeforeNavigate: ((proceed: () -> Unit) -> Unit)?,
+        accion: () -> Unit
+    ) {
+        if (onBeforeNavigate != null) onBeforeNavigate.invoke(accion) else accion()
+    }
+
     fun setupCiudadano(
         activity: Activity,
         binding: LayoutBottomNavCiudadanoBinding,
         activeTab: CiudadanoTab,
+        onBeforeNavigate: ((proceed: () -> Unit) -> Unit)? = null,
         onReselectCurrent: (() -> Unit)? = null
     ) {
         aplicarInsetInferior(binding.root)
@@ -114,13 +122,15 @@ object BottomNavHelper {
             if (activeTab == CiudadanoTab.INICIO) {
                 onReselectCurrent?.invoke()
             } else {
-                val intent = Intent(activity, bienvenida::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                        Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                        Intent.FLAG_ACTIVITY_NO_ANIMATION
+                ejecutarNavegacion(onBeforeNavigate) {
+                    val intent = Intent(activity, bienvenida::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                            Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                            Intent.FLAG_ACTIVITY_NO_ANIMATION
+                    }
+                    activity.startActivity(intent)
+                    activity.finish()
                 }
-                activity.startActivity(intent)
-                activity.finish()
             }
         }
 
@@ -128,11 +138,13 @@ object BottomNavHelper {
             if (activeTab == CiudadanoTab.REPORTES) {
                 onReselectCurrent?.invoke()
             } else {
-                navegarATabHermano(
-                    activity = activity,
-                    destino = MisReportesActivity::class.java,
-                    esDesdeInicio = (activeTab == CiudadanoTab.INICIO)
-                )
+                ejecutarNavegacion(onBeforeNavigate) {
+                    navegarATabHermano(
+                        activity = activity,
+                        destino = MisReportesActivity::class.java,
+                        esDesdeInicio = (activeTab == CiudadanoTab.INICIO)
+                    )
+                }
             }
         }
 
@@ -140,11 +152,13 @@ object BottomNavHelper {
             if (activeTab == CiudadanoTab.EVENTOS) {
                 onReselectCurrent?.invoke()
             } else {
-                navegarATabHermano(
-                    activity = activity,
-                    destino = Eventos::class.java,
-                    esDesdeInicio = (activeTab == CiudadanoTab.INICIO)
-                )
+                ejecutarNavegacion(onBeforeNavigate) {
+                    navegarATabHermano(
+                        activity = activity,
+                        destino = Eventos::class.java,
+                        esDesdeInicio = (activeTab == CiudadanoTab.INICIO)
+                    )
+                }
             }
         }
 
@@ -152,7 +166,13 @@ object BottomNavHelper {
             if (activeTab == CiudadanoTab.PERFIL) {
                 onReselectCurrent?.invoke()
             } else {
-                activity.startActivity(Intent(activity, editar_perfil::class.java))
+                ejecutarNavegacion(onBeforeNavigate) {
+                    navegarATabHermano(
+                        activity = activity,
+                        destino = editar_perfil::class.java,
+                        esDesdeInicio = (activeTab == CiudadanoTab.INICIO)
+                    )
+                }
             }
         }
     }
@@ -161,6 +181,7 @@ object BottomNavHelper {
         activity: Activity,
         binding: LayoutBottomNavVeterinarioBinding,
         activeTab: VeterinarioTab,
+        onBeforeNavigate: ((proceed: () -> Unit) -> Unit)? = null,
         onReselectCurrent: (() -> Unit)? = null
     ) {
         aplicarInsetInferior(binding.root)
@@ -202,13 +223,15 @@ object BottomNavHelper {
             if (activeTab == VeterinarioTab.INICIO) {
                 onReselectCurrent?.invoke()
             } else {
-                val intent = Intent(activity, dahsboard_veterianrio::class.java).apply {
-                    flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                        Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                        Intent.FLAG_ACTIVITY_NO_ANIMATION
+                ejecutarNavegacion(onBeforeNavigate) {
+                    val intent = Intent(activity, dahsboard_veterianrio::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
+                            Intent.FLAG_ACTIVITY_SINGLE_TOP or
+                            Intent.FLAG_ACTIVITY_NO_ANIMATION
+                    }
+                    activity.startActivity(intent)
+                    activity.finish()
                 }
-                activity.startActivity(intent)
-                activity.finish()
             }
         }
 
@@ -216,11 +239,13 @@ object BottomNavHelper {
             if (activeTab == VeterinarioTab.PETICIONES) {
                 onReselectCurrent?.invoke()
             } else {
-                navegarATabHermano(
-                    activity = activity,
-                    destino = PetitionsListActivity::class.java,
-                    esDesdeInicio = (activeTab == VeterinarioTab.INICIO)
-                )
+                ejecutarNavegacion(onBeforeNavigate) {
+                    navegarATabHermano(
+                        activity = activity,
+                        destino = PetitionsListActivity::class.java,
+                        esDesdeInicio = (activeTab == VeterinarioTab.INICIO)
+                    )
+                }
             }
         }
 
@@ -228,11 +253,13 @@ object BottomNavHelper {
             if (activeTab == VeterinarioTab.MALETIN) {
                 onReselectCurrent?.invoke()
             } else {
-                navegarATabHermano(
-                    activity = activity,
-                    destino = MaletinMedicamentosActivity::class.java,
-                    esDesdeInicio = (activeTab == VeterinarioTab.INICIO)
-                )
+                ejecutarNavegacion(onBeforeNavigate) {
+                    navegarATabHermano(
+                        activity = activity,
+                        destino = MaletinMedicamentosActivity::class.java,
+                        esDesdeInicio = (activeTab == VeterinarioTab.INICIO)
+                    )
+                }
             }
         }
 
@@ -240,7 +267,13 @@ object BottomNavHelper {
             if (activeTab == VeterinarioTab.PERFIL) {
                 onReselectCurrent?.invoke()
             } else {
-                activity.startActivity(Intent(activity, OpcionesEditarPerfilActivity::class.java))
+                ejecutarNavegacion(onBeforeNavigate) {
+                    navegarATabHermano(
+                        activity = activity,
+                        destino = OpcionesEditarPerfilActivity::class.java,
+                        esDesdeInicio = (activeTab == VeterinarioTab.INICIO)
+                    )
+                }
             }
         }
     }

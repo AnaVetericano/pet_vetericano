@@ -77,6 +77,10 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="12dp"
+                android:clickable="true"
+                android:contentDescription="@string/duplicado_ciudadano_cd_ampliar_foto"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
                 android:visibility="gone"
                 app:cardBackgroundColor="@color/input_background"
                 app:cardCornerRadius="14dp"
@@ -89,7 +93,7 @@
                     android:id="@+id/ivFotoAutorizada"
                     android:layout_width="match_parent"
                     android:layout_height="190dp"
-                    android:contentDescription="@string/duplicado_ciudadano_cd_foto"
+                    android:contentDescription="@null"
                     android:scaleType="centerCrop" />
             </com.google.android.material.card.MaterialCardView>
 

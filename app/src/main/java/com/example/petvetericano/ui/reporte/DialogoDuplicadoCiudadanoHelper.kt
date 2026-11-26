@@ -1,5 +1,6 @@
 package com.example.petvetericano.ui.reporte
 
+import android.app.Dialog
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
@@ -22,6 +23,7 @@ object DialogoDuplicadoCiudadanoHelper {
         onContinuarEnvio: () -> Unit
     ): AlertDialog {
         val binding = DialogPosibleDuplicadoCiudadanoBinding.inflate(LayoutInflater.from(context))
+        var visorFotoDialog: Dialog? = null
 
         val resumen = alerta.mensajeResumen
         if (!resumen.isNullOrBlank()) {
@@ -39,7 +41,14 @@ object DialogoDuplicadoCiudadanoHelper {
                 .placeholder(R.color.chip_bg_neutral)
                 .error(R.color.chip_bg_neutral)
                 .into(binding.ivFotoAutorizada)
+            binding.cardFotoAutorizada.setOnClickListener {
+                if (visorFotoDialog?.isShowing == true) return@setOnClickListener
+                visorFotoDialog = VisorFotoDuplicadoHelper.mostrar(context, urlSegura) {
+                    visorFotoDialog = null
+                }
+            }
         } else {
+            binding.cardFotoAutorizada.setOnClickListener(null)
             binding.cardFotoAutorizada.visibility = View.GONE
             binding.layoutFotoPrivada.visibility = View.VISIBLE
         }
@@ -109,6 +118,13 @@ object DialogoDuplicadoCiudadanoHelper {
         binding.btnNoContinuarEnvio.setOnClickListener {
             dialog.dismiss()
             onContinuarEnvio()
+        }
+
+        dialog.setOnDismissListener {
+            if (visorFotoDialog?.isShowing == true) {
+                visorFotoDialog?.dismiss()
+            }
+            visorFotoDialog = null
         }
 
         dialog.show()

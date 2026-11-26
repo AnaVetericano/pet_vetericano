@@ -749,6 +749,10 @@
     <string name="duplicado_ciudadano_subtitulo_defecto">Encontramos un reporte previo cerca de esta ubicación con características parecidas.</string>
     <string name="duplicado_ciudadano_pregunta">¿Es el mismo animal?</string>
     <string name="duplicado_ciudadano_cd_foto">Fotografía del reporte previo</string>
+    <string name="duplicado_ciudadano_cd_ampliar_foto">Fotografía del reporte previo. Toca para ver en pantalla completa</string>
+    <string name="duplicado_ciudadano_cd_visor_foto">Fotografía del reporte previo en pantalla completa</string>
+    <string name="duplicado_ciudadano_cd_cerrar_visor">Cerrar visor de fotografía</string>
+    <string name="duplicado_ciudadano_error_cargar_foto">No se pudo cargar la fotografía.</string>
     <string name="duplicado_ciudadano_foto_privada">No hay fotografía disponible para mostrar de este reporte previo.</string>
     <string name="duplicado_ciudadano_similitud_visual">Similitud visual estimada: %1$s</string>
     <string name="duplicado_ciudadano_similitud_visual_sin_porcentaje">Coincidencia visual detectada (nivel: %1$s)</string>

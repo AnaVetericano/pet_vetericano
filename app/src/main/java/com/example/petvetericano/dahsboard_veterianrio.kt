@@ -22,6 +22,8 @@ import com.example.petvetericano.models.PeticionPendiente
 import com.example.petvetericano.models.TipoEstado
 import com.example.petvetericano.network.RetrofitClient
 import com.example.petvetericano.models.PeticionListResponse
+import com.example.petvetericano.notificaciones.NotificacionesActivity
+import com.example.petvetericano.notificaciones.NotificacionesRepository
 import com.example.petvetericano.offline.NetworkUtils
 import com.example.petvetericano.offline.PeticionesCacheManager
 import com.github.mikephil.charting.data.PieData
@@ -58,18 +60,15 @@ class dahsboard_veterianrio : AppCompatActivity() {
             sincronizarPerfilUsuario()
             sincronizarKitDashboard()
             actualizarBadgeCola()
+            actualizarBadgeNotificaciones()
         }
 
-        // Cargar nombre e iniciales del veterinario inmediatamente
+        // Cargar nombre del veterinario inmediatamente
         actualizarDatosUsuario()
         configurarBotonModoOscuro()
 
-        // Avatar y nombre clicables para acceder a opciones de editar perfil
-        binding.tvInicialesAvatar.setOnClickListener {
-            startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
-        }
-        binding.tvNombreUsuario.setOnClickListener {
-            startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
+        binding.btnNotificaciones.setOnClickListener {
+            startActivity(Intent(this, NotificacionesActivity::class.java))
         }
 
         // Tarjeta de Maletín de Medicamentos
@@ -124,6 +123,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
         fetchDashboardData()
         sincronizarPerfilUsuario()
         actualizarResumenMaletin()
+        actualizarBadgeNotificaciones()
 
         // Observar reactivamente el maletín para actualizar el contador automáticamente
         lifecycleScope.launch {
@@ -144,6 +144,21 @@ class dahsboard_veterianrio : AppCompatActivity() {
         actualizarResumenMaletin()
         sincronizarKitDashboard()
         actualizarBadgeCola()
+        actualizarBadgeNotificaciones()
+    }
+
+    private fun actualizarBadgeNotificaciones() {
+        lifecycleScope.launch {
+            val res = NotificacionesRepository.obtenerContador(this@dahsboard_veterianrio)
+            if (isFinishing || isDestroyed) return@launch
+            val noLeidas = res.getOrNull()?.noLeidas ?: 0
+            if (noLeidas > 0) {
+                binding.tvNotifBadge.visibility = View.VISIBLE
+                binding.tvNotifBadge.text = if (noLeidas > 99) "99+" else noLeidas.toString()
+            } else {
+                binding.tvNotifBadge.visibility = View.GONE
+            }
+        }
     }
 
     private fun actualizarBadgeCola() {
@@ -213,13 +228,6 @@ class dahsboard_veterianrio : AppCompatActivity() {
         val nombreCompleto = if (apellido.isNotEmpty() && !nombre.contains(apellido)) "$nombre $apellido" else nombre
         binding.tvNombreUsuario.text = nombreCompleto.ifEmpty { "Médico Veterinario" }
         binding.tvRolUsuario.setText(R.string.dashboard_ux_rol_veterinario)
-
-        val iniciales = buildString {
-            if (nombre.isNotEmpty()) append(nombre.first().uppercaseChar())
-            if (apellido.isNotEmpty()) append(apellido.first().uppercaseChar())
-            else if (nombre.length > 1) append(nombre[1].uppercaseChar())
-        }
-        binding.tvInicialesAvatar.text = iniciales.ifEmpty { "V" }
     }
 
     private fun sincronizarPerfilUsuario() {

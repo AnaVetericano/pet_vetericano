@@ -16,6 +16,8 @@ import androidx.viewpager2.widget.ViewPager2
 import com.example.petvetericano.databinding.ActivityBienvenidaBinding
 import com.example.petvetericano.models.VoluntariadoEventos
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.notificaciones.NotificacionesActivity
+import com.example.petvetericano.notificaciones.NotificacionesRepository
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
@@ -39,7 +41,7 @@ class bienvenida : AppCompatActivity() {
 
         BottomNavHelper.aplicarInsetSuperior(binding.layoutHeader)
         configurarBotonModoOscuro()
-        configurarBotonPerfil()
+        configurarBotonNotificaciones()
 
         // Usamos la misma clase que en el login para leer el token
         val prefs = SharedPreferencesManager(this)
@@ -55,6 +57,7 @@ class bienvenida : AppCompatActivity() {
                 binding.scrollBienvenida.smoothScrollTo(0, 0)
             }
             cargarDashboard()
+            actualizarBadgeNotificaciones()
             configurarEventos()
             configurarCarrusel()
             evaluarAvisoNotificaciones(savedInstanceState)
@@ -77,6 +80,7 @@ class bienvenida : AppCompatActivity() {
         if (token.isNotEmpty()) {
             RetrofitClient.authToken = token
             cargarDashboard()
+            actualizarBadgeNotificaciones()
             cargarEventosParaCarrusel()
         }
     }
@@ -96,11 +100,9 @@ class bienvenida : AppCompatActivity() {
         val prefs = SharedPreferencesManager(this)
         // Carga inmediata del nombre guardado en caché local para que no parpadee
         val nombreLocal = prefs.getUserName().trim()
-        val apellidoLocal = prefs.getUserLastName().trim()
         if (nombreLocal.isNotEmpty()) {
             binding.tvSaludo.text = "Hola, $nombreLocal"
         }
-        actualizarInicialesAvatar(nombreLocal, apellidoLocal)
         binding.tvRolCiudadano.setText(R.string.dashboard_ux_rol_ciudadano)
 
         lifecycleScope.launch {
@@ -122,7 +124,6 @@ class bienvenida : AppCompatActivity() {
                         if (saludo.isNotEmpty()) {
                             binding.tvSaludo.text = "Hola, $saludo"
                         }
-                        actualizarInicialesAvatar(soloNombre, soloApellido)
                         binding.tvRolCiudadano.setText(R.string.dashboard_ux_rol_ciudadano)
                         // Guardamos nombre y apellido POR SEPARADO (fix: antes quedaba
                         // "nombre apellido" todo junto en USER_NAME y el perfil salia descuadrado).
@@ -272,20 +273,23 @@ class bienvenida : AppCompatActivity() {
         )
     }
 
-    private fun configurarBotonPerfil() {
-        binding.tvInicialesAvatar.setOnClickListener {
-            startActivity(Intent(this, editar_perfil::class.java))
+    private fun configurarBotonNotificaciones() {
+        binding.btnNotificaciones.setOnClickListener {
+            startActivity(Intent(this, NotificacionesActivity::class.java))
         }
     }
 
-    private fun actualizarInicialesAvatar(nombre: String, apellido: String) {
-        val n = nombre.trim()
-        val a = apellido.trim()
-        val iniciales = buildString {
-            if (n.isNotEmpty()) append(n.first().uppercaseChar())
-            if (a.isNotEmpty()) append(a.first().uppercaseChar())
-            else if (n.length > 1) append(n[1].uppercaseChar())
+    private fun actualizarBadgeNotificaciones() {
+        lifecycleScope.launch {
+            val res = NotificacionesRepository.obtenerContador(this@bienvenida)
+            if (isFinishing || isDestroyed) return@launch
+            val noLeidas = res.getOrNull()?.noLeidas ?: 0
+            if (noLeidas > 0) {
+                binding.tvNotifBadge.visibility = View.VISIBLE
+                binding.tvNotifBadge.text = if (noLeidas > 99) "99+" else noLeidas.toString()
+            } else {
+                binding.tvNotifBadge.visibility = View.GONE
+            }
         }
-        binding.tvInicialesAvatar.text = iniciales.ifEmpty { "C" }
     }
 }

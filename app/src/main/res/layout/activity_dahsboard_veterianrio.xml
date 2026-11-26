@@ -120,17 +120,37 @@
                         android:src="@drawable/baseline_dark_mode_24"
                         app:tint="@color/primary" />
 
-                    <TextView
-                        android:id="@+id/tvInicialesAvatar"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:background="@drawable/bg_circle_avatar"
-                        android:gravity="center"
-                        android:fontFamily="@font/nunito_display"
-                        android:text="@string/lbl_jm"
-                        android:textColor="@color/primary"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
+                    <FrameLayout
+                        android:id="@+id/notificacionesContainer"
+                        android:layout_width="44dp"
+                        android:layout_height="44dp">
+
+                        <ImageButton
+                            android:id="@+id/btnNotificaciones"
+                            android:layout_width="44dp"
+                            android:layout_height="44dp"
+                            android:background="?attr/selectableItemBackgroundBorderless"
+                            android:contentDescription="@string/notif_bandeja_titulo"
+                            android:src="@drawable/ic_notificaciones_bell"
+                            app:tint="@color/primary" />
+
+                        <TextView
+                            android:id="@+id/tvNotifBadge"
+                            android:layout_width="wrap_content"
+                            android:layout_height="18dp"
+                            android:minWidth="18dp"
+                            android:layout_gravity="top|end"
+                            android:background="@drawable/bg_notif_badge_gold"
+                            android:fontFamily="@font/nunito_bold"
+                            android:gravity="center"
+                            android:includeFontPadding="false"
+                            android:paddingHorizontal="4dp"
+                            android:textColor="@color/darkblue"
+                            android:textSize="10sp"
+                            android:visibility="gone"
+                            tools:text="3"
+                            tools:visibility="visible" />
+                    </FrameLayout>
                 </LinearLayout>
 
                 <!-- Tarjeta del Gráfico Material Design 3 -->

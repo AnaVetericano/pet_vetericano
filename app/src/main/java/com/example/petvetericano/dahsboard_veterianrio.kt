@@ -45,7 +45,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
 
@@ -72,30 +72,18 @@ class dahsboard_veterianrio : AppCompatActivity() {
             startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
         }
 
-        // Botones de navegación de acciones
-        binding.btnPeticiones.setOnClickListener {
-            startActivity(Intent(this, PetitionsListActivity::class.java))
-        }
-
         // Tarjeta de Maletín de Medicamentos
         binding.cardMaletinMedicamentos.setOnClickListener {
             startActivity(Intent(this, MaletinMedicamentosActivity::class.java))
         }
 
         // Bottom Navigation
-        binding.ivNavInicio.setOnClickListener {
-            // Ya estamos en inicio, podemos hacer que suba el scroll al inicio
-            binding.rvPendientes.smoothScrollToPosition(0)
-        }
-
-        binding.ivNavPeticiones.setOnClickListener {
-            val intent = Intent(this, PetitionsListActivity::class.java)
-            startActivity(intent)
-        }
-
-        binding.ivNavPerfil.setOnClickListener {
-            startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
-        }
+        BottomNavHelper.setupVeterinario(
+            activity = this,
+            binding = binding.bottomNavVeterinario,
+            activeTab = BottomNavHelper.VeterinarioTab.INICIO,
+            onReselectCurrent = { binding.scrollDashboard.smoothScrollTo(0, 0) }
+        )
 
         // Cola de actas offline
         binding.btnActaCola.setOnClickListener {

@@ -21,6 +21,15 @@ class MisReportesActivity : AppCompatActivity() {
         binding = ActivityMisReportesBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        BottomNavHelper.aplicarInsetSuperior(binding.layoutHeaderMisReportes)
+        BottomNavHelper.setupCiudadano(
+            this,
+            binding.bottomNavCiudadano,
+            BottomNavHelper.CiudadanoTab.REPORTES
+        ) {
+            binding.rvMisReportes.smoothScrollToPosition(0)
+        }
+
         binding.btnAtras.setOnClickListener {
             finish()
         }

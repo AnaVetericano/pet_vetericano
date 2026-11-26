@@ -93,13 +93,14 @@
     </LinearLayout>
 
     <ScrollView
+        android:id="@+id/scrollBienvenida"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:fillViewport="true"
         app:layout_constraintTop_toBottomOf="@id/layoutHeader"
-        app:layout_constraintBottom_toTopOf="@id/cardNavegacionInferior"
+        app:layout_constraintBottom_toTopOf="@id/bottomNavCiudadano"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent">
 
@@ -204,70 +205,66 @@
             </com.google.android.material.card.MaterialCardView>
 
             <!-- ========================= -->
-            <!-- FILA DE ADOPCIONES Y VOLUNTARIADO -->
+            <!-- CARD ADOPCION -->
             <!-- ========================= -->
-            <LinearLayout
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardAdopcion"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:baselineAligned="false"
-                android:clipChildren="false"
-                android:clipToPadding="false"
-                android:orientation="horizontal">
+                android:clickable="true"
+                android:focusable="true"
+                android:outlineAmbientShadowColor="@color/primary_dark"
+                android:outlineSpotShadowColor="@color/primary_dark"
+                android:stateListAnimator="@animator/anim_levitate_card"
+                app:cardBackgroundColor="@color/card_background"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="3dp"
+                app:strokeColor="@color/card_stroke"
+                app:strokeWidth="1dp"
+                tools:targetApi="p">
 
-                <!-- CARD ADOPCION -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardAdopcion"
-                    android:layout_width="0dp"
-                    android:layout_height="170dp"
-                    android:layout_marginEnd="8dp"
-                    android:layout_weight="1"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:outlineAmbientShadowColor="@color/primary_dark"
-                    android:outlineSpotShadowColor="@color/primary_dark"
-                    android:stateListAnimator="@animator/anim_levitate_card"
-                    app:cardBackgroundColor="@color/card_background"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="3dp"
-                    app:strokeColor="@color/card_stroke"
-                    app:strokeWidth="1dp"
-                    tools:targetApi="p">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:padding="16dp">
+
+                    <com.google.android.material.card.MaterialCardView
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        app:cardBackgroundColor="@color/primary_light"
+                        app:cardCornerRadius="24dp"
+                        app:cardElevation="2dp"
+                        app:strokeColor="@color/card_stroke"
+                        app:strokeWidth="1dp">
+
+                        <ImageView
+                            android:id="@+id/ivIconoAdopcion"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/cd_adopcion"
+                            android:scaleType="fitCenter"
+                            android:src="@drawable/adopcionicon"
+                            app:tint="@color/blue" />
+                    </com.google.android.material.card.MaterialCardView>
 
                     <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:clipChildren="false"
-                        android:clipToPadding="false"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <com.google.android.material.card.MaterialCardView
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            app:cardBackgroundColor="@color/primary_light"
-                            app:cardCornerRadius="28dp"
-                            app:cardElevation="2dp"
-                            app:strokeColor="@color/card_stroke"
-                            app:strokeWidth="1dp">
-
-                            <ImageView
-                                android:id="@+id/ivIconoAdopcion"
-                                android:layout_width="28dp"
-                                android:layout_height="28dp"
-                                android:layout_gravity="center"
-                                android:contentDescription="@string/cd_adopcion"
-                                android:scaleType="fitCenter"
-                                android:src="@drawable/adopcionicon"
-                                app:tint="@color/blue" />
-                        </com.google.android.material.card.MaterialCardView>
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
 
                         <TextView
                             android:id="@+id/tvAdopcion"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
                             android:fontFamily="@font/nunito_display"
                             android:text="@string/lbl_adopcion"
                             android:textColor="@color/text_primary"
@@ -281,85 +278,20 @@
                             android:fontFamily="@font/nunito"
                             android:text="@string/lbl_dales_un_hogar"
                             android:textColor="@color/text_muted"
-                            android:textSize="11sp" />
+                            android:textSize="12sp" />
 
                     </LinearLayout>
 
-                </com.google.android.material.card.MaterialCardView>
+                    <ImageView
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:importantForAccessibility="no"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/text_muted" />
 
-                <!-- CARD VOLUNTARIADO -->
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardVoluntariado"
-                    android:layout_width="0dp"
-                    android:layout_height="170dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_weight="1"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:outlineAmbientShadowColor="@color/primary_dark"
-                    android:outlineSpotShadowColor="@color/primary_dark"
-                    android:stateListAnimator="@animator/anim_levitate_card"
-                    app:cardBackgroundColor="@color/card_background"
-                    app:cardCornerRadius="16dp"
-                    app:cardElevation="3dp"
-                    app:strokeColor="@color/card_stroke"
-                    app:strokeWidth="1dp"
-                    tools:targetApi="p">
+                </LinearLayout>
 
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:clipChildren="false"
-                        android:clipToPadding="false"
-                        android:gravity="center"
-                        android:orientation="vertical"
-                        android:padding="16dp">
-
-                        <com.google.android.material.card.MaterialCardView
-                            android:layout_width="56dp"
-                            android:layout_height="56dp"
-                            app:cardBackgroundColor="@color/secondary_light"
-                            app:cardCornerRadius="28dp"
-                            app:cardElevation="2dp"
-                            app:strokeColor="@color/card_stroke"
-                            app:strokeWidth="1dp">
-
-                            <ImageView
-                                android:id="@+id/ivIconoVoluntariado"
-                                android:layout_width="28dp"
-                                android:layout_height="28dp"
-                                android:layout_gravity="center"
-                                android:contentDescription="@string/cd_voluntariado"
-                                android:scaleType="fitCenter"
-                                android:src="@drawable/heart"
-                                app:tint="@color/secondary_dark" />
-                        </com.google.android.material.card.MaterialCardView>
-
-                        <TextView
-                            android:id="@+id/tvVoluntariado"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="12dp"
-                            android:fontFamily="@font/nunito_display"
-                            android:text="@string/lbl_voluntariado"
-                            android:textColor="@color/text_primary"
-                            android:textSize="16sp"
-                            android:textStyle="bold" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:fontFamily="@font/nunito"
-                            android:text="@string/lbl_unete_a_la_causa"
-                            android:textColor="@color/text_muted"
-                            android:textSize="11sp" />
-
-                    </LinearLayout>
-
-                </com.google.android.material.card.MaterialCardView>
-
-            </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
 
             <!-- ========================= -->
             <!-- CARRUSEL DE EVENTOS (DINAMICO) -->
@@ -407,117 +339,13 @@
         </LinearLayout>
     </ScrollView>
 
-    <!-- ========================= -->
-    <!-- BARRA DE NAVEGACION INFERIOR ELEGANTE -->
-    <!-- ========================= -->
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardNavegacionInferior"
+    <include
+        android:id="@+id/bottomNavCiudadano"
+        layout="@layout/layout_bottom_nav_ciudadano"
         android:layout_width="0dp"
-        android:layout_height="64dp"
-        android:layout_marginStart="24dp"
-        android:layout_marginEnd="24dp"
-        android:layout_marginBottom="16dp"
-        android:outlineSpotShadowColor="@color/primary_dark"
-        app:cardBackgroundColor="@color/card_background"
-        app:cardCornerRadius="24dp"
-        app:cardElevation="6dp"
-        app:strokeColor="@color/card_stroke"
-        app:strokeWidth="1dp"
+        android:layout_height="wrap_content"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        tools:targetApi="p">
-
-        <LinearLayout
-            android:id="@+id/layoutNavegacion"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:clipChildren="false"
-            android:clipToPadding="false"
-            android:gravity="center_vertical"
-            android:orientation="horizontal"
-            android:paddingHorizontal="8dp">
-
-            <!-- 1. INICIO -->
-            <ImageView
-                android:id="@+id/ivNavInicio"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:contentDescription="@string/cd_inicio"
-                android:focusable="true"
-                android:padding="12dp"
-                android:src="@drawable/house"
-                app:tint="@color/blue" />
-
-            <!-- 2. REPORTAR (DESTACADO) -->
-            <FrameLayout
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:clipChildren="false"
-                android:clipToPadding="false">
-
-                <com.google.android.material.card.MaterialCardView
-                    android:id="@+id/cardNavPrincipal"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:layout_gravity="center"
-                    android:clickable="true"
-                    android:focusable="true"
-                    android:outlineSpotShadowColor="@color/primary_dark"
-                    android:stateListAnimator="@animator/anim_levitate_card"
-                    app:cardBackgroundColor="@color/yellow"
-                    app:cardCornerRadius="24dp"
-                    app:cardElevation="3dp"
-                    app:strokeWidth="0dp"
-                    tools:targetApi="p">
-
-                    <ImageView
-                        android:id="@+id/ivNavPrincipal"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_gravity="center"
-                        android:contentDescription="@string/cd_reportar_peticion"
-                        android:src="@drawable/paw_cat"
-                        app:tint="@color/darkblue" />
-
-                </com.google.android.material.card.MaterialCardView>
-
-            </FrameLayout>
-
-            <!-- 3. EVENTOS -->
-            <ImageView
-                android:id="@+id/ivNavFavoritos"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:contentDescription="@string/cd_eventos"
-                android:focusable="true"
-                android:padding="12dp"
-                android:src="@drawable/heart"
-                app:tint="@color/text_muted" />
-
-            <!-- 4. PERFIL -->
-            <ImageView
-                android:id="@+id/ivNavPerfil"
-                android:layout_width="0dp"
-                android:layout_height="48dp"
-                android:layout_weight="1"
-                android:background="?attr/selectableItemBackgroundBorderless"
-                android:clickable="true"
-                android:contentDescription="@string/cd_perfil"
-                android:focusable="true"
-                android:padding="12dp"
-                android:src="@drawable/user"
-                app:tint="@color/text_muted" />
-
-        </LinearLayout>
-
-    </com.google.android.material.card.MaterialCardView>
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

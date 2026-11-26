@@ -2,15 +2,8 @@ package com.example.petvetericano
 
 import android.Manifest
 import android.content.Intent
-import android.view.Gravity
-import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 import com.example.petvetericano.offline.AvisoNotificacionesHelper
-import com.google.android.material.card.MaterialCardView
 import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
@@ -44,6 +37,7 @@ class bienvenida : AppCompatActivity() {
         binding = ActivityBienvenidaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        BottomNavHelper.aplicarInsetSuperior(binding.layoutHeader)
         configurarBotonModoOscuro()
         configurarBotonPerfil()
 
@@ -53,10 +47,16 @@ class bienvenida : AppCompatActivity() {
 
         if (token.isNotEmpty()) {
             RetrofitClient.authToken = token
+            BottomNavHelper.setupCiudadano(
+                this,
+                binding.bottomNavCiudadano,
+                BottomNavHelper.CiudadanoTab.INICIO
+            ) {
+                binding.scrollBienvenida.smoothScrollTo(0, 0)
+            }
             cargarDashboard()
             configurarEventos()
             configurarCarrusel()
-            configurarAccesoMisReportes()
             evaluarAvisoNotificaciones(savedInstanceState)
         } else {
             // Si no hay token, redirigimos al login
@@ -82,33 +82,12 @@ class bienvenida : AppCompatActivity() {
     }
 
     private fun configurarEventos() {
-
         binding.cardReportarPeticion.setOnClickListener {
             val intent = Intent(this, reportar_peticion::class.java)
             startActivity(intent)
         }
         binding.cardAdopcion.setOnClickListener {
             val intent = Intent(this, Adopcion::class.java)
-            startActivity(intent)
-        }
-        binding.cardVoluntariado.setOnClickListener {
-            val intent = Intent(this, Eventos::class.java)
-            startActivity(intent)
-        }
-
-        binding.cardNavPrincipal.setOnClickListener {
-            val intent = Intent(this, reportar_peticion::class.java)
-            startActivity(intent)
-        }
-
-        binding.ivNavFavoritos.setOnClickListener {
-            val intent = Intent(this, Eventos::class.java)
-            startActivity(intent)
-            Toast.makeText(this, "Jornadas y eventos", Toast.LENGTH_SHORT).show()
-        }
-
-        binding.ivNavPerfil.setOnClickListener {
-            val intent = Intent(this, editar_perfil::class.java)
             startActivity(intent)
         }
     }
@@ -248,114 +227,6 @@ class bienvenida : AppCompatActivity() {
         }
     }
 
-    private fun configurarAccesoMisReportes() {
-        val container = binding.cardReportarPeticion.parent as? LinearLayout ?: return
-        val indexCardReportar = container.indexOfChild(binding.cardReportarPeticion)
-        val insertIndex = if (indexCardReportar >= 0 && indexCardReportar + 2 <= container.childCount) {
-            indexCardReportar + 2
-        } else {
-            container.childCount
-        }
-
-        val density = resources.displayMetrics.density
-        val cardMisReportes = MaterialCardView(this).apply {
-            id = View.generateViewId()
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                topMargin = (16 * density).toInt()
-            }
-            radius = 16 * density
-            cardElevation = 3f * density
-            stateListAnimator = android.animation.AnimatorInflater.loadStateListAnimator(
-                this@bienvenida,
-                R.animator.anim_levitate_card
-            )
-            if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.P) {
-                val shadowColor = ContextCompat.getColor(this@bienvenida, R.color.primary_dark)
-                outlineSpotShadowColor = shadowColor
-                outlineAmbientShadowColor = shadowColor
-            }
-            strokeWidth = (1 * density).toInt()
-            setStrokeColor(ContextCompat.getColorStateList(this@bienvenida, R.color.card_stroke))
-            setCardBackgroundColor(ContextCompat.getColorStateList(this@bienvenida, R.color.card_background))
-            isClickable = true
-            isFocusable = true
-
-            val content = LinearLayout(this@bienvenida).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.CENTER_VERTICAL
-                val p16 = (16 * density).toInt()
-                setPadding(p16, p16, p16, p16)
-
-                val iconContainer = MaterialCardView(this@bienvenida).apply {
-                    val size = (44 * density).toInt()
-                    layoutParams = LinearLayout.LayoutParams(size, size)
-                    radius = 22 * density
-                    cardElevation = 2f * density
-                    strokeWidth = (1f * density).toInt()
-                    strokeColor = ContextCompat.getColor(this@bienvenida, R.color.card_stroke)
-                    setCardBackgroundColor(ContextCompat.getColorStateList(this@bienvenida, R.color.primary_light))
-
-                    val ivIcon = ImageView(this@bienvenida).apply {
-                        val iconSize = (24 * resources.displayMetrics.density).toInt()
-                        layoutParams = FrameLayout.LayoutParams(iconSize, iconSize, Gravity.CENTER)
-                        setImageResource(R.drawable.outline_document_search_24)
-                        imageTintList = ContextCompat.getColorStateList(this@bienvenida, R.color.blue)
-                        contentDescription = getString(R.string.reporte_offline_mis_reportes_titulo)
-                    }
-                    addView(ivIcon)
-                }
-                addView(iconContainer)
-
-                val textLayout = LinearLayout(this@bienvenida).apply {
-                    orientation = LinearLayout.VERTICAL
-                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
-                        marginStart = (14 * resources.displayMetrics.density).toInt()
-                        marginEnd = (8 * resources.displayMetrics.density).toInt()
-                    }
-
-                    val tvTitulo = TextView(this@bienvenida).apply {
-                        text = getString(R.string.reporte_offline_mis_reportes_titulo)
-                        setTextColor(ContextCompat.getColor(this@bienvenida, R.color.text_primary))
-                        textSize = 16f
-                        typeface = ResourcesCompat.getFont(this@bienvenida, R.font.nunito_display)
-                        paint.isFakeBoldText = true
-                    }
-                    val tvSubtitulo = TextView(this@bienvenida).apply {
-                        text = getString(R.string.reporte_offline_mis_reportes_subtitulo)
-                        setTextColor(ContextCompat.getColor(this@bienvenida, R.color.text_muted))
-                        textSize = 12f
-                        typeface = ResourcesCompat.getFont(this@bienvenida, R.font.nunito)
-                        val mTop = (2 * resources.displayMetrics.density).toInt()
-                        setPadding(0, mTop, 0, 0)
-                    }
-                    addView(tvTitulo)
-                    addView(tvSubtitulo)
-                }
-                addView(textLayout)
-
-                val ivChevron = ImageView(this@bienvenida).apply {
-                    val cSize = (20 * resources.displayMetrics.density).toInt()
-                    layoutParams = LinearLayout.LayoutParams(cSize, cSize)
-                    setImageResource(R.drawable.outline_arrow_back_ios_24)
-                    rotation = 180f
-                    imageTintList = ContextCompat.getColorStateList(this@bienvenida, R.color.text_muted)
-                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-                }
-                addView(ivChevron)
-            }
-            addView(content)
-
-            setOnClickListener {
-                startActivity(Intent(this@bienvenida, MisReportesActivity::class.java))
-            }
-        }
-
-        container.addView(cardMisReportes, insertIndex)
-    }
-
     private fun postularseDesdeCarrusel(evento: VoluntariadoEventos) {
         val token = SharedPreferencesManager(this).getAccessToken()
         if (token.isEmpty()) {
@@ -403,7 +274,7 @@ class bienvenida : AppCompatActivity() {
 
     private fun configurarBotonPerfil() {
         binding.tvInicialesAvatar.setOnClickListener {
-            startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
+            startActivity(Intent(this, editar_perfil::class.java))
         }
     }
 

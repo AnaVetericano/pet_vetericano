@@ -29,6 +29,15 @@ class Eventos : AppCompatActivity() {
         binding = ActivityEventosBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        BottomNavHelper.aplicarInsetSuperior(binding.layoutHeaderEventos)
+        BottomNavHelper.setupCiudadano(
+            this,
+            binding.bottomNavCiudadano,
+            BottomNavHelper.CiudadanoTab.EVENTOS
+        ) {
+            binding.recyclerEventos.smoothScrollToPosition(0)
+        }
+
         configurarVistas()
         cargarEventos()
     }

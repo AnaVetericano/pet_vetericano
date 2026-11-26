@@ -43,6 +43,7 @@ class PetitionsListActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityPetitionsListBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        BottomNavHelper.aplicarInsetSuperior(binding.layoutHeaderPetitions)
 
         binding.recyclerPeticiones.layoutManager = LinearLayoutManager(this)
 
@@ -279,24 +280,11 @@ class PetitionsListActivity : AppCompatActivity() {
     }
 
     private fun setupBottomNavigation() {
-        // Peticiones: ya estamos aquí
-        binding.ivNavPeticiones.setOnClickListener {
-            binding.recyclerPeticiones.smoothScrollToPosition(0)
-        }
-
-        // Inicio: vuelve al dashboard del veterinario
-        binding.ivNavInicio.setOnClickListener {
-            val intent = Intent(this, dahsboard_veterianrio::class.java).apply {
-                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
-            }
-            startActivity(intent)
-            finish()
-        }
-
-        // Perfil: abre el perfil del veterinario
-        binding.ivNavPerfil.setOnClickListener {
-            val intent = Intent(this, OpcionesEditarPerfilActivity::class.java)
-            startActivity(intent)
-        }
+        BottomNavHelper.setupVeterinario(
+            activity = this,
+            binding = binding.bottomNavVeterinario,
+            activeTab = BottomNavHelper.VeterinarioTab.PETICIONES,
+            onReselectCurrent = { binding.recyclerPeticiones.smoothScrollToPosition(0) }
+        )
     }
 }

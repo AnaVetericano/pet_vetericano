@@ -16,6 +16,7 @@ import androidx.viewpager2.widget.ViewPager2
 import com.example.petvetericano.databinding.ActivityBienvenidaBinding
 import com.example.petvetericano.models.VoluntariadoEventos
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.notificaciones.ContadorNotificacionesEnVivo
 import com.example.petvetericano.notificaciones.NotificacionesActivity
 import com.example.petvetericano.notificaciones.NotificacionesRepository
 import com.google.android.material.snackbar.Snackbar
@@ -58,6 +59,7 @@ class bienvenida : AppCompatActivity() {
             }
             cargarDashboard()
             actualizarBadgeNotificaciones()
+            ContadorNotificacionesEnVivo.observar(this) { actualizarBadgeNotificaciones() }
             configurarEventos()
             configurarCarrusel()
             evaluarAvisoNotificaciones(savedInstanceState)
@@ -283,7 +285,8 @@ class bienvenida : AppCompatActivity() {
         lifecycleScope.launch {
             val res = NotificacionesRepository.obtenerContador(this@bienvenida)
             if (isFinishing || isDestroyed) return@launch
-            val noLeidas = res.getOrNull()?.noLeidas ?: 0
+            // Si el servidor no responde se conserva el último valor (no se inventa un 0).
+            val noLeidas = res.getOrNull()?.noLeidas ?: return@launch
             if (noLeidas > 0) {
                 binding.tvNotifBadge.visibility = View.VISIBLE
                 binding.tvNotifBadge.text = if (noLeidas > 99) "99+" else noLeidas.toString()

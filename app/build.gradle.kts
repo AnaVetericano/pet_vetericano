@@ -53,15 +53,31 @@ android {
                 ?: productionApiUrl
             buildConfigField("String", "API_BASE_URL", "\"$devApiUrl\"")
 
-            // WebSocket local (emulador: 10.0.2.2:8002; dispositivo físico: -PVETERICANO_DEV_WS_URL=ws://<ip>:8002/ws/notificaciones/)
-            val devWsUrl = (project.findProperty("VETERICANO_DEV_WS_URL") as? String)
+            // WebSocket: debe ir al MISMO backend que la API (misma SECRET_KEY y misma BD); si no, el ws
+            // rechaza el JWT con 4001. Sin -PVETERICANO_DEV_WS_URL se deriva de la API:
+            //  - API de Railway  -> wss://vetericano-ws-production.up.railway.app/ws/notificaciones/
+            //  - API local http://<host>:8000/api/ -> ws://<host>:8002/ws/notificaciones/
+            //    (emulador: 10.0.2.2; dispositivo físico: 127.0.0.1 con `adb reverse tcp:8000 tcp:8000` y `tcp:8002 tcp:8002`)
+            val productionWsUrl = "wss://vetericano-ws-production.up.railway.app/ws/notificaciones/"
+            val apiEsRailway = devApiUrl.contains(".up.railway.app", ignoreCase = true)
+            val devWsUrl = ((project.findProperty("VETERICANO_DEV_WS_URL") as? String)
                 ?.trim()
                 ?.takeIf { it.isNotEmpty() }
-                ?: "ws://10.0.2.2:8002/ws/notificaciones/"
+                ?: if (apiEsRailway) productionWsUrl else {
+                    val apiHost = Regex("^[a-zA-Z]+://([^/:]+)").find(devApiUrl)?.groupValues?.get(1) ?: "10.0.2.2"
+                    "ws://$apiHost:8002/ws/notificaciones/"
+                })
+                .let { if (it.endsWith("/")) it else "$it/" }
             val devWsHabilitado = (project.findProperty("VETERICANO_WS_HABILITADO") as? String)
                 ?.trim()
                 ?.equals("true", ignoreCase = true)
                 ?: false
+            if (devWsHabilitado && apiEsRailway != devWsUrl.contains(".up.railway.app", ignoreCase = true)) {
+                throw GradleException(
+                    "VETERICANO: API ($devApiUrl) y WebSocket ($devWsUrl) apuntan a entornos distintos. " +
+                        "El ws rechazaría el token (4001). Usa -PVETERICANO_DEV_API_URL y -PVETERICANO_DEV_WS_URL del mismo backend."
+                )
+            }
             val wsClientId = (project.findProperty("VETERICANO_WS_CLIENT_ID") as? String)
                 ?.trim()
                 ?.takeIf { it.isNotEmpty() }
@@ -80,6 +96,7 @@ android {
             val releaseWsUrl = (project.findProperty("VETERICANO_RELEASE_WS_URL") as? String)
                 ?.trim()
                 ?.takeIf { it.startsWith("wss://", ignoreCase = true) }
+                ?.let { if (it.endsWith("/")) it else "$it/" }
                 ?: ""
             val releaseWsHabilitado = releaseWsUrl.isNotEmpty() && (
                 (project.findProperty("VETERICANO_RELEASE_WS_HABILITADO") as? String)

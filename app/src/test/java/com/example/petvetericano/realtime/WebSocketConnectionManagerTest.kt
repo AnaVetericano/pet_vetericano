@@ -169,6 +169,43 @@ class WebSocketConnectionManagerTest {
     }
 
     @Test
+    fun `tras 4003 volver a primer plano no reconecta hasta un nuevo login`() {
+        val env = FakeEntorno()
+        val fakeClient = FakeWsClient()
+        WebSocketConnectionManager.configurarParaPruebas(env, fakeClient, Dispatchers.Unconfined)
+
+        WebSocketConnectionManager.onForeground()
+        fakeClient.activo = false
+        fakeClient.listenerActual?.alCerrar(4003, "revoked")
+        WebSocketConnectionManager.onBackground()
+        WebSocketConnectionManager.onForeground()
+        assertEquals(1, fakeClient.conexionesIniciadas)
+
+        WebSocketConnectionManager.onLoginExitoso()
+        assertEquals(2, fakeClient.conexionesIniciadas)
+    }
+
+    @Test
+    fun `evento sesion revocada tampoco permite reconectar al volver a primer plano`() {
+        val env = FakeEntorno()
+        val fakeClient = FakeWsClient()
+        WebSocketConnectionManager.configurarParaPruebas(env, fakeClient, Dispatchers.Unconfined)
+
+        WebSocketConnectionManager.onForeground()
+        fakeClient.listenerActual?.alAbrir()
+        fakeClient.listenerActual?.alRecibirMensaje(MensajeServidorWs.AuthOk(12, 3, 1900000000L))
+        val revocada = (WebSocketEventParser.parsearMensaje(
+            """{"type":"event","schema_version":"1","event_id":"ev-rev-1","event_type":"sesion.revocada","categoria":"AO","modulo":"seguridad","timestamp":"2026-11-26T10:00:00","data":{"titulo":"T","mensaje":"M","nivel":"danger","referencia":{},"motivo":"inactivado"}}"""
+        ) as MensajeServidorWs.Evento)
+        fakeClient.listenerActual?.alRecibirMensaje(revocada)
+        assertEquals(1, env.revocaciones)
+
+        WebSocketConnectionManager.onBackground()
+        WebSocketConnectionManager.onForeground()
+        assertEquals(1, fakeClient.conexionesIniciadas)
+    }
+
+    @Test
     fun `cierre 4403 por origen o cliente invalido pasa a ErrorPermanente sin reconectar`() {
         val env = FakeEntorno()
         val fakeClient = FakeWsClient()

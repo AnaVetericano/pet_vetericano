@@ -225,7 +225,7 @@ class SplashActivity : AppCompatActivity() {
     private fun configurarTransicionesVentana() {
         val fastOutSlowIn = AnimationUtils.loadInterpolator(
             this,
-            android.interpolator.fast_out_slow_in
+            android.R.interpolator.fast_out_slow_in
         )
         window.sharedElementExitTransition = ChangeBounds().apply {
             duration = SHARED_TRANSITION_DURATION_MS

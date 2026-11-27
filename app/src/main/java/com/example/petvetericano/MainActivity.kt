@@ -85,7 +85,7 @@ class MainActivity : AppCompatActivity() {
     private fun configurarTransicionesEntrada() {
         val fastOutSlowIn = AnimationUtils.loadInterpolator(
             this,
-            android.interpolator.fast_out_slow_in
+            android.R.interpolator.fast_out_slow_in
         )
         window.sharedElementEnterTransition = ChangeBounds().apply {
             duration = SHARED_TRANSITION_DURATION_MS

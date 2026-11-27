@@ -139,6 +139,31 @@ class WebSocketEventParserYEstadoTest {
     }
 
     @Test
+    fun `todas_leidas sin modulo limpia el area de notificaciones y con modulo solo recarga la bandeja`() {
+        var cancelacionesTotales = 0
+        var avisosBandeja = 0
+        val efectos = object : WebSocketRepository.EfectosNotificacion {
+            override fun yaMostrada(clave: String) = false
+            override fun marcarMostrada(clave: String) {}
+            override fun mostrarNotificacionNp(evento: WebSocketEvent) = true
+            override fun notificarBandeja() { avisosBandeja++ }
+            override fun cancelarNotificacion(clave: String) {}
+            override fun cancelarTodasNotificaciones() { cancelacionesTotales++ }
+        }
+        fun evento(id: String, data: String) = (WebSocketEventParser.parsearMensaje(
+            """{"type":"event","schema_version":"1","event_id":"$id","event_type":"notificacion.todas_leidas","categoria":"AS","modulo":"transversal","timestamp":"2026-11-26T10:00:00","data":$data}"""
+        ) as MensajeServidorWs.Evento).evento
+
+        assertTrue(WebSocketRepository.procesarEventoConEfectos(evento("tl-1", """{"modulo":"inventario"}"""), efectos))
+        assertEquals(0, cancelacionesTotales)
+        assertEquals(1, avisosBandeja)
+
+        assertTrue(WebSocketRepository.procesarEventoConEfectos(evento("tl-2", """{"modulo":null}"""), efectos))
+        assertEquals(1, cancelacionesTotales)
+        assertEquals(2, avisosBandeja)
+    }
+
+    @Test
     fun `eventos AO y AS no crean notificacion local y eventos no relevantes se ignoran`() {
         var mostradas = 0
         val efectos = object : WebSocketRepository.EfectosNotificacion {

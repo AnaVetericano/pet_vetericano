@@ -63,6 +63,10 @@ object FcmTokenManager {
     @Volatile
     private var abrirBandejaPendiente = false
 
+    /** Clave de la NP tocada en la bandeja del sistema: la bandeja la marca leída al abrirse. */
+    @Volatile
+    private var claveBandejaPendiente: String? = null
+
     /** Llamar una vez desde PetVetericanoApp.onCreate. */
     fun init(app: Application) {
         app.registerActivityLifecycleCallbacks(CallbacksNotificaciones)
@@ -105,6 +109,7 @@ object FcmTokenManager {
         val auth = NotificacionesRepository.cabeceraAuth(app)
         solicitarPermisoPendiente = false
         abrirBandejaPendiente = false
+        claveBandejaPendiente = null
         prefs(app).edit().remove(KEY_HUELLA_REGISTRO).apply()
         scope.launch {
             mutexToken.withLock {
@@ -220,12 +225,16 @@ object FcmTokenManager {
             }
             if (clave.isNullOrEmpty()) return
             NotificacionesRepository.marcarMostradas(activity.applicationContext, listOf(clave))
-            if (activity !is NotificacionesActivity) abrirBandejaPendiente = true
+            if (activity !is NotificacionesActivity) {
+                abrirBandejaPendiente = true
+                claveBandejaPendiente = clave
+            }
         }
 
         override fun onActivityResumed(activity: Activity) {
             if (activity is NotificacionesActivity) {
                 abrirBandejaPendiente = false
+                claveBandejaPendiente = null
                 return
             }
             if (esPantallaDeAcceso(activity)) return
@@ -233,7 +242,13 @@ object FcmTokenManager {
 
             if (abrirBandejaPendiente) {
                 abrirBandejaPendiente = false
-                activity.startActivity(Intent(activity, NotificacionesActivity::class.java))
+                val clave = claveBandejaPendiente
+                claveBandejaPendiente = null
+                activity.startActivity(
+                    Intent(activity, NotificacionesActivity::class.java).apply {
+                        if (clave != null) putExtra(VetericanoMessagingService.EXTRA_CLAVE, clave)
+                    }
+                )
                 return
             }
 

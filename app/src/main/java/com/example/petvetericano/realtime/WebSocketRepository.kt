@@ -144,7 +144,14 @@ object WebSocketRepository {
             }
 
             evento.eventType == "notificacion.todas_leidas" -> {
-                efectos.cancelarTodasNotificaciones()
+                // Solo "todas" sin módulo limpia el área de notificaciones. Con módulo (p. ej. marcado desde
+                // la web), las de otros módulos siguen sin leer en el servidor; la bandeja se recarga por REST.
+                val modulo = evento.data.get("modulo")
+                    ?.takeIf { it.isJsonPrimitive }
+                    ?.asString
+                    ?.trim()
+                    .orEmpty()
+                if (modulo.isEmpty()) efectos.cancelarTodasNotificaciones()
                 efectos.notificarBandeja()
                 _eventos.tryEmit(evento)
                 return true

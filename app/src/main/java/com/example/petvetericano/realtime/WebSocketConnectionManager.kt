@@ -75,6 +75,10 @@ object WebSocketConnectionManager {
     @Volatile
     private var yaConectoAntes = false
 
+    /** Tras `4003`/`sesion.revocada` no se reconecta hasta un nuevo login (contrato §2). */
+    @Volatile
+    private var sesionRevocada = false
+
     private var jobAuthTimeout: Job? = null
     private var jobHeartbeat: Job? = null
     private var jobPongTimeout: Job? = null
@@ -106,6 +110,7 @@ object WebSocketConnectionManager {
             intentosReconexion = 0
             intentosRefresh = 0
             yaConectoAntes = false
+            sesionRevocada = false
             WebSocketRepository.limpiarDeduplicacion()
             WebSocketRepository.actualizarEstado(WebSocketState.Desconectado)
         }
@@ -137,6 +142,7 @@ object WebSocketConnectionManager {
             intentosReconexion = 0
             intentosRefresh = 0
             yaConectoAntes = false
+            sesionRevocada = false
             intentarConectarInterno(forzarNuevoUsuario = true)
         }
     }
@@ -148,6 +154,7 @@ object WebSocketConnectionManager {
             intentosReconexion = 0
             intentosRefresh = 0
             yaConectoAntes = false
+            sesionRevocada = false
             cerrarControlado("logout")
             WebSocketRepository.limpiarDeduplicacion()
         }
@@ -167,6 +174,10 @@ object WebSocketConnectionManager {
             return
         }
         if (!enPrimerPlano || !env.haySesion()) {
+            return
+        }
+        if (sesionRevocada) {
+            env.logDebug("WS no reconecta: sesión revocada por el servidor (requiere nuevo login)")
             return
         }
 
@@ -299,6 +310,7 @@ object WebSocketConnectionManager {
         env.procesarEvento(evento)
         if (evento.eventType == "sesion.revocada") {
             synchronized(lock) {
+                sesionRevocada = true
                 cerrarControlado("sesion_revocada")
             }
             env.marcarSesionRevocada(env.obtenerRefreshToken())
@@ -323,6 +335,7 @@ object WebSocketConnectionManager {
 
             PoliticaCierre.REVOCAR_SESION -> {
                 synchronized(lock) {
+                    sesionRevocada = true
                     WebSocketRepository.actualizarEstado(
                         WebSocketState.ErrorPermanente(codigo, "Sesión revocada por servidor")
                     )

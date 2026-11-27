@@ -5,7 +5,9 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/input_background"
+    android:background="@color/bg_screen"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:padding="24dp">
 
     <!-- HEADER: Botón Atrás y Título -->
@@ -46,7 +48,7 @@
         app:boxCornerRadiusBottomStart="14dp"
         app:boxCornerRadiusTopEnd="14dp"
         app:boxCornerRadiusTopStart="14dp"
-        app:boxStrokeColor="@color/primary"
+        app:boxStrokeColor="@color/selector_input_stroke"
         app:hintTextColor="@color/primary"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -74,12 +76,14 @@
         android:layout_height="0dp"
         android:layout_marginTop="12dp"
         android:layout_marginBottom="12dp"
+        android:outlineSpotShadowColor="@color/primary_dark"
         app:cardCornerRadius="18dp"
-        app:cardElevation="1dp"
+        app:cardElevation="3dp"
         app:strokeColor="@color/card_stroke"
         app:strokeWidth="1dp"
         app:layout_constraintBottom_toTopOf="@id/btnLocation"
-        app:layout_constraintTop_toBottomOf="@id/tilSearch">
+        app:layout_constraintTop_toBottomOf="@id/tilSearch"
+        tools:targetApi="p">
 
         <androidx.fragment.app.FragmentContainerView
             android:id="@+id/mapFragment"
@@ -96,12 +100,16 @@
         android:layout_height="52dp"
         android:layout_marginBottom="10dp"
         android:fontFamily="@font/nunito"
+        android:outlineSpotShadowColor="@color/primary_dark"
+        android:stateListAnimator="@animator/anim_levitate_button"
         android:text="@string/lbl_usar_mi_ubicacion_actual"
         android:textAllCaps="false"
         android:textColor="@color/primary"
         android:textSize="13sp"
         android:textStyle="bold"
+        app:backgroundTint="@color/card_background"
         app:cornerRadius="14dp"
+        app:elevation="3dp"
         app:icon="@drawable/location"
         app:iconGravity="textStart"
         app:iconPadding="8dp"
@@ -109,13 +117,16 @@
         app:iconTint="@color/primary"
         app:layout_constraintBottom_toTopOf="@id/btnGuardarDireccion"
         app:strokeColor="@color/primary"
-        app:strokeWidth="1.5dp" />
+        app:strokeWidth="1.5dp"
+        tools:targetApi="p" />
 
     <com.google.android.material.button.MaterialButton
         android:id="@+id/btnGuardarDireccion"
         android:layout_width="match_parent"
         android:layout_height="54dp"
         android:fontFamily="@font/nunito"
+        android:outlineSpotShadowColor="@color/primary_dark"
+        android:stateListAnimator="@animator/anim_levitate_button"
         android:text="@string/btn_guardar_nueva_direccion"
         android:textAllCaps="false"
         android:textColor="@color/white"
@@ -123,7 +134,8 @@
         android:textStyle="bold"
         app:backgroundTint="@color/primary"
         app:cornerRadius="16dp"
-        app:elevation="3dp"
-        app:layout_constraintBottom_toBottomOf="parent" />
+        app:elevation="4dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        tools:targetApi="p" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

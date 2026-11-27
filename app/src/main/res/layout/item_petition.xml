@@ -2,18 +2,25 @@
 <com.google.android.material.card.MaterialCardView
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginVertical="6dp"
+    android:outlineAmbientShadowColor="@color/primary_dark"
+    android:outlineSpotShadowColor="@color/primary_dark"
+    android:stateListAnimator="@animator/anim_levitate_card"
     app:cardBackgroundColor="@color/card_background"
     app:cardCornerRadius="16dp"
-    app:cardElevation="0dp"
+    app:cardElevation="3dp"
     app:strokeColor="@color/card_stroke"
-    app:strokeWidth="1dp">
+    app:strokeWidth="1dp"
+    tools:targetApi="p">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:orientation="vertical"
         android:padding="16dp">
 
@@ -55,6 +62,8 @@
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:layout_marginTop="10dp"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:gravity="center_vertical">
 
             <!-- Contenedor del Icono de Huella -->
@@ -63,7 +72,7 @@
                 android:layout_height="40dp"
                 app:cardBackgroundColor="@color/primary_light"
                 app:cardCornerRadius="20dp"
-                app:cardElevation="0dp"
+                app:cardElevation="2dp"
                 app:strokeWidth="0dp">
 
                 <ImageView

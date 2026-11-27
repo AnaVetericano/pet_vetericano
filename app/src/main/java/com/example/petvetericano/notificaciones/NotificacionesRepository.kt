@@ -11,6 +11,7 @@ import com.example.petvetericano.BuildConfig
 import com.example.petvetericano.SharedPreferencesManager
 import com.example.petvetericano.models.LeerTodasNotificacionesResponse
 import com.example.petvetericano.models.NotificacionItem
+import com.example.petvetericano.models.NotificacionesContadorResponse
 import com.example.petvetericano.models.NotificacionesListaResponse
 import com.example.petvetericano.models.NotificacionesMapper
 import com.example.petvetericano.network.RetrofitClient
@@ -90,6 +91,9 @@ object NotificacionesRepository {
             offset = 0
         )
     }
+
+    suspend fun obtenerContador(context: Context): Result<NotificacionesContadorResponse> =
+        llamar(context) { auth -> RetrofitClient.notificacionesApi.contador(auth) }
 
     suspend fun marcarLeida(context: Context, clave: String): Result<NotificacionItem> =
         llamar(context) { auth -> RetrofitClient.notificacionesApi.leer(auth, clave) }

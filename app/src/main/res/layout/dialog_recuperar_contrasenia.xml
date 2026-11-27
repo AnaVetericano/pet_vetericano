@@ -14,6 +14,8 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:background="@drawable/bg_tarjeta"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:elevation="12dp"
             android:orientation="vertical"
             android:padding="24dp">
@@ -64,7 +66,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="8dp"
-                android:background="@drawable/bg_campo"
+                android:background="@drawable/bg_field_sunk"
                 android:hint="@string/hint_correo_ejemplo_com"
                 android:inputType="textEmailAddress"
                 android:paddingStart="16dp"
@@ -80,6 +82,7 @@
                 android:layout_height="50dp"
                 android:layout_marginTop="10dp"
                 android:fontFamily="@font/nunito"
+                android:stateListAnimator="@animator/anim_levitate_button"
                 android:text="@string/btn_enviar_codigo_de_verificacion"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
@@ -87,7 +90,7 @@
                 android:textStyle="bold"
                 app:backgroundTint="@color/blue"
                 app:cornerRadius="14dp"
-                app:elevation="2dp" />
+                app:elevation="4dp" />
 
             <View
                 android:layout_width="match_parent"
@@ -110,7 +113,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
                 android:layout_marginTop="8dp"
-                android:background="@drawable/bg_campo"
+                android:background="@drawable/bg_field_sunk"
                 android:hint="@string/hint_codigo_de_6_digitos"
                 android:inputType="number"
                 android:maxLength="6"
@@ -132,7 +135,7 @@
                 app:boxCornerRadiusBottomStart="14dp"
                 app:boxCornerRadiusTopEnd="14dp"
                 app:boxCornerRadiusTopStart="14dp"
-                app:boxStrokeColor="@color/input_stroke"
+                app:boxStrokeColor="@color/selector_input_stroke"
                 app:boxStrokeWidth="1.5dp"
                 app:boxStrokeWidthFocused="2dp"
                 app:endIconMode="password_toggle"
@@ -160,6 +163,7 @@
                 android:layout_height="50dp"
                 android:layout_marginTop="14dp"
                 android:fontFamily="@font/nunito"
+                android:stateListAnimator="@animator/anim_levitate_button"
                 android:text="@string/lbl_cambiar_contrasena"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
@@ -167,7 +171,7 @@
                 android:textStyle="bold"
                 app:backgroundTint="@color/success"
                 app:cornerRadius="14dp"
-                app:elevation="2dp" />
+                app:elevation="4dp" />
 
             <TextView
                 android:id="@+id/txtCancelar"

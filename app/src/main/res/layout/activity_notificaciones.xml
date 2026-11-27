@@ -40,6 +40,11 @@
                 android:textSize="13sp" />
         </com.google.android.material.appbar.MaterialToolbar>
 
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/divider" />
+
         <com.google.android.material.progressindicator.LinearProgressIndicator
             android:id="@+id/progressNotificaciones"
             android:layout_width="match_parent"
@@ -64,6 +69,7 @@
                 android:id="@+id/rvNotificaciones"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:clipChildren="false"
                 android:clipToPadding="false"
                 android:paddingTop="6dp"
                 android:paddingBottom="24dp"
@@ -75,6 +81,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:gravity="center"
                 android:orientation="vertical"
                 android:padding="32dp"
@@ -117,10 +125,16 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="16dp"
                     android:fontFamily="@font/nunito_bold"
+                    android:outlineAmbientShadowColor="@color/primary_dark"
+                    android:outlineSpotShadowColor="@color/primary_dark"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/notif_btn_reintentar"
                     android:textAllCaps="false"
                     android:visibility="gone"
+                    app:backgroundTint="@color/card_background"
                     app:cornerRadius="12dp"
+                    app:elevation="3dp"
+                    tools:targetApi="p"
                     tools:visibility="visible" />
             </LinearLayout>
         </FrameLayout>

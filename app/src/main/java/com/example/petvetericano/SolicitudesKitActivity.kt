@@ -1,6 +1,5 @@
 package com.example.petvetericano
 
-import android.graphics.Color
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -8,6 +7,7 @@ import android.view.View
 import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.lifecycleScope
 import androidx.lifecycle.repeatOnLifecycle
@@ -133,10 +133,10 @@ class SolicitudesKitActivity : AppCompatActivity() {
         when {
             nuevosFaltantes.isNotEmpty() -> {
                 binding.cardSugeridosContainer.visibility = View.VISIBLE
-                binding.cardSugeridosContainer.setCardBackgroundColor(Color.parseColor("#FEF3C7"))
-                binding.cardSugeridosContainer.strokeColor = Color.parseColor("#FDE68A")
+                binding.cardSugeridosContainer.setCardBackgroundColor(ContextCompat.getColor(this, R.color.radix_amber_bg))
+                binding.cardSugeridosContainer.strokeColor = ContextCompat.getColor(this, R.color.radix_amber_border)
                 binding.tvSugeridosTitulo.text = "⚠️ ${nuevosFaltantes.size} medicamento(s) requieren radicar reposición:"
-                binding.tvSugeridosTitulo.setTextColor(Color.parseColor("#92400E"))
+                binding.tvSugeridosTitulo.setTextColor(ContextCompat.getColor(this, R.color.radix_amber_text))
 
                 val sb = StringBuilder()
                 sb.append("Fármacos a solicitar para completar cuota física:\n")
@@ -156,7 +156,7 @@ class SolicitudesKitActivity : AppCompatActivity() {
                 }
 
                 binding.tvSugeridosDetalle.text = sb.toString().trimEnd()
-                binding.tvSugeridosDetalle.setTextColor(Color.parseColor("#78350F"))
+                binding.tvSugeridosDetalle.setTextColor(ContextCompat.getColor(this, R.color.text_primary))
                 binding.btnSolicitarReposicionTotal.text = "Radicar Reposición (${nuevosFaltantes.size} fármaco${if (nuevosFaltantes.size > 1) "s" else ""})"
                 binding.btnSolicitarReposicionTotal.isEnabled = true
                 binding.tilMotivoTotal.helperText = "${nuevosFaltantes.size} medicamento(s) listos para radicar reposición."
@@ -167,10 +167,10 @@ class SolicitudesKitActivity : AppCompatActivity() {
 
             enTramite.isNotEmpty() -> {
                 binding.cardSugeridosContainer.visibility = View.VISIBLE
-                binding.cardSugeridosContainer.setCardBackgroundColor(Color.parseColor("#EFF6FF"))
-                binding.cardSugeridosContainer.strokeColor = Color.parseColor("#BFDBFE")
+                binding.cardSugeridosContainer.setCardBackgroundColor(ContextCompat.getColor(this, R.color.badge_asignada_bg))
+                binding.cardSugeridosContainer.strokeColor = ContextCompat.getColor(this, R.color.badge_asignada_text)
                 binding.tvSugeridosTitulo.text = "⏳ Reposición en trámite ante Farmacia CBA"
-                binding.tvSugeridosTitulo.setTextColor(Color.parseColor("#1E40AF"))
+                binding.tvSugeridosTitulo.setTextColor(ContextCompat.getColor(this, R.color.badge_asignada_text))
 
                 val sb = StringBuilder()
                 sb.append("Los medicamentos con stock bajo ya cuentan con una solicitud radicada pendiente de entrega:\n\n")
@@ -183,7 +183,7 @@ class SolicitudesKitActivity : AppCompatActivity() {
                 sb.append("\nTan pronto el gestor de farmacia despache la entrega, tu maletín se actualizará automáticamente.")
 
                 binding.tvSugeridosDetalle.text = sb.toString().trimEnd()
-                binding.tvSugeridosDetalle.setTextColor(Color.parseColor("#1E3A8A"))
+                binding.tvSugeridosDetalle.setTextColor(ContextCompat.getColor(this, R.color.text_primary))
                 val primeraSol = enTramite.firstNotNullOfOrNull { mapaMedTramiteInfo[it.idMedicamentoInt]?.first }
                 binding.btnSolicitarReposicionTotal.text = if (primeraSol != null) "Reposición en trámite (Solicitud #$primeraSol)" else "Reposición ya en trámite"
                 binding.btnSolicitarReposicionTotal.isEnabled = false
@@ -192,12 +192,12 @@ class SolicitudesKitActivity : AppCompatActivity() {
 
             else -> {
                 binding.cardSugeridosContainer.visibility = View.VISIBLE
-                binding.cardSugeridosContainer.setCardBackgroundColor(Color.parseColor("#ECFDF5"))
-                binding.cardSugeridosContainer.strokeColor = Color.parseColor("#A7F3D0")
+                binding.cardSugeridosContainer.setCardBackgroundColor(ContextCompat.getColor(this, R.color.radix_grass_bg))
+                binding.cardSugeridosContainer.strokeColor = ContextCompat.getColor(this, R.color.radix_grass_border)
                 binding.tvSugeridosTitulo.text = "✅ Cuotas al día"
-                binding.tvSugeridosTitulo.setTextColor(Color.parseColor("#065F46"))
+                binding.tvSugeridosTitulo.setTextColor(ContextCompat.getColor(this, R.color.radix_grass_text))
                 binding.tvSugeridosDetalle.text = "Todas las referencias de tu maletín cumplen actualmente su cuota física asignada."
-                binding.tvSugeridosDetalle.setTextColor(Color.parseColor("#047857"))
+                binding.tvSugeridosDetalle.setTextColor(ContextCompat.getColor(this, R.color.badge_alta_text))
                 binding.btnSolicitarReposicionTotal.text = "Maletín con cuota completa"
                 binding.btnSolicitarReposicionTotal.isEnabled = false
                 binding.tilMotivoTotal.helperText = "Tu maletín tiene actualmente todas sus cuotas completas."

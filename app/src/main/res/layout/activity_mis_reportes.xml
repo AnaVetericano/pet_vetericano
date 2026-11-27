@@ -5,11 +5,11 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_screen"
-    android:fitsSystemWindows="true"
     android:orientation="vertical">
 
     <!-- Encabezado con botón regresar -->
     <RelativeLayout
+        android:id="@+id/layoutHeaderMisReportes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/card_background"
@@ -57,14 +57,15 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"
-        android:paddingHorizontal="16dp">
+        android:layout_weight="1">
 
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvMisReportes"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:clipToPadding="false"
+            android:paddingHorizontal="16dp"
+            android:paddingTop="8dp"
             android:paddingBottom="16dp"
             app:layoutManager="androidx.recyclerview.widget.LinearLayoutManager"
             tools:itemCount="3"
@@ -85,5 +86,11 @@
             tools:visibility="visible" />
 
     </FrameLayout>
+
+    <include
+        android:id="@+id/bottomNavCiudadano"
+        layout="@layout/layout_bottom_nav_ciudadano"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

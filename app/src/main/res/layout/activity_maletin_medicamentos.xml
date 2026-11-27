@@ -1,16 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/bg_screen">
+    android:background="@color/bg_screen"
+    android:orientation="vertical">
 
-    <com.google.android.material.appbar.AppBarLayout
+    <androidx.coordinatorlayout.widget.CoordinatorLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@color/card_background"
-        app:elevation="0dp">
+        android:layout_height="0dp"
+        android:layout_weight="1">
+
+        <com.google.android.material.appbar.AppBarLayout
+            android:id="@+id/appBarMaletin"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/card_background"
+            app:elevation="0dp">
 
         <com.google.android.material.appbar.MaterialToolbar
             android:id="@+id/toolbarMaletin"
@@ -37,31 +44,39 @@
             android:id="@+id/nestedScrollMaletin"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:fillViewport="true">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:orientation="vertical"
                 android:paddingBottom="90dp">
 
                 <!-- Tarjeta Resumen de Inventario M3 -->
                 <com.google.android.material.card.MaterialCardView
-                    style="?attr/materialCardViewFilledStyle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="16dp"
                     android:layout_marginTop="16dp"
                     android:layout_marginBottom="12dp"
+                    android:outlineAmbientShadowColor="@color/primary_dark"
+                    android:outlineSpotShadowColor="@color/primary_dark"
                     app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="20dp"
-                    app:cardElevation="0dp"
+                    app:cardElevation="3dp"
                     app:strokeColor="@color/card_stroke"
-                    app:strokeWidth="1dp">
+                    app:strokeWidth="1dp"
+                    tools:targetApi="p">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
                         android:orientation="vertical"
                         android:padding="16dp">
 
@@ -69,6 +84,8 @@
                         <LinearLayout
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
+                            android:clipChildren="false"
+                            android:clipToPadding="false"
                             android:gravity="center_vertical"
                             android:orientation="horizontal"
                             android:layout_marginBottom="12dp">
@@ -77,6 +94,7 @@
                                 android:layout_width="40dp"
                                 android:layout_height="40dp"
                                 android:background="@drawable/bg_maletin_icon_container"
+                                android:elevation="2dp"
                                 android:layout_marginEnd="10dp">
 
                                 <ImageView
@@ -119,7 +137,7 @@
                             android:baselineAligned="false"
                             android:orientation="horizontal"
                             android:gravity="center_vertical"
-                            android:background="@drawable/bg_search_field"
+                            android:background="@drawable/bg_surface_sunk"
                             android:paddingVertical="10dp"
                             android:paddingHorizontal="12dp">
 
@@ -230,6 +248,8 @@
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
                         android:gravity="center_vertical"
                         android:orientation="horizontal"
                         android:padding="14dp">
@@ -276,13 +296,18 @@
                             android:minHeight="38dp"
                             android:layout_marginStart="8dp"
                             android:fontFamily="@font/nunito_bold"
+                            android:outlineAmbientShadowColor="@color/primary_dark"
+                            android:outlineSpotShadowColor="@color/primary_dark"
+                            android:stateListAnimator="@animator/anim_levitate_button"
                             android:text="Reponer"
                             android:textColor="@color/badge_urgente_text"
                             app:backgroundTint="@color/card_background"
+                            app:elevation="2dp"
                             app:strokeColor="@color/radix_tomato_border"
                             app:strokeWidth="1dp"
                             app:cornerRadius="10dp"
-                            android:textSize="11sp" />
+                            android:textSize="11sp"
+                            tools:targetApi="p" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -295,11 +320,12 @@
                     android:layout_marginHorizontal="16dp"
                     android:layout_marginBottom="12dp"
                     android:hint="@string/hint_buscar_medicamento_o_principio_activo"
+                    app:boxBackgroundColor="@color/input_background"
                     app:boxCornerRadiusBottomEnd="12dp"
                     app:boxCornerRadiusBottomStart="12dp"
                     app:boxCornerRadiusTopEnd="12dp"
                     app:boxCornerRadiusTopStart="12dp"
-                    app:boxStrokeColor="@color/primary"
+                    app:boxStrokeColor="@color/selector_input_stroke"
                     app:endIconMode="clear_text"
                     app:hintTextColor="@color/primary"
                     app:startIconDrawable="@drawable/ic_search"
@@ -404,6 +430,8 @@
                     android:id="@+id/rvMedicamentos"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
                     android:nestedScrollingEnabled="false"
                     tools:itemCount="5"
                     tools:listitem="@layout/item_medicamento_maletin" />
@@ -414,6 +442,8 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="32dp"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
                     android:gravity="center"
                     android:orientation="vertical"
                     android:padding="32dp"
@@ -454,8 +484,13 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="16dp"
                         android:fontFamily="@font/nunito_bold"
+                        android:outlineAmbientShadowColor="@color/primary_dark"
+                        android:outlineSpotShadowColor="@color/primary_dark"
+                        android:stateListAnimator="@animator/anim_levitate_button"
                         android:text="Solicitar dotación inicial"
-                        android:visibility="gone" />
+                        android:visibility="gone"
+                        app:elevation="2dp"
+                        tools:targetApi="p" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -470,10 +505,23 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="16dp"
         android:fontFamily="@font/nunito_bold"
+        android:outlineAmbientShadowColor="@color/primary_dark"
+        android:outlineSpotShadowColor="@color/primary_dark"
+        android:stateListAnimator="@animator/anim_levitate_button"
         android:text="Solicitar reposición"
         android:textColor="@color/white"
         app:backgroundTint="@color/primary"
+        app:elevation="6dp"
         app:icon="@drawable/ic_sync"
-        app:iconTint="@color/white" />
+        app:iconTint="@color/white"
+        tools:targetApi="p" />
 
-</androidx.coordinatorlayout.widget.CoordinatorLayout>
+    </androidx.coordinatorlayout.widget.CoordinatorLayout>
+
+    <include
+        android:id="@+id/bottomNavVeterinario"
+        layout="@layout/layout_bottom_nav_veterinario"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
+
+</LinearLayout>

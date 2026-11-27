@@ -57,6 +57,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
     private var telefonoOriginal: String = ""
     private var matriculaOriginal: String = ""
     private var fotoOriginal: String = ""
+    private var cargandoInicial: Boolean = true
     private var fotoPendienteUri: Uri? = null
     private var fotoEliminada: Boolean = false
     private var guardando: Boolean = false
@@ -82,6 +83,8 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         binding = ActivityOpcionesEditarPerfilBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        BottomNavHelper.aplicarInsetSuperior(binding.toolbarPerfil)
+
         prefs = SharedPreferencesManager(this)
 
         configurarFiltrosYRestricciones()
@@ -91,7 +94,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
             override fun handleOnBackPressed() {
-                if (tieneCambiosFotoPendiente() && !guardando) {
+                if (hayCambiosSinGuardar() && !guardando) {
                     mostrarConfirmacionSalirSinGuardar()
                 } else {
                     isEnabled = false
@@ -102,7 +105,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
         // Acción de clic para el botón de regreso
         binding.btnBack.setOnClickListener {
-            if (tieneCambiosFotoPendiente() && !guardando) {
+            if (hayCambiosSinGuardar() && !guardando) {
                 mostrarConfirmacionSalirSinGuardar()
             } else {
                 finish()
@@ -129,6 +132,10 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
             mostrarConfirmacionGuardarDatosPerfil()
         }
 
+        binding.btnDescartarPerfil.setOnClickListener {
+            mostrarConfirmacionSalirSinGuardar { descartarCambios() }
+        }
+
         // Acción de clic para cerrar sesión del veterinario
         binding.btnLogout.setOnClickListener {
             mostrarConfirmacionCerrarSesion()
@@ -136,6 +143,25 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
         setupDarkMode()
         setupReconocimientoFacial()
+
+        BottomNavHelper.setupVeterinario(
+            this,
+            binding.bottomNavVeterinario,
+            BottomNavHelper.VeterinarioTab.PERFIL,
+            onBeforeNavigate = { proceed ->
+                if (hayCambiosSinGuardar() && !guardando) {
+                    mostrarConfirmacionSalirSinGuardar {
+                        descartarCambios()
+                        proceed()
+                    }
+                } else {
+                    proceed()
+                }
+            },
+            onReselectCurrent = {
+                binding.scrollPerfil.smoothScrollTo(0, 0)
+            }
+        )
     }
 
     override fun onResume() {
@@ -243,15 +269,19 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         // Misma lógica de limpieza de errores para Nombre y Apellido
         binding.etName.doOnTextChanged { _, _, _, _ ->
             binding.tilName.error = null
+            if (!cargandoInicial) actualizarEstadoBotones()
         }
         binding.etLastName.doOnTextChanged { _, _, _, _ ->
             binding.tilLastName.error = null
+            if (!cargandoInicial) actualizarEstadoBotones()
         }
         binding.etEmail.doOnTextChanged { _, _, _, _ ->
             binding.tilEmail.error = null
+            if (!cargandoInicial) actualizarEstadoBotones()
         }
         binding.etPhone.doOnTextChanged { _, _, _, _ ->
             binding.tilPhone.error = null
+            if (!cargandoInicial) actualizarEstadoBotones()
         }
 
         // Mensaje dinámico: recomienda ingresar la matrícula y se oculta automáticamente cuando se escribe
@@ -262,6 +292,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
             } else {
                 binding.tilMatriculaProfesional.helperText = null
             }
+            if (!cargandoInicial) actualizarEstadoBotones()
         }
     }
 
@@ -307,6 +338,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
         actualizarEncabezadoUsuario()
 
+        cargandoInicial = true
         binding.etName.setText(nombre)
         binding.etLastName.setText(apellido)
         binding.etEmail.setText(email)
@@ -340,6 +372,8 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         } else {
             ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivEditProfile, fotoOriginal)
         }
+        cargandoInicial = false
+        actualizarEstadoBotones()
     }
 
     private fun actualizarEncabezadoUsuario() {
@@ -351,6 +385,15 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
             nombre
         }
         binding.tvProfileUserName.text = nombreCompleto.ifEmpty { "Médico Veterinario" }
+
+        val email = prefs.getUserEmail().trim()
+        if (email.isNotEmpty()) {
+            binding.tvProfileUserEmail.text = email
+            binding.tvProfileUserEmail.visibility = View.VISIBLE
+        } else {
+            binding.tvProfileUserEmail.text = ""
+            binding.tvProfileUserEmail.visibility = View.GONE
+        }
     }
 
     private fun tieneFotoVisible(): Boolean {
@@ -361,10 +404,69 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         return fotoPendienteUri != null || (fotoEliminada && fotoOriginal.isNotEmpty())
     }
 
+    private fun hayCambiosSinGuardar(): Boolean {
+        if (cargandoInicial) return false
+        val actualNombre = normalizarTextoPersona(binding.etName.text?.toString() ?: "", MAX_LENGTH_NOMBRE)
+        val actualApellido = normalizarTextoPersona(binding.etLastName.text?.toString() ?: "", MAX_LENGTH_APELLIDO)
+        val actualEmail = (binding.etEmail.text?.toString() ?: "").trim().take(MAX_LENGTH_EMAIL)
+        val actualTelefono = normalizarTelefono(binding.etPhone.text?.toString() ?: "")
+        val actualMatricula = (binding.etMatriculaProfesional.text?.toString() ?: "")
+            .trim()
+            .uppercase()
+            .take(MAX_LENGTH_MATRICULA)
+        return actualNombre != nombreOriginal ||
+                actualApellido != apellidoOriginal ||
+                actualEmail != emailOriginal ||
+                actualTelefono != telefonoOriginal ||
+                actualMatricula != matriculaOriginal ||
+                tieneCambiosFotoPendiente()
+    }
+
+    private fun actualizarEstadoBotones() {
+        if (guardando) {
+            binding.btnSave.isEnabled = false
+            binding.btnSave.text = "Guardando..."
+            binding.btnDescartarPerfil.visibility = View.GONE
+            binding.bannerCambiosPendientes.visibility = View.GONE
+            return
+        }
+        val hayCambios = hayCambiosSinGuardar()
+        binding.btnSave.isEnabled = hayCambios
+        binding.btnSave.text = getString(R.string.btn_guardar_cambios)
+        binding.btnDescartarPerfil.visibility = if (hayCambios) View.VISIBLE else View.GONE
+        binding.bannerCambiosPendientes.visibility = if (hayCambios) View.VISIBLE else View.GONE
+    }
+
+    private fun descartarCambios() {
+        cargandoInicial = true
+        binding.etName.setText(nombreOriginal)
+        binding.etLastName.setText(apellidoOriginal)
+        binding.etEmail.setText(emailOriginal)
+        binding.etPhone.setText(telefonoOriginal)
+        binding.etMatriculaProfesional.setText(matriculaOriginal)
+        binding.tilName.error = null
+        binding.tilLastName.error = null
+        binding.tilEmail.error = null
+        binding.tilPhone.error = null
+        binding.tilMatriculaProfesional.error = null
+        binding.tilMatriculaProfesional.helperText = if (matriculaOriginal.isNotBlank()) {
+            null
+        } else {
+            MENSAJE_RECOMENDACION_MATRICULA
+        }
+        fotoPendienteUri = null
+        fotoEliminada = false
+        ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivEditProfile, fotoOriginal)
+        cargandoInicial = false
+        actualizarEstadoBotones()
+        Snackbar.make(binding.root, "Cambios descartados", Snackbar.LENGTH_SHORT).show()
+    }
+
     private fun previsualizarFotoSeleccionada(uri: Uri) {
         fotoPendienteUri = uri
         fotoEliminada = false
         ProfilePhotoHelper.previsualizarUri(this, binding.ivEditProfile, uri)
+        actualizarEstadoBotones()
         Snackbar.make(
             binding.root,
             "Vista previa lista. Presiona \"Guardar Cambios\" para confirmar.",
@@ -376,6 +478,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         fotoPendienteUri = null
         fotoEliminada = true
         ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivEditProfile, "")
+        actualizarEstadoBotones()
         Snackbar.make(
             binding.root,
             "Foto eliminada. Se mostrará la imagen por defecto.",
@@ -383,17 +486,21 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         ).show()
     }
 
-    private fun mostrarConfirmacionSalirSinGuardar() {
+    private fun mostrarConfirmacionSalirSinGuardar(onDescartar: (() -> Unit)? = null) {
         MaterialAlertDialogBuilder(this)
             .setTitle("¿Descartar cambios?")
-            .setMessage("Tienes cambios en tu foto de perfil que aún no has guardado.")
+            .setMessage("Tienes cambios sin guardar. Se perderán si sales.")
             .setNegativeButton("Seguir editando") { dialog, _ -> dialog.dismiss() }
             .setPositiveButton("Descartar") { dialog, _ ->
                 dialog.dismiss()
-                fotoPendienteUri = null
-                fotoEliminada = false
-                ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivEditProfile, fotoOriginal)
-                finish()
+                if (onDescartar != null) {
+                    onDescartar.invoke()
+                } else {
+                    fotoPendienteUri = null
+                    fotoEliminada = false
+                    ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivEditProfile, fotoOriginal)
+                    finish()
+                }
             }
             .show()
     }
@@ -574,8 +681,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         }
 
         guardando = true
-        binding.btnSave.isEnabled = false
-        binding.btnSave.text = "Guardando..."
+        actualizarEstadoBotones()
         RetrofitClient.authToken = token
 
         lifecycleScope.launch {
@@ -591,8 +697,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
                 if (uriParaSubir != null && fotoBase64 == null) {
                     guardando = false
-                    binding.btnSave.isEnabled = true
-                    binding.btnSave.text = "Guardar Cambios"
+                    actualizarEstadoBotones()
                     Toast.makeText(this@OpcionesEditarPerfilActivity, "No se pudo procesar la imagen seleccionada", Toast.LENGTH_SHORT).show()
                     return@launch
                 }
@@ -661,6 +766,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                     fotoPendienteUri = null
                     fotoEliminada = false
                     guardando = false
+                    actualizarEstadoBotones()
                     actualizarEncabezadoUsuario()
                     binding.tvRolBadge.text = TITULO_PROFESIONAL_FIJO
                     ProfilePhotoHelper.cargarFotoPerfil(
@@ -675,15 +781,13 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                     val errorMsg = response.errorBody()?.string() ?: ""
                     Log.e("OpcionesPerfil", "Error API ${response.code()}: $errorMsg")
                     guardando = false
-                    binding.btnSave.isEnabled = true
-                    binding.btnSave.text = "Guardar Cambios"
+                    actualizarEstadoBotones()
                     Toast.makeText(this@OpcionesEditarPerfilActivity, "Error al sincronizar con el servidor (${response.code()})", Toast.LENGTH_LONG).show()
                 }
             } catch (e: Exception) {
                 Log.e("OpcionesPerfil", "Error sincronizando con API: ${e.message}", e)
                 guardando = false
-                binding.btnSave.isEnabled = true
-                binding.btnSave.text = "Guardar Cambios"
+                actualizarEstadoBotones()
                 Toast.makeText(this@OpcionesEditarPerfilActivity, "Sin conexión al servidor. Intenta nuevamente.", Toast.LENGTH_LONG).show()
             }
         }
@@ -707,50 +811,55 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
                     val remotaIdentificacion = (perfil.identificacion ?: "").trim().take(MAX_LENGTH_IDENTIFICACION)
                     val remotaMatricula = (perfil.matriculaProfesional ?: "").trim().uppercase().take(MAX_LENGTH_MATRICULA)
 
-                    if (remotoNombre.isNotEmpty()) {
-                        binding.etName.setText(remotoNombre)
-                        prefs.saveUserData(remotoNombre, prefs.getUserEmail(), prefs.getUserPhone())
-                        nombreOriginal = remotoNombre
-                    }
-                    if (remotoApellido.isNotEmpty()) {
-                        binding.etLastName.setText(remotoApellido)
-                        prefs.saveUserLastName(remotoApellido)
-                        apellidoOriginal = remotoApellido
-                    }
-                    if (remotoEmail.isNotEmpty()) {
-                        binding.etEmail.setText(remotoEmail)
-                        prefs.saveUserData(prefs.getUserName(), remotoEmail, prefs.getUserPhone())
-                        emailOriginal = remotoEmail
-                    }
-                    if (remotoTelefono.isNotEmpty()) {
-                        binding.etPhone.setText(remotoTelefono)
-                        prefs.saveUserData(prefs.getUserName(), prefs.getUserEmail(), remotoTelefono)
-                        telefonoOriginal = remotoTelefono
-                    }
-                    if (remotaIdentificacion.isNotEmpty()) {
-                        binding.etIdentificacion.setText(remotaIdentificacion)
-                        prefs.saveUserIdentification(remotaIdentificacion)
-                    }
-                    if (remotaMatricula.isNotEmpty()) {
-                        binding.etMatriculaProfesional.setText(remotaMatricula)
-                        prefs.saveUserMatriculaProfesional(remotaMatricula)
-                        binding.tilMatriculaProfesional.helperText = null
-                        matriculaOriginal = remotaMatricula
-                    }
+                    if (!hayCambiosSinGuardar() && !guardando) {
+                        cargandoInicial = true
+                        if (remotoNombre.isNotEmpty()) {
+                            binding.etName.setText(remotoNombre)
+                            prefs.saveUserData(remotoNombre, prefs.getUserEmail(), prefs.getUserPhone())
+                            nombreOriginal = remotoNombre
+                        }
+                        if (remotoApellido.isNotEmpty()) {
+                            binding.etLastName.setText(remotoApellido)
+                            prefs.saveUserLastName(remotoApellido)
+                            apellidoOriginal = remotoApellido
+                        }
+                        if (remotoEmail.isNotEmpty()) {
+                            binding.etEmail.setText(remotoEmail)
+                            prefs.saveUserData(prefs.getUserName(), remotoEmail, prefs.getUserPhone())
+                            emailOriginal = remotoEmail
+                        }
+                        if (remotoTelefono.isNotEmpty()) {
+                            binding.etPhone.setText(remotoTelefono)
+                            prefs.saveUserData(prefs.getUserName(), prefs.getUserEmail(), remotoTelefono)
+                            telefonoOriginal = remotoTelefono
+                        }
+                        if (remotaIdentificacion.isNotEmpty()) {
+                            binding.etIdentificacion.setText(remotaIdentificacion)
+                            prefs.saveUserIdentification(remotaIdentificacion)
+                        }
+                        if (remotaMatricula.isNotEmpty()) {
+                            binding.etMatriculaProfesional.setText(remotaMatricula)
+                            prefs.saveUserMatriculaProfesional(remotaMatricula)
+                            binding.tilMatriculaProfesional.helperText = null
+                            matriculaOriginal = remotaMatricula
+                        }
 
-                    val fotoRemota = perfil.fotoPerfil?.trim() ?: ""
-                    prefs.saveProfileImagePath(fotoRemota)
-                    fotoOriginal = fotoRemota
-                    if (fotoPendienteUri == null && !fotoEliminada) {
-                        ProfilePhotoHelper.cargarFotoPerfil(
-                            this@OpcionesEditarPerfilActivity,
-                            binding.ivEditProfile,
-                            fotoOriginal
-                        )
-                    }
+                        val fotoRemota = perfil.fotoPerfil?.trim() ?: ""
+                        prefs.saveProfileImagePath(fotoRemota)
+                        fotoOriginal = fotoRemota
+                        if (fotoPendienteUri == null && !fotoEliminada) {
+                            ProfilePhotoHelper.cargarFotoPerfil(
+                                this@OpcionesEditarPerfilActivity,
+                                binding.ivEditProfile,
+                                fotoOriginal
+                            )
+                        }
 
-                    binding.tvRolBadge.text = TITULO_PROFESIONAL_FIJO
-                    actualizarEncabezadoUsuario()
+                        binding.tvRolBadge.text = TITULO_PROFESIONAL_FIJO
+                        cargandoInicial = false
+                        actualizarEncabezadoUsuario()
+                        actualizarEstadoBotones()
+                    }
                 }
             } catch (e: Exception) {
                 Log.d("OpcionesPerfil", "No se pudo sincronizar perfil remoto: ${e.message}")

@@ -6,6 +6,8 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_screen"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     tools:context=".inicio_bienvenida">
 
     <TextView
@@ -57,15 +59,18 @@
         android:layout_marginHorizontal="36dp"
         android:layout_marginTop="20dp"
         android:layout_marginBottom="24dp"
+        android:outlineAmbientShadowColor="@color/primary_dark"
+        android:outlineSpotShadowColor="@color/primary_dark"
+        app:cardBackgroundColor="@color/card_background"
         app:cardCornerRadius="28dp"
-        android:backgroundTint="@color/card_background"
-        app:cardElevation="2dp"
+        app:cardElevation="5dp"
         app:layout_constraintBottom_toTopOf="@+id/layoutButtons"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@+id/textView3"
-        app:strokeColor="@color/card_background"
-        app:strokeWidth="1dp">
+        app:strokeColor="@color/card_stroke"
+        app:strokeWidth="1dp"
+        tools:targetApi="p">
 
         <ImageView
             android:id="@+id/imgGato2"
@@ -82,6 +87,8 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="36dp"
         android:layout_marginBottom="16dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:gravity="center"
         android:orientation="vertical"
         app:layout_constraintBottom_toTopOf="@+id/imgVetericanoLogotip"
@@ -93,6 +100,9 @@
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:fontFamily="@font/nunito"
+            android:outlineAmbientShadowColor="@color/primary_dark"
+            android:outlineSpotShadowColor="@color/primary_dark"
+            android:stateListAnimator="@animator/anim_levitate_button"
             android:text="@string/btn_login_login_register"
             android:textAllCaps="false"
             android:textColor="@color/white"
@@ -100,7 +110,8 @@
             android:textStyle="bold"
             app:backgroundTint="@color/blue"
             app:cornerRadius="16dp"
-            app:elevation="3dp" />
+            app:elevation="4dp"
+            tools:targetApi="p" />
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSignUpWelcome"
@@ -108,6 +119,9 @@
             android:layout_height="54dp"
             android:layout_marginTop="12dp"
             android:fontFamily="@font/nunito"
+            android:outlineAmbientShadowColor="@color/primary_dark"
+            android:outlineSpotShadowColor="@color/primary_dark"
+            android:stateListAnimator="@animator/anim_levitate_button"
             android:text="@string/btn_sign_login_register"
             android:textAllCaps="false"
             android:textColor="@color/darkblue"
@@ -115,7 +129,8 @@
             android:textStyle="bold"
             app:backgroundTint="@color/yellow"
             app:cornerRadius="16dp"
-            app:elevation="3dp" />
+            app:elevation="4dp"
+            tools:targetApi="p" />
     </LinearLayout>
 
     <ImageView

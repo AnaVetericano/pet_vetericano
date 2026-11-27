@@ -3,6 +3,7 @@ package com.example.petvetericano
 import android.content.Context
 import androidx.annotation.DrawableRes
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.ContextCompat
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 /**
@@ -48,7 +49,7 @@ object MaterialDialogHelper {
         textoNegativo: String = "Cancelar",
         onConfirmar: () -> Unit
     ): AlertDialog {
-        return MaterialAlertDialogBuilder(context)
+        val alertDialog = MaterialAlertDialogBuilder(context)
             .setIcon(R.drawable.ic_delete)
             .setTitle(titulo)
             .setMessage(mensaje)
@@ -60,6 +61,9 @@ object MaterialDialogHelper {
                 dialog.dismiss()
             }
             .show()
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            ?.setTextColor(ContextCompat.getColor(context, R.color.error_dark))
+        return alertDialog
     }
 
     /**

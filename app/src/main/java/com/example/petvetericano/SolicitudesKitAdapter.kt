@@ -1,10 +1,9 @@
 package com.example.petvetericano
 
-import android.content.res.ColorStateList
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.petvetericano.databinding.ItemSolicitudKitBinding
 import com.example.petvetericano.models.SolicitudKitResponse
@@ -100,17 +99,18 @@ class SolicitudesKitAdapter(
         }
 
         private fun configurarBadgeEstado(estado: String) {
-            val (bgColor, textColor) = when (estado.uppercase()) {
-                "EN_COLA_OFFLINE" -> Pair(Color.parseColor("#EDE9FE"), Color.parseColor("#6D28D9")) // Púrpura suave
-                "PENDIENTE" -> Pair(Color.parseColor("#FFF4D0"), Color.parseColor("#D49F00")) // Ámbar
-                "APROBADA" -> Pair(Color.parseColor("#D1FAE5"), Color.parseColor("#047857"))  // Verde
-                "PARCIAL" -> Pair(Color.parseColor("#EEF0FF"), Color.parseColor("#4141A5"))   // Azul
-                "RECHAZADA" -> Pair(Color.parseColor("#FEE2E2"), Color.parseColor("#EF4444")) // Rojo
-                "CANCELADA" -> Pair(Color.parseColor("#F1F5F9"), Color.parseColor("#64748B")) // Gris
-                else -> Pair(Color.parseColor("#F1F5F9"), Color.parseColor("#64748B"))
+            val ctx = binding.root.context
+            val (bgColorRes, textColorRes) = when (estado.uppercase()) {
+                "EN_COLA_OFFLINE" -> R.color.badge_transferido_bg to R.color.badge_transferido_text
+                "PENDIENTE" -> R.color.badge_proceso_bg to R.color.badge_proceso_text
+                "APROBADA" -> R.color.badge_alta_bg to R.color.badge_alta_text
+                "PARCIAL" -> R.color.badge_asignada_bg to R.color.badge_asignada_text
+                "RECHAZADA" -> R.color.badge_urgente_bg to R.color.badge_urgente_text
+                "CANCELADA" -> R.color.chip_bg_neutral to R.color.text_secondary
+                else -> R.color.chip_bg_neutral to R.color.text_secondary
             }
-            binding.tvEstadoBadge.backgroundTintList = ColorStateList.valueOf(bgColor)
-            binding.tvEstadoBadge.setTextColor(textColor)
+            binding.tvEstadoBadge.backgroundTintList = ContextCompat.getColorStateList(ctx, bgColorRes)
+            binding.tvEstadoBadge.setTextColor(ContextCompat.getColor(ctx, textColorRes))
         }
     }
 }

@@ -836,4 +836,20 @@
     <string name="facial_sesion_expirada">Tu sesión biométrica venció o fue revocada. Inicia sesión con correo y contraseña para reactivarla.</string>
     <string name="facial_verificando_servidor">Validando sesión con el servidor…</string>
     <string name="cd_reconocimiento_facial">Reconocimiento facial</string>
+
+    <!-- Barra de navegación inferior (ambos roles) -->
+    <string name="nav_inicio">Inicio</string>
+    <string name="nav_reportes">Reportes</string>
+    <string name="nav_eventos">Eventos</string>
+    <string name="nav_peticiones">Peticiones</string>
+    <string name="nav_maletin">Maletín</string>
+    <string name="nav_perfil">Perfil</string>
+
+    <!-- Perfiles unificados (ambos roles) -->
+    <string name="lbl_datos_personales">Datos personales</string>
+    <string name="lbl_preferencias_y_seguridad">Preferencias y seguridad</string>
+    <string name="lbl_rol_ciudadano_corto">Ciudadano</string>
+    <string name="lbl_cambios_sin_guardar">Tienes cambios sin guardar</string>
+    <string name="lbl_solo_lectura_seguridad">Verificado · No editable por seguridad</string>
+    <string name="lbl_dato_sensible_bloqueado">No se puede modificar por ser un dato sensible</string>
 </resources>

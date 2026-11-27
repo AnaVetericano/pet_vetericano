@@ -39,6 +39,14 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         binding = ActivityMaletinMedicamentosBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        BottomNavHelper.aplicarInsetSuperior(binding.appBarMaletin)
+
+        BottomNavHelper.setupVeterinario(
+            activity = this,
+            binding = binding.bottomNavVeterinario,
+            activeTab = BottomNavHelper.VeterinarioTab.MALETIN,
+            onReselectCurrent = { binding.nestedScrollMaletin.smoothScrollTo(0, 0) }
+        )
 
         maletinManager = MaletinManager.getInstance(this)
 

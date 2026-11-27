@@ -8,6 +8,8 @@
     android:id="@+id/step2Layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:orientation="vertical"
     android:visibility="gone"
     tools:visibility="visible">
@@ -16,6 +18,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:layout_marginBottom="12dp">
@@ -38,11 +42,14 @@
             android:insetBottom="0dp"
             android:paddingHorizontal="12dp"
             android:fontFamily="@font/nunito_bold"
+            android:stateListAnimator="@animator/anim_levitate_button"
             android:text="@string/lbl_anadir_paciente"
             android:textAllCaps="false"
             android:textColor="@color/primary"
             android:textSize="12sp"
+            app:backgroundTint="@color/card_background"
             app:cornerRadius="10dp"
+            app:elevation="2dp"
             app:strokeColor="@color/primary"
             app:strokeWidth="1dp" />
     </LinearLayout>
@@ -52,6 +59,8 @@
         android:id="@+id/containerAnimales"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:orientation="vertical"
         android:layout_marginBottom="8dp" />
 
@@ -60,6 +69,8 @@
         android:id="@+id/layoutClinicaSeresSintientes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:orientation="vertical"
         android:visibility="visible">
 
@@ -75,14 +86,17 @@
 
         <!-- Tarjeta de Constantes Vitales -->
         <com.google.android.material.card.MaterialCardView
-            style="?attr/materialCardViewOutlinedStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="14dp"
+            android:outlineAmbientShadowColor="@color/primary_dark"
+            android:outlineSpotShadowColor="@color/primary_dark"
             app:cardBackgroundColor="@color/card_background"
             app:cardCornerRadius="16dp"
+            app:cardElevation="3dp"
             app:strokeColor="@color/card_stroke"
-            app:strokeWidth="1dp">
+            app:strokeWidth="1dp"
+            tools:targetApi="p">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -115,7 +129,10 @@
                         android:layout_marginEnd="6dp"
                         android:layout_weight="1"
                         android:hint="@string/hint_frec_cardiaca"
-                        app:boxStrokeColor="@color/primary"
+                        app:boxBackgroundColor="@color/input_background"
+                        app:boxStrokeColor="@color/selector_input_stroke"
+                        app:boxStrokeWidth="1dp"
+                        app:boxStrokeWidthFocused="2dp"
                         app:suffixText="lpm">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -134,7 +151,10 @@
                         android:layout_marginStart="6dp"
                         android:layout_weight="1"
                         android:hint="@string/hint_frec_respiratoria"
-                        app:boxStrokeColor="@color/primary"
+                        app:boxBackgroundColor="@color/input_background"
+                        app:boxStrokeColor="@color/selector_input_stroke"
+                        app:boxStrokeWidth="1dp"
+                        app:boxStrokeWidthFocused="2dp"
                         app:suffixText="rpm">
 
                         <com.google.android.material.textfield.TextInputEditText
@@ -153,7 +173,10 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:hint="@string/hint_estado_de_mucosas_tllc"
-                    app:boxStrokeColor="@color/primary">
+                    app:boxBackgroundColor="@color/input_background"
+                    app:boxStrokeColor="@color/selector_input_stroke"
+                    app:boxStrokeWidth="1dp"
+                    app:boxStrokeWidthFocused="2dp">
 
                     <com.google.android.material.textfield.MaterialAutoCompleteTextView
                         android:id="@+id/etMucosas"
@@ -182,12 +205,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="none"
+            android:clipChildren="false"
             android:clipToPadding="false"
             android:layout_marginBottom="8dp">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
@@ -200,11 +226,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_en_calle_vulnerable"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
@@ -220,11 +248,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_herida_dolor"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
@@ -240,11 +270,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_desnutrido"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp" />
@@ -258,7 +290,10 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="14dp"
             android:hint="@string/hint_anamnesis_y_descripcion_de_la"
-            app:boxStrokeColor="@color/primary">
+            app:boxBackgroundColor="@color/input_background"
+            app:boxStrokeColor="@color/selector_input_stroke"
+            app:boxStrokeWidth="1dp"
+            app:boxStrokeWidthFocused="2dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etAnamnesis"
@@ -286,12 +321,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="none"
+            android:clipChildren="false"
             android:clipToPadding="false"
             android:layout_marginBottom="8dp">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
@@ -304,11 +342,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_curacion_de_heridas"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
@@ -324,11 +364,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_antibiotico_aine"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
@@ -344,11 +386,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_traslado_a_cba"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp" />
@@ -362,7 +406,10 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
             android:hint="@string/hint_tratamiento_realizado_en_campo"
-            app:boxStrokeColor="@color/primary">
+            app:boxBackgroundColor="@color/input_background"
+            app:boxStrokeColor="@color/selector_input_stroke"
+            app:boxStrokeWidth="1dp"
+            app:boxStrokeWidthFocused="2dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etTratamiento"
@@ -379,19 +426,23 @@
         <!-- ======================================================== -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardMedicamentosMaletin"
-            style="?attr/materialCardViewOutlinedStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
+            android:outlineAmbientShadowColor="@color/primary_dark"
+            android:outlineSpotShadowColor="@color/primary_dark"
             app:cardBackgroundColor="@color/card_background"
             app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
+            app:cardElevation="3dp"
             app:strokeColor="@color/card_stroke"
-            app:strokeWidth="1dp">
+            app:strokeWidth="1dp"
+            tools:targetApi="p">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:orientation="vertical"
                 android:padding="16dp">
 
@@ -399,6 +450,7 @@
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:clipChildren="false"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:layout_marginBottom="8dp">
@@ -407,6 +459,7 @@
                         android:layout_width="38dp"
                         android:layout_height="38dp"
                         android:background="@drawable/bg_maletin_icon_container"
+                        android:elevation="2dp"
                         android:layout_marginEnd="10dp">
 
                         <ImageView
@@ -464,12 +517,14 @@
                     android:layout_height="44dp"
                     android:layout_marginTop="4dp"
                     android:fontFamily="@font/nunito_bold"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_aplicar_medicamento_del_maletin"
                     android:textAllCaps="false"
                     android:textColor="@color/primary"
                     android:textSize="13sp"
                     app:backgroundTint="@color/primary_light"
                     app:cornerRadius="10dp"
+                    app:elevation="2dp"
                     app:icon="@drawable/ic_pill"
                     app:iconGravity="textStart"
                     app:iconPadding="8dp"
@@ -495,19 +550,23 @@
         <!-- ======================================================== -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/cardEvidenciaMultimedia"
-            style="?attr/materialCardViewOutlinedStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
+            android:outlineAmbientShadowColor="@color/primary_dark"
+            android:outlineSpotShadowColor="@color/primary_dark"
             app:cardBackgroundColor="@color/card_background"
             app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
+            app:cardElevation="3dp"
             app:strokeColor="@color/card_stroke"
-            app:strokeWidth="1dp">
+            app:strokeWidth="1dp"
+            tools:targetApi="p">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:orientation="vertical"
                 android:padding="16dp">
 
@@ -568,6 +627,8 @@
                     android:id="@+id/layoutBotonesAccionMedia"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
                     android:orientation="horizontal"
                     android:layout_marginTop="8dp">
 
@@ -581,11 +642,14 @@
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
                         android:fontFamily="@font/nunito_bold"
+                        android:stateListAnimator="@animator/anim_levitate_button"
                         android:text="@string/lbl_foto"
                         android:textAllCaps="false"
                         android:textColor="@color/primary"
                         android:textSize="12sp"
+                        app:backgroundTint="@color/card_background"
                         app:cornerRadius="10dp"
+                        app:elevation="2dp"
                         app:icon="@drawable/camera"
                         app:iconGravity="textStart"
                         app:iconSize="16dp"
@@ -603,11 +667,14 @@
                         android:insetTop="0dp"
                         android:insetBottom="0dp"
                         android:fontFamily="@font/nunito_bold"
+                        android:stateListAnimator="@animator/anim_levitate_button"
                         android:text="@string/lbl_video"
                         android:textAllCaps="false"
                         android:textColor="@color/primary"
                         android:textSize="12sp"
+                        app:backgroundTint="@color/card_background"
                         app:cornerRadius="10dp"
+                        app:elevation="2dp"
                         app:icon="@drawable/ic_videocam"
                         app:iconGravity="textStart"
                         app:iconSize="16dp"
@@ -623,6 +690,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
                     android:scrollbars="none"
+                    android:clipChildren="false"
                     android:clipToPadding="false"
                     android:visibility="gone">
 
@@ -630,6 +698,8 @@
                         android:id="@+id/containerMediaThumbnails"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
                         android:gravity="center_vertical"
                         android:orientation="horizontal" />
                 </HorizontalScrollView>

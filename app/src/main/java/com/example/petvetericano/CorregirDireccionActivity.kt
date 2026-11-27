@@ -53,9 +53,19 @@ class CorregirDireccionActivity : AppCompatActivity(), OnMapReadyCallback {
         binding = ActivityCorregirDireccionBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        val initLeft = binding.root.paddingLeft
+        val initTop = binding.root.paddingTop
+        val initRight = binding.root.paddingRight
+        val initBottom = binding.root.paddingBottom
+
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(
+                initLeft + systemBars.left,
+                initTop + systemBars.top,
+                initRight + systemBars.right,
+                initBottom + systemBars.bottom
+            )
             insets
         }
 

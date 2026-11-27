@@ -63,11 +63,12 @@
             style="@style/Widget.Material3.TextInputLayout.OutlinedBox.Dense"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            app:boxBackgroundColor="@color/input_background"
             app:boxCornerRadiusBottomEnd="8dp"
             app:boxCornerRadiusBottomStart="8dp"
             app:boxCornerRadiusTopEnd="8dp"
             app:boxCornerRadiusTopStart="8dp"
-            app:boxStrokeColor="@color/primary"
+            app:boxStrokeColor="@color/selector_input_stroke"
             app:hintEnabled="false">
 
             <com.google.android.material.textfield.TextInputEditText

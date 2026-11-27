@@ -18,6 +18,8 @@
         android:layout_height="wrap_content"
         android:layout_gravity="bottom"
         android:background="@drawable/gradient_overlay"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:orientation="vertical"
         android:paddingStart="16dp"
         android:paddingTop="40dp"
@@ -52,12 +54,14 @@
             android:layout_height="40dp"
             android:layout_marginTop="8dp"
             android:fontFamily="@font/nunito"
+            android:stateListAnimator="@animator/anim_levitate_button"
             android:text="@string/lbl_postularse"
+            android:textColor="@color/darkblue"
             android:textSize="13sp"
             android:textStyle="bold"
             app:backgroundTint="@color/yellow"
-            android:textColor="@color/darkblue"
-            app:cornerRadius="20dp" />
+            app:cornerRadius="20dp"
+            app:elevation="3dp" />
     </LinearLayout>
 
 </FrameLayout>

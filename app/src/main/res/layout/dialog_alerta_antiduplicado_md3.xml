@@ -4,6 +4,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:orientation="vertical"
     android:padding="24dp">
 
@@ -11,6 +13,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:layout_marginBottom="16dp">
@@ -18,8 +22,9 @@
         <FrameLayout
             android:layout_width="48dp"
             android:layout_height="48dp"
+            android:layout_marginEnd="12dp"
             android:background="@drawable/bg_maletin_icon_container"
-            android:layout_marginEnd="12dp">
+            android:elevation="2dp">
 
             <ImageView
                 android:layout_width="26dp"
@@ -61,10 +66,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
-        app:cardBackgroundColor="@color/card_background"
+        app:cardBackgroundColor="@color/input_background"
         app:cardCornerRadius="16dp"
         app:cardElevation="0dp"
-        app:strokeColor="@color/card_stroke"
+        app:strokeColor="@color/input_stroke"
         app:strokeWidth="1dp">
 
         <LinearLayout
@@ -132,6 +137,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:gravity="end"
         android:orientation="horizontal">
 
@@ -141,6 +148,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:fontFamily="@font/nunito_bold"
+            android:stateListAnimator="@animator/anim_levitate_button"
             android:text="Entendido"
             android:textColor="@color/text_secondary" />
 
@@ -151,9 +159,10 @@
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"
             android:fontFamily="@font/nunito_bold"
+            android:stateListAnimator="@animator/anim_levitate_button"
             android:text="Ver mis solicitudes"
-            app:backgroundTint="@color/primary_light"
-            android:textColor="@color/primary" />
+            android:textColor="@color/primary"
+            app:backgroundTint="@color/primary_light" />
     </LinearLayout>
 
 </LinearLayout>

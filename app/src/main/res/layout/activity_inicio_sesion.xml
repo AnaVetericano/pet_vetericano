@@ -12,6 +12,8 @@
     <androidx.constraintlayout.widget.ConstraintLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:paddingHorizontal="28dp"
         android:paddingVertical="32dp">
 
@@ -60,11 +62,10 @@
             android:layout_width="0dp"
             android:layout_height="56dp"
             android:layout_marginTop="32dp"
-            app:cardBackgroundColor="@color/input_background"
+            app:cardBackgroundColor="@android:color/transparent"
             app:cardCornerRadius="16dp"
             app:cardElevation="0dp"
-            app:strokeColor="@color/input_stroke"
-            app:strokeWidth="1.5dp"
+            app:strokeWidth="0dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@+id/textView2">
@@ -72,6 +73,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:addStatesFromChildren="true"
+                android:background="@drawable/bg_field_sunk"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:paddingHorizontal="16dp">
@@ -112,8 +115,8 @@
             app:boxCornerRadiusBottomStart="16dp"
             app:boxCornerRadiusTopEnd="16dp"
             app:boxCornerRadiusTopStart="16dp"
-            app:boxStrokeColor="@color/blue"
-            app:boxStrokeWidth="1.5dp"
+            app:boxStrokeColor="@color/selector_input_stroke"
+            app:boxStrokeWidth="1dp"
             app:boxStrokeWidthFocused="2dp"
             app:endIconMode="password_toggle"
             app:endIconTint="@color/blue"
@@ -166,6 +169,9 @@
             android:layout_height="56dp"
             android:layout_marginTop="20dp"
             android:fontFamily="@font/nunito"
+            android:outlineAmbientShadowColor="@color/primary_dark"
+            android:outlineSpotShadowColor="@color/primary_dark"
+            android:stateListAnimator="@animator/anim_levitate_button"
             android:text="@string/iniciar_sesi_n"
             android:textAllCaps="false"
             android:textColor="@color/white"
@@ -173,10 +179,11 @@
             android:textStyle="bold"
             app:backgroundTint="@color/blue"
             app:cornerRadius="16dp"
-            app:elevation="3dp"
+            app:elevation="4dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtRecoverPassword" />
+            app:layout_constraintTop_toBottomOf="@+id/txtRecoverPassword"
+            tools:targetApi="p" />
 
         <!-- Separador O continúa con -->
         <LinearLayout
@@ -220,6 +227,9 @@
             android:layout_height="56dp"
             android:layout_marginTop="16dp"
             android:fontFamily="@font/nunito"
+            android:outlineAmbientShadowColor="@color/primary_dark"
+            android:outlineSpotShadowColor="@color/primary_dark"
+            android:stateListAnimator="@animator/anim_levitate_button"
             android:text="@string/continuar_con_google"
             android:textAllCaps="false"
             android:textColor="@color/text_primary"
@@ -227,6 +237,7 @@
             android:textStyle="bold"
             app:backgroundTint="@color/card_background"
             app:cornerRadius="16dp"
+            app:elevation="3dp"
             app:icon="@drawable/ic_google"
             app:iconGravity="textStart"
             app:iconPadding="12dp"
@@ -236,7 +247,8 @@
             app:strokeWidth="1.5dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/layoutDividerGoogle" />
+            app:layout_constraintTop_toBottomOf="@id/layoutDividerGoogle"
+            tools:targetApi="p" />
 
         <!-- Botón Iniciar sesión con rostro (on-device ML Kit + MobileFaceNet) -->
         <com.google.android.material.button.MaterialButton
@@ -246,6 +258,9 @@
             android:layout_height="56dp"
             android:layout_marginTop="12dp"
             android:fontFamily="@font/nunito"
+            android:outlineAmbientShadowColor="@color/primary_dark"
+            android:outlineSpotShadowColor="@color/primary_dark"
+            android:stateListAnimator="@animator/anim_levitate_button"
             android:text="@string/facial_btn_iniciar_sesion"
             android:textAllCaps="false"
             android:textColor="@color/blue"
@@ -253,6 +268,7 @@
             android:textStyle="bold"
             app:backgroundTint="@color/card_background"
             app:cornerRadius="16dp"
+            app:elevation="3dp"
             app:icon="@drawable/ic_face_recognition"
             app:iconGravity="textStart"
             app:iconPadding="12dp"
@@ -262,7 +278,8 @@
             app:strokeWidth="1.5dp"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/btnGoogleLogin" />
+            app:layout_constraintTop_toBottomOf="@id/btnGoogleLogin"
+            tools:targetApi="p" />
 
         <TextView
             android:id="@+id/txtRegistrarse"

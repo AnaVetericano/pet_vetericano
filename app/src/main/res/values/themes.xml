@@ -121,6 +121,29 @@
         <item name="boxCornerRadiusBottomEnd">12dp</item>
     </style>
 
+    <!-- Campos unificados de autenticación (consistentes en Claro y Midnight Indigo) -->
+    <style name="Widget.Vetericano.TextInputLayout.Auth" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxBackgroundMode">outline</item>
+        <item name="boxBackgroundColor">@color/card_background</item>
+        <item name="boxStrokeColor">@color/selector_input_stroke</item>
+        <item name="boxStrokeErrorColor">@color/error</item>
+        <item name="boxStrokeWidth">1.2dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="boxCornerRadiusTopStart">14dp</item>
+        <item name="boxCornerRadiusTopEnd">14dp</item>
+        <item name="boxCornerRadiusBottomStart">14dp</item>
+        <item name="boxCornerRadiusBottomEnd">14dp</item>
+        <item name="android:textColorHint">@color/text_secondary</item>
+        <item name="hintTextColor">@color/primary</item>
+        <item name="placeholderTextColor">@color/text_muted</item>
+        <item name="startIconTint">@color/primary</item>
+        <item name="startIconMinSize">40dp</item>
+        <item name="endIconTint">@color/primary</item>
+        <item name="errorIconDrawable">@null</item>
+        <item name="helperTextTextColor">@color/text_secondary</item>
+        <item name="errorTextColor">@color/error</item>
+    </style>
+
     <!-- ===== Tipografía (Nunito) para componentes Material ===== -->
     <style name="TextAppearance.Vetericano.BodyLarge" parent="TextAppearance.Material3.BodyLarge">
         <item name="android:fontFamily">@font/nunito</item>

@@ -18,6 +18,7 @@
         android:clipToPadding="false"
         android:gravity="center_horizontal"
         android:orientation="vertical"
+        android:transitionName="vetericano_brand_block"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -25,8 +26,8 @@
 
         <ImageView
             android:id="@+id/imgSplashEmblem"
-            android:layout_width="112dp"
-            android:layout_height="104dp"
+            android:layout_width="124dp"
+            android:layout_height="116dp"
             android:contentDescription="@string/logovetericano"
             android:scaleType="fitCenter"
             app:srcCompat="@drawable/avd_logo_vetericano"
@@ -36,16 +37,16 @@
             android:id="@+id/tvSplashBrandName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginTop="8dp"
+            android:layout_marginTop="10dp"
             android:alpha="0"
             android:fontFamily="@font/nunito_display"
             android:gravity="center"
             android:includeFontPadding="false"
-            android:letterSpacing="0.07"
+            android:letterSpacing="0.08"
             android:text="@string/vetericano_login_register"
             android:textAllCaps="true"
             android:textColor="@color/logo_vetericano_wordmark"
-            android:textSize="21sp"
+            android:textSize="22sp"
             android:textStyle="bold"
             tools:alpha="1" />
     </LinearLayout>

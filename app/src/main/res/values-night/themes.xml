@@ -28,6 +28,7 @@
 
         <!-- Diálogos emergentes y bottom sheets con diseño Material 3 -->
         <item name="elevationOverlayEnabled">false</item>
+        <item name="android:windowActivityTransitions">true</item>
         <item name="bottomSheetDialogTheme">@style/ThemeOverlay.Vetericano.BottomSheetDialog</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.Vetericano.MaterialAlertDialog</item>
         <item name="alertDialogTheme">@style/ThemeOverlay.Vetericano.MaterialAlertDialog</item>

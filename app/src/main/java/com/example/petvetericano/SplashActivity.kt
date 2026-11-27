@@ -10,6 +10,9 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.provider.Settings
+import android.transition.ChangeBounds
+import android.transition.Fade
+import android.view.animation.AnimationUtils
 import android.view.animation.DecelerateInterpolator
 import androidx.activity.SystemBarStyle
 import androidx.activity.enableEdgeToEdge
@@ -62,6 +65,7 @@ class SplashActivity : AppCompatActivity() {
             statusBarStyle = barStyle,
             navigationBarStyle = barStyle
         )
+        configurarTransicionesVentana()
 
         val scale = runCatching {
             Settings.Global.getFloat(
@@ -128,7 +132,11 @@ class SplashActivity : AppCompatActivity() {
     override fun onStop() {
         super.onStop()
         cancelarPendientes()
-        if (!navegacionIniciada && !isFinishing) {
+        if (navegacionIniciada) {
+            if (!isFinishing) {
+                finish()
+            }
+        } else if (!isFinishing) {
             pausadoDuranteSplash = true
         }
     }
@@ -214,6 +222,22 @@ class SplashActivity : AppCompatActivity() {
         avdCallback = null
     }
 
+    private fun configurarTransicionesVentana() {
+        val fastOutSlowIn = AnimationUtils.loadInterpolator(
+            this,
+            android.interpolator.fast_out_slow_in
+        )
+        window.sharedElementExitTransition = ChangeBounds().apply {
+            duration = SHARED_TRANSITION_DURATION_MS
+            interpolator = fastOutSlowIn
+        }
+        window.exitTransition = Fade().apply {
+            duration = WINDOW_FADE_DURATION_MS
+            excludeTarget(android.R.id.statusBarBackground, true)
+            excludeTarget(android.R.id.navigationBarBackground, true)
+        }
+    }
+
     private fun navegarADestino(conTransicion: Boolean) {
         if (navegacionIniciada || isFinishing || isDestroyed) return
         navegacionIniciada = true
@@ -230,33 +254,58 @@ class SplashActivity : AppCompatActivity() {
         val tieneToken = accessToken.isNotEmpty() || refreshToken.isNotEmpty()
         val rolValido = userRole > 0
 
-        val destino = if (tieneToken && userId > 0 && rolValido) {
+        if (tieneToken && userId > 0 && rolValido) {
             if (accessToken.isNotEmpty()) {
                 RetrofitClient.authToken = accessToken
             }
-            if (userRole == inicio_sesion.ROL_VETERINARIO) {
+            val destino = if (userRole == inicio_sesion.ROL_VETERINARIO) {
                 Intent(this, dahsboard_veterianrio::class.java)
             } else {
                 Intent(this, bienvenida::class.java)
+            }.apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
-        } else {
-            Intent(this, MainActivity::class.java)
-        }.apply {
-            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+
+            val options = if (conTransicion) {
+                ActivityOptionsCompat.makeCustomAnimation(
+                    this,
+                    R.anim.splash_fade_in,
+                    R.anim.splash_fade_out
+                ).toBundle()
+            } else {
+                ActivityOptionsCompat.makeCustomAnimation(this, 0, 0).toBundle()
+            }
+
+            startActivity(destino, options)
+            finish()
+            return
         }
 
-        val options = if (conTransicion) {
-            ActivityOptionsCompat.makeCustomAnimation(
+        val inflated = binding
+        if (conTransicion && inflated != null) {
+            inflated.tvSplashBrandName.animate().cancel()
+            inflated.tvSplashBrandName.alpha = 1f
+            inflated.tvSplashBrandName.translationY = 0f
+            (inflated.imgSplashEmblem.drawable as? Animatable)?.let { anim ->
+                if (anim.isRunning) anim.stop()
+            }
+            inflated.imgSplashEmblem.setImageResource(R.drawable.ic_logo_vetericano_emblem_final)
+
+            val destino = Intent(this, MainActivity::class.java)
+            val options = ActivityOptionsCompat.makeSceneTransitionAnimation(
                 this,
-                R.anim.splash_fade_in,
-                R.anim.splash_fade_out
+                inflated.layoutSplashBrand,
+                BRAND_TRANSITION_NAME
             ).toBundle()
+            startActivity(destino, options)
         } else {
-            ActivityOptionsCompat.makeCustomAnimation(this, 0, 0).toBundle()
+            val destino = Intent(this, MainActivity::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            }
+            val options = ActivityOptionsCompat.makeCustomAnimation(this, 0, 0).toBundle()
+            startActivity(destino, options)
+            finish()
         }
-
-        startActivity(destino, options)
-        finish()
     }
 
     private fun aplicarModoOscuro(): Boolean {
@@ -278,5 +327,8 @@ class SplashActivity : AppCompatActivity() {
         private const val FINAL_PAUSE_MS = 250L
         private const val POST_ANIM_HOLD_MS = 270L
         private const val FALLBACK_TIMEOUT_MS = 1450L
+        private const val SHARED_TRANSITION_DURATION_MS = 320L
+        private const val WINDOW_FADE_DURATION_MS = 220L
+        private const val BRAND_TRANSITION_NAME = "vetericano_brand_block"
     }
 }

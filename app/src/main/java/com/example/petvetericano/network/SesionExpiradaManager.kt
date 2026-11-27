@@ -17,6 +17,9 @@ import com.example.petvetericano.SharedPreferencesManager
 import com.example.petvetericano.SplashActivity
 import com.example.petvetericano.inicio_sesion
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import java.lang.ref.WeakReference
 
@@ -140,12 +143,11 @@ object SesionExpiradaManager : Application.ActivityLifecycleCallbacks {
             com.google.firebase.auth.FirebaseAuth.getInstance().signOut()
         } catch (_: Exception) {}
 
-        if (activity is ComponentActivity) {
-            activity.lifecycleScope.launch {
-                try {
-                    GoogleAuthHelper.cerrarSesionGoogle(activity)
-                } catch (_: Exception) {}
-            }
+        val appContext = activity.applicationContext
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            try {
+                GoogleAuthHelper.cerrarSesionGoogle(appContext)
+            } catch (_: Exception) {}
         }
 
         val prefs = SharedPreferencesManager(activity)

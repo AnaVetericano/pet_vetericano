@@ -64,6 +64,11 @@ interface ApiService {
     @POST("usuarios/confirmar-password/")
     suspend fun confirmarRecuperacion(@Body request: Any): Response<GenericResponse>
 
+    @POST("token/refresh/")
+    suspend fun refreshToken(
+        @Body request: com.example.petvetericano.models.TokenRefreshRequest
+    ): Response<com.example.petvetericano.models.TokenRefreshResponse>
+
     // --- PERFIL DE USUARIO ---
     @GET("peticiones/perfil/")
     suspend fun obtenerPerfil(): Response<UsuarioPerfilResponse>

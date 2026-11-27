@@ -46,12 +46,15 @@ class bienvenida : AppCompatActivity() {
         configurarBotonModoOscuro()
         configurarBotonNotificaciones()
 
-        // Usamos la misma clase que en el login para leer el token
+        // Usamos la misma clase que en el login para leer el token (soportando refresh token tras reinicio)
         val prefs = SharedPreferencesManager(this)
-        val token = prefs.getAccessToken()
+        val token = prefs.getAccessToken().trim()
+        val refreshToken = prefs.getRefreshToken().trim()
 
-        if (token.isNotEmpty()) {
-            RetrofitClient.authToken = token
+        if (token.isNotEmpty() || refreshToken.isNotEmpty()) {
+            if (token.isNotEmpty()) {
+                RetrofitClient.authToken = token
+            }
             BottomNavHelper.setupCiudadano(
                 this,
                 binding.bottomNavCiudadano,
@@ -59,19 +62,81 @@ class bienvenida : AppCompatActivity() {
             ) {
                 binding.scrollBienvenida.smoothScrollTo(0, 0)
             }
-            cargarDashboard()
-            actualizarBadgeNotificaciones()
-            ContadorNotificacionesEnVivo.observar(this) { actualizarBadgeNotificaciones() }
-            configurarEventos()
-            configurarCarrusel()
-            evaluarAvisoNotificaciones(savedInstanceState)
+            if (token.isEmpty() && refreshToken.isNotEmpty()) {
+                refrescarAccesoYContinuar(prefs, refreshToken, savedInstanceState)
+            } else {
+                cargarDashboard()
+                actualizarBadgeNotificaciones()
+                ContadorNotificacionesEnVivo.observar(this) { actualizarBadgeNotificaciones() }
+                configurarEventos()
+                configurarCarrusel()
+                evaluarAvisoNotificaciones(savedInstanceState)
+            }
         } else {
-            // Si no hay token, redirigimos al login
+            // Si no hay token ni refresh token, redirigimos al login
             val intent = Intent(this, inicio_sesion::class.java).apply {
                 flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             }
             startActivity(intent)
             finish()
+        }
+    }
+
+    private fun refrescarAccesoYContinuar(
+        prefs: SharedPreferencesManager,
+        refreshToken: String,
+        savedInstanceState: Bundle?
+    ) {
+        lifecycleScope.launch {
+            val nuevoAccess = kotlinx.coroutines.withContext(kotlinx.coroutines.Dispatchers.IO) {
+                try {
+                    val req = com.example.petvetericano.models.TokenRefreshRequest(refresh = refreshToken)
+                    val resp = RetrofitClient.apiService.refreshToken(req)
+                    if (resp.isSuccessful) {
+                        val body = resp.body()
+                        val acc = body?.access?.trim().orEmpty()
+                        val ref = body?.refresh?.trim().orEmpty()
+                        if (acc.isNotEmpty()) {
+                            prefs.saveAccessToken(acc)
+                            if (ref.isNotEmpty()) {
+                                prefs.saveRefreshToken(ref)
+                                com.example.petvetericano.auth.GoogleLinkedSessionVault(this@bienvenida)
+                                    .actualizarRefreshTokenSiCoincide(prefs.getUserId(), ref)
+                            }
+                            RetrofitClient.authToken = acc
+                            acc
+                        } else {
+                            null
+                        }
+                    } else if (resp.code() == 400 || resp.code() == 401) {
+                        ""
+                    } else {
+                        null
+                    }
+                } catch (_: Exception) {
+                    null
+                }
+            }
+
+            if (isFinishing || isDestroyed) return@launch
+
+            if (nuevoAccess == "") {
+                prefs.clearSession()
+                RetrofitClient.authToken = null
+                val intent = Intent(this@bienvenida, inicio_sesion::class.java).apply {
+                    flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                }
+                startActivity(intent)
+                finish()
+                return@launch
+            }
+
+            cargarDashboard()
+            actualizarBadgeNotificaciones()
+            ContadorNotificacionesEnVivo.observar(this@bienvenida) { actualizarBadgeNotificaciones() }
+            configurarEventos()
+            configurarCarrusel()
+            evaluarAvisoNotificaciones(savedInstanceState)
         }
     }
 

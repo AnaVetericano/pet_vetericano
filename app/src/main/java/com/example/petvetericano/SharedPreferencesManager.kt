@@ -46,19 +46,6 @@ class SharedPreferencesManager(context: Context) {
         googlePrefs.edit().remove("GOOGLE_CRED_${email.lowercase().trim()}").apply()
     }
 
-    fun saveGoogleAccountPassword(email: String, password: String) {
-        if (email.isNotEmpty() && password.isNotEmpty()) {
-            val cleanEmail = email.lowercase().trim()
-            googlePrefs.edit().putString("GOOGLE_CRED_$cleanEmail", password).apply()
-            saveKnownGoogleAccount(cleanEmail)
-        }
-    }
-
-    fun getGoogleAccountPassword(email: String): String {
-        if (email.isEmpty()) return ""
-        return googlePrefs.getString("GOOGLE_CRED_${email.lowercase().trim()}", "") ?: ""
-    }
-
     fun saveKnownGoogleAccount(email: String) {
         val cleanEmail = email.lowercase().trim()
         if (cleanEmail.isEmpty() || !cleanEmail.contains("@")) return
@@ -95,7 +82,12 @@ class SharedPreferencesManager(context: Context) {
         return resultado.toList()
     }
 
-    fun saveUserData(name: String, email: String, phone: String) {
+    fun saveUserData(
+        name: String,
+        email: String,
+        phone: String,
+        registrarComoCuentaGoogle: Boolean = false
+    ) {
         val cleanName = name.trim().replace("\\s+".toRegex(), " ").take(MAX_LENGTH_NOMBRE)
         val cleanEmail = email.trim().take(MAX_LENGTH_EMAIL)
         val cleanPhone = phone.trim().take(MAX_LENGTH_TELEFONO)
@@ -106,7 +98,7 @@ class SharedPreferencesManager(context: Context) {
             if (cleanPhone.isNotEmpty()) putString("USER_PHONE", cleanPhone)
             apply()
         }
-        if (cleanEmail.isNotEmpty()) {
+        if (registrarComoCuentaGoogle && cleanEmail.isNotEmpty()) {
             saveKnownGoogleAccount(cleanEmail)
         }
     }
@@ -211,7 +203,8 @@ class SharedPreferencesManager(context: Context) {
             MaletinManager.limpiarCacheUsuario(appContext, currentUserId)
             PeticionesCacheManager.limpiarCacheVeterinario(appContext, currentUserId)
         }
-        prefs.edit().clear().apply()
+        val idiomaGuardado = getLanguage()
+        prefs.edit().clear().putString("APP_LANGUAGE", idiomaGuardado).apply()
         limpiarDatosGoogleLegacy()
         try {
             val legacyFile = java.io.File(appContext.filesDir, "profile_picture.jpg")

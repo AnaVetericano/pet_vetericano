@@ -21,6 +21,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.VisibleForTesting
 import androidx.core.content.ContextCompat
 import androidx.core.widget.doOnTextChanged
 import androidx.credentials.ClearCredentialStateRequest
@@ -33,14 +34,20 @@ import androidx.credentials.exceptions.GetCredentialException
 import androidx.credentials.exceptions.GetCredentialProviderConfigurationException
 import androidx.credentials.exceptions.NoCredentialException
 import androidx.lifecycle.lifecycleScope
+import com.example.petvetericano.auth.AlmacenVinculoGoogle
+import com.example.petvetericano.auth.AuthValidators
+import com.example.petvetericano.auth.CuentaGoogleVinculada
+import com.example.petvetericano.auth.GoogleLinkedSessionVault
 import com.example.petvetericano.facial.FacialStorageManager
 import com.example.petvetericano.models.ConfirmarCodigoRegistroRequest
 import com.example.petvetericano.models.GoogleLoginRequest
 import com.example.petvetericano.models.LoginRequest
 import com.example.petvetericano.models.LoginResponse
 import com.example.petvetericano.models.RegisterRequest
+import com.example.petvetericano.models.TokenData
 import com.example.petvetericano.network.RetrofitClient
 import com.example.petvetericano.network.SesionExpiradaManager
+import com.example.petvetericano.network.TokenAuthenticator
 import com.example.petvetericano.notificaciones.FcmTokenManager
 import com.example.petvetericano.offline.ActaLocalRepository
 import com.example.petvetericano.offline.ActaSyncScheduler
@@ -56,12 +63,16 @@ import com.google.android.material.snackbar.Snackbar
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.google.firebase.auth.FirebaseAuth
+import com.google.gson.Gson
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.coroutines.withContext
+import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.Request
+import okhttp3.RequestBody.Companion.toRequestBody
 import java.io.IOException
 import java.security.MessageDigest
 import java.util.Locale
@@ -75,6 +86,51 @@ object GoogleAuthHelper {
     private val JWT_SEGMENT_REGEX = Regex("^[A-Za-z0-9_-]+$")
     private const val MAX_ID_TOKEN_LENGTH = 8192
     private const val DURACION_MINIMA_CANCELACION_USUARIO_MS = 1800L
+    private val gson = Gson()
+
+    @Volatile
+    private var proveedorTokenGooglePrueba: (suspend (ComponentActivity) -> ResultadoObtenerToken)? = null
+
+    @Volatile
+    private var selectorCuentaMd3Prueba: (suspend (ComponentActivity) -> CredencialGoogleExtraida?)? = null
+
+    @Volatile
+    private var almacenVinculoPrueba: AlmacenVinculoGoogle? = null
+
+    @Volatile
+    internal var onDialogoPasswordMostradoPrueba: ((String) -> Unit)? = null
+
+    @VisibleForTesting
+    internal fun configurarParaPruebas(
+        proveedorToken: (suspend (ComponentActivity) -> ResultadoObtenerToken)? = null,
+        selectorCuentaMd3: (suspend (ComponentActivity) -> CredencialGoogleExtraida?)? = null,
+        almacenVinculo: AlmacenVinculoGoogle? = null,
+        onDialogoPasswordMostrado: ((String) -> Unit)? = null
+    ) {
+        proveedorTokenGooglePrueba = proveedorToken
+        selectorCuentaMd3Prueba = selectorCuentaMd3
+        almacenVinculoPrueba = almacenVinculo
+        onDialogoPasswordMostradoPrueba = onDialogoPasswordMostrado
+    }
+
+    @VisibleForTesting
+    internal fun restaurarConfiguracion() {
+        proveedorTokenGooglePrueba = null
+        selectorCuentaMd3Prueba = null
+        almacenVinculoPrueba = null
+        onDialogoPasswordMostradoPrueba = null
+    }
+
+    private fun obtenerAlmacenVinculo(context: Context): AlmacenVinculoGoogle {
+        return almacenVinculoPrueba ?: GoogleLinkedSessionVault(context)
+    }
+
+    internal sealed class ResultadoReanudarVinculo {
+        data class Exito(val loginResponse: LoginResponse) : ResultadoReanudarVinculo()
+        data class RequiereVerificacionPassword(val motivo: String) : ResultadoReanudarVinculo()
+        data class CuentaRechazada(val mensaje: String) : ResultadoReanudarVinculo()
+        data class ErrorTemporal(val mensaje: String) : ResultadoReanudarVinculo()
+    }
 
     data class CredencialGoogleExtraida(
         val idToken: String,
@@ -120,7 +176,8 @@ object GoogleAuthHelper {
                             "Activando selector MD3 de respaldo ($origen) tras rechazo de Credential Manager: " +
                                 resultadoToken.mensajeUsuario
                         )
-                        val credencialLocal = seleccionarCuentaGoogleMD3(activity)
+                        val credencialLocal = selectorCuentaMd3Prueba?.invoke(activity)
+                            ?: seleccionarCuentaGoogleMD3(activity)
                         if (credencialLocal != null) {
                             autenticarConRespaldoApi(activity, credencialLocal, esFlujoRegistro)
                         }
@@ -156,23 +213,53 @@ object GoogleAuthHelper {
     fun mostrarMensajeMD3(activity: Activity, mensaje: String, esError: Boolean = false) {
         val rootView = activity.findViewById<View>(android.R.id.content)
         if (rootView != null && !activity.isFinishing && !activity.isDestroyed) {
-            val snackbar = Snackbar.make(rootView, mensaje, Snackbar.LENGTH_LONG)
-            val sbView = snackbar.view
-            val bgColor = if (esError) R.color.error_dark else R.color.button_primary_bg
-            sbView.setBackgroundTintList(ContextCompat.getColorStateList(activity, bgColor))
-            val textView = sbView.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
-            textView?.setTextColor(ContextCompat.getColor(activity, R.color.white))
-            textView?.maxLines = 3
-            snackbar.show()
+            mostrarSnackbarEnVista(rootView, activity, mensaje, esError)
         } else {
             Toast.makeText(activity, mensaje, Toast.LENGTH_SHORT).show()
         }
+    }
+
+    fun mostrarMensajeEnDialogoMD3(
+        dialog: Dialog,
+        context: Context,
+        mensaje: String,
+        esError: Boolean = false
+    ) {
+        val dialogRoot = dialog.window?.decorView?.findViewById<View>(android.R.id.content)
+            ?: dialog.window?.decorView
+        if (dialog.isShowing && dialogRoot != null) {
+            mostrarSnackbarEnVista(dialogRoot, context, mensaje, esError)
+        } else if (context is Activity) {
+            mostrarMensajeMD3(context, mensaje, esError)
+        } else {
+            Toast.makeText(context, mensaje, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun mostrarSnackbarEnVista(
+        anchorView: View,
+        context: Context,
+        mensaje: String,
+        esError: Boolean
+    ) {
+        val snackbar = Snackbar.make(anchorView, mensaje, Snackbar.LENGTH_LONG)
+        val sbView = snackbar.view
+        val bgColor = if (esError) R.color.error_dark else R.color.button_primary_bg
+        sbView.setBackgroundTintList(ContextCompat.getColorStateList(context, bgColor))
+        val textView = sbView.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
+        textView?.setTextColor(ContextCompat.getColor(context, R.color.white))
+        textView?.maxLines = 3
+        snackbar.show()
     }
 
     private suspend fun obtenerTokenGoogle(
         activity: ComponentActivity,
         sha1Actual: String = ""
     ): ResultadoObtenerToken {
+        proveedorTokenGooglePrueba?.let { proveedor ->
+            return proveedor(activity)
+        }
+
         val webClientId = obtenerWebClientId(activity)
         if (webClientId.isEmpty()) {
             logError("Falta configurar google_web_client_id / default_web_client_id (Web Client ID OAuth).")
@@ -183,42 +270,63 @@ object GoogleAuthHelper {
         }
 
         val credentialManager = CredentialManager.create(activity)
+
+        // Flujo oficial de Google para botón explícito "Continuar con Google":
+        // GetSignInWithGoogleOption funciona incluso tras clearCredentialState() en el logout
+        // y evita bloqueos por cooldown de One Tap.
+        val signInWithGoogleOption = GetSignInWithGoogleOption.Builder(webClientId)
+            .build()
+        val requestSignIn = GetCredentialRequest.Builder()
+            .addCredentialOption(signInWithGoogleOption)
+            .build()
+
+        val t0SignIn = System.currentTimeMillis()
+        val resultadoPrimario = try {
+            val resp = credentialManager.getCredential(activity, requestSignIn)
+            return extraerCredencialDesdeGetCredentialResponse(resp)
+        } catch (noCred: NoCredentialException) {
+            val duracionMs = System.currentTimeMillis() - t0SignIn
+            logWarn("GetSignInWithGoogleOption lanzó NoCredentialException (${duracionMs}ms); intentando GetGoogleIdOption.")
+            Pair(noCred as Exception, duracionMs)
+        } catch (providerErr: GetCredentialProviderConfigurationException) {
+            val duracionMs = System.currentTimeMillis() - t0SignIn
+            logWarn("GetSignInWithGoogleOption sin proveedor (${duracionMs}ms); intentando GetGoogleIdOption.")
+            Pair(providerErr as Exception, duracionMs)
+        } catch (e: Exception) {
+            val duracionMs = System.currentTimeMillis() - t0SignIn
+            return mapearExcepcionCredentialManager(
+                e = e,
+                vinoDeFallbackNoCredential = false,
+                duracionMs = duracionMs,
+                sha1Actual = sha1Actual
+            )
+        }
+
+        // Segundo intento nativo con GetGoogleIdOption antes de recurrir al respaldo MD3
         val googleIdOption = GetGoogleIdOption.Builder()
             .setFilterByAuthorizedAccounts(false)
             .setServerClientId(webClientId)
             .setAutoSelectEnabled(false)
             .build()
-
-        val request = GetCredentialRequest.Builder()
+        val requestGoogleId = GetCredentialRequest.Builder()
             .addCredentialOption(googleIdOption)
             .build()
 
-        val t0GetGoogleId = System.currentTimeMillis()
-        val result = try {
-            credentialManager.getCredential(activity, request)
-        } catch (noCred: NoCredentialException) {
-            val duracionPrimaryMs = System.currentTimeMillis() - t0GetGoogleId
-            logWarn(
-                "GetGoogleIdOption lanzó NoCredentialException tras ${duracionPrimaryMs}ms (${noCred.message}); " +
-                    "activando selector MD3 directo para evitar doble diálogo tras fallo OAuth [28444]."
-            )
-            return mapearExcepcionCredentialManager(
-                e = noCred,
-                vinoDeFallbackNoCredential = true,
-                duracionMs = duracionPrimaryMs,
-                sha1Actual = sha1Actual
-            )
+        val t0GoogleId = System.currentTimeMillis()
+        val resultSecundario = try {
+            credentialManager.getCredential(activity, requestGoogleId)
         } catch (e: Exception) {
-            val duracionPrimaryMs = System.currentTimeMillis() - t0GetGoogleId
+            val duracionSecundariaMs = System.currentTimeMillis() - t0GoogleId
+            val excepcionFinal = if (e is NoCredentialException) e else resultadoPrimario.first
             return mapearExcepcionCredentialManager(
-                e = e,
-                vinoDeFallbackNoCredential = false,
-                duracionMs = duracionPrimaryMs,
+                e = excepcionFinal,
+                vinoDeFallbackNoCredential = true,
+                duracionMs = duracionSecundariaMs,
                 sha1Actual = sha1Actual
             )
         }
 
-        return extraerCredencialDesdeGetCredentialResponse(result)
+        return extraerCredencialDesdeGetCredentialResponse(resultSecundario)
     }
 
     private fun logInfo(msg: String) {
@@ -385,29 +493,16 @@ object GoogleAuthHelper {
         val request = construirGoogleLoginRequest(credencial)
 
         val respuesta = withContext(Dispatchers.IO) {
-            RetrofitClient.apiService.loginConGoogle(request)
+            RetrofitClient.ejecutarConRespaldoLocalDebug { api ->
+                api.loginConGoogle(request)
+            }
         }
 
         if (respuesta.isSuccessful) {
             val datos = respuesta.body()
             val accessToken = datos?.tokens?.access?.trim().orEmpty()
             if (datos != null && accessToken.isNotEmpty()) {
-                if (esFlujoRegistro) {
-                    val msg = if (datos.esNuevoUsuario == true) {
-                        "¡Registro con Google exitoso! Pulsa 'Continuar con Google' para iniciar sesión."
-                    } else {
-                        "Tu cuenta ya está registrada. Pulsa 'Continuar con Google' para iniciar sesión."
-                    }
-                    completarRegistroRedirigiendoALogin(
-                        activity = activity,
-                        email = datos.email,
-                        nombre = datos.nombre ?: credencial.nombre,
-                        apellido = datos.apellido ?: credencial.apellido,
-                        mensaje = msg
-                    )
-                } else {
-                    completarInicioDeSesionExitoso(activity, datos, credencial)
-                }
+                completarInicioDeSesionExitoso(activity, datos, credencial)
             } else {
                 logWarn("Respuesta exitosa de google-login sin cuerpo o token de acceso")
                 mostrarMensajeMD3(
@@ -727,7 +822,11 @@ object GoogleAuthHelper {
             }
         }
 
-        dialog.show()
+        if (!activity.isFinishing && !activity.isDestroyed) {
+            dialog.show()
+        } else if (cont.isActive) {
+            cont.resume(null)
+        }
     }
 
     /**
@@ -806,34 +905,60 @@ object GoogleAuthHelper {
             } catch (_: Exception) {
                 ""
             }
-            if (errorRegistro.contains("email", ignoreCase = true) ||
-                errorRegistro.contains("existe", ignoreCase = true) ||
-                errorRegistro.contains("already", ignoreCase = true)
-            ) {
+            val errorParsed = AuthValidators.parsearErrorRegistroHttp(solResp.code(), errorRegistro)
+            if (errorParsed.esCorreoDuplicado) {
+                val almacen = obtenerAlmacenVinculo(activity)
+                val cuentaVinculada = almacen.obtenerCuentaVinculada(email)
+                if (cuentaVinculada != null) {
+                    val reanudada = reanudarSesionGoogleVinculada(cuentaVinculada, almacen)
+                    if (reanudada is ResultadoReanudarVinculo.Exito) {
+                        completarInicioDeSesionExitoso(activity, reanudada.loginResponse, credencial)
+                        return
+                    }
+                }
                 val respuestaVinculada = vincularCuentaExistenteConDialogoMD3(
                     activity = activity,
                     email = email,
                     esFlujoRegistro = true
                 )
                 if (respuestaVinculada != null) {
-                    completarRegistroRedirigiendoALogin(
-                        activity = activity,
-                        email = email,
-                        nombre = respuestaVinculada.nombre ?: nombre,
-                        apellido = respuestaVinculada.apellido ?: apellido,
-                        mensaje = "¡Cuenta verificada! Inicia sesión con tu correo y contraseña."
-                    )
+                    completarInicioDeSesionExitoso(activity, respuestaVinculada, credencial)
                 }
                 return
             }
 
-            val mensajeError = resolverMensajeErrorGoogleHttp(solResp.code(), errorRegistro)
-            mostrarMensajeMD3(activity, mensajeError, esError = true)
+            mostrarMensajeMD3(activity, errorParsed.mensajeGeneral, esError = true)
             return
         }
 
         // --- FLUJO DE LOGIN (esFlujoRegistro == false) ---
-        // Siempre exigimos la contraseña de la cuenta; nunca permitimos entrar ni auto-registrar solo con el correo.
+        // 1. Si la cuenta de Google ya fue verificada y vinculada en este dispositivo,
+        //    reanudamos directamente contra POST /api/token/refresh/ sin volver a pedir contraseña.
+        val almacenVinculo = obtenerAlmacenVinculo(activity)
+        val cuentaVinculada = almacenVinculo.obtenerCuentaVinculada(email)
+        if (cuentaVinculada != null) {
+            when (val resultadoReanudar = reanudarSesionGoogleVinculada(cuentaVinculada, almacenVinculo)) {
+                is ResultadoReanudarVinculo.Exito -> {
+                    logInfo("Sesión Google vinculada reanudada sin pedir contraseña para $email.")
+                    completarInicioDeSesionExitoso(activity, resultadoReanudar.loginResponse, credencial)
+                    return
+                }
+                is ResultadoReanudarVinculo.CuentaRechazada -> {
+                    mostrarMensajeMD3(activity, resultadoReanudar.mensaje, esError = true)
+                    return
+                }
+                is ResultadoReanudarVinculo.ErrorTemporal -> {
+                    mostrarMensajeMD3(activity, resultadoReanudar.mensaje, esError = true)
+                    return
+                }
+                is ResultadoReanudarVinculo.RequiereVerificacionPassword -> {
+                    logWarn("Vinculación Google expirada para $email (${resultadoReanudar.motivo}); solicitando re-verificación.")
+                }
+            }
+        }
+
+        // 2. Primera vez en respaldo MD3 (o refresh expirado): exige contraseña una sola vez
+        //    y al validar persiste el refresh token cifrado en GoogleLinkedSessionVault.
         val respuestaVinculada = vincularCuentaExistenteConDialogoMD3(
             activity = activity,
             email = email,
@@ -841,6 +966,106 @@ object GoogleAuthHelper {
         )
         if (respuestaVinculada != null) {
             completarInicioDeSesionExitoso(activity, respuestaVinculada, credencial)
+        }
+    }
+
+    /**
+     * Reanuda una cuenta de Google previamente vinculada en el dispositivo intercambiando su
+     * refresh token cifrado contra `POST /api/token/refresh/` (validando `activo=True` y rol en servidor).
+     * Nunca almacena contraseñas ni omite validación del backend.
+     */
+    internal suspend fun reanudarSesionGoogleVinculada(
+        cuenta: CuentaGoogleVinculada,
+        almacen: AlmacenVinculoGoogle
+    ): ResultadoReanudarVinculo = withContext(Dispatchers.IO) {
+        val refreshActual = cuenta.refreshToken.trim()
+        if (refreshActual.isEmpty()) {
+            almacen.eliminarCuentaVinculada(cuenta.email)
+            return@withContext ResultadoReanudarVinculo.RequiereVerificacionPassword("Refresh vacío")
+        }
+
+        val baseUrl = RetrofitClient.baseUrlActiva().let { if (it.endsWith("/")) it else "$it/" }
+        val refreshUrl = "${baseUrl}token/refresh/"
+        val mediaType = "application/json; charset=utf-8".toMediaType()
+        val bodyJson = gson.toJson(mapOf("refresh" to refreshActual))
+        val request = Request.Builder()
+            .url(refreshUrl)
+            .post(bodyJson.toRequestBody(mediaType))
+            .build()
+
+        val response = try {
+            RetrofitClient.cleanClient.newCall(request).execute()
+        } catch (e: IOException) {
+            return@withContext ResultadoReanudarVinculo.ErrorTemporal(
+                inicio_sesion.resolverMensajeErrorExcepcion(e)
+            )
+        } catch (e: Exception) {
+            return@withContext ResultadoReanudarVinculo.ErrorTemporal(
+                inicio_sesion.resolverMensajeErrorExcepcion(e)
+            )
+        }
+
+        response.use { resp ->
+            val code = resp.code
+            val rawBody = try {
+                resp.body?.string().orEmpty()
+            } catch (_: Exception) {
+                ""
+            }
+
+            if (code == 400 || code == 401 || code == 403) {
+                almacen.eliminarCuentaVinculada(cuenta.email)
+                val detalle = extraerMensajeJsonSeguro(rawBody)
+                if (detalle?.contains("desactivad", ignoreCase = true) == true) {
+                    return@withContext ResultadoReanudarVinculo.CuentaRechazada(detalle)
+                }
+                return@withContext ResultadoReanudarVinculo.RequiereVerificacionPassword(
+                    detalle ?: "Token expirado (HTTP $code)"
+                )
+            }
+
+            if (code in 500..599) {
+                return@withContext ResultadoReanudarVinculo.ErrorTemporal(
+                    "Error del servidor ($code). Intenta nuevamente más tarde."
+                )
+            }
+
+            if (!resp.isSuccessful) {
+                return@withContext ResultadoReanudarVinculo.ErrorTemporal(
+                    "No se pudo validar tu sesión con el servidor (código $code)."
+                )
+            }
+
+            val parsed = TokenAuthenticator.parsearTokensRefresh(rawBody)
+                ?: return@withContext ResultadoReanudarVinculo.ErrorTemporal(
+                    "No se pudo procesar la respuesta del servidor. Intenta nuevamente."
+                )
+
+            val (nuevoAccess, nuevoRefresh) = parsed
+            val refreshFinal = nuevoRefresh?.takeIf { it.isNotBlank() } ?: refreshActual
+            almacen.guardarCuentaVinculada(
+                cuenta.copy(
+                    refreshToken = refreshFinal,
+                    vinculadoEnMs = System.currentTimeMillis()
+                )
+            )
+
+            return@withContext ResultadoReanudarVinculo.Exito(
+                LoginResponse(
+                    mensaje = "Bienvenido, ${cuenta.nombre.ifBlank { cuenta.email }}",
+                    email = cuenta.email,
+                    idUsuario = cuenta.userId,
+                    idRol = cuenta.idRol,
+                    nombre = cuenta.nombre,
+                    apellido = cuenta.apellido,
+                    tokens = TokenData(refresh = refreshFinal, access = nuevoAccess),
+                    esNuevoUsuario = false,
+                    fotoPerfil = cuenta.fotoPerfil.ifBlank { null },
+                    foto = cuenta.fotoPerfil.ifBlank { null },
+                    telefono = cuenta.telefono.ifBlank { null },
+                    matriculaProfesional = cuenta.matriculaProfesional.ifBlank { null }
+                )
+            )
         }
     }
 
@@ -900,7 +1125,11 @@ object GoogleAuthHelper {
             if (cont.isActive) cont.resume(pwd)
         }
 
-        dialog.show()
+        if (!activity.isFinishing && !activity.isDestroyed) {
+            dialog.show()
+        } else if (cont.isActive) {
+            cont.resume(null)
+        }
     }
 
     private suspend fun verificarCodigoOtpRegistroGoogleMD3(
@@ -926,18 +1155,23 @@ object GoogleAuthHelper {
 
         txtCorreoDestino.text = request.email
         var timer: CountDownTimer? = null
+        var accionOtpEnCurso = false
 
         fun iniciarConteo(segundos: Int) {
             timer?.cancel()
+            val duracion = segundos.coerceAtLeast(1)
             btnReenviar.isEnabled = false
-            timer = object : CountDownTimer(segundos * 1000L, 1000L) {
+            timer = object : CountDownTimer(duracion * 1000L, 1000L) {
                 override fun onTick(millisUntilFinished: Long) {
+                    if (!dialog.isShowing) return
                     val seg = (millisUntilFinished / 1000L).coerceAtLeast(1L)
                     btnReenviar.text = "Reenviar código en ${seg}s"
                 }
 
                 override fun onFinish() {
-                    btnReenviar.isEnabled = true
+                    timer = null
+                    if (!dialog.isShowing) return
+                    btnReenviar.isEnabled = !accionOtpEnCurso
                     btnReenviar.text = activity.getString(R.string.btn_reenviar_codigo)
                 }
             }.start()
@@ -947,6 +1181,7 @@ object GoogleAuthHelper {
 
         val cancelar = {
             timer?.cancel()
+            timer = null
             dialog.dismiss()
             if (cont.isActive) cont.resume(false)
         }
@@ -955,15 +1190,20 @@ object GoogleAuthHelper {
         txtCorregir.setOnClickListener { cancelar() }
         dialog.setOnCancelListener {
             timer?.cancel()
+            timer = null
             if (cont.isActive) cont.resume(false)
         }
         cont.invokeOnCancellation {
             timer?.cancel()
-            dialog.dismiss()
+            timer = null
+            if (dialog.isShowing) dialog.dismiss()
         }
 
         btnReenviar.setOnClickListener {
+            if (accionOtpEnCurso) return@setOnClickListener
+            accionOtpEnCurso = true
             btnReenviar.isEnabled = false
+            btnConfirmar.isEnabled = false
             btnReenviar.text = "Reenviando..."
             activity.lifecycleScope.launch {
                 try {
@@ -972,9 +1212,13 @@ object GoogleAuthHelper {
                             api.solicitarCodigoRegistro(request)
                         }
                     }
+                    if (!dialog.isShowing || activity.isFinishing || activity.isDestroyed) return@launch
                     if (resp.isSuccessful) {
                         val nuevoCooldown = resp.body()?.cooldownSegundos ?: 60
-                        mostrarMensajeMD3(
+                        edtCodigo.setText("")
+                        edtCodigo.error = null
+                        mostrarMensajeEnDialogoMD3(
+                            dialog,
                             activity,
                             resp.body()?.mensaje ?: "Nuevo código enviado a tu correo",
                             esError = false
@@ -982,30 +1226,47 @@ object GoogleAuthHelper {
                         iniciarConteo(nuevoCooldown)
                     } else {
                         val errStr = resp.errorBody()?.string()
-                        mostrarMensajeMD3(
+                        val errParsed = AuthValidators.parsearErrorRegistroHttp(resp.code(), errStr)
+                        mostrarMensajeEnDialogoMD3(
+                            dialog,
                             activity,
-                            extraerMensajeJsonSeguro(errStr) ?: "No se pudo reenviar el código",
+                            errParsed.mensajeGeneral,
                             esError = true
                         )
-                        iniciarConteo(15)
+                        iniciarConteo(errParsed.retryAfterSegundos ?: 15)
                     }
-                } catch (_: Exception) {
-                    mostrarMensajeMD3(activity, "Error de conexión al reenviar el código", esError = true)
-                    btnReenviar.isEnabled = true
-                    btnReenviar.text = activity.getString(R.string.btn_reenviar_codigo)
+                } catch (e: Exception) {
+                    if (dialog.isShowing && !activity.isFinishing && !activity.isDestroyed) {
+                        mostrarMensajeEnDialogoMD3(
+                            dialog,
+                            activity,
+                            inicio_sesion.resolverMensajeErrorExcepcion(e),
+                            esError = true
+                        )
+                        btnReenviar.isEnabled = true
+                        btnReenviar.text = activity.getString(R.string.btn_reenviar_codigo)
+                    }
+                } finally {
+                    accionOtpEnCurso = false
+                    if (dialog.isShowing && !activity.isFinishing && !activity.isDestroyed) {
+                        btnConfirmar.isEnabled = true
+                    }
                 }
             }
         }
 
         btnConfirmar.setOnClickListener {
+            if (accionOtpEnCurso) return@setOnClickListener
             val codigo = edtCodigo.text.toString().trim()
-            if (codigo.length != 6) {
-                edtCodigo.error = "Ingresa el código de 6 dígitos"
+            if (!AuthValidators.esCodigoOtpValido(codigo)) {
+                edtCodigo.error = "Ingresa el código numérico de 6 dígitos"
                 edtCodigo.requestFocus()
                 return@setOnClickListener
             }
 
+            accionOtpEnCurso = true
             btnConfirmar.isEnabled = false
+            btnReenviar.isEnabled = false
             btnConfirmar.text = "Verificando..."
 
             activity.lifecycleScope.launch {
@@ -1019,28 +1280,52 @@ object GoogleAuthHelper {
                             api.confirmarCodigoRegistro(confirmReq)
                         }
                     }
+                    if (activity.isFinishing || activity.isDestroyed) return@launch
                     if (response.isSuccessful) {
                         timer?.cancel()
+                        timer = null
                         dialog.dismiss()
                         if (cont.isActive) cont.resume(true)
-                    } else {
+                    } else if (dialog.isShowing) {
                         val errorBody = response.errorBody()?.string()
-                        val msgErr = extraerMensajeJsonSeguro(errorBody) ?: "Código inválido o expirado"
-                        edtCodigo.error = msgErr
-                        mostrarMensajeMD3(activity, msgErr, esError = true)
+                        val errParsed = AuthValidators.parsearErrorRegistroHttp(response.code(), errorBody)
+                        if (errParsed.intentosRestantes == 0) {
+                            edtCodigo.setText("")
+                            timer?.cancel()
+                            timer = null
+                            btnReenviar.isEnabled = true
+                            btnReenviar.text = activity.getString(R.string.btn_reenviar_codigo)
+                        }
+                        edtCodigo.error = errParsed.mensajeGeneral
+                        mostrarMensajeEnDialogoMD3(dialog, activity, errParsed.mensajeGeneral, esError = true)
                     }
-                } catch (_: Exception) {
-                    mostrarMensajeMD3(activity, "Error de conexión con el servidor", esError = true)
+                } catch (e: Exception) {
+                    if (dialog.isShowing && !activity.isFinishing && !activity.isDestroyed) {
+                        mostrarMensajeEnDialogoMD3(
+                            dialog,
+                            activity,
+                            inicio_sesion.resolverMensajeErrorExcepcion(e),
+                            esError = true
+                        )
+                    }
                 } finally {
-                    if (dialog.isShowing) {
+                    accionOtpEnCurso = false
+                    if (dialog.isShowing && !activity.isFinishing && !activity.isDestroyed) {
                         btnConfirmar.isEnabled = true
                         btnConfirmar.text = activity.getString(R.string.btn_verificar_y_crear_cuenta)
+                        if (timer == null) {
+                            btnReenviar.isEnabled = true
+                        }
                     }
                 }
             }
         }
 
-        dialog.show()
+        if (!activity.isFinishing && !activity.isDestroyed) {
+            dialog.show()
+        } else if (cont.isActive) {
+            cont.resume(false)
+        }
     }
 
     private suspend fun vincularCuentaExistenteConDialogoMD3(
@@ -1090,7 +1375,7 @@ object GoogleAuthHelper {
         tvOlvidaste.setOnClickListener {
             dialog.dismiss()
             if (cont.isActive) cont.resume(null)
-            RecuperarContrasenia(activity).show()
+            RecuperarContrasenia(activity, emailInicial = email).show()
         }
 
         btnConfirmar.setOnClickListener {
@@ -1135,7 +1420,12 @@ object GoogleAuthHelper {
             }
         }
 
-        dialog.show()
+        if (!activity.isFinishing && !activity.isDestroyed) {
+            onDialogoPasswordMostradoPrueba?.invoke(email)
+            dialog.show()
+        } else if (cont.isActive) {
+            cont.resume(null)
+        }
     }
 
     private fun generarIdentificacionUnica(email: String): String {
@@ -1186,27 +1476,47 @@ object GoogleAuthHelper {
 
         val prefs = SharedPreferencesManager(activity)
         prefs.limpiarDatosGoogleLegacy()
+        val nombreFinal = datos.nombre ?: credencial.nombre
+        val apellidoFinal = datos.apellido ?: credencial.apellido
+        val telefonoFinal = datos.telefono?.trim().orEmpty()
+        val fotoFinal = datos.fotoPerfil ?: datos.foto ?: ""
+        val matriculaFinal = datos.matriculaProfesional?.trim().orEmpty()
+
         prefs.saveUserData(
-            name = datos.nombre ?: credencial.nombre,
+            name = nombreFinal,
             email = datos.email,
-            phone = datos.telefono?.trim().orEmpty()
+            phone = telefonoFinal,
+            registrarComoCuentaGoogle = true
         )
-        prefs.saveUserLastName(datos.apellido ?: credencial.apellido)
-        if (!datos.matriculaProfesional.isNullOrBlank()) {
-            prefs.saveUserMatriculaProfesional(datos.matriculaProfesional)
+        prefs.saveUserLastName(apellidoFinal)
+        if (matriculaFinal.isNotEmpty()) {
+            prefs.saveUserMatriculaProfesional(matriculaFinal)
         }
-        prefs.saveProfileImagePath(datos.fotoPerfil ?: datos.foto ?: "")
+        prefs.saveProfileImagePath(fotoFinal)
         prefs.saveAccessToken(accessToken)
         if (refreshToken.isNotEmpty()) {
             prefs.saveRefreshToken(refreshToken)
+            obtenerAlmacenVinculo(activity).guardarCuentaVinculada(
+                CuentaGoogleVinculada(
+                    userId = datos.idUsuario,
+                    email = datos.email,
+                    nombre = nombreFinal,
+                    apellido = apellidoFinal,
+                    telefono = telefonoFinal,
+                    fotoPerfil = fotoFinal,
+                    matriculaProfesional = matriculaFinal,
+                    idRol = datos.idRol,
+                    refreshToken = refreshToken
+                )
+            )
             FacialStorageManager(activity).actualizarRefreshTokenSiCoincide(
                 userId = datos.idUsuario,
                 nuevoRefreshToken = refreshToken,
-                nombre = datos.nombre ?: credencial.nombre,
-                apellido = datos.apellido ?: credencial.apellido,
-                fotoPerfil = datos.fotoPerfil ?: datos.foto,
-                telefono = datos.telefono?.trim(),
-                matriculaProfesional = datos.matriculaProfesional
+                nombre = nombreFinal,
+                apellido = apellidoFinal,
+                fotoPerfil = fotoFinal,
+                telefono = telefonoFinal,
+                matriculaProfesional = matriculaFinal.ifEmpty { null }
             )
         }
         prefs.saveUserId(datos.idUsuario)

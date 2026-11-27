@@ -15,13 +15,13 @@ import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
+import com.example.petvetericano.auth.AuthValidators
 import com.example.petvetericano.databinding.ActivityRegistroBinding
 import com.example.petvetericano.models.ConfirmarCodigoRegistroRequest
 import com.example.petvetericano.models.RegisterRequest
 import com.example.petvetericano.network.RetrofitClient
 import com.google.android.material.button.MaterialButton
 import kotlinx.coroutines.launch
-import org.json.JSONObject
 
 class Registro : AppCompatActivity() {
 
@@ -83,7 +83,9 @@ class Registro : AppCompatActivity() {
         }
 
         binding.txtlogin.setOnClickListener {
-            val intent = Intent(this, inicio_sesion::class.java)
+            val intent = Intent(this, inicio_sesion::class.java).apply {
+                flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            }
             startActivity(intent)
             finish()
         }
@@ -97,14 +99,18 @@ class Registro : AppCompatActivity() {
     }
 
     private fun registrarseConGoogle() {
+        if (procesandoSolicitud) return
         lifecycleScope.launch {
             GoogleAuthHelper.autenticarConGoogle(
                 activity = this@Registro,
                 esFlujoRegistro = true,
                 onEstadoCarga = { cargando ->
+                    procesandoSolicitud = cargando
                     if (!isFinishing && !isDestroyed) {
                         binding.btnGoogleSignUp.isEnabled = !cargando
                         binding.btnSignUp.isEnabled = !cargando
+                        binding.btnBackRegistro.isEnabled = !cargando
+                        binding.txtlogin.isEnabled = !cargando
                         binding.btnGoogleSignUp.text = if (cargando) {
                             "Registrando con Google..."
                         } else {
@@ -124,7 +130,6 @@ class Registro : AppCompatActivity() {
         val telefono = binding.edtxtTelefono.text.toString().trim()
         val password = binding.edtxtPassword.text.toString().trim()
 
-        // Limpiamos errores previos en todos los TextInputLayout
         binding.tilNombre.error = null
         binding.tilApellido.error = null
         binding.tilDocumento.error = null
@@ -132,49 +137,42 @@ class Registro : AppCompatActivity() {
         binding.tilEmail.error = null
         binding.tilPassword.error = null
 
-        if (nombre.isEmpty()) {
-            binding.tilNombre.error = "Ingrese su nombre"
-            binding.edtxtID.requestFocus()
-            return
-        }
+        val validacion = AuthValidators.validarFormularioRegistro(
+            nombre = nombre,
+            apellido = apellido,
+            identificacion = identificacion,
+            telefono = telefono,
+            email = email,
+            password = password
+        )
 
-        if (apellido.isEmpty()) {
-            binding.tilApellido.error = "Ingrese su apellido"
-            binding.edtxtApellido.requestFocus()
-            return
-        }
-
-        if (identificacion.isEmpty()) {
-            binding.tilDocumento.error = "Ingrese su documento o ID"
-            binding.edtxtemailorphone.requestFocus()
-            return
-        }
-
-        if (telefono.isEmpty() || telefono.length < 10) {
-            binding.tilTelefono.error = "Ingrese un número de teléfono válido (mínimo 10 dígitos)"
-            binding.edtxtTelefono.requestFocus()
-            return
-        }
-
-        if (email.isEmpty()) {
-            binding.tilEmail.error = "Ingrese su correo electrónico"
-            binding.editTextTextEmailAddress.requestFocus()
-            return
-        }
-
-        if (password.isEmpty()) {
-            binding.tilPassword.error = "Ingrese una contraseña"
-            binding.edtxtPassword.requestFocus()
-            return
-        }
-
-        // Reglas de negocio de la contraseña: Mínimo 8 caracteres, una mayúscula y un número
-        val contieneMayuscula = Regex("[A-Z]").containsMatchIn(password)
-        val contieneNumero = Regex("[0-9]").containsMatchIn(password)
-
-        if (password.length < 8 || !contieneMayuscula || !contieneNumero) {
-            binding.tilPassword.error = "Mín. 8 caracteres, una mayúscula y un número"
-            binding.edtxtPassword.requestFocus()
+        if (!validacion.esValido) {
+            when {
+                validacion.errorNombre != null -> {
+                    binding.tilNombre.error = validacion.errorNombre
+                    binding.edtxtID.requestFocus()
+                }
+                validacion.errorApellido != null -> {
+                    binding.tilApellido.error = validacion.errorApellido
+                    binding.edtxtApellido.requestFocus()
+                }
+                validacion.errorDocumento != null -> {
+                    binding.tilDocumento.error = validacion.errorDocumento
+                    binding.edtxtemailorphone.requestFocus()
+                }
+                validacion.errorTelefono != null -> {
+                    binding.tilTelefono.error = validacion.errorTelefono
+                    binding.edtxtTelefono.requestFocus()
+                }
+                validacion.errorEmail != null -> {
+                    binding.tilEmail.error = validacion.errorEmail
+                    binding.editTextTextEmailAddress.requestFocus()
+                }
+                validacion.errorPassword != null -> {
+                    binding.tilPassword.error = validacion.errorPassword
+                    binding.edtxtPassword.requestFocus()
+                }
+            }
             return
         }
 
@@ -236,6 +234,7 @@ class Registro : AppCompatActivity() {
                 }
 
                 ocultarDialogoProcesando()
+                if (isFinishing || isDestroyed) return@launch
 
                 if (response.isSuccessful) {
                     val cooldownSeg = response.body()?.cooldownSegundos ?: 60
@@ -245,12 +244,27 @@ class Registro : AppCompatActivity() {
                     mostrarDialogoVerificacionCorreo(request, cooldownSeg)
                 } else {
                     val errorBody = response.errorBody()?.string()
-                    val mensajeError = parsearErrorDjango(errorBody)
-                    GoogleAuthHelper.mostrarMensajeMD3(this@Registro, mensajeError, esError = true)
+                    val errorParsed = AuthValidators.parsearErrorRegistroHttp(response.code(), errorBody)
+                    errorParsed.errorEmail?.let { binding.tilEmail.error = it }
+                    errorParsed.errorDocumento?.let { binding.tilDocumento.error = it }
+                    errorParsed.errorTelefono?.let { binding.tilTelefono.error = it }
+                    errorParsed.errorPassword?.let { binding.tilPassword.error = it }
+
+                    GoogleAuthHelper.mostrarMensajeMD3(
+                        this@Registro,
+                        errorParsed.mensajeGeneral,
+                        esError = true
+                    )
                 }
-            } catch (_: Exception) {
+            } catch (e: Exception) {
                 ocultarDialogoProcesando()
-                GoogleAuthHelper.mostrarMensajeMD3(this@Registro, "Error de conexión con el servidor", esError = true)
+                if (!isFinishing && !isDestroyed) {
+                    GoogleAuthHelper.mostrarMensajeMD3(
+                        this@Registro,
+                        inicio_sesion.resolverMensajeErrorExcepcion(e),
+                        esError = true
+                    )
+                }
             } finally {
                 procesandoSolicitud = false
                 ocultarDialogoProcesando()
@@ -264,6 +278,7 @@ class Registro : AppCompatActivity() {
     }
 
     private fun mostrarDialogoVerificacionCorreo(request: RegisterRequest, cooldownInicialSegundos: Int) {
+        if (isFinishing || isDestroyed) return
         dialogVerificacion?.dismiss()
         cooldownTimer?.cancel()
 
@@ -284,18 +299,25 @@ class Registro : AppCompatActivity() {
         val txtCorregir = dialog.findViewById<TextView>(R.id.txtCorregirCorreoRegistro)
 
         txtCorreoDestino.text = request.email
+        edtCodigo.doAfterTextChanged { edtCodigo.error = null }
+
+        var accionOtpEnCurso = false
 
         fun iniciarConteoReenvio(segundos: Int) {
             cooldownTimer?.cancel()
+            val segInicial = segundos.coerceAtLeast(1)
             btnReenviar.isEnabled = false
-            cooldownTimer = object : CountDownTimer(segundos * 1000L, 1000L) {
+            cooldownTimer = object : CountDownTimer(segInicial * 1000L, 1000L) {
                 override fun onTick(millisUntilFinished: Long) {
+                    if (!dialog.isShowing) return
                     val seg = (millisUntilFinished / 1000L).coerceAtLeast(1L)
                     btnReenviar.text = "Reenviar código en ${seg}s"
                 }
 
                 override fun onFinish() {
-                    btnReenviar.isEnabled = true
+                    cooldownTimer = null
+                    if (!dialog.isShowing) return
+                    btnReenviar.isEnabled = !accionOtpEnCurso
                     btnReenviar.text = getString(R.string.btn_reenviar_codigo)
                 }
             }.start()
@@ -305,6 +327,7 @@ class Registro : AppCompatActivity() {
 
         val cerrarModal = {
             cooldownTimer?.cancel()
+            cooldownTimer = null
             dialog.dismiss()
         }
         txtCerrar.setOnClickListener { cerrarModal() }
@@ -312,18 +335,30 @@ class Registro : AppCompatActivity() {
             cerrarModal()
             binding.editTextTextEmailAddress.requestFocus()
         }
+        dialog.setOnDismissListener {
+            cooldownTimer?.cancel()
+            cooldownTimer = null
+        }
 
         btnReenviar.setOnClickListener {
+            if (accionOtpEnCurso) return@setOnClickListener
+            accionOtpEnCurso = true
             btnReenviar.isEnabled = false
+            btnConfirmar.isEnabled = false
             btnReenviar.text = "Reenviando..."
             lifecycleScope.launch {
                 try {
                     val resp = RetrofitClient.ejecutarConRespaldoLocalDebug { api ->
                         api.solicitarCodigoRegistro(request)
                     }
+                    if (!dialog.isShowing || isFinishing || isDestroyed) return@launch
+
                     if (resp.isSuccessful) {
                         val nuevoCooldown = resp.body()?.cooldownSegundos ?: 60
-                        GoogleAuthHelper.mostrarMensajeMD3(
+                        edtCodigo.setText("")
+                        edtCodigo.error = null
+                        GoogleAuthHelper.mostrarMensajeEnDialogoMD3(
+                            dialog,
                             this@Registro,
                             resp.body()?.mensaje ?: "Nuevo código enviado a tu correo",
                             esError = false
@@ -331,34 +366,48 @@ class Registro : AppCompatActivity() {
                         iniciarConteoReenvio(nuevoCooldown)
                     } else {
                         val errStr = resp.errorBody()?.string()
-                        GoogleAuthHelper.mostrarMensajeMD3(
+                        val errorParsed = AuthValidators.parsearErrorRegistroHttp(resp.code(), errStr)
+                        GoogleAuthHelper.mostrarMensajeEnDialogoMD3(
+                            dialog,
                             this@Registro,
-                            parsearErrorDjango(errStr),
+                            errorParsed.mensajeGeneral,
                             esError = true
                         )
-                        iniciarConteoReenvio(15)
+                        val espera = errorParsed.retryAfterSegundos ?: 15
+                        iniciarConteoReenvio(espera)
                     }
-                } catch (_: Exception) {
-                    GoogleAuthHelper.mostrarMensajeMD3(
-                        this@Registro,
-                        "Error de conexión al reenviar el código",
-                        esError = true
-                    )
-                    btnReenviar.isEnabled = true
-                    btnReenviar.text = getString(R.string.btn_reenviar_codigo)
+                } catch (e: Exception) {
+                    if (dialog.isShowing && !isFinishing && !isDestroyed) {
+                        GoogleAuthHelper.mostrarMensajeEnDialogoMD3(
+                            dialog,
+                            this@Registro,
+                            inicio_sesion.resolverMensajeErrorExcepcion(e),
+                            esError = true
+                        )
+                        btnReenviar.isEnabled = true
+                        btnReenviar.text = getString(R.string.btn_reenviar_codigo)
+                    }
+                } finally {
+                    accionOtpEnCurso = false
+                    if (dialog.isShowing && !isFinishing && !isDestroyed) {
+                        btnConfirmar.isEnabled = true
+                    }
                 }
             }
         }
 
         btnConfirmar.setOnClickListener {
+            if (accionOtpEnCurso) return@setOnClickListener
             val codigo = edtCodigo.text.toString().trim()
-            if (codigo.length != 6) {
-                edtCodigo.error = "Ingresa el código de 6 dígitos"
+            if (!AuthValidators.esCodigoOtpValido(codigo)) {
+                edtCodigo.error = "Ingresa el código numérico de 6 dígitos"
                 edtCodigo.requestFocus()
                 return@setOnClickListener
             }
 
+            accionOtpEnCurso = true
             btnConfirmar.isEnabled = false
+            btnReenviar.isEnabled = false
             btnConfirmar.text = "Verificando..."
 
             lifecycleScope.launch {
@@ -371,12 +420,12 @@ class Registro : AppCompatActivity() {
                         api.confirmarCodigoRegistro(confirmReq)
                     }
 
+                    if (isFinishing || isDestroyed) return@launch
+
                     if (response.isSuccessful) {
                         cooldownTimer?.cancel()
+                        cooldownTimer = null
                         dialog.dismiss()
-
-                        prefs.saveUserData(name = request.nombre, email = request.email, phone = request.telefono)
-                        prefs.saveUserLastName(request.apellido)
 
                         val intent = Intent(this@Registro, inicio_sesion::class.java)
                         intent.putExtra("REGISTRO_GOOGLE_MSG", "¡Correo verificado y cuenta creada! Inicia sesión para continuar.")
@@ -384,22 +433,41 @@ class Registro : AppCompatActivity() {
                         intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
                         startActivity(intent)
                         finish()
-                    } else {
+                    } else if (dialog.isShowing) {
                         val errorBody = response.errorBody()?.string()
-                        val mensajeError = parsearErrorDjango(errorBody)
-                        edtCodigo.error = mensajeError
-                        GoogleAuthHelper.mostrarMensajeMD3(this@Registro, mensajeError, esError = true)
+                        val errorParsed = AuthValidators.parsearErrorRegistroHttp(response.code(), errorBody)
+                        if (errorParsed.intentosRestantes == 0) {
+                            edtCodigo.setText("")
+                            cooldownTimer?.cancel()
+                            cooldownTimer = null
+                            btnReenviar.isEnabled = true
+                            btnReenviar.text = getString(R.string.btn_reenviar_codigo)
+                        }
+                        edtCodigo.error = errorParsed.mensajeGeneral
+                        GoogleAuthHelper.mostrarMensajeEnDialogoMD3(
+                            dialog,
+                            this@Registro,
+                            errorParsed.mensajeGeneral,
+                            esError = true
+                        )
                     }
-                } catch (_: Exception) {
-                    GoogleAuthHelper.mostrarMensajeMD3(
-                        this@Registro,
-                        "Error de conexión con el servidor",
-                        esError = true
-                    )
+                } catch (e: Exception) {
+                    if (dialog.isShowing && !isFinishing && !isDestroyed) {
+                        GoogleAuthHelper.mostrarMensajeEnDialogoMD3(
+                            dialog,
+                            this@Registro,
+                            inicio_sesion.resolverMensajeErrorExcepcion(e),
+                            esError = true
+                        )
+                    }
                 } finally {
-                    if (dialog.isShowing) {
+                    accionOtpEnCurso = false
+                    if (dialog.isShowing && !isFinishing && !isDestroyed) {
                         btnConfirmar.isEnabled = true
                         btnConfirmar.text = getString(R.string.btn_verificar_y_crear_cuenta)
+                        if (cooldownTimer == null) {
+                            btnReenviar.isEnabled = true
+                        }
                     }
                 }
             }
@@ -407,46 +475,5 @@ class Registro : AppCompatActivity() {
 
         dialogVerificacion = dialog
         dialog.show()
-    }
-
-    private fun parsearErrorDjango(json: String?): String {
-        if (json.isNullOrEmpty()) return "Error al registrar usuario"
-        return try {
-            val jsonObject = JSONObject(json)
-            when {
-                jsonObject.has("error") -> jsonObject.getString("error")
-                jsonObject.has("detail") -> jsonObject.getString("detail")
-                jsonObject.has("mensaje") -> jsonObject.getString("mensaje")
-                jsonObject.has("message") -> {
-                    val msg = jsonObject.getString("message")
-                    if (msg.contains("Application failed to respond", ignoreCase = true)) {
-                        "El servidor en la nube (Railway) no está disponible en este momento (502)."
-                    } else {
-                        msg
-                    }
-                }
-                else -> {
-                    val clavesIgnorar = setOf("status", "code", "request_id")
-                    val iter = jsonObject.keys()
-                    var primeraClaveUtil: String? = null
-                    while (iter.hasNext()) {
-                        val k = iter.next()
-                        if (k !in clavesIgnorar) {
-                            primeraClaveUtil = k
-                            break
-                        }
-                    }
-                    val clave = primeraClaveUtil ?: jsonObject.keys().next()
-                    val valor = jsonObject.get(clave)
-                    if (valor is org.json.JSONArray && valor.length() > 0) {
-                        "$clave: ${valor.getString(0)}"
-                    } else {
-                        valor.toString()
-                    }
-                }
-            }
-        } catch (_: Exception) {
-            "Datos inválidos o usuario ya registrado"
-        }
     }
 }

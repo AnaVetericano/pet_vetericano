@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/splashRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/bg_screen"
+    android:clipChildren="false"
+    android:clipToPadding="false"
+    tools:context=".SplashActivity">
+
+    <LinearLayout
+        android:id="@+id/layoutSplashBrand"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <ImageView
+            android:id="@+id/imgSplashEmblem"
+            android:layout_width="112dp"
+            android:layout_height="104dp"
+            android:contentDescription="@string/logovetericano"
+            android:scaleType="fitCenter"
+            app:srcCompat="@drawable/avd_logo_vetericano"
+            tools:srcCompat="@drawable/ic_logo_vetericano_emblem_final" />
+
+        <TextView
+            android:id="@+id/tvSplashBrandName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:alpha="0"
+            android:fontFamily="@font/nunito_display"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:letterSpacing="0.07"
+            android:text="@string/vetericano_login_register"
+            android:textAllCaps="true"
+            android:textColor="@color/logo_vetericano_wordmark"
+            android:textSize="21sp"
+            android:textStyle="bold"
+            tools:alpha="1" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -230,4 +230,13 @@
         <item name="android:fontFamily">@font/nunito_bold</item>
         <item name="android:textSize">14sp</item>
     </style>
+
+    <!-- ===== Tema dedicado para SplashActivity (Android 11 y anteriores - Modo Claro) ===== -->
+    <style name="Theme.PetVetericano.Splash" parent="Theme.PetVetericano">
+        <item name="android:windowBackground">@color/bg_screen</item>
+        <item name="android:statusBarColor">@color/bg_screen</item>
+        <item name="android:navigationBarColor">@color/bg_screen</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
+    </style>
 </resources>

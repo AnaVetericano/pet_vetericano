@@ -34,4 +34,13 @@
     </style>
 
     <style name="Theme.PetVetericano" parent="Base.Theme.PetVetericano" />
+
+    <!-- ===== Tema dedicado para SplashActivity (Android 11 y anteriores - Modo Oscuro) ===== -->
+    <style name="Theme.PetVetericano.Splash" parent="Theme.PetVetericano">
+        <item name="android:windowBackground">@color/bg_screen</item>
+        <item name="android:statusBarColor">@color/bg_screen</item>
+        <item name="android:navigationBarColor">@color/bg_screen</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+    </style>
 </resources>

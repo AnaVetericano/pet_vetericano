@@ -3,6 +3,9 @@ package com.example.petvetericano
 import android.content.Intent
 import android.graphics.Color
 import android.graphics.drawable.Animatable
+import android.graphics.drawable.Animatable2
+import android.graphics.drawable.AnimatedVectorDrawable
+import android.graphics.drawable.Drawable
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
@@ -15,6 +18,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.app.ActivityOptionsCompat
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
+import androidx.core.view.doOnPreDraw
 import com.example.petvetericano.databinding.ActivitySplashBinding
 import com.example.petvetericano.network.RetrofitClient
 
@@ -22,9 +26,22 @@ class SplashActivity : AppCompatActivity() {
 
     private var binding: ActivitySplashBinding? = null
     private val mainHandler = Handler(Looper.getMainLooper())
+    private var animatorScale = 1f
+    private var primerFrameListo = false
+    private var ventanaEnfocada = false
+    private var animacionIniciada = false
     private var navegacionIniciada = false
     private var pausadoDuranteSplash = false
+    private var avdCallback: Animatable2.AnimationCallback? = null
+
+    private val iniciarAnimacionRunnable = Runnable {
+        val inflated = binding ?: return@Runnable
+        if (!navegacionIniciada && !pausadoDuranteSplash && !isFinishing && !isDestroyed) {
+            ejecutarCoreografia(inflated)
+        }
+    }
     private val navegacionRunnable = Runnable { navegarADestino(conTransicion = true) }
+    private val fallbackRunnable = Runnable { navegarADestino(conTransicion = true) }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         val isDarkMode = aplicarModoOscuro()
@@ -46,15 +63,16 @@ class SplashActivity : AppCompatActivity() {
             navigationBarStyle = barStyle
         )
 
-        val animatorScale = runCatching {
+        val scale = runCatching {
             Settings.Global.getFloat(
                 contentResolver,
                 Settings.Global.ANIMATOR_DURATION_SCALE,
                 1f
             )
         }.getOrDefault(1f)
+        animatorScale = scale
 
-        if (animatorScale <= 0f) {
+        if (scale <= 0f) {
             navegarADestino(conTransicion = false)
             return
         }
@@ -79,7 +97,24 @@ class SplashActivity : AppCompatActivity() {
         }
         ViewCompat.requestApplyInsets(inflated.splashRoot)
 
-        iniciarAnimacionEntrada(inflated, animatorScale)
+        inflated.tvSplashBrandName.alpha = 0f
+        inflated.tvSplashBrandName.translationY = 8f * resources.displayMetrics.density
+
+        inflated.splashRoot.doOnPreDraw {
+            primerFrameListo = true
+            if (hasWindowFocus()) {
+                ventanaEnfocada = true
+            }
+            intentarIniciarAnimacion()
+        }
+    }
+
+    override fun onWindowFocusChanged(hasFocus: Boolean) {
+        super.onWindowFocusChanged(hasFocus)
+        if (hasFocus) {
+            ventanaEnfocada = true
+            intentarIniciarAnimacion()
+        }
     }
 
     override fun onResume() {
@@ -104,15 +139,16 @@ class SplashActivity : AppCompatActivity() {
         super.onDestroy()
     }
 
-    private fun iniciarAnimacionEntrada(
-        inflated: ActivitySplashBinding,
-        animatorScale: Float
-    ) {
-        (inflated.imgSplashEmblem.drawable as? Animatable)?.start()
+    private fun intentarIniciarAnimacion() {
+        val inflated = binding ?: return
+        if (animacionIniciada || navegacionIniciada || pausadoDuranteSplash) return
+        if (!primerFrameListo || !ventanaEnfocada) return
 
-        val offsetWordmarkPx = 8f * resources.displayMetrics.density
-        inflated.tvSplashBrandName.alpha = 0f
-        inflated.tvSplashBrandName.translationY = offsetWordmarkPx
+        animacionIniciada = true
+        inflated.splashRoot.postOnAnimation(iniciarAnimacionRunnable)
+    }
+
+    private fun ejecutarCoreografia(inflated: ActivitySplashBinding) {
         inflated.tvSplashBrandName.animate()
             .alpha(1f)
             .translationY(0f)
@@ -121,24 +157,69 @@ class SplashActivity : AppCompatActivity() {
             .setInterpolator(DecelerateInterpolator())
             .start()
 
-        val delayMs = (SPLASH_TOTAL_DURATION_MS * animatorScale)
+        val fallbackMs = (FALLBACK_TIMEOUT_MS * animatorScale)
             .toLong()
-            .coerceIn(180L, 2500L)
-        mainHandler.postDelayed(navegacionRunnable, delayMs)
+            .coerceIn(700L, 3500L)
+        mainHandler.postDelayed(fallbackRunnable, fallbackMs)
+
+        when (val drawable = inflated.imgSplashEmblem.drawable) {
+            is AnimatedVectorDrawable -> {
+                val callback = object : Animatable2.AnimationCallback() {
+                    override fun onAnimationEnd(d: Drawable?) {
+                        limpiarCallbackAvd()
+                        mainHandler.removeCallbacks(fallbackRunnable)
+                        if (!navegacionIniciada && !pausadoDuranteSplash && !isFinishing && !isDestroyed) {
+                            val esperaFinalMs = (POST_ANIM_HOLD_MS * animatorScale)
+                                .toLong()
+                                .coerceIn(80L, 600L)
+                            mainHandler.postDelayed(navegacionRunnable, esperaFinalMs)
+                        }
+                    }
+                }
+                avdCallback = callback
+                drawable.registerAnimationCallback(callback)
+                drawable.start()
+            }
+            is Animatable -> {
+                drawable.start()
+                val delayFallbackMs = ((CHOREOGRAPHY_DURATION_MS + FINAL_PAUSE_MS) * animatorScale)
+                    .toLong()
+                    .coerceIn(250L, 2500L)
+                mainHandler.postDelayed(navegacionRunnable, delayFallbackMs)
+            }
+            else -> {
+                mainHandler.postDelayed(navegacionRunnable, FINAL_PAUSE_MS)
+            }
+        }
     }
 
     private fun cancelarPendientes() {
+        binding?.splashRoot?.removeCallbacks(iniciarAnimacionRunnable)
         mainHandler.removeCallbacks(navegacionRunnable)
+        mainHandler.removeCallbacks(fallbackRunnable)
+        limpiarCallbackAvd()
         binding?.tvSplashBrandName?.animate()?.cancel()
         (binding?.imgSplashEmblem?.drawable as? Animatable)?.let { anim ->
             if (anim.isRunning) anim.stop()
         }
     }
 
+    private fun limpiarCallbackAvd() {
+        val current = binding?.imgSplashEmblem?.drawable
+        avdCallback?.let { cb ->
+            if (current is AnimatedVectorDrawable) {
+                current.unregisterAnimationCallback(cb)
+            }
+        }
+        avdCallback = null
+    }
+
     private fun navegarADestino(conTransicion: Boolean) {
         if (navegacionIniciada || isFinishing || isDestroyed) return
         navegacionIniciada = true
         mainHandler.removeCallbacks(navegacionRunnable)
+        mainHandler.removeCallbacks(fallbackRunnable)
+        limpiarCallbackAvd()
 
         val prefs = SharedPreferencesManager(this)
         val accessToken = prefs.getAccessToken()
@@ -193,6 +274,9 @@ class SplashActivity : AppCompatActivity() {
     companion object {
         private const val WORDMARK_START_DELAY_MS = 480L
         private const val WORDMARK_DURATION_MS = 420L
-        private const val SPLASH_TOTAL_DURATION_MS = 1000L
+        private const val CHOREOGRAPHY_DURATION_MS = 900L
+        private const val FINAL_PAUSE_MS = 250L
+        private const val POST_ANIM_HOLD_MS = 270L
+        private const val FALLBACK_TIMEOUT_MS = 1450L
     }
 }

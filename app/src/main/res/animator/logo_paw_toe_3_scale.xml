@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<set xmlns:android="http://schemas.android.com/apk/res/android"
+    android:ordering="together">
+    <objectAnimator
+        android:duration="240"
+        android:interpolator="@interpolator/overshoot_logo_toe"
+        android:propertyName="scaleX"
+        android:startOffset="600"
+        android:valueFrom="0.6"
+        android:valueTo="1"
+        android:valueType="floatType" />
+    <objectAnimator
+        android:duration="240"
+        android:interpolator="@interpolator/overshoot_logo_toe"
+        android:propertyName="scaleY"
+        android:startOffset="600"
+        android:valueFrom="0.6"
+        android:valueTo="1"
+        android:valueType="floatType" />
+</set>

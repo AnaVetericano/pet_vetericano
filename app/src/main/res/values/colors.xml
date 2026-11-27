@@ -107,8 +107,14 @@
     <!-- Pantalla inicial minimalista (MainActivity) -->
     <color name="welcome_badge_bg">#EEF0FF</color>
     <color name="welcome_badge_stroke">#D6DAFA</color>
-    <color name="welcome_aura_start">#1A4141A5</color>
+    <color name="welcome_aura_start">#00000000</color>
     <color name="welcome_outline_stroke">#4141A5</color>
     <color name="welcome_outline_text">#4141A5</color>
+
+    <!-- Bloque de marca animado Vetericano (Modo Claro) -->
+    <color name="logo_vetericano_arc">#4141A5</color>
+    <color name="logo_vetericano_silhouette">#170B3D</color>
+    <color name="logo_vetericano_paw">#F1C63C</color>
+    <color name="logo_vetericano_wordmark">#4141A5</color>
 
 </resources>

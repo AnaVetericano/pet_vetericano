@@ -110,4 +110,10 @@
     <color name="welcome_outline_stroke">#343B60</color>
     <color name="welcome_outline_text">#F3F4FA</color>
 
+    <!-- Bloque de marca animado Vetericano (Modo Oscuro - Midnight Indigo) -->
+    <color name="logo_vetericano_arc">#9A9CF5</color>
+    <color name="logo_vetericano_silhouette">#F3F4FA</color>
+    <color name="logo_vetericano_paw">#F1C63C</color>
+    <color name="logo_vetericano_wordmark">#9A9CF5</color>
+
 </resources>

@@ -22,6 +22,7 @@ import com.example.petvetericano.models.PeticionPendiente
 import com.example.petvetericano.models.TipoEstado
 import com.example.petvetericano.network.RetrofitClient
 import com.example.petvetericano.models.PeticionListResponse
+import com.example.petvetericano.notificaciones.ContadorNotificacionesEnVivo
 import com.example.petvetericano.notificaciones.NotificacionesActivity
 import com.example.petvetericano.notificaciones.NotificacionesRepository
 import com.example.petvetericano.offline.NetworkUtils
@@ -124,6 +125,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
         sincronizarPerfilUsuario()
         actualizarResumenMaletin()
         actualizarBadgeNotificaciones()
+        ContadorNotificacionesEnVivo.observar(this) { actualizarBadgeNotificaciones() }
 
         // Observar reactivamente el maletín para actualizar el contador automáticamente
         lifecycleScope.launch {
@@ -151,7 +153,8 @@ class dahsboard_veterianrio : AppCompatActivity() {
         lifecycleScope.launch {
             val res = NotificacionesRepository.obtenerContador(this@dahsboard_veterianrio)
             if (isFinishing || isDestroyed) return@launch
-            val noLeidas = res.getOrNull()?.noLeidas ?: 0
+            // Si el servidor no responde se conserva el último valor (no se inventa un 0).
+            val noLeidas = res.getOrNull()?.noLeidas ?: return@launch
             if (noLeidas > 0) {
                 binding.tvNotifBadge.visibility = View.VISIBLE
                 binding.tvNotifBadge.text = if (noLeidas > 99) "99+" else noLeidas.toString()

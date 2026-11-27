@@ -37,6 +37,8 @@ class NotificacionesActivity : AppCompatActivity() {
 
     private var items: List<NotificacionItem> = emptyList()
     private var cargando = false
+    /** Se pidió recargar mientras otra carga estaba en vuelo (p. ej. tras marcar al abrir): se repite al terminar. */
+    private var recargaPendiente = false
     private var marcandoTodas = false
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -69,7 +71,33 @@ class NotificacionesActivity : AppCompatActivity() {
         binding.btnReintentarNotificaciones.setOnClickListener { cargar(mostrarProgreso = true) }
 
         observarEventosRealtime()
-        cargar(mostrarProgreso = true)
+        // Al recrearse (rotación) no se repite el marcado: solo se recarga.
+        if (savedInstanceState == null) abrirDesdeIntent(intent) else cargar(mostrarProgreso = true)
+    }
+
+    /**
+     * Si la bandeja se abrió tocando una notificación del sistema (EXTRA_CLAVE), abrirla = leerla:
+     * primero se marca en el servidor (la BD es la fuente de verdad) y después se carga la lista,
+     * para no mostrar un estado anterior al PATCH. Sin clave, solo carga.
+     */
+    private fun abrirDesdeIntent(intent: Intent?) {
+        val clave = intent?.getStringExtra(VetericanoMessagingService.EXTRA_CLAVE)?.trim().orEmpty()
+        intent?.removeExtra(VetericanoMessagingService.EXTRA_CLAVE) // no repetir al recrear la Activity
+        if (clave.isEmpty()) {
+            cargar(mostrarProgreso = true)
+            return
+        }
+        if (items.isEmpty()) binding.progressNotificaciones.visibility = View.VISIBLE
+        lifecycleScope.launch {
+            NotificacionesRepository.marcarLeida(this@NotificacionesActivity, clave)
+                .onSuccess { VetericanoMessagingService.cancelar(this@NotificacionesActivity, clave) }
+                .onFailure { error ->
+                    if (error !is SinSesionException) {
+                        Snackbar.make(binding.root, R.string.notif_error_marcar, Snackbar.LENGTH_SHORT).show()
+                    }
+                }
+            cargar(mostrarProgreso = true)
+        }
     }
 
     @OptIn(FlowPreview::class)
@@ -91,7 +119,7 @@ class NotificacionesActivity : AppCompatActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        cargar(mostrarProgreso = true)
+        abrirDesdeIntent(intent)
     }
 
     override fun onResume() {
@@ -106,14 +134,21 @@ class NotificacionesActivity : AppCompatActivity() {
 
     private fun cargar(mostrarProgreso: Boolean) {
         if (cargando) {
+            recargaPendiente = true
             binding.swipeRefreshNotificaciones.isRefreshing = false
             return
         }
         cargando = true
+        recargaPendiente = false
         if (mostrarProgreso && items.isEmpty()) binding.progressNotificaciones.visibility = View.VISIBLE
         lifecycleScope.launch {
             val resultado = NotificacionesRepository.listar(this@NotificacionesActivity, soloNoLeidas = false)
             cargando = false
+            if (recargaPendiente) {
+                // Llegó un cambio (PATCH o evento) mientras esta carga viajaba: su foto puede ser anterior.
+                cargar(mostrarProgreso = false)
+                return@launch
+            }
             binding.progressNotificaciones.visibility = View.GONE
             binding.swipeRefreshNotificaciones.isRefreshing = false
             resultado

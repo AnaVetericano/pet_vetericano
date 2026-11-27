@@ -7,7 +7,6 @@ import android.text.InputFilter
 import android.util.Log
 import android.util.Patterns
 import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
@@ -93,17 +92,6 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         setupListeners()
         cargarDatosPerfil()
         sincronizarConApi()
-
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (hayCambiosSinGuardar() && !guardando) {
-                    mostrarConfirmacionSalirSinGuardar()
-                } else {
-                    isEnabled = false
-                    onBackPressedDispatcher.onBackPressed()
-                }
-            }
-        })
 
         // Acción de clic para cambiar o eliminar foto de perfil (PopupMenu compacto)
         binding.btnChangePhoto.setOnClickListener {

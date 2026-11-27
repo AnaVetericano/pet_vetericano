@@ -104,4 +104,11 @@
     <color name="badge_observacion_bg">#CCFBF1</color>
     <color name="badge_observacion_text">#0F766E</color>
 
+    <!-- Pantalla inicial minimalista (MainActivity) -->
+    <color name="welcome_badge_bg">#EEF0FF</color>
+    <color name="welcome_badge_stroke">#D6DAFA</color>
+    <color name="welcome_aura_start">#1A4141A5</color>
+    <color name="welcome_outline_stroke">#4141A5</color>
+    <color name="welcome_outline_text">#4141A5</color>
+
 </resources>

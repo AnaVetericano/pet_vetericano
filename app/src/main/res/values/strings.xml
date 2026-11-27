@@ -6,6 +6,10 @@
     <string name="welcome_login_register">Bienvenido a</string>
     <string name="vetericano_login_register">VETERICANO</string>
     <string name="care_login_register">Cuidamos a quienes no tienen voz</string>
+    <string name="welcome_badge_cba">BIENESTAR ANIMAL · CBA</string>
+    <string name="welcome_headline_minimal">Protección y atención animal en un solo lugar</string>
+    <string name="welcome_subtitle_minimal">Reporta incidencias y acompaña la atención veterinaria de tu ciudad.</string>
+    <string name="welcome_footer_cba">Centro de Bienestar Animal</string>
     <string name="btn_login_login_register">Iniciar Sesión</string>
     <string name="btn_sign_login_register">Registrar</string>
     <string name="title_welcome">Bienvenido</string>
@@ -780,6 +784,8 @@
     <string name="notif_btn_reintentar">Reintentar</string>
     <string name="notif_vacio_titulo">No tienes notificaciones</string>
     <string name="notif_vacio_subtitulo">Aquí verás las asignaciones, solicitudes y avisos de tu cuenta.</string>
+    <string name="notif_vacio_subtitulo_ciudadano">Aquí verás cambios de estado de tus reportes y respuestas a tus postulaciones.</string>
+    <string name="notif_vacio_subtitulo_veterinario">Aquí verás las asignaciones, solicitudes de maletín y avisos de tu cuenta.</string>
     <string name="notif_error_titulo">No se pudieron cargar las notificaciones</string>
     <string name="notif_error_cargar">Revisa tu conexión e inténtalo de nuevo.</string>
     <string name="notif_error_marcar">No se pudo actualizar la notificación. Inténtalo de nuevo.</string>

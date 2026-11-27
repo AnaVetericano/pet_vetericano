@@ -103,4 +103,11 @@
     <color name="badge_observacion_bg">#113033</color>
     <color name="badge_observacion_text">#5EEAD4</color>
 
+    <!-- Pantalla inicial minimalista (MainActivity - Midnight Indigo) -->
+    <color name="welcome_badge_bg">#1B1F3A</color>
+    <color name="welcome_badge_stroke">#2E3561</color>
+    <color name="welcome_aura_start">#299A9CF5</color>
+    <color name="welcome_outline_stroke">#343B60</color>
+    <color name="welcome_outline_text">#F3F4FA</color>
+
 </resources>

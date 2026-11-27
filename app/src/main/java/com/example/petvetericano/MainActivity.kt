@@ -2,8 +2,11 @@ package com.example.petvetericano
 
 import android.content.Intent
 import android.os.Bundle
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
 import com.example.petvetericano.databinding.ActivityMainBinding
 import com.example.petvetericano.network.RetrofitClient
 
@@ -16,6 +19,7 @@ class MainActivity : AppCompatActivity() {
         aplicarModoOscuro()
 
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         val prefs = SharedPreferencesManager(this)
         val accessToken = prefs.getAccessToken()
@@ -43,6 +47,22 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val paddingIzq = binding.main.paddingLeft
+        val paddingSup = binding.main.paddingTop
+        val paddingDer = binding.main.paddingRight
+        val paddingInf = binding.main.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { view, insets ->
+            val bars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
+            view.setPadding(
+                paddingIzq + bars.left,
+                paddingSup + bars.top,
+                paddingDer + bars.right,
+                paddingInf + bars.bottom
+            )
+            insets
+        }
+        ViewCompat.requestApplyInsets(binding.main)
 
         binding.btnLoginWelcome.setOnClickListener { login() }
         binding.btnSignUpWelcome.setOnClickListener { signUp() }

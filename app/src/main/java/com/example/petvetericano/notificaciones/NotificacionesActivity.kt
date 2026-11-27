@@ -14,7 +14,9 @@ import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.petvetericano.MainActivity
 import com.example.petvetericano.R
+import com.example.petvetericano.SharedPreferencesManager
 import com.example.petvetericano.databinding.ActivityNotificacionesBinding
+import com.example.petvetericano.inicio_sesion
 import com.example.petvetericano.models.NotificacionItem
 import com.example.petvetericano.realtime.CategoriaEventoWs
 import com.example.petvetericano.realtime.WebSocketRepository
@@ -178,9 +180,14 @@ class NotificacionesActivity : AppCompatActivity() {
         val noLeidas = maxOf(noLeidasServidor, lista.count { !it.leida })
         actualizarCabecera(noLeidas)
         if (lista.isEmpty()) {
+            val subtituloVacio = if (SharedPreferencesManager(this).getUserRole() == inicio_sesion.ROL_VETERINARIO) {
+                getString(R.string.notif_vacio_subtitulo_veterinario)
+            } else {
+                getString(R.string.notif_vacio_subtitulo_ciudadano)
+            }
             mostrarEstado(
                 getString(R.string.notif_vacio_titulo),
-                getString(R.string.notif_vacio_subtitulo),
+                subtituloVacio,
                 conReintento = false
             )
         } else {

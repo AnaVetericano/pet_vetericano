@@ -10,88 +10,107 @@
     android:clipToPadding="false"
     tools:context=".MainActivity">
 
-    <TextView
-        android:id="@+id/txtVwelcome"
+    <LinearLayout
+        android:id="@+id/badgeBienestar"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_marginTop="36dp"
-        android:fontFamily="@font/nunito_display"
-        android:text="@string/welcome_login_register"
-        android:textColor="@color/blue"
-        android:textSize="22sp"
-        android:textStyle="bold"
+        android:layout_marginTop="28dp"
+        android:background="@drawable/bg_welcome_badge"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="14dp"
+        android:paddingVertical="6dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
+        app:layout_constraintTop_toTopOf="parent">
 
-    <TextView
-        android:id="@+id/txtVvetericano"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="2dp"
-        android:fontFamily="@font/nunito_display"
-        android:letterSpacing="0.04"
-        android:text="@string/vetericano_login_register"
-        android:textColor="@color/blue"
-        android:textSize="36sp"
-        android:textStyle="bold"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtVwelcome" />
+        <View
+            android:layout_width="6dp"
+            android:layout_height="6dp"
+            android:layout_marginEnd="8dp"
+            android:background="@drawable/bg_welcome_dot_gold" />
 
-    <TextView
-        android:id="@+id/textView3"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="4dp"
-        android:fontFamily="@font/nunito"
-        android:text="@string/care_login_register"
-        android:textColor="@color/text_secondary"
-        android:textSize="15sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/txtVvetericano" />
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/nunito_bold"
+            android:letterSpacing="0.08"
+            android:text="@string/welcome_badge_cba"
+            android:textColor="@color/primary"
+            android:textSize="11sp" />
+    </LinearLayout>
 
-    <com.google.android.material.card.MaterialCardView
-        android:id="@+id/cardDogChanchita"
+    <LinearLayout
+        android:id="@+id/layoutWelcomeHero"
         android:layout_width="0dp"
-        android:layout_height="0dp"
-        android:layout_marginHorizontal="36dp"
-        android:layout_marginTop="20dp"
-        android:layout_marginBottom="24dp"
-        android:outlineAmbientShadowColor="@color/primary_dark"
-        android:outlineSpotShadowColor="@color/primary_dark"
-        app:cardBackgroundColor="@color/card_background"
-        app:cardCornerRadius="28dp"
-        app:cardElevation="5dp"
-        app:strokeColor="@color/card_stroke"
-        app:strokeWidth="1dp"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:orientation="vertical"
+        android:paddingHorizontal="28dp"
         app:layout_constraintBottom_toTopOf="@+id/layoutButtons"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/textView3"
-        tools:targetApi="p">
+        app:layout_constraintTop_toBottomOf="@+id/badgeBienestar"
+        app:layout_constraintVertical_bias="0.46">
 
-        <ImageView
-            android:id="@+id/imgDogChanchita"
+        <FrameLayout
+            android:layout_width="204dp"
+            android:layout_height="204dp"
+            android:background="@drawable/bg_welcome_aura">
+
+            <ImageView
+                android:id="@+id/imgVetericanoLogotip"
+                android:layout_width="168dp"
+                android:layout_height="112dp"
+                android:layout_gravity="center"
+                android:contentDescription="@string/logovetericano"
+                android:scaleType="fitCenter"
+                app:srcCompat="@drawable/vectorlogovetericano" />
+        </FrameLayout>
+
+        <View
+            android:layout_width="38dp"
+            android:layout_height="3dp"
+            android:layout_marginTop="10dp"
+            android:background="@drawable/bg_welcome_gold_bar" />
+
+        <TextView
+            android:id="@+id/tvWelcomeHeadline"
             android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:contentDescription="@string/img_perro"
-            android:scaleType="centerCrop"
-            app:srcCompat="@drawable/chan" />
-    </com.google.android.material.card.MaterialCardView>
+            android:layout_height="wrap_content"
+            android:layout_marginTop="18dp"
+            android:fontFamily="@font/nunito_display"
+            android:gravity="center"
+            android:lineSpacingExtra="2dp"
+            android:text="@string/welcome_headline_minimal"
+            android:textColor="@color/text_primary"
+            android:textSize="23sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvWelcomeSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:fontFamily="@font/nunito"
+            android:gravity="center"
+            android:lineSpacingExtra="2dp"
+            android:text="@string/welcome_subtitle_minimal"
+            android:textColor="@color/text_secondary"
+            android:textSize="14.5sp" />
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/layoutButtons"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginHorizontal="36dp"
-        android:layout_marginBottom="16dp"
+        android:layout_marginHorizontal="28dp"
+        android:layout_marginBottom="14dp"
         android:clipChildren="false"
         android:clipToPadding="false"
         android:gravity="center"
         android:orientation="vertical"
-        app:layout_constraintBottom_toTopOf="@+id/imgVetericanoLogotip"
+        app:layout_constraintBottom_toTopOf="@+id/tvWelcomeFooter"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
@@ -99,7 +118,7 @@
             android:id="@+id/btnLoginWelcome"
             android:layout_width="match_parent"
             android:layout_height="54dp"
-            android:fontFamily="@font/nunito"
+            android:fontFamily="@font/nunito_bold"
             android:outlineAmbientShadowColor="@color/primary_dark"
             android:outlineSpotShadowColor="@color/primary_dark"
             android:stateListAnimator="@animator/anim_levitate_button"
@@ -107,7 +126,6 @@
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="16sp"
-            android:textStyle="bold"
             app:backgroundTint="@color/button_primary_bg"
             app:cornerRadius="16dp"
             app:elevation="4dp"
@@ -115,34 +133,33 @@
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSignUpWelcome"
+            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="54dp"
             android:layout_marginTop="12dp"
-            android:fontFamily="@font/nunito"
-            android:outlineAmbientShadowColor="@color/primary_dark"
-            android:outlineSpotShadowColor="@color/primary_dark"
-            android:stateListAnimator="@animator/anim_levitate_button"
+            android:fontFamily="@font/nunito_bold"
             android:text="@string/btn_sign_login_register"
             android:textAllCaps="false"
-            android:textColor="@color/darkblue"
+            android:textColor="@color/welcome_outline_text"
             android:textSize="16sp"
-            android:textStyle="bold"
-            app:backgroundTint="@color/yellow"
+            app:backgroundTint="@color/card_background"
             app:cornerRadius="16dp"
-            app:elevation="4dp"
-            tools:targetApi="p" />
+            app:elevation="0dp"
+            app:strokeColor="@color/welcome_outline_stroke"
+            app:strokeWidth="1.5dp" />
     </LinearLayout>
 
-    <ImageView
-        android:id="@+id/imgVetericanoLogotip"
-        android:layout_width="80dp"
-        android:layout_height="80dp"
+    <TextView
+        android:id="@+id/tvWelcomeFooter"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
         android:layout_marginBottom="20dp"
-        android:contentDescription="@string/logovetericano"
-        android:scaleType="fitCenter"
+        android:fontFamily="@font/nunito"
+        android:text="@string/welcome_footer_cba"
+        android:textColor="@color/text_muted"
+        android:textSize="12sp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:srcCompat="@drawable/vectorlogovetericano" />
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -4,6 +4,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.os.Build
 import android.view.View
 import android.widget.ImageView
 import android.widget.TextView
@@ -124,11 +125,10 @@ object BottomNavHelper {
             } else {
                 ejecutarNavegacion(onBeforeNavigate) {
                     val intent = Intent(activity, bienvenida::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                            Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                            Intent.FLAG_ACTIVITY_NO_ANIMATION
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                     }
                     activity.startActivity(intent)
+                    aplicarTransicionCrossfade(activity, conCierre = true)
                     activity.finish()
                 }
             }
@@ -225,11 +225,10 @@ object BottomNavHelper {
             } else {
                 ejecutarNavegacion(onBeforeNavigate) {
                     val intent = Intent(activity, dahsboard_veterianrio::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                            Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                            Intent.FLAG_ACTIVITY_NO_ANIMATION
+                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
                     }
                     activity.startActivity(intent)
+                    aplicarTransicionCrossfade(activity, conCierre = true)
                     activity.finish()
                 }
             }
@@ -284,11 +283,32 @@ object BottomNavHelper {
         esDesdeInicio: Boolean
     ) {
         val intent = Intent(activity, destino).apply {
-            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NO_ANIMATION
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
         activity.startActivity(intent)
+        aplicarTransicionCrossfade(activity, conCierre = !esDesdeInicio)
         if (!esDesdeInicio) {
             activity.finish()
+        }
+    }
+
+    private fun aplicarTransicionCrossfade(activity: Activity, conCierre: Boolean) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            activity.overrideActivityTransition(
+                Activity.OVERRIDE_TRANSITION_OPEN,
+                R.anim.nav_fade_in,
+                R.anim.nav_fade_out
+            )
+            if (conCierre) {
+                activity.overrideActivityTransition(
+                    Activity.OVERRIDE_TRANSITION_CLOSE,
+                    R.anim.nav_fade_in,
+                    R.anim.nav_fade_out
+                )
+            }
+        } else {
+            @Suppress("DEPRECATION")
+            activity.overridePendingTransition(R.anim.nav_fade_in, R.anim.nav_fade_out)
         }
     }
 }

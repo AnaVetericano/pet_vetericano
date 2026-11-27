@@ -135,7 +135,7 @@ class SolicitudesKitActivity : AppCompatActivity() {
                 binding.cardSugeridosContainer.visibility = View.VISIBLE
                 binding.cardSugeridosContainer.setCardBackgroundColor(ContextCompat.getColor(this, R.color.radix_amber_bg))
                 binding.cardSugeridosContainer.strokeColor = ContextCompat.getColor(this, R.color.radix_amber_border)
-                binding.tvSugeridosTitulo.text = "⚠️ ${nuevosFaltantes.size} medicamento(s) requieren radicar reposición:"
+                binding.tvSugeridosTitulo.text = "${nuevosFaltantes.size} medicamento(s) requieren radicar reposición:"
                 binding.tvSugeridosTitulo.setTextColor(ContextCompat.getColor(this, R.color.radix_amber_text))
 
                 val sb = StringBuilder()
@@ -146,7 +146,7 @@ class SolicitudesKitActivity : AppCompatActivity() {
                 }
 
                 if (enTramite.isNotEmpty()) {
-                    sb.append("\n⏳ Ya en trámite ante Farmacia CBA (${enTramite.size} fármaco(s)):\n")
+                    sb.append("\nYa en trámite ante Farmacia CBA (${enTramite.size} fármaco(s)):\n")
                     enTramite.forEach {
                         val tramite = mapaMedTramiteInfo[it.idMedicamentoInt]
                         val numSol = tramite?.first?.let { id -> "Solicitud #$id" } ?: "En trámite"
@@ -169,7 +169,7 @@ class SolicitudesKitActivity : AppCompatActivity() {
                 binding.cardSugeridosContainer.visibility = View.VISIBLE
                 binding.cardSugeridosContainer.setCardBackgroundColor(ContextCompat.getColor(this, R.color.badge_asignada_bg))
                 binding.cardSugeridosContainer.strokeColor = ContextCompat.getColor(this, R.color.badge_asignada_text)
-                binding.tvSugeridosTitulo.text = "⏳ Reposición en trámite ante Farmacia CBA"
+                binding.tvSugeridosTitulo.text = "Reposición en trámite ante Farmacia CBA"
                 binding.tvSugeridosTitulo.setTextColor(ContextCompat.getColor(this, R.color.badge_asignada_text))
 
                 val sb = StringBuilder()
@@ -194,7 +194,7 @@ class SolicitudesKitActivity : AppCompatActivity() {
                 binding.cardSugeridosContainer.visibility = View.VISIBLE
                 binding.cardSugeridosContainer.setCardBackgroundColor(ContextCompat.getColor(this, R.color.radix_grass_bg))
                 binding.cardSugeridosContainer.strokeColor = ContextCompat.getColor(this, R.color.radix_grass_border)
-                binding.tvSugeridosTitulo.text = "✅ Cuotas al día"
+                binding.tvSugeridosTitulo.text = "Cuotas al día"
                 binding.tvSugeridosTitulo.setTextColor(ContextCompat.getColor(this, R.color.radix_grass_text))
                 binding.tvSugeridosDetalle.text = "Todas las referencias de tu maletín cumplen actualmente su cuota física asignada."
                 binding.tvSugeridosDetalle.setTextColor(ContextCompat.getColor(this, R.color.badge_alta_text))
@@ -278,7 +278,7 @@ class SolicitudesKitActivity : AppCompatActivity() {
 
             if (esReposicion && medicamentosEnTramiteIds.contains(med.idMedicamento)) {
                 val tramite = mapaMedTramiteInfo[med.idMedicamento]
-                binding.tilMedSolicitud.error = "⏳ Ya existe la Solicitud #${tramite?.first} en trámite para este fármaco."
+                binding.tilMedSolicitud.error = "Ya existe la Solicitud #${tramite?.first} en trámite para este fármaco."
                 DialogoAntiduplicadoM3Helper.mostrar(
                     context = this,
                     nombreMedicamento = med.nombre,
@@ -333,7 +333,7 @@ class SolicitudesKitActivity : AppCompatActivity() {
 
         if (esReposicion && tramite != null) {
             val (solId, cant) = tramite
-            binding.tilMedSolicitud.error = "⏳ Ya existe la Solicitud #$solId en trámite ($cant uds) para este fármaco."
+            binding.tilMedSolicitud.error = "Ya existe la Solicitud #$solId en trámite ($cant uds) para este fármaco."
             binding.btnEnviarSolicitudPuntual.isEnabled = false
         } else {
             binding.tilMedSolicitud.error = null
@@ -388,7 +388,7 @@ class SolicitudesKitActivity : AppCompatActivity() {
                     val medMal = maletinMap[item.idMedicamento]
                     val cuota = medMal?.cuotaAsignada ?: medMal?.cantidadInicial?.toInt()
                     val tramite = mapaMedTramiteInfo[item.idMedicamento]
-                    val tramiteTag = if (tramite != null) " [⏳ En trámite #${tramite.first}]" else ""
+                    val tramiteTag = if (tramite != null) " [En trámite #${tramite.first}]" else ""
                     when {
                         cuota != null -> "${item.nombre}$tramiteTag (En maletín: ${item.saldoDisponible} / cuota $cuota)"
                         item.saldoDisponible > 0 -> "${item.nombre}$tramiteTag (En maletín: ${item.saldoDisponible})"
@@ -445,7 +445,7 @@ class SolicitudesKitActivity : AppCompatActivity() {
                         withContext(Dispatchers.Main) {
                             Toast.makeText(
                                 this@SolicitudesKitActivity,
-                                "🚀 Se radicaron $enviadas solicitud(es) que estaban en cola offline",
+                                "Se radicaron $enviadas solicitud(es) que estaban en cola offline",
                                 Toast.LENGTH_SHORT
                             ).show()
                         }
@@ -620,7 +620,7 @@ class SolicitudesKitActivity : AppCompatActivity() {
 
         MaterialAlertDialogBuilder(this)
             .setIcon(R.drawable.ic_sync)
-            .setTitle("📱 Solicitud guardada sin conexión")
+            .setTitle("Solicitud guardada sin conexión")
             .setMessage("No hay conexión a internet en este momento.\n\nTu solicitud ha quedado guardada en la bandeja de salida de tu teléfono y se enviará automáticamente a Farmacia CBA apenas recuperes señal.")
             .setPositiveButton("Ver mis solicitudes") { _, _ ->
                 binding.tabLayoutSolicitudes.getTabAt(0)?.select()

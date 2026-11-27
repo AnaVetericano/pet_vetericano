@@ -969,7 +969,7 @@
                             app:iconPadding="8dp"
                             app:iconSize="16dp"
                             app:iconTint="@color/white"
-                            app:backgroundTint="@color/primary"
+                            app:backgroundTint="@color/button_primary_bg"
                             app:cornerRadius="10dp"
                             app:elevation="3dp" />
                     </LinearLayout>

@@ -418,7 +418,7 @@
     <string name="lbl_en_evaluacion">En evaluación</string>
     <string name="cd_alerta_caso_cerrado">Alerta caso cerrado</string>
     <string name="lbl_este_caso_se_encuentra_finalizado">Este caso se encuentra finalizado. No se permiten nuevas modificaciones de estado para garantizar la trazabilidad médica y legal.</string>
-    <string name="lbl_el_paso_de_en_evaluacion">💡 El paso de \'En evaluación\' a \'En observación\' o \'En tratamiento\' se realiza automáticamente al guardar el Acta de Atención. También puedes registrar aquí un traslado externo o desenlace si aplica.</string>
+    <string name="lbl_el_paso_de_en_evaluacion">El paso de \'En evaluación\' a \'En observación\' o \'En tratamiento\' se realiza automáticamente al guardar el Acta de Atención. También puedes registrar aquí un traslado externo o desenlace si aplica.</string>
     <string name="lbl_evolucion_clinica_del_paciente">Evolución clínica del paciente</string>
     <string name="lbl_fase_activa_del_paciente_durante">Fase activa del paciente durante su estadía médica</string>
     <string name="lbl_en_observacion">En observación</string>
@@ -496,20 +496,20 @@
     <string name="cd_regresar">Regresar</string>
     <string name="lbl_adopciones">ADOPCIONES</string>
     <string name="lbl_no_hay_adopciones_disponibles_por">No hay adopciones disponibles por el momento.</string>
-    <string name="lbl_eventos_y_jornadas">Eventos y Jornadas 🐾</string>
+    <string name="lbl_eventos_y_jornadas">Eventos y Jornadas</string>
     <string name="lbl_conoce_nuestras_proximas_actividades_y">Conoce nuestras próximas actividades y jornadas de apoyo</string>
     <string name="lbl_no_hay_eventos_disponibles_por">No hay eventos disponibles por el momento.</string>
     <string name="lbl_voluntariado_2">VOLUNTARIADO</string>
     <string name="cd_imagen_del_evento">Imagen del evento</string>
     <string name="lbl_evento">Evento</string>
-    <string name="lbl_2026_10_15">📅 2026-10-15</string>
+    <string name="lbl_2026_10_15">2026-10-15</string>
     <string name="lbl_postularse">Postularse</string>
     <string name="lbl_adopcion_2">ADOPCIÓN</string>
     <string name="lbl_gran_jornada_de_adopcion">Gran Jornada de Adopción</string>
     <string name="lbl_descripcion_del_evento">Descripción del evento</string>
-    <string name="lbl_15_de_septiembre_de_2026">📅 15 de septiembre de 2026</string>
-    <string name="lbl_9_00_am_3_00">🕐 9:00 AM - 3:00 PM</string>
-    <string name="lbl_parque_central">📍 Parque Central</string>
+    <string name="lbl_15_de_septiembre_de_2026">15 de septiembre de 2026</string>
+    <string name="lbl_9_00_am_3_00">9:00 AM - 3:00 PM</string>
+    <string name="lbl_parque_central">Parque Central</string>
     <string name="cd_postularse_al_evento">Postularse al evento</string>
 
     <!-- ============================================================ -->

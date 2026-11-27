@@ -7,13 +7,14 @@
     <color name="darkblue2">#FF353583</color>
     <color name="darkblue">#FF170B3D</color>
     <color name="gray_paw_cat">#FFF1F1F1</color>
-    <color name="yellow">#F1B800</color>
+    <color name="yellow">#F1C63C</color>
 
     <!-- Derivados armónicos de la paleta oficial -->
     <color name="primary">#4141A5</color>
+    <color name="button_primary_bg">#4141A5</color>
     <color name="primary_dark">#170B3D</color>
     <color name="primary_variant">#353583</color>
-    <color name="secondary">#F1B800</color>
+    <color name="secondary">#F1C63C</color>
     <color name="secondary_dark">#D49F00</color>
     <color name="secondary_light">#FFF4D0</color>
     <color name="primary_light">#EEF0FF</color>
@@ -22,7 +23,17 @@
     <!-- Superficies, fondos y textos para diseño limpio y moderno -->
     <color name="bg_screen">#F4F5F7</color>
     <color name="card_background">#FFFFFFFF</color>
+    <color name="nav_surface">#FFFFFFFF</color>
     <color name="card_stroke">#E2E8F0</color>
+
+    <!-- Tarjeta Hero Reportar Incidencia (Modo Claro: dorado oficial del logo) -->
+    <color name="hero_report_bg">#F1C63C</color>
+    <color name="hero_report_stroke">#D49F00</color>
+    <color name="hero_report_title">#170B3D</color>
+    <color name="hero_report_subtitle">#353583</color>
+    <color name="hero_report_icon_bg">#FFFFFFFF</color>
+    <color name="hero_report_icon_stroke">#E2E8F0</color>
+    <color name="hero_report_icon_tint">#170B3D</color>
     <color name="input_background">#F8FAFC</color>
     <color name="input_stroke">#CBD5E1</color>
     <color name="text_primary">#0F172A</color>
@@ -67,10 +78,10 @@
 
     <!-- Colores del Gráfico Mensual (Usando tu paleta Vetericano) -->
     <color name="grafico_asignadas">#4141A5</color>          <!-- Azul primary: Peticiones asignadas -->
-    <color name="grafico_en_tratamiento">#F1B800</color>     <!-- Amarillo secondary: En tratamiento / proceso -->
+    <color name="grafico_en_tratamiento">#F1C63C</color>     <!-- Dorado oficial: En tratamiento / proceso -->
     <color name="grafico_atendidas">#10B981</color>          <!-- Verde success: Peticiones atendidas / cerradas -->
     <color name="grafico_transferidas">#6D28D9</color>       <!-- Morado transferido: Transferidas a otro centro -->
-    <color name="grafico_reasignadas">#F1B800</color>        <!-- Compatibilidad: En tratamiento -->
+    <color name="grafico_reasignadas">#F1C63C</color>        <!-- Compatibilidad: En tratamiento -->
 
     <!-- Colores para Badges de estado en el RecyclerView -->
     <color name="badge_urgente_bg">#FEE2E2</color>       <!-- Fondo rojo claro -->

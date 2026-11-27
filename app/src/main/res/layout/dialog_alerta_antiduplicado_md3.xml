@@ -104,7 +104,7 @@
                     android:fontFamily="@font/nunito_bold"
                     android:paddingHorizontal="8dp"
                     android:paddingVertical="3dp"
-                    android:text="⏳ EN TRÁMITE"
+                    android:text="EN TRÁMITE"
                     android:textColor="@color/badge_asignada_text"
                     android:textSize="10sp" />
             </LinearLayout>

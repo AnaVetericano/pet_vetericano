@@ -6,6 +6,7 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.Toast
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.widget.NestedScrollView
 import androidx.lifecycle.Lifecycle
@@ -37,6 +38,7 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         binding = ActivityMaletinMedicamentosBinding.inflate(layoutInflater)
         setContentView(binding.root)
         BottomNavHelper.aplicarInsetSuperior(binding.appBarMaletin)
@@ -100,10 +102,6 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
     }
 
     private fun configurarToolbar() {
-        binding.toolbarMaletin.setNavigationOnClickListener {
-            finish()
-        }
-
         binding.toolbarMaletin.setOnMenuItemClickListener { menuItem ->
             when (menuItem.itemId) {
                 R.id.action_sincronizar_maletin -> {
@@ -193,7 +191,7 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
 
         if (unidadesVencidasTotal > 0) {
             binding.tvDetalleVencidasHeader.visibility = View.VISIBLE
-            binding.tvDetalleVencidasHeader.text = "• $unidadesVigentesTotal unidades vigentes • ⚠️ $unidadesVencidasTotal vencidas"
+            binding.tvDetalleVencidasHeader.text = "• $unidadesVigentesTotal unidades vigentes • $unidadesVencidasTotal vencidas"
         } else if (unidadesGranTotal > 0) {
             binding.tvDetalleVencidasHeader.visibility = View.VISIBLE
             binding.tvDetalleVencidasHeader.text = "• 100% stock vigente y apto para atención clínica"
@@ -326,7 +324,7 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
                 }
             }
             if (med.saldoVencido > 0) {
-                append("⚠️ Stock vencido (no apto): ").append(med.saldoVencido).append(" ").append(med.unidadMedida).append("\n")
+                append("• Stock vencido (no apto): ").append(med.saldoVencido).append(" ").append(med.unidadMedida).append("\n")
             }
             append("• Presentación: ").append(med.presentacion).append("\n")
             append("• Vía recomendada: ").append(med.viaRecomendada).append("\n")
@@ -335,7 +333,7 @@ class MaletinMedicamentosActivity : AppCompatActivity() {
             if (med.lotes.isNotEmpty()) {
                 append("Lotes asignados en kit:\n")
                 med.lotes.forEach { lote ->
-                    val estadoLote = if (lote.vencido) "❌ VENCIDO" else "✅ Vigente"
+                    val estadoLote = if (lote.vencido) "VENCIDO" else "Vigente"
                     append("  - Lote #").append(lote.idInventario)
                         .append(": ").append(lote.cantidadActual).append(" uds")
                         .append(" (Vence: ").append(lote.fechaVencimiento ?: "N/D").append(" - ").append(estadoLote).append(")\n")

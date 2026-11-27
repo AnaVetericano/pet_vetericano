@@ -521,7 +521,7 @@
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold"
-            app:backgroundTint="@color/blue"
+            app:backgroundTint="@color/button_primary_bg"
             app:cornerRadius="14dp"
             app:elevation="4dp"
             tools:targetApi="p" />
@@ -717,7 +717,7 @@
                 android:textColor="@color/white"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                app:backgroundTint="@color/blue"
+                app:backgroundTint="@color/button_primary_bg"
                 app:cornerRadius="14dp"
                 app:elevation="4dp"
                 tools:targetApi="p" />

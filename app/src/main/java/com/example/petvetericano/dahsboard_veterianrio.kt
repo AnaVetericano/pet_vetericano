@@ -1,7 +1,6 @@
 package com.example.petvetericano
 
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -23,6 +22,8 @@ import com.example.petvetericano.models.PeticionPendiente
 import com.example.petvetericano.models.TipoEstado
 import com.example.petvetericano.network.RetrofitClient
 import com.example.petvetericano.models.PeticionListResponse
+import com.example.petvetericano.notificaciones.NotificacionesActivity
+import com.example.petvetericano.notificaciones.NotificacionesRepository
 import com.example.petvetericano.offline.NetworkUtils
 import com.example.petvetericano.offline.PeticionesCacheManager
 import com.github.mikephil.charting.data.PieData
@@ -46,7 +47,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
             val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
+            v.setPadding(systemBars.left, systemBars.top, systemBars.right, 0)
             insets
         }
 
@@ -59,23 +60,15 @@ class dahsboard_veterianrio : AppCompatActivity() {
             sincronizarPerfilUsuario()
             sincronizarKitDashboard()
             actualizarBadgeCola()
+            actualizarBadgeNotificaciones()
         }
 
-        // Cargar nombre e iniciales del veterinario inmediatamente
+        // Cargar nombre del veterinario inmediatamente
         actualizarDatosUsuario()
         configurarBotonModoOscuro()
 
-        // Avatar y nombre clicables para acceder a opciones de editar perfil
-        binding.tvInicialesAvatar.setOnClickListener {
-            startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
-        }
-        binding.tvNombreUsuario.setOnClickListener {
-            startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
-        }
-
-        // Botones de navegación de acciones
-        binding.btnPeticiones.setOnClickListener {
-            startActivity(Intent(this, PetitionsListActivity::class.java))
+        binding.btnNotificaciones.setOnClickListener {
+            startActivity(Intent(this, NotificacionesActivity::class.java))
         }
 
         // Tarjeta de Maletín de Medicamentos
@@ -84,19 +77,12 @@ class dahsboard_veterianrio : AppCompatActivity() {
         }
 
         // Bottom Navigation
-        binding.ivNavInicio.setOnClickListener {
-            // Ya estamos en inicio, podemos hacer que suba el scroll al inicio
-            binding.rvPendientes.smoothScrollToPosition(0)
-        }
-
-        binding.ivNavPeticiones.setOnClickListener {
-            val intent = Intent(this, PetitionsListActivity::class.java)
-            startActivity(intent)
-        }
-
-        binding.ivNavPerfil.setOnClickListener {
-            startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
-        }
+        BottomNavHelper.setupVeterinario(
+            activity = this,
+            binding = binding.bottomNavVeterinario,
+            activeTab = BottomNavHelper.VeterinarioTab.INICIO,
+            onReselectCurrent = { binding.scrollDashboard.smoothScrollTo(0, 0) }
+        )
 
         // Cola de actas offline
         binding.btnActaCola.setOnClickListener {
@@ -137,6 +123,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
         fetchDashboardData()
         sincronizarPerfilUsuario()
         actualizarResumenMaletin()
+        actualizarBadgeNotificaciones()
 
         // Observar reactivamente el maletín para actualizar el contador automáticamente
         lifecycleScope.launch {
@@ -157,6 +144,21 @@ class dahsboard_veterianrio : AppCompatActivity() {
         actualizarResumenMaletin()
         sincronizarKitDashboard()
         actualizarBadgeCola()
+        actualizarBadgeNotificaciones()
+    }
+
+    private fun actualizarBadgeNotificaciones() {
+        lifecycleScope.launch {
+            val res = NotificacionesRepository.obtenerContador(this@dahsboard_veterianrio)
+            if (isFinishing || isDestroyed) return@launch
+            val noLeidas = res.getOrNull()?.noLeidas ?: 0
+            if (noLeidas > 0) {
+                binding.tvNotifBadge.visibility = View.VISIBLE
+                binding.tvNotifBadge.text = if (noLeidas > 99) "99+" else noLeidas.toString()
+            } else {
+                binding.tvNotifBadge.visibility = View.GONE
+            }
+        }
     }
 
     private fun actualizarBadgeCola() {
@@ -226,13 +228,6 @@ class dahsboard_veterianrio : AppCompatActivity() {
         val nombreCompleto = if (apellido.isNotEmpty() && !nombre.contains(apellido)) "$nombre $apellido" else nombre
         binding.tvNombreUsuario.text = nombreCompleto.ifEmpty { "Médico Veterinario" }
         binding.tvRolUsuario.setText(R.string.dashboard_ux_rol_veterinario)
-
-        val iniciales = buildString {
-            if (nombre.isNotEmpty()) append(nombre.first().uppercaseChar())
-            if (apellido.isNotEmpty()) append(apellido.first().uppercaseChar())
-            else if (nombre.length > 1) append(nombre[1].uppercaseChar())
-        }
-        binding.tvInicialesAvatar.text = iniciales.ifEmpty { "V" }
     }
 
     private fun sincronizarPerfilUsuario() {
@@ -522,19 +517,19 @@ class dahsboard_veterianrio : AppCompatActivity() {
 
         if (asignadas > 0) {
             entries.add(PieEntry(asignadas.toFloat(), ""))
-            colores.add(Color.parseColor("#4141A5")) // primary (azul)
+            colores.add(ContextCompat.getColor(this, R.color.grafico_asignadas))
         }
         if (enTratamiento > 0) {
             entries.add(PieEntry(enTratamiento.toFloat(), ""))
-            colores.add(Color.parseColor("#F1B800")) // secondary / en tratamiento (amarillo)
+            colores.add(ContextCompat.getColor(this, R.color.grafico_en_tratamiento))
         }
         if (atendidas > 0) {
             entries.add(PieEntry(atendidas.toFloat(), ""))
-            colores.add(Color.parseColor("#10B981")) // success / atendidas (verde)
+            colores.add(ContextCompat.getColor(this, R.color.grafico_atendidas))
         }
         if (transferidas > 0) {
             entries.add(PieEntry(transferidas.toFloat(), ""))
-            colores.add(Color.parseColor("#6D28D9")) // morado transferido
+            colores.add(ContextCompat.getColor(this, R.color.grafico_transferidas))
         }
 
         if (entries.isEmpty()) {

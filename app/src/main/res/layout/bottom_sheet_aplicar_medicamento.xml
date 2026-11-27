@@ -5,6 +5,8 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:background="@drawable/bg_bottom_sheet_m3"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:orientation="vertical"
     android:paddingHorizontal="20dp"
     android:paddingBottom="24dp">
@@ -72,6 +74,21 @@
             app:tint="@color/text_secondary" />
     </LinearLayout>
 
+    <androidx.core.widget.NestedScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
+        android:fillViewport="true">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:orientation="vertical"
+            android:paddingBottom="4dp">
+
     <!-- Selector de Medicamento (Exposed Dropdown) -->
     <com.google.android.material.textfield.TextInputLayout
         android:id="@+id/tilSelectorMedicamento"
@@ -80,11 +97,12 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:hint="@string/hint_medicamento_del_maletin"
+        app:boxBackgroundColor="@color/input_background"
         app:boxCornerRadiusBottomEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusTopStart="12dp"
-        app:boxStrokeColor="@color/primary">
+        app:boxStrokeColor="@color/selector_input_stroke">
 
         <com.google.android.material.textfield.MaterialAutoCompleteTextView
             android:id="@+id/autoCompleteMedicamento"
@@ -144,11 +162,12 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
         android:hint="@string/hint_aplicado_a_paciente"
+        app:boxBackgroundColor="@color/input_background"
         app:boxCornerRadiusBottomEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusTopStart="12dp"
-        app:boxStrokeColor="@color/primary">
+        app:boxStrokeColor="@color/selector_input_stroke">
 
         <com.google.android.material.textfield.MaterialAutoCompleteTextView
             android:id="@+id/autoCompletePaciente"
@@ -163,8 +182,12 @@
         android:id="@+id/layoutModoDosisSelector"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/bg_segment_sunk"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:orientation="horizontal"
-        android:layout_marginBottom="10dp">
+        android:padding="4dp">
 
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnModoDecimal"
@@ -244,11 +267,12 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:layout_marginHorizontal="8dp"
+            app:boxBackgroundColor="@color/input_background"
             app:boxCornerRadiusBottomEnd="12dp"
             app:boxCornerRadiusBottomStart="12dp"
             app:boxCornerRadiusTopEnd="12dp"
             app:boxCornerRadiusTopStart="12dp"
-            app:boxStrokeColor="@color/primary"
+            app:boxStrokeColor="@color/selector_input_stroke"
             app:suffixText="uds">
 
             <com.google.android.material.textfield.TextInputEditText
@@ -521,11 +545,12 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
         android:hint="@string/hint_via_de_administracion"
+        app:boxBackgroundColor="@color/input_background"
         app:boxCornerRadiusBottomEnd="12dp"
         app:boxCornerRadiusBottomStart="12dp"
         app:boxCornerRadiusTopEnd="12dp"
         app:boxCornerRadiusTopStart="12dp"
-        app:boxStrokeColor="@color/primary">
+        app:boxStrokeColor="@color/selector_input_stroke">
 
         <com.google.android.material.textfield.MaterialAutoCompleteTextView
             android:id="@+id/autoCompleteVia"
@@ -553,12 +578,20 @@
         android:layout_width="match_parent"
         android:layout_height="52dp"
         android:fontFamily="@font/nunito_bold"
+        android:outlineAmbientShadowColor="@color/primary_dark"
+        android:outlineSpotShadowColor="@color/primary_dark"
+        android:stateListAnimator="@animator/anim_levitate_button"
         android:text="@string/btn_aplicar_y_descontar_del_maletin"
         android:textAllCaps="false"
         android:textSize="15sp"
         app:cornerRadius="14dp"
+        app:elevation="4dp"
         app:icon="@drawable/ic_check"
         app:iconGravity="textStart"
-        app:iconSize="20dp" />
+        app:iconSize="20dp"
+        tools:targetApi="p" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
 
 </LinearLayout>

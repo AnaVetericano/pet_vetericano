@@ -8,6 +8,8 @@
     android:id="@+id/step3Layout"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:orientation="vertical"
     android:visibility="gone"
     tools:visibility="visible">
@@ -19,6 +21,8 @@
         android:id="@+id/layoutProcedimientosSeresSintientes"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:orientation="vertical"
         android:visibility="visible">
 
@@ -33,13 +37,17 @@
 
         <!-- Switch Desparasitación -->
         <com.google.android.material.card.MaterialCardView
-            style="?attr/materialCardViewOutlinedStyle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="14dp"
+            android:outlineAmbientShadowColor="@color/primary_dark"
+            android:outlineSpotShadowColor="@color/primary_dark"
             app:cardBackgroundColor="@color/card_background"
             app:cardCornerRadius="14dp"
-            app:strokeColor="@color/card_stroke">
+            app:cardElevation="3dp"
+            app:strokeColor="@color/card_stroke"
+            app:strokeWidth="1dp"
+            tools:targetApi="p">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -83,7 +91,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:hint="@string/hint_tipo_de_prueba_rapida_examen"
-            app:boxStrokeColor="@color/primary">
+            app:boxBackgroundColor="@color/input_background"
+            app:boxStrokeColor="@color/selector_input_stroke">
 
             <com.google.android.material.textfield.MaterialAutoCompleteTextView
                 android:id="@+id/autoCompleteTipoPrueba"
@@ -101,7 +110,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:hint="@string/hint_pruebas_complementarias_detalle"
-            app:boxStrokeColor="@color/primary">
+            app:boxBackgroundColor="@color/input_background"
+            app:boxStrokeColor="@color/selector_input_stroke">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etPruebasComplementarias"
@@ -116,12 +126,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="none"
+            android:clipChildren="false"
             android:clipToPadding="false"
             android:layout_marginBottom="8dp">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
@@ -134,11 +147,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_negativo"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/radix_grass_text"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/radix_grass_bg"
                     app:strokeColor="@color/radix_grass_border"
                     app:strokeWidth="1dp"
@@ -154,11 +169,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_positivo"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/radix_tomato_text"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/radix_tomato_bg"
                     app:strokeColor="@color/radix_tomato_border"
                     app:strokeWidth="1dp"
@@ -174,11 +191,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="12dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_pendiente"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/radix_amber_text"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/radix_amber_bg"
                     app:strokeColor="@color/radix_amber_border"
                     app:strokeWidth="1dp" />
@@ -192,7 +211,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="14dp"
             android:hint="@string/hint_resultado_de_las_pruebas"
-            app:boxStrokeColor="@color/primary">
+            app:boxBackgroundColor="@color/input_background"
+            app:boxStrokeColor="@color/selector_input_stroke">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etResultadoPruebas"
@@ -212,11 +232,14 @@
             android:insetBottom="0dp"
             android:layout_marginBottom="14dp"
             android:fontFamily="@font/nunito_bold"
+            android:stateListAnimator="@animator/anim_levitate_button"
             android:text="@string/lbl_anadir_examen_al_acta"
             android:textAllCaps="false"
             android:textColor="@color/primary"
             android:textSize="13sp"
+            app:backgroundTint="@color/card_background"
             app:cornerRadius="10dp"
+            app:elevation="2dp"
             app:icon="@drawable/ic_add"
             app:iconTint="@color/primary"
             app:iconSize="18dp"
@@ -264,12 +287,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="none"
+            android:clipChildren="false"
             android:clipToPadding="false"
             android:layout_marginBottom="8dp">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
@@ -282,11 +308,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_agua_y_comida_limpia"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
@@ -302,11 +330,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_espacio_techado"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
@@ -322,11 +352,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_vacunacion_al_dia"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
@@ -342,11 +374,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_esterilizacion"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
@@ -362,11 +396,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_control_veterinario"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp" />
@@ -380,7 +416,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:hint="@string/hint_compromisos_adquiridos_por_el_tenedor"
-            app:boxStrokeColor="@color/primary">
+            app:boxBackgroundColor="@color/input_background"
+            app:boxStrokeColor="@color/selector_input_stroke">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etCompromisos"
@@ -416,12 +453,15 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:scrollbars="none"
+            android:clipChildren="false"
             android:clipToPadding="false"
             android:layout_marginBottom="8dp">
 
             <LinearLayout
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:orientation="horizontal">
 
                 <com.google.android.material.button.MaterialButton
@@ -434,11 +474,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_chip_ley_84"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
@@ -454,11 +496,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_chip_ley_1638"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
@@ -474,11 +518,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_chip_ley_1774"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
@@ -494,11 +540,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_chip_ley_1801"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
@@ -514,11 +562,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_chip_ley_2054"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp"
@@ -534,11 +584,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="3dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_chip_ley_2385"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp" />
@@ -553,7 +605,8 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="12dp"
             android:hint="@string/hint_fundamento_legal_aplicable"
-            app:boxStrokeColor="@color/primary">
+            app:boxBackgroundColor="@color/input_background"
+            app:boxStrokeColor="@color/selector_input_stroke">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etFundamentoLegal"
@@ -569,6 +622,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:orientation="vertical"
             android:layout_marginBottom="16dp">
 
@@ -584,6 +639,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -597,11 +654,14 @@
                     android:insetRight="0dp"
                     android:insetBottom="0dp"
                     android:padding="0dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
+                    app:backgroundTint="@color/card_background"
                     app:icon="@drawable/ic_remove"
                     app:iconGravity="textStart"
                     app:iconSize="16dp"
                     app:iconTint="@color/primary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:strokeColor="@color/primary"
                     app:strokeWidth="1dp" />
 
@@ -611,7 +671,8 @@
                     android:layout_width="60dp"
                     android:layout_height="wrap_content"
                     android:layout_marginHorizontal="6dp"
-                    app:boxStrokeColor="@color/primary">
+                    app:boxBackgroundColor="@color/input_background"
+                    app:boxStrokeColor="@color/selector_input_stroke">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etPlazoDias"
@@ -634,11 +695,14 @@
                     android:insetRight="0dp"
                     android:insetBottom="0dp"
                     android:padding="0dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
+                    app:backgroundTint="@color/card_background"
                     app:icon="@drawable/ic_add"
                     app:iconGravity="textStart"
                     app:iconSize="16dp"
                     app:iconTint="@color/primary"
                     app:cornerRadius="8dp"
+                    app:elevation="2dp"
                     app:strokeColor="@color/primary"
                     app:strokeWidth="1dp" />
 
@@ -649,11 +713,14 @@
                     android:layout_weight="1"
                     android:layout_marginStart="8dp"
                     android:scrollbars="none"
+                    android:clipChildren="false"
                     android:clipToPadding="false">
 
                     <LinearLayout
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
+                        android:clipChildren="false"
+                        android:clipToPadding="false"
                         android:orientation="horizontal">
 
                         <com.google.android.material.button.MaterialButton
@@ -666,11 +733,13 @@
                             android:insetBottom="0dp"
                             android:paddingHorizontal="8dp"
                             android:paddingVertical="3dp"
+                            android:stateListAnimator="@animator/anim_levitate_button"
                             android:text="@string/duration_3_d"
                             android:textAllCaps="false"
                             android:textSize="11sp"
                             android:textColor="@color/text_secondary"
                             app:cornerRadius="8dp"
+                            app:elevation="2dp"
                             app:backgroundTint="@color/chip_bg_neutral"
                             app:strokeColor="@color/chip_stroke_neutral"
                             app:strokeWidth="1dp"
@@ -686,11 +755,13 @@
                             android:insetBottom="0dp"
                             android:paddingHorizontal="8dp"
                             android:paddingVertical="3dp"
+                            android:stateListAnimator="@animator/anim_levitate_button"
                             android:text="@string/duration_5_d"
                             android:textAllCaps="false"
                             android:textSize="11sp"
                             android:textColor="@color/text_secondary"
                             app:cornerRadius="8dp"
+                            app:elevation="2dp"
                             app:backgroundTint="@color/chip_bg_neutral"
                             app:strokeColor="@color/chip_stroke_neutral"
                             app:strokeWidth="1dp"
@@ -706,11 +777,13 @@
                             android:insetBottom="0dp"
                             android:paddingHorizontal="8dp"
                             android:paddingVertical="3dp"
+                            android:stateListAnimator="@animator/anim_levitate_button"
                             android:text="@string/duration_8_d"
                             android:textAllCaps="false"
                             android:textSize="11sp"
                             android:textColor="@color/text_secondary"
                             app:cornerRadius="8dp"
+                            app:elevation="2dp"
                             app:backgroundTint="@color/chip_bg_neutral"
                             app:strokeColor="@color/chip_stroke_neutral"
                             app:strokeWidth="1dp"
@@ -726,11 +799,13 @@
                             android:insetBottom="0dp"
                             android:paddingHorizontal="8dp"
                             android:paddingVertical="3dp"
+                            android:stateListAnimator="@animator/anim_levitate_button"
                             android:text="@string/duration_15_d"
                             android:textAllCaps="false"
                             android:textSize="11sp"
                             android:textColor="@color/text_secondary"
                             app:cornerRadius="8dp"
+                            app:elevation="2dp"
                             app:backgroundTint="@color/chip_bg_neutral"
                             app:strokeColor="@color/chip_stroke_neutral"
                             app:strokeWidth="1dp"
@@ -746,11 +821,13 @@
                             android:insetBottom="0dp"
                             android:paddingHorizontal="8dp"
                             android:paddingVertical="3dp"
+                            android:stateListAnimator="@animator/anim_levitate_button"
                             android:text="@string/duration_30_d"
                             android:textAllCaps="false"
                             android:textSize="11sp"
                             android:textColor="@color/text_secondary"
                             app:cornerRadius="8dp"
+                            app:elevation="2dp"
                             app:backgroundTint="@color/chip_bg_neutral"
                             app:strokeColor="@color/chip_stroke_neutral"
                             app:strokeWidth="1dp" />
@@ -765,16 +842,18 @@
     <!-- ==================================================== -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardOpcionRescate"
-        style="?attr/materialCardViewOutlinedStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="6dp"
         android:layout_marginBottom="16dp"
+        android:outlineAmbientShadowColor="@color/primary_dark"
+        android:outlineSpotShadowColor="@color/primary_dark"
         app:cardBackgroundColor="@color/card_background"
         app:cardCornerRadius="16dp"
-        app:cardElevation="0dp"
+        app:cardElevation="3dp"
         app:strokeColor="@color/card_stroke"
-        app:strokeWidth="1dp">
+        app:strokeWidth="1dp"
+        tools:targetApi="p">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -880,6 +959,7 @@
                             android:insetTop="0dp"
                             android:insetBottom="0dp"
                             android:fontFamily="@font/nunito_bold"
+                            android:stateListAnimator="@animator/anim_levitate_button"
                             android:text="@string/lbl_sincronizar_datos_de_la_atencion"
                             android:textAllCaps="false"
                             android:textColor="@color/white"
@@ -890,7 +970,8 @@
                             app:iconSize="16dp"
                             app:iconTint="@color/white"
                             app:backgroundTint="@color/primary"
-                            app:cornerRadius="10dp" />
+                            app:cornerRadius="10dp"
+                            app:elevation="3dp" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
 
@@ -902,7 +983,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
                     android:hint="@string/hint_causal_de_rescate_traslado"
-                    app:boxStrokeColor="@color/primary">
+                    app:boxBackgroundColor="@color/input_background"
+                    app:boxStrokeColor="@color/selector_input_stroke">
 
                     <com.google.android.material.textfield.MaterialAutoCompleteTextView
                         android:id="@+id/autoCompleteMotivoRescate"
@@ -930,7 +1012,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
                     android:hint="@string/hint_persona_quien_atiende_al_rescatista"
-                    app:boxStrokeColor="@color/primary"
+                    app:boxBackgroundColor="@color/input_background"
+                    app:boxStrokeColor="@color/selector_input_stroke"
                     app:startIconDrawable="@drawable/user"
                     app:startIconTint="@color/primary">
 
@@ -957,7 +1040,8 @@
                         android:layout_marginEnd="6dp"
                         android:layout_weight="1"
                         android:hint="@string/hint_no_cedula_2"
-                        app:boxStrokeColor="@color/primary">
+                        app:boxBackgroundColor="@color/input_background"
+                        app:boxStrokeColor="@color/selector_input_stroke">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etPersonaAtiendeCedula"
@@ -975,7 +1059,8 @@
                         android:layout_marginStart="6dp"
                         android:layout_weight="1"
                         android:hint="@string/hint_telefono_contacto"
-                        app:boxStrokeColor="@color/primary">
+                        app:boxBackgroundColor="@color/input_background"
+                        app:boxStrokeColor="@color/selector_input_stroke">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etPersonaAtiendeTelefono"
@@ -993,7 +1078,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="14dp"
                     android:hint="@string/hint_barrio_del_rescate"
-                    app:boxStrokeColor="@color/primary">
+                    app:boxBackgroundColor="@color/input_background"
+                    app:boxStrokeColor="@color/selector_input_stroke">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etBarrioRescate"
@@ -1022,6 +1108,8 @@
                     android:layout_marginBottom="8dp"
                     android:checkable="true"
                     android:checked="false"
+                    android:elevation="2dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_sin_testigo_voluntario" />
 
                 <com.google.android.material.textfield.TextInputLayout
@@ -1031,7 +1119,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="12dp"
                     android:hint="@string/hint_nombre_completo_del_testigo_1"
-                    app:boxStrokeColor="@color/primary">
+                    app:boxBackgroundColor="@color/input_background"
+                    app:boxStrokeColor="@color/selector_input_stroke">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etTestigo1Nombre"
@@ -1056,7 +1145,8 @@
                         android:layout_marginEnd="6dp"
                         android:layout_weight="1"
                         android:hint="@string/hint_cedula_testigo_1"
-                        app:boxStrokeColor="@color/primary">
+                        app:boxBackgroundColor="@color/input_background"
+                        app:boxStrokeColor="@color/selector_input_stroke">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etTestigo1Cedula"
@@ -1074,7 +1164,8 @@
                         android:layout_marginStart="6dp"
                         android:layout_weight="1"
                         android:hint="@string/hint_telefono_testigo_1"
-                        app:boxStrokeColor="@color/primary">
+                        app:boxBackgroundColor="@color/input_background"
+                        app:boxStrokeColor="@color/selector_input_stroke">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etTestigo1Telefono"
@@ -1113,6 +1204,7 @@
                     android:layout_marginBottom="10dp"
                     app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
 
@@ -1262,11 +1354,12 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:hint="@string/hint_comentario_sistema_opcional"
+                            app:boxBackgroundColor="@color/input_background"
                             app:boxCornerRadiusBottomEnd="10dp"
                             app:boxCornerRadiusBottomStart="10dp"
                             app:boxCornerRadiusTopEnd="10dp"
                             app:boxCornerRadiusTopStart="10dp"
-                            app:boxStrokeColor="@color/card_stroke">
+                            app:boxStrokeColor="@color/selector_input_stroke">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etComentarioRespiratorio"
@@ -1293,6 +1386,7 @@
                     android:layout_marginBottom="10dp"
                     app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
 
@@ -1442,11 +1536,12 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:hint="@string/hint_comentario_sistema_opcional"
+                            app:boxBackgroundColor="@color/input_background"
                             app:boxCornerRadiusBottomEnd="10dp"
                             app:boxCornerRadiusBottomStart="10dp"
                             app:boxCornerRadiusTopEnd="10dp"
                             app:boxCornerRadiusTopStart="10dp"
-                            app:boxStrokeColor="@color/card_stroke">
+                            app:boxStrokeColor="@color/selector_input_stroke">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etComentarioDigestivo"
@@ -1473,6 +1568,7 @@
                     android:layout_marginBottom="10dp"
                     app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
 
@@ -1684,11 +1780,12 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:hint="@string/hint_comentario_sistema_opcional"
+                            app:boxBackgroundColor="@color/input_background"
                             app:boxCornerRadiusBottomEnd="10dp"
                             app:boxCornerRadiusBottomStart="10dp"
                             app:boxCornerRadiusTopEnd="10dp"
                             app:boxCornerRadiusTopStart="10dp"
-                            app:boxStrokeColor="@color/card_stroke">
+                            app:boxStrokeColor="@color/selector_input_stroke">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etComentarioMusculo"
@@ -1715,6 +1812,7 @@
                     android:layout_marginBottom="10dp"
                     app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
 
@@ -1864,11 +1962,12 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:hint="@string/hint_comentario_sistema_opcional"
+                            app:boxBackgroundColor="@color/input_background"
                             app:boxCornerRadiusBottomEnd="10dp"
                             app:boxCornerRadiusBottomStart="10dp"
                             app:boxCornerRadiusTopEnd="10dp"
                             app:boxCornerRadiusTopStart="10dp"
-                            app:boxStrokeColor="@color/card_stroke">
+                            app:boxStrokeColor="@color/selector_input_stroke">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etComentarioDermato"
@@ -1895,6 +1994,7 @@
                     android:layout_marginBottom="12dp"
                     app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
 
@@ -2013,11 +2113,12 @@
                             android:layout_height="wrap_content"
                             android:layout_marginTop="6dp"
                             android:hint="@string/hint_comentario_sistema_opcional"
+                            app:boxBackgroundColor="@color/input_background"
                             app:boxCornerRadiusBottomEnd="10dp"
                             app:boxCornerRadiusBottomStart="10dp"
                             app:boxCornerRadiusTopEnd="10dp"
                             app:boxCornerRadiusTopStart="10dp"
-                            app:boxStrokeColor="@color/card_stroke">
+                            app:boxStrokeColor="@color/selector_input_stroke">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etComentarioGenito"
@@ -2044,7 +2145,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="14dp"
                     android:hint="@string/hint_observaciones_sintesis_del_rescate"
-                    app:boxStrokeColor="@color/primary">
+                    app:boxBackgroundColor="@color/input_background"
+                    app:boxStrokeColor="@color/selector_input_stroke">
 
                     <com.google.android.material.textfield.TextInputEditText
                         android:id="@+id/etObservacionesRescate"
@@ -2064,6 +2166,7 @@
                     android:layout_marginBottom="8dp"
                     app:cardBackgroundColor="@color/card_background"
                     app:cardCornerRadius="14dp"
+                    app:cardElevation="0dp"
                     app:strokeColor="@color/card_stroke"
                     app:strokeWidth="1dp">
 
@@ -2089,7 +2192,8 @@
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="10dp"
                             android:hint="@string/hint_veterinario_receptor_en_cba"
-                            app:boxStrokeColor="@color/primary">
+                            app:boxBackgroundColor="@color/input_background"
+                            app:boxStrokeColor="@color/selector_input_stroke">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etVeterinarioReceptor"
@@ -2113,7 +2217,9 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginEnd="6dp"
                                 android:layout_weight="1"
-                                android:hint="@string/hint_fecha_recepcion">
+                                android:hint="@string/hint_fecha_recepcion"
+                                app:boxBackgroundColor="@color/input_background"
+                                app:boxStrokeColor="@color/selector_input_stroke">
 
                                 <com.google.android.material.textfield.TextInputEditText
                                     android:id="@+id/etFechaRecepcion"
@@ -2129,7 +2235,9 @@
                                 android:layout_height="wrap_content"
                                 android:layout_marginStart="6dp"
                                 android:layout_weight="1"
-                                android:hint="@string/hint_hora_recepcion">
+                                android:hint="@string/hint_hora_recepcion"
+                                app:boxBackgroundColor="@color/input_background"
+                                app:boxStrokeColor="@color/selector_input_stroke">
 
                                 <com.google.android.material.textfield.TextInputEditText
                                     android:id="@+id/etHoraRecepcion"
@@ -2145,7 +2253,8 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:hint="@string/hint_observaciones_de_recepcion_canil"
-                            app:boxStrokeColor="@color/primary">
+                            app:boxBackgroundColor="@color/input_background"
+                            app:boxStrokeColor="@color/selector_input_stroke">
 
                             <com.google.android.material.textfield.TextInputEditText
                                 android:id="@+id/etObservacionesRecepcion"
@@ -2184,7 +2293,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:hint="@string/hint_nombre_completo_notificado"
-        app:boxStrokeColor="@color/primary"
+        app:boxBackgroundColor="@color/input_background"
+        app:boxStrokeColor="@color/selector_input_stroke"
         app:startIconDrawable="@drawable/user"
         app:startIconTint="@color/primary">
 
@@ -2204,7 +2314,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="14dp"
         android:hint="@string/hint_cedula_identificacion_notificado"
-        app:boxStrokeColor="@color/primary">
+        app:boxBackgroundColor="@color/input_background"
+        app:boxStrokeColor="@color/selector_input_stroke">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etNotificadoIdentificacion"
@@ -2222,7 +2333,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="10dp"
         android:hint="@string/hint_nombre_del_funcionario_actuante"
-        app:boxStrokeColor="@color/primary"
+        app:boxBackgroundColor="@color/input_background"
+        app:boxStrokeColor="@color/selector_input_stroke"
         app:startIconDrawable="@drawable/user"
         app:startIconTint="@color/primary">
 
@@ -2250,7 +2362,8 @@
             android:layout_marginEnd="6dp"
             android:layout_weight="1"
             android:hint="@string/hint_cargo"
-            app:boxStrokeColor="@color/primary">
+            app:boxBackgroundColor="@color/input_background"
+            app:boxStrokeColor="@color/selector_input_stroke">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etFuncionarioCargo"
@@ -2268,7 +2381,8 @@
             android:layout_marginStart="6dp"
             android:layout_weight="1"
             android:hint="@string/hint_cedula"
-            app:boxStrokeColor="@color/primary">
+            app:boxBackgroundColor="@color/input_background"
+            app:boxStrokeColor="@color/selector_input_stroke">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/etFuncionarioIdentificacion"
@@ -2287,7 +2401,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
         android:hint="@string/hint_matricula_profesional_comvezcol"
-        app:boxStrokeColor="@color/primary"
+        app:boxBackgroundColor="@color/input_background"
+        app:boxStrokeColor="@color/selector_input_stroke"
         app:startIconDrawable="@drawable/id_card"
         app:startIconTint="@color/primary">
 
@@ -2316,25 +2431,30 @@
     <!-- Firma del Notificador / Rescatista -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardFirmaNotificador"
-        style="?attr/materialCardViewOutlinedStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="14dp"
+        android:outlineAmbientShadowColor="@color/primary_dark"
+        android:outlineSpotShadowColor="@color/primary_dark"
         app:cardBackgroundColor="@color/card_background"
         app:cardCornerRadius="14dp"
-        app:cardElevation="0dp"
+        app:cardElevation="3dp"
         app:strokeColor="@color/card_stroke"
-        app:strokeWidth="1dp">
+        app:strokeWidth="1dp"
+        tools:targetApi="p">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:orientation="vertical"
             android:padding="12dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:layout_marginBottom="8dp">
@@ -2359,11 +2479,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="0dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_limpiar"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="6dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp" />
@@ -2405,25 +2527,30 @@
     <!-- Firma del Notificado / Testigo -->
     <com.google.android.material.card.MaterialCardView
         android:id="@+id/cardFirmaNotificado"
-        style="?attr/materialCardViewOutlinedStyle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="16dp"
+        android:outlineAmbientShadowColor="@color/primary_dark"
+        android:outlineSpotShadowColor="@color/primary_dark"
         app:cardBackgroundColor="@color/card_background"
         app:cardCornerRadius="14dp"
-        app:cardElevation="0dp"
+        app:cardElevation="3dp"
         app:strokeColor="@color/card_stroke"
-        app:strokeWidth="1dp">
+        app:strokeWidth="1dp"
+        tools:targetApi="p">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:orientation="vertical"
             android:padding="12dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
                 android:layout_marginBottom="8dp">
@@ -2448,11 +2575,13 @@
                     android:insetBottom="0dp"
                     android:paddingHorizontal="10dp"
                     android:paddingVertical="0dp"
+                    android:stateListAnimator="@animator/anim_levitate_button"
                     android:text="@string/lbl_limpiar"
                     android:textAllCaps="false"
                     android:textSize="11sp"
                     android:textColor="@color/text_secondary"
                     app:cornerRadius="6dp"
+                    app:elevation="2dp"
                     app:backgroundTint="@color/chip_bg_neutral"
                     app:strokeColor="@color/chip_stroke_neutral"
                     app:strokeWidth="1dp" />
@@ -2499,10 +2628,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
-        app:cardBackgroundColor="@color/chip_bg_neutral"
+        app:cardBackgroundColor="@color/input_background"
         app:cardCornerRadius="12dp"
         app:cardElevation="0dp"
-        app:strokeColor="@color/card_stroke"
+        app:strokeColor="@color/input_stroke"
         app:strokeWidth="1dp"
         android:visibility="gone">
 
@@ -2549,7 +2678,8 @@
         android:layout_height="wrap_content"
         android:layout_marginBottom="12dp"
         android:hint="@string/hint_estado_final_de_la_peticion"
-        app:boxStrokeColor="@color/primary">
+        app:boxBackgroundColor="@color/input_background"
+        app:boxStrokeColor="@color/selector_input_stroke">
 
         <com.google.android.material.textfield.MaterialAutoCompleteTextView
             android:id="@+id/autoCompleteEstadoCierre"
@@ -2565,7 +2695,8 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="@string/hint_observaciones_generales_de_cierre"
-        app:boxStrokeColor="@color/primary">
+        app:boxBackgroundColor="@color/input_background"
+        app:boxStrokeColor="@color/selector_input_stroke">
 
         <com.google.android.material.textfield.TextInputEditText
             android:id="@+id/etObservaciones"

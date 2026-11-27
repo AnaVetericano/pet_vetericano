@@ -5,6 +5,8 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     android:fillViewport="true"
     android:background="@drawable/bg_bottom_sheet_m3"
     android:backgroundTint="@color/bg_screen">
@@ -12,6 +14,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:orientation="vertical"
         android:paddingHorizontal="24dp"
         android:paddingTop="12dp"
@@ -54,11 +58,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"
+            android:outlineAmbientShadowColor="@color/primary_dark"
+            android:outlineSpotShadowColor="@color/primary_dark"
             app:cardBackgroundColor="@color/card_background"
             app:cardCornerRadius="16dp"
-            app:cardElevation="2dp"
+            app:cardElevation="3dp"
             app:strokeColor="@color/card_stroke"
-            app:strokeWidth="1dp">
+            app:strokeWidth="1dp"
+            tools:targetApi="p">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -140,7 +147,8 @@
                         android:layout_width="28dp"
                         android:layout_height="28dp"
                         android:contentDescription="@null"
-                        android:src="@drawable/location" />
+                        android:src="@drawable/location"
+                        app:tint="@color/primary" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -202,7 +210,8 @@
                         android:layout_width="28dp"
                         android:layout_height="28dp"
                         android:contentDescription="@null"
-                        android:src="@drawable/file_text" />
+                        android:src="@drawable/file_text"
+                        app:tint="@color/primary" />
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -269,7 +278,8 @@
                             android:layout_width="28dp"
                             android:layout_height="28dp"
                             android:contentDescription="@null"
-                            android:src="@drawable/paper_on_paper" />
+                            android:src="@drawable/paper_on_paper"
+                            app:tint="@color/primary" />
 
                         <LinearLayout
                             android:layout_width="0dp"
@@ -376,13 +386,17 @@
             android:layout_height="56dp"
             android:minHeight="48dp"
             android:fontFamily="@font/nunito_bold"
+            android:outlineAmbientShadowColor="@color/primary_dark"
+            android:outlineSpotShadowColor="@color/primary_dark"
+            android:stateListAnimator="@animator/anim_levitate_button"
             android:text="@string/btn_enviar_reporte"
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="16sp"
             app:backgroundTint="@color/blue"
             app:cornerRadius="16dp"
-            app:elevation="2dp" />
+            app:elevation="4dp"
+            tools:targetApi="p" />
 
         <!-- Spinner de progreso de envio / verificacion preventiva -->
         <TextView
@@ -417,11 +431,14 @@
             android:minHeight="48dp"
             android:layout_marginTop="8dp"
             android:fontFamily="@font/nunito_bold"
+            android:stateListAnimator="@animator/anim_levitate_button"
             android:text="@string/reporte_ux_btn_seguir_editando"
             android:textAllCaps="false"
             android:textColor="@color/blue"
             android:textSize="16sp"
+            app:backgroundTint="@color/card_background"
             app:cornerRadius="16dp"
+            app:elevation="3dp"
             app:strokeColor="@color/blue"
             app:strokeWidth="1dp" />
 

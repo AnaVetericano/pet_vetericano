@@ -2,15 +2,8 @@ package com.example.petvetericano
 
 import android.Manifest
 import android.content.Intent
-import android.view.Gravity
-import android.widget.FrameLayout
-import android.widget.ImageView
-import android.widget.TextView
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.core.content.ContextCompat
-import androidx.core.content.res.ResourcesCompat
 import com.example.petvetericano.offline.AvisoNotificacionesHelper
-import com.google.android.material.card.MaterialCardView
 import android.os.Bundle
 import android.view.View
 import android.widget.LinearLayout
@@ -23,6 +16,8 @@ import androidx.viewpager2.widget.ViewPager2
 import com.example.petvetericano.databinding.ActivityBienvenidaBinding
 import com.example.petvetericano.models.VoluntariadoEventos
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.notificaciones.NotificacionesActivity
+import com.example.petvetericano.notificaciones.NotificacionesRepository
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
 
@@ -44,8 +39,9 @@ class bienvenida : AppCompatActivity() {
         binding = ActivityBienvenidaBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        BottomNavHelper.aplicarInsetSuperior(binding.layoutHeader)
         configurarBotonModoOscuro()
-        configurarBotonPerfil()
+        configurarBotonNotificaciones()
 
         // Usamos la misma clase que en el login para leer el token
         val prefs = SharedPreferencesManager(this)
@@ -53,10 +49,17 @@ class bienvenida : AppCompatActivity() {
 
         if (token.isNotEmpty()) {
             RetrofitClient.authToken = token
+            BottomNavHelper.setupCiudadano(
+                this,
+                binding.bottomNavCiudadano,
+                BottomNavHelper.CiudadanoTab.INICIO
+            ) {
+                binding.scrollBienvenida.smoothScrollTo(0, 0)
+            }
             cargarDashboard()
+            actualizarBadgeNotificaciones()
             configurarEventos()
             configurarCarrusel()
-            configurarAccesoMisReportes()
             evaluarAvisoNotificaciones(savedInstanceState)
         } else {
             // Si no hay token, redirigimos al login
@@ -77,12 +80,12 @@ class bienvenida : AppCompatActivity() {
         if (token.isNotEmpty()) {
             RetrofitClient.authToken = token
             cargarDashboard()
+            actualizarBadgeNotificaciones()
             cargarEventosParaCarrusel()
         }
     }
 
     private fun configurarEventos() {
-
         binding.cardReportarPeticion.setOnClickListener {
             val intent = Intent(this, reportar_peticion::class.java)
             startActivity(intent)
@@ -91,37 +94,15 @@ class bienvenida : AppCompatActivity() {
             val intent = Intent(this, Adopcion::class.java)
             startActivity(intent)
         }
-        binding.cardVoluntariado.setOnClickListener {
-            val intent = Intent(this, Eventos::class.java)
-            startActivity(intent)
-        }
-
-        binding.cardNavPrincipal.setOnClickListener {
-            val intent = Intent(this, reportar_peticion::class.java)
-            startActivity(intent)
-        }
-
-        binding.ivNavFavoritos.setOnClickListener {
-            val intent = Intent(this, Eventos::class.java)
-            startActivity(intent)
-            Toast.makeText(this, "Jornadas y eventos", Toast.LENGTH_SHORT).show()
-        }
-
-        binding.ivNavPerfil.setOnClickListener {
-            val intent = Intent(this, editar_perfil::class.java)
-            startActivity(intent)
-        }
     }
 
     private fun cargarDashboard() {
         val prefs = SharedPreferencesManager(this)
         // Carga inmediata del nombre guardado en caché local para que no parpadee
         val nombreLocal = prefs.getUserName().trim()
-        val apellidoLocal = prefs.getUserLastName().trim()
         if (nombreLocal.isNotEmpty()) {
             binding.tvSaludo.text = "Hola, $nombreLocal"
         }
-        actualizarInicialesAvatar(nombreLocal, apellidoLocal)
         binding.tvRolCiudadano.setText(R.string.dashboard_ux_rol_ciudadano)
 
         lifecycleScope.launch {
@@ -143,7 +124,6 @@ class bienvenida : AppCompatActivity() {
                         if (saludo.isNotEmpty()) {
                             binding.tvSaludo.text = "Hola, $saludo"
                         }
-                        actualizarInicialesAvatar(soloNombre, soloApellido)
                         binding.tvRolCiudadano.setText(R.string.dashboard_ux_rol_ciudadano)
                         // Guardamos nombre y apellido POR SEPARADO (fix: antes quedaba
                         // "nombre apellido" todo junto en USER_NAME y el perfil salia descuadrado).
@@ -248,103 +228,6 @@ class bienvenida : AppCompatActivity() {
         }
     }
 
-    private fun configurarAccesoMisReportes() {
-        val container = binding.cardReportarPeticion.parent as? LinearLayout ?: return
-        val indexCardReportar = container.indexOfChild(binding.cardReportarPeticion)
-        val insertIndex = if (indexCardReportar >= 0 && indexCardReportar + 2 <= container.childCount) {
-            indexCardReportar + 2
-        } else {
-            container.childCount
-        }
-
-        val cardMisReportes = MaterialCardView(this).apply {
-            id = View.generateViewId()
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                topMargin = (16 * resources.displayMetrics.density).toInt()
-            }
-            radius = 16 * resources.displayMetrics.density
-            cardElevation = 0f
-            strokeWidth = (1 * resources.displayMetrics.density).toInt()
-            setStrokeColor(ContextCompat.getColorStateList(this@bienvenida, R.color.card_stroke))
-            setCardBackgroundColor(ContextCompat.getColorStateList(this@bienvenida, R.color.card_background))
-            isClickable = true
-            isFocusable = true
-
-            val content = LinearLayout(this@bienvenida).apply {
-                orientation = LinearLayout.HORIZONTAL
-                gravity = Gravity.CENTER_VERTICAL
-                val p16 = (16 * resources.displayMetrics.density).toInt()
-                setPadding(p16, p16, p16, p16)
-
-                val iconContainer = MaterialCardView(this@bienvenida).apply {
-                    val size = (44 * resources.displayMetrics.density).toInt()
-                    layoutParams = LinearLayout.LayoutParams(size, size)
-                    radius = 22 * resources.displayMetrics.density
-                    cardElevation = 0f
-                    strokeWidth = 0
-                    setCardBackgroundColor(ContextCompat.getColorStateList(this@bienvenida, R.color.primary_light))
-
-                    val ivIcon = ImageView(this@bienvenida).apply {
-                        val iconSize = (24 * resources.displayMetrics.density).toInt()
-                        layoutParams = FrameLayout.LayoutParams(iconSize, iconSize, Gravity.CENTER)
-                        setImageResource(R.drawable.outline_document_search_24)
-                        imageTintList = ContextCompat.getColorStateList(this@bienvenida, R.color.blue)
-                        contentDescription = getString(R.string.reporte_offline_mis_reportes_titulo)
-                    }
-                    addView(ivIcon)
-                }
-                addView(iconContainer)
-
-                val textLayout = LinearLayout(this@bienvenida).apply {
-                    orientation = LinearLayout.VERTICAL
-                    layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f).apply {
-                        marginStart = (14 * resources.displayMetrics.density).toInt()
-                        marginEnd = (8 * resources.displayMetrics.density).toInt()
-                    }
-
-                    val tvTitulo = TextView(this@bienvenida).apply {
-                        text = getString(R.string.reporte_offline_mis_reportes_titulo)
-                        setTextColor(ContextCompat.getColor(this@bienvenida, R.color.text_primary))
-                        textSize = 16f
-                        typeface = ResourcesCompat.getFont(this@bienvenida, R.font.nunito_display)
-                        paint.isFakeBoldText = true
-                    }
-                    val tvSubtitulo = TextView(this@bienvenida).apply {
-                        text = getString(R.string.reporte_offline_mis_reportes_subtitulo)
-                        setTextColor(ContextCompat.getColor(this@bienvenida, R.color.text_muted))
-                        textSize = 12f
-                        typeface = ResourcesCompat.getFont(this@bienvenida, R.font.nunito)
-                        val mTop = (2 * resources.displayMetrics.density).toInt()
-                        setPadding(0, mTop, 0, 0)
-                    }
-                    addView(tvTitulo)
-                    addView(tvSubtitulo)
-                }
-                addView(textLayout)
-
-                val ivChevron = ImageView(this@bienvenida).apply {
-                    val cSize = (20 * resources.displayMetrics.density).toInt()
-                    layoutParams = LinearLayout.LayoutParams(cSize, cSize)
-                    setImageResource(R.drawable.outline_arrow_back_ios_24)
-                    rotation = 180f
-                    imageTintList = ContextCompat.getColorStateList(this@bienvenida, R.color.text_muted)
-                    importantForAccessibility = View.IMPORTANT_FOR_ACCESSIBILITY_NO
-                }
-                addView(ivChevron)
-            }
-            addView(content)
-
-            setOnClickListener {
-                startActivity(Intent(this@bienvenida, MisReportesActivity::class.java))
-            }
-        }
-
-        container.addView(cardMisReportes, insertIndex)
-    }
-
     private fun postularseDesdeCarrusel(evento: VoluntariadoEventos) {
         val token = SharedPreferencesManager(this).getAccessToken()
         if (token.isEmpty()) {
@@ -390,20 +273,23 @@ class bienvenida : AppCompatActivity() {
         )
     }
 
-    private fun configurarBotonPerfil() {
-        binding.tvInicialesAvatar.setOnClickListener {
-            startActivity(Intent(this, OpcionesEditarPerfilActivity::class.java))
+    private fun configurarBotonNotificaciones() {
+        binding.btnNotificaciones.setOnClickListener {
+            startActivity(Intent(this, NotificacionesActivity::class.java))
         }
     }
 
-    private fun actualizarInicialesAvatar(nombre: String, apellido: String) {
-        val n = nombre.trim()
-        val a = apellido.trim()
-        val iniciales = buildString {
-            if (n.isNotEmpty()) append(n.first().uppercaseChar())
-            if (a.isNotEmpty()) append(a.first().uppercaseChar())
-            else if (n.length > 1) append(n[1].uppercaseChar())
+    private fun actualizarBadgeNotificaciones() {
+        lifecycleScope.launch {
+            val res = NotificacionesRepository.obtenerContador(this@bienvenida)
+            if (isFinishing || isDestroyed) return@launch
+            val noLeidas = res.getOrNull()?.noLeidas ?: 0
+            if (noLeidas > 0) {
+                binding.tvNotifBadge.visibility = View.VISIBLE
+                binding.tvNotifBadge.text = if (noLeidas > 99) "99+" else noLeidas.toString()
+            } else {
+                binding.tvNotifBadge.visibility = View.GONE
+            }
         }
-        binding.tvInicialesAvatar.text = iniciales.ifEmpty { "C" }
     }
 }

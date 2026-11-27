@@ -9,11 +9,13 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.graphics.drawable.ColorDrawable
 import android.os.Build
+import android.os.CountDownTimer
 import android.util.Log
 import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
@@ -32,6 +34,7 @@ import androidx.credentials.exceptions.GetCredentialProviderConfigurationExcepti
 import androidx.credentials.exceptions.NoCredentialException
 import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.facial.FacialStorageManager
+import com.example.petvetericano.models.ConfirmarCodigoRegistroRequest
 import com.example.petvetericano.models.GoogleLoginRequest
 import com.example.petvetericano.models.LoginRequest
 import com.example.petvetericano.models.LoginResponse
@@ -633,11 +636,10 @@ object GoogleAuthHelper {
                 val inicial = email.firstOrNull()?.uppercaseChar()?.toString() ?: "G"
                 tvInicial.text = inicial
                 tvEmail.text = email
-                val vinculada = prefs.getGoogleAccountPassword(email).isNotEmpty()
-                tvSub.text = when {
-                    esModoSincronizarTelefono -> "Cuenta detectada en este teléfono"
-                    vinculada -> "Cuenta vinculada en Vetericano"
-                    else -> "Cuenta de Google"
+                tvSub.text = if (esModoSincronizarTelefono) {
+                    "Cuenta detectada en este teléfono"
+                } else {
+                    "Cuenta de Google"
                 }
 
                 val estaSeleccionado = (indiceSeleccionado == index)
@@ -731,6 +733,13 @@ object GoogleAuthHelper {
     /**
      * Respaldo de autenticación con Google cuando Google Play Services local rechaza el SHA-1
      * o el servidor en la nube aún no tiene activo GOOGLE_OAUTH_CLIENT_IDS.
+     *
+     * SEGURIDAD:
+     * - Nunca inicia sesión ni crea cuentas solo con escribir el correo (sin contraseña o sin OTP).
+     * - En LOGIN (`esFlujoRegistro == false`), siempre exige ingresar y validar la contraseña de la cuenta
+     *   en el servidor (`vincularCuentaExistenteConDialogoMD3`).
+     * - En REGISTRO (`esFlujoRegistro == true`), siempre solicita una contraseña segura y verifica que el
+     *   correo realmente exista mediante código OTP de 6 dígitos (`solicitarCodigoRegistro` + `confirmarCodigoRegistro`).
      */
     private suspend fun autenticarConRespaldoApi(
         activity: ComponentActivity,
@@ -746,8 +755,6 @@ object GoogleAuthHelper {
         RetrofitClient.authToken = null
         val prefs = SharedPreferencesManager(activity)
         prefs.saveKnownGoogleAccount(email)
-        val passwordGuardada = prefs.getGoogleAccountPassword(email)
-        val passwordGoogle = passwordGuardada.ifEmpty { generarPasswordGoogleDeterministica(email) }
         val (nombreFallback, apellidoFallback) = extraerNombreApellidoDeCorreo(email)
         val nombre = credencial.nombre.trim().ifEmpty { nombreFallback }
         val apellido = credencial.apellido.trim().ifEmpty { apellidoFallback.ifEmpty { "Google" } }
@@ -755,48 +762,47 @@ object GoogleAuthHelper {
         val telefonoAuto = "3000000000"
 
         if (esFlujoRegistro) {
+            val passwordElegida = solicitarPasswordParaRegistroGoogleMD3(activity, email) ?: return
             val registerReq = RegisterRequest(
                 email = email,
                 identificacion = identificacionAuto,
-                password = passwordGoogle,
+                password = passwordElegida,
                 nombre = nombre,
                 apellido = apellido,
                 telefono = telefonoAuto
             )
 
-            val regResp = withContext(Dispatchers.IO) {
-                RetrofitClient.apiService.registro(registerReq)
+            val solResp = withContext(Dispatchers.IO) {
+                RetrofitClient.ejecutarConRespaldoLocalDebug { api ->
+                    api.solicitarCodigoRegistro(registerReq)
+                }
             }
 
-            if (regResp.isSuccessful) {
-                prefs.saveGoogleAccountPassword(email, passwordGoogle)
-                completarRegistroRedirigiendoALogin(
-                    activity = activity,
-                    email = email,
-                    nombre = nombre,
-                    apellido = apellido,
-                    mensaje = "¡Registro con Google exitoso! Pulsa 'Continuar con Google' para iniciar sesión."
-                )
-                return
-            }
+            if (solResp.isSuccessful) {
+                val cooldownSeg = solResp.body()?.cooldownSegundos ?: 60
+                val msgOtp = solResp.body()?.mensaje
+                    ?: "Te enviamos un código de verificación de 6 dígitos a $email"
+                mostrarMensajeMD3(activity, msgOtp, esError = false)
 
-            val checkGoogleExistente = withContext(Dispatchers.IO) {
-                RetrofitClient.apiService.login(LoginRequest(email = email, password = passwordGoogle))
-            }
-            if (checkGoogleExistente.isSuccessful) {
-                prefs.saveGoogleAccountPassword(email, passwordGoogle)
-                completarRegistroRedirigiendoALogin(
+                val verificado = verificarCodigoOtpRegistroGoogleMD3(
                     activity = activity,
-                    email = email,
-                    nombre = nombre,
-                    apellido = apellido,
-                    mensaje = "Tu cuenta de Google ya está registrada. Pulsa 'Continuar con Google' para iniciar sesión."
+                    request = registerReq,
+                    cooldownInicialSegundos = cooldownSeg
                 )
+                if (verificado) {
+                    completarRegistroRedirigiendoALogin(
+                        activity = activity,
+                        email = email,
+                        nombre = nombre,
+                        apellido = apellido,
+                        mensaje = "¡Correo verificado y cuenta creada! Inicia sesión con tu correo y contraseña."
+                    )
+                }
                 return
             }
 
             val errorRegistro = try {
-                regResp.errorBody()?.string().orEmpty()
+                solResp.errorBody()?.string().orEmpty()
             } catch (_: Exception) {
                 ""
             }
@@ -815,82 +821,226 @@ object GoogleAuthHelper {
                         email = email,
                         nombre = respuestaVinculada.nombre ?: nombre,
                         apellido = respuestaVinculada.apellido ?: apellido,
-                        mensaje = "¡Cuenta de Google vinculada con éxito! Pulsa 'Continuar con Google' para iniciar sesión."
+                        mensaje = "¡Cuenta verificada! Inicia sesión con tu correo y contraseña."
                     )
                 }
                 return
             }
 
-            val mensajeError = resolverMensajeErrorGoogleHttp(regResp.code(), errorRegistro)
+            val mensajeError = resolverMensajeErrorGoogleHttp(solResp.code(), errorRegistro)
             mostrarMensajeMD3(activity, mensajeError, esError = true)
             return
         }
 
         // --- FLUJO DE LOGIN (esFlujoRegistro == false) ---
-        val loginResp = withContext(Dispatchers.IO) {
-            RetrofitClient.apiService.login(LoginRequest(email = email, password = passwordGoogle))
-        }
-
-        if (loginResp.isSuccessful && loginResp.body() != null) {
-            prefs.saveGoogleAccountPassword(email, passwordGoogle)
-            completarInicioDeSesionExitoso(activity, loginResp.body()!!, credencial)
-            return
-        }
-
-        val registerReq = RegisterRequest(
+        // Siempre exigimos la contraseña de la cuenta; nunca permitimos entrar ni auto-registrar solo con el correo.
+        val respuestaVinculada = vincularCuentaExistenteConDialogoMD3(
+            activity = activity,
             email = email,
-            identificacion = identificacionAuto,
-            password = passwordGoogle,
-            nombre = nombre,
-            apellido = apellido,
-            telefono = telefonoAuto
+            esFlujoRegistro = false
+        )
+        if (respuestaVinculada != null) {
+            completarInicioDeSesionExitoso(activity, respuestaVinculada, credencial)
+        }
+    }
+
+    private suspend fun solicitarPasswordParaRegistroGoogleMD3(
+        activity: ComponentActivity,
+        email: String
+    ): String? = suspendCancellableCoroutine { cont ->
+        val dialog = Dialog(activity)
+        dialog.setContentView(R.layout.dialog_vincular_google)
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
         )
 
-        val regResp = withContext(Dispatchers.IO) {
-            RetrofitClient.apiService.registro(registerReq)
+        val tvTitulo = dialog.findViewById<TextView>(R.id.tvTituloDialogGoogle)
+        val tvMensaje = dialog.findViewById<TextView>(R.id.tvMensajeDialogGoogle)
+        val tvEmail = dialog.findViewById<TextView>(R.id.tvEmailSeleccionadoGoogle)
+        val tilPassword = dialog.findViewById<TextInputLayout>(R.id.tilPasswordGoogleDialog)
+        val edtPassword = dialog.findViewById<TextInputEditText>(R.id.edtPasswordGoogleDialog)
+        val tvOlvidaste = dialog.findViewById<TextView>(R.id.tvOlvidastePasswordGoogle)
+        val btnConfirmar = dialog.findViewById<MaterialButton>(R.id.btnConfirmarDialogGoogle)
+        val btnCancelar = dialog.findViewById<TextView>(R.id.btnCancelarDialogGoogle)
+        val btnCerrar = dialog.findViewById<TextView>(R.id.btnCerrarDialogGoogle)
+
+        tvTitulo?.text = "Configura tu contraseña"
+        tvMensaje?.text = "Crea una contraseña segura (mín. 8 caracteres, una mayúscula y un número). Luego enviaremos un código de 6 dígitos a tu correo para verificar que es real:"
+        tvEmail.text = email
+        tvOlvidaste.visibility = View.GONE
+        btnConfirmar.text = "Enviar código de verificación"
+
+        edtPassword.doOnTextChanged { _, _, _, _ ->
+            tilPassword.error = null
         }
 
-        if (regResp.isSuccessful) {
-            prefs.saveGoogleAccountPassword(email, passwordGoogle)
-            val segundoLogin = withContext(Dispatchers.IO) {
-                RetrofitClient.apiService.login(LoginRequest(email = email, password = passwordGoogle))
-            }
-            if (segundoLogin.isSuccessful && segundoLogin.body() != null) {
-                completarInicioDeSesionExitoso(activity, segundoLogin.body()!!, credencial)
-                return
-            }
+        val cancelar = {
+            dialog.dismiss()
+            if (cont.isActive) cont.resume(null)
         }
 
-        val errorRegistro = try {
-            regResp.errorBody()?.string().orEmpty()
-        } catch (_: Exception) {
-            ""
-        }
-        if (errorRegistro.contains("email", ignoreCase = true) ||
-            errorRegistro.contains("existe", ignoreCase = true) ||
-            errorRegistro.contains("already", ignoreCase = true)
-        ) {
-            val respuestaVinculada = vincularCuentaExistenteConDialogoMD3(
-                activity = activity,
-                email = email,
-                esFlujoRegistro = false
-            )
-            if (respuestaVinculada != null) {
-                completarInicioDeSesionExitoso(activity, respuestaVinculada, credencial)
-            }
-            return
+        btnCancelar.setOnClickListener { cancelar() }
+        btnCerrar.setOnClickListener { cancelar() }
+        dialog.setOnCancelListener {
+            if (cont.isActive) cont.resume(null)
         }
 
-        val errorLogin = try {
-            loginResp.errorBody()?.string()
-        } catch (_: Exception) {
-            null
+        btnConfirmar.setOnClickListener {
+            val pwd = edtPassword.text?.toString()?.trim() ?: ""
+            val tieneMayus = Regex("[A-Z]").containsMatchIn(pwd)
+            val tieneNum = Regex("[0-9]").containsMatchIn(pwd)
+            if (pwd.length < 8 || !tieneMayus || !tieneNum) {
+                tilPassword.error = "Mín. 8 caracteres, una mayúscula y un número"
+                edtPassword.requestFocus()
+                return@setOnClickListener
+            }
+            dialog.dismiss()
+            if (cont.isActive) cont.resume(pwd)
         }
-        val mensajeError = resolverMensajeErrorGoogleHttp(
-            regResp.code(),
-            errorRegistro.ifEmpty { errorLogin }
+
+        dialog.show()
+    }
+
+    private suspend fun verificarCodigoOtpRegistroGoogleMD3(
+        activity: ComponentActivity,
+        request: RegisterRequest,
+        cooldownInicialSegundos: Int
+    ): Boolean = suspendCancellableCoroutine { cont ->
+        val dialog = Dialog(activity)
+        dialog.setContentView(R.layout.dialog_verificar_correo_registro)
+        dialog.window?.setBackgroundDrawable(ColorDrawable(Color.TRANSPARENT))
+        dialog.window?.setLayout(
+            ViewGroup.LayoutParams.MATCH_PARENT,
+            ViewGroup.LayoutParams.WRAP_CONTENT
         )
-        mostrarMensajeMD3(activity, mensajeError, esError = true)
+        dialog.setCancelable(false)
+
+        val txtCerrar = dialog.findViewById<TextView>(R.id.txtCerrarVerificacion)
+        val txtCorreoDestino = dialog.findViewById<TextView>(R.id.txtCorreoDestinoVerificacion)
+        val edtCodigo = dialog.findViewById<EditText>(R.id.edtCodigoVerificacionRegistro)
+        val btnConfirmar = dialog.findViewById<MaterialButton>(R.id.btnConfirmarCodigoRegistro)
+        val btnReenviar = dialog.findViewById<MaterialButton>(R.id.btnReenviarCodigoRegistro)
+        val txtCorregir = dialog.findViewById<TextView>(R.id.txtCorregirCorreoRegistro)
+
+        txtCorreoDestino.text = request.email
+        var timer: CountDownTimer? = null
+
+        fun iniciarConteo(segundos: Int) {
+            timer?.cancel()
+            btnReenviar.isEnabled = false
+            timer = object : CountDownTimer(segundos * 1000L, 1000L) {
+                override fun onTick(millisUntilFinished: Long) {
+                    val seg = (millisUntilFinished / 1000L).coerceAtLeast(1L)
+                    btnReenviar.text = "Reenviar código en ${seg}s"
+                }
+
+                override fun onFinish() {
+                    btnReenviar.isEnabled = true
+                    btnReenviar.text = activity.getString(R.string.btn_reenviar_codigo)
+                }
+            }.start()
+        }
+
+        iniciarConteo(cooldownInicialSegundos)
+
+        val cancelar = {
+            timer?.cancel()
+            dialog.dismiss()
+            if (cont.isActive) cont.resume(false)
+        }
+
+        txtCerrar.setOnClickListener { cancelar() }
+        txtCorregir.setOnClickListener { cancelar() }
+        dialog.setOnCancelListener {
+            timer?.cancel()
+            if (cont.isActive) cont.resume(false)
+        }
+        cont.invokeOnCancellation {
+            timer?.cancel()
+            dialog.dismiss()
+        }
+
+        btnReenviar.setOnClickListener {
+            btnReenviar.isEnabled = false
+            btnReenviar.text = "Reenviando..."
+            activity.lifecycleScope.launch {
+                try {
+                    val resp = withContext(Dispatchers.IO) {
+                        RetrofitClient.ejecutarConRespaldoLocalDebug { api ->
+                            api.solicitarCodigoRegistro(request)
+                        }
+                    }
+                    if (resp.isSuccessful) {
+                        val nuevoCooldown = resp.body()?.cooldownSegundos ?: 60
+                        mostrarMensajeMD3(
+                            activity,
+                            resp.body()?.mensaje ?: "Nuevo código enviado a tu correo",
+                            esError = false
+                        )
+                        iniciarConteo(nuevoCooldown)
+                    } else {
+                        val errStr = resp.errorBody()?.string()
+                        mostrarMensajeMD3(
+                            activity,
+                            extraerMensajeJsonSeguro(errStr) ?: "No se pudo reenviar el código",
+                            esError = true
+                        )
+                        iniciarConteo(15)
+                    }
+                } catch (_: Exception) {
+                    mostrarMensajeMD3(activity, "Error de conexión al reenviar el código", esError = true)
+                    btnReenviar.isEnabled = true
+                    btnReenviar.text = activity.getString(R.string.btn_reenviar_codigo)
+                }
+            }
+        }
+
+        btnConfirmar.setOnClickListener {
+            val codigo = edtCodigo.text.toString().trim()
+            if (codigo.length != 6) {
+                edtCodigo.error = "Ingresa el código de 6 dígitos"
+                edtCodigo.requestFocus()
+                return@setOnClickListener
+            }
+
+            btnConfirmar.isEnabled = false
+            btnConfirmar.text = "Verificando..."
+
+            activity.lifecycleScope.launch {
+                try {
+                    val confirmReq = ConfirmarCodigoRegistroRequest(
+                        email = request.email,
+                        codigo = codigo
+                    )
+                    val response = withContext(Dispatchers.IO) {
+                        RetrofitClient.ejecutarConRespaldoLocalDebug { api ->
+                            api.confirmarCodigoRegistro(confirmReq)
+                        }
+                    }
+                    if (response.isSuccessful) {
+                        timer?.cancel()
+                        dialog.dismiss()
+                        if (cont.isActive) cont.resume(true)
+                    } else {
+                        val errorBody = response.errorBody()?.string()
+                        val msgErr = extraerMensajeJsonSeguro(errorBody) ?: "Código inválido o expirado"
+                        edtCodigo.error = msgErr
+                        mostrarMensajeMD3(activity, msgErr, esError = true)
+                    }
+                } catch (_: Exception) {
+                    mostrarMensajeMD3(activity, "Error de conexión con el servidor", esError = true)
+                } finally {
+                    if (dialog.isShowing) {
+                        btnConfirmar.isEnabled = true
+                        btnConfirmar.text = activity.getString(R.string.btn_verificar_y_crear_cuenta)
+                    }
+                }
+            }
+        }
+
+        dialog.show()
     }
 
     private suspend fun vincularCuentaExistenteConDialogoMD3(
@@ -906,6 +1056,8 @@ object GoogleAuthHelper {
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
 
+        val tvTitulo = dialog.findViewById<TextView>(R.id.tvTituloDialogGoogle)
+        val tvMensaje = dialog.findViewById<TextView>(R.id.tvMensajeDialogGoogle)
         val tvEmail = dialog.findViewById<TextView>(R.id.tvEmailSeleccionadoGoogle)
         val tilPassword = dialog.findViewById<TextInputLayout>(R.id.tilPasswordGoogleDialog)
         val edtPassword = dialog.findViewById<TextInputEditText>(R.id.edtPasswordGoogleDialog)
@@ -914,8 +1066,10 @@ object GoogleAuthHelper {
         val btnCancelar = dialog.findViewById<TextView>(R.id.btnCancelarDialogGoogle)
         val btnCerrar = dialog.findViewById<TextView>(R.id.btnCerrarDialogGoogle)
 
+        tvTitulo?.text = if (esFlujoRegistro) "Confirma tu contraseña" else "Ingresa tu contraseña"
+        tvMensaje?.text = "Por seguridad, ingresa la contraseña de tu cuenta para verificar tu identidad:"
         tvEmail.text = email
-        val textoBoton = if (esFlujoRegistro) "Vincular Cuenta" else "Vincular e Iniciar Sesión"
+        val textoBoton = if (esFlujoRegistro) "Verificar Cuenta" else "Iniciar Sesión"
         btnConfirmar.text = textoBoton
 
         edtPassword.doOnTextChanged { _, _, _, _ ->
@@ -954,16 +1108,22 @@ object GoogleAuthHelper {
             activity.lifecycleScope.launch {
                 try {
                     val loginResp = withContext(Dispatchers.IO) {
-                        RetrofitClient.apiService.login(
-                            LoginRequest(email = email, password = passwordIngresada)
-                        )
+                        RetrofitClient.ejecutarConRespaldoLocalDebug { api ->
+                            api.login(LoginRequest(email = email, password = passwordIngresada))
+                        }
                     }
                     if (loginResp.isSuccessful && loginResp.body() != null) {
-                        SharedPreferencesManager(activity).saveGoogleAccountPassword(email, passwordIngresada)
+                        SharedPreferencesManager(activity).clearGoogleAccountPassword(email)
                         dialog.dismiss()
                         if (cont.isActive) cont.resume(loginResp.body())
                     } else {
-                        tilPassword.error = "Contraseña incorrecta. Verifica o recupera tu clave."
+                        val errRaw = try {
+                            loginResp.errorBody()?.string()
+                        } catch (_: Exception) {
+                            null
+                        }
+                        val msgError = inicio_sesion.resolverMensajeErrorHttp(loginResp.code(), errRaw)
+                        tilPassword.error = msgError
                         btnConfirmar.isEnabled = true
                         btnConfirmar.text = textoBoton
                     }
@@ -976,13 +1136,6 @@ object GoogleAuthHelper {
         }
 
         dialog.show()
-    }
-
-    private fun generarPasswordGoogleDeterministica(email: String): String {
-        val digest = MessageDigest.getInstance("SHA-256")
-            .digest("VetericanoGoogleAuth2026:$email".lowercase(Locale.ROOT).toByteArray())
-        val hex = digest.joinToString("") { "%02x".format(it) }.take(12)
-        return "GglVet9$hex"
     }
 
     private fun generarIdentificacionUnica(email: String): String {

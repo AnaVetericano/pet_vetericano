@@ -74,9 +74,10 @@
                 android:id="@+id/tvSubtituloFacial"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:alpha="0.85"
                 android:fontFamily="@font/nunito"
                 android:text="@string/facial_subtitulo_verificar"
-                android:textColor="#E2E8F0"
+                android:textColor="@color/white"
                 android:textSize="13sp" />
         </LinearLayout>
     </LinearLayout>
@@ -88,6 +89,8 @@
         android:layout_height="wrap_content"
         android:layout_marginHorizontal="20dp"
         android:layout_marginBottom="28dp"
+        android:outlineAmbientShadowColor="@color/primary_dark"
+        android:outlineSpotShadowColor="@color/primary_dark"
         app:cardBackgroundColor="@color/card_background"
         app:cardCornerRadius="22dp"
         app:cardElevation="6dp"
@@ -95,7 +98,8 @@
         app:strokeWidth="1dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent">
+        app:layout_constraintStart_toStartOf="parent"
+        tools:targetApi="p">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -159,12 +163,17 @@
                 android:layout_height="48dp"
                 android:layout_marginTop="14dp"
                 android:fontFamily="@font/nunito_bold"
+                android:outlineAmbientShadowColor="@color/primary_dark"
+                android:outlineSpotShadowColor="@color/primary_dark"
+                android:stateListAnimator="@animator/anim_levitate_button"
                 android:text="@string/facial_btn_reintentar"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:visibility="gone"
                 app:backgroundTint="@color/blue"
-                app:cornerRadius="14dp" />
+                app:cornerRadius="14dp"
+                app:elevation="4dp"
+                tools:targetApi="p" />
         </LinearLayout>
     </com.google.android.material.card.MaterialCardView>
 
@@ -173,7 +182,6 @@
         android:id="@+id/layoutProcesandoFacial"
         android:layout_width="0dp"
         android:layout_height="0dp"
-        android:background="#B3000000"
         android:clickable="true"
         android:focusable="true"
         android:visibility="gone"
@@ -181,6 +189,12 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:alpha="0.7"
+            android:background="@color/black" />
 
         <LinearLayout
             android:layout_width="wrap_content"

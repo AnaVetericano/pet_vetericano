@@ -1,10 +1,10 @@
 package com.example.petvetericano.adapters
 
-import android.graphics.Color
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.RecyclerView
 import com.example.petvetericano.R
 import com.example.petvetericano.models.Petition
@@ -39,26 +39,25 @@ class PetitionAdapter(
         holder.tvStatusBadge.text = petition.status
 
         // Colores semánticos en el Badge según el estado
-        when {
-            petition.status.lowercase().contains("urgente") -> {
-                holder.tvStatusBadge.setTextColor(Color.parseColor("#EF4444"))
-                holder.tvStatusBadge.setBackgroundColor(Color.parseColor("#FEF2F2"))
+        val ctx = holder.itemView.context
+        val statusLower = petition.status.lowercase()
+        val (bgColorRes, textColorRes) = when {
+            statusLower.contains("urgente") -> {
+                R.color.badge_urgente_bg to R.color.badge_urgente_text
             }
-            petition.status.lowercase().contains("proceso") ||
-            petition.status.lowercase().contains("tratamiento") -> {
-                holder.tvStatusBadge.setTextColor(Color.parseColor("#10B981"))
-                holder.tvStatusBadge.setBackgroundColor(Color.parseColor("#ECFDF5"))
+            statusLower.contains("proceso") || statusLower.contains("tratamiento") -> {
+                R.color.badge_proceso_bg to R.color.badge_proceso_text
             }
-            petition.status.lowercase().contains("atendida") ||
-            petition.status.lowercase().contains("finaliz") -> {
-                holder.tvStatusBadge.setTextColor(Color.parseColor("#6366F1"))
-                holder.tvStatusBadge.setBackgroundColor(Color.parseColor("#EEF2FF"))
+            statusLower.contains("atendida") || statusLower.contains("finaliz") -> {
+                R.color.badge_alta_bg to R.color.badge_alta_text
             }
             else -> {
-                holder.tvStatusBadge.setTextColor(Color.parseColor("#F59E0B"))
-                holder.tvStatusBadge.setBackgroundColor(Color.parseColor("#FFFBEB"))
+                R.color.badge_asignada_bg to R.color.badge_asignada_text
             }
         }
+        holder.tvStatusBadge.setBackgroundResource(R.drawable.bg_rounded_badge)
+        holder.tvStatusBadge.backgroundTintList = ContextCompat.getColorStateList(ctx, bgColorRes)
+        holder.tvStatusBadge.setTextColor(ContextCompat.getColor(ctx, textColorRes))
 
         // Click en toda la tarjeta Y en "Ver detalle"
         holder.itemView.setOnClickListener { onItemClick(petition) }

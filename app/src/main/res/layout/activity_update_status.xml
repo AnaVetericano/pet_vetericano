@@ -70,6 +70,8 @@
         android:id="@+id/cardActionBottom"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:padding="20dp"
         android:background="@color/bg_screen"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -81,19 +83,25 @@
             android:layout_width="match_parent"
             android:layout_height="56dp"
             android:fontFamily="@font/nunito_display"
+            android:outlineAmbientShadowColor="@color/primary_dark"
+            android:outlineSpotShadowColor="@color/primary_dark"
+            android:stateListAnimator="@animator/anim_levitate_button"
             android:text="@string/btn_actualizar_estado"
             android:textColor="@color/white"
             android:textSize="16sp"
             android:textStyle="bold"
             app:backgroundTint="@color/blue"
             app:cornerRadius="16dp"
-            app:elevation="0dp" />
+            app:elevation="4dp"
+            tools:targetApi="p" />
     </LinearLayout>
 
     <!-- CONTENIDO SCROLLABLE (INTERMEDIO) -->
     <ScrollView
         android:layout_width="0dp"
         android:layout_height="0dp"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:fillViewport="true"
         android:layout_marginTop="8dp"
         android:scrollbars="none"
@@ -105,6 +113,8 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:orientation="vertical"
             android:paddingHorizontal="24dp"
             android:paddingBottom="24dp">
@@ -114,11 +124,14 @@
                 android:id="@+id/cardEstadoActual"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:outlineAmbientShadowColor="@color/primary_dark"
+                android:outlineSpotShadowColor="@color/primary_dark"
                 app:cardBackgroundColor="@color/card_background"
                 app:cardCornerRadius="16dp"
-                app:cardElevation="0dp"
+                app:cardElevation="2dp"
                 app:strokeColor="@color/card_stroke"
-                app:strokeWidth="1dp">
+                app:strokeWidth="1dp"
+                tools:targetApi="p">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -228,6 +241,8 @@
                 android:id="@+id/layoutContenedorOpciones"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:clipChildren="false"
+                android:clipToPadding="false"
                 android:orientation="vertical"
                 android:layout_marginTop="20dp">
 
@@ -238,6 +253,8 @@
                     android:id="@+id/layoutSeccionEvolucion"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
                     android:orientation="vertical">
 
                     <TextView
@@ -269,11 +286,14 @@
                         android:clickable="true"
                         android:focusable="true"
                         android:foreground="?attr/selectableItemBackground"
+                        android:outlineAmbientShadowColor="@color/primary_dark"
+                        android:outlineSpotShadowColor="@color/primary_dark"
                         app:cardBackgroundColor="@color/card_background"
                         app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp"
+                        app:cardElevation="2dp"
                         app:strokeColor="@color/card_stroke"
-                        app:strokeWidth="1dp">
+                        app:strokeWidth="1dp"
+                        tools:targetApi="p">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -329,11 +349,14 @@
                         android:clickable="true"
                         android:focusable="true"
                         android:foreground="?attr/selectableItemBackground"
+                        android:outlineAmbientShadowColor="@color/primary_dark"
+                        android:outlineSpotShadowColor="@color/primary_dark"
                         app:cardBackgroundColor="@color/card_background"
                         app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp"
+                        app:cardElevation="2dp"
                         app:strokeColor="@color/card_stroke"
-                        app:strokeWidth="1dp">
+                        app:strokeWidth="1dp"
+                        tools:targetApi="p">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -389,11 +412,14 @@
                         android:clickable="true"
                         android:focusable="true"
                         android:foreground="?attr/selectableItemBackground"
+                        android:outlineAmbientShadowColor="@color/primary_dark"
+                        android:outlineSpotShadowColor="@color/primary_dark"
                         app:cardBackgroundColor="@color/card_background"
                         app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp"
+                        app:cardElevation="2dp"
                         app:strokeColor="@color/card_stroke"
-                        app:strokeWidth="1dp">
+                        app:strokeWidth="1dp"
+                        tools:targetApi="p">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -457,6 +483,8 @@
                     android:id="@+id/layoutSeccionCierre"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:clipChildren="false"
+                    android:clipToPadding="false"
                     android:orientation="vertical">
 
                     <TextView
@@ -488,11 +516,14 @@
                         android:clickable="true"
                         android:focusable="true"
                         android:foreground="?attr/selectableItemBackground"
+                        android:outlineAmbientShadowColor="@color/primary_dark"
+                        android:outlineSpotShadowColor="@color/primary_dark"
                         app:cardBackgroundColor="@color/card_background"
                         app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp"
+                        app:cardElevation="2dp"
                         app:strokeColor="@color/card_stroke"
-                        app:strokeWidth="1dp">
+                        app:strokeWidth="1dp"
+                        tools:targetApi="p">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -548,11 +579,14 @@
                         android:clickable="true"
                         android:focusable="true"
                         android:foreground="?attr/selectableItemBackground"
+                        android:outlineAmbientShadowColor="@color/primary_dark"
+                        android:outlineSpotShadowColor="@color/primary_dark"
                         app:cardBackgroundColor="@color/card_background"
                         app:cardCornerRadius="14dp"
-                        app:cardElevation="0dp"
+                        app:cardElevation="2dp"
                         app:strokeColor="@color/card_stroke"
-                        app:strokeWidth="1dp">
+                        app:strokeWidth="1dp"
+                        tools:targetApi="p">
 
                         <LinearLayout
                             android:layout_width="match_parent"
@@ -636,7 +670,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="110dp"
                         android:layout_marginTop="10dp"
-                        android:background="@drawable/bg_search_field"
+                        android:background="@drawable/bg_field_sunk"
                         android:fontFamily="@font/nunito"
                         android:gravity="top|start"
                         android:hint="@string/hint_describe_el_motivo_del_cambio"

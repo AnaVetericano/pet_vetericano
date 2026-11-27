@@ -44,6 +44,8 @@ class LoginAndNetworkTest {
         val rutasPublicas = listOf(
             "https://backendvetericano-production.up.railway.app/api/usuarios/login/",
             "https://backendvetericano-production.up.railway.app/api/usuarios/register/",
+            "https://backendvetericano-production.up.railway.app/api/usuarios/register/solicitar-codigo/",
+            "https://backendvetericano-production.up.railway.app/api/usuarios/register/confirmar-codigo/",
             "https://backendvetericano-production.up.railway.app/api/usuarios/google-login/",
             "https://backendvetericano-production.up.railway.app/api/usuarios/recuperar-password/",
             "https://backendvetericano-production.up.railway.app/api/usuarios/confirmar-password/",
@@ -332,6 +334,27 @@ class LoginAndNetworkTest {
         )
         assertTrue(resNoCred is GoogleAuthHelper.ResultadoObtenerToken.Error)
         assertTrue((resNoCred as GoogleAuthHelper.ResultadoObtenerToken.Error).mensajeUsuario.contains(sha1Local))
+    }
+
+    @Test
+    fun googleAuthHelper_noExponePasswordDeterministicaSinVerificacion() {
+        val metodos = GoogleAuthHelper::class.java.declaredMethods.map { it.name }
+        assertFalse(
+            "GoogleAuthHelper no debe generar contraseñas determinísticas para autenticar o registrar sin verificación",
+            metodos.contains("generarPasswordGoogleDeterministica")
+        )
+    }
+
+    @Test
+    fun resolverMensajeErrorHttp_manejaBloqueo429PorIntentosFallidos() {
+        val msg429Json = inicio_sesion.resolverMensajeErrorHttp(
+            429,
+            """{"detail":"Has alcanzado el límite de 6 intentos fallidos. Por seguridad, el acceso a esta cuenta se ha bloqueado por 15 minutos."}"""
+        )
+        assertTrue(msg429Json.contains("6 intentos fallidos"))
+
+        val msg429Fallback = inicio_sesion.resolverMensajeErrorHttp(429, "")
+        assertTrue(msg429Fallback.contains("15 minutos"))
     }
 
     private class FakeChain(private val initialRequest: Request) : Interceptor.Chain {

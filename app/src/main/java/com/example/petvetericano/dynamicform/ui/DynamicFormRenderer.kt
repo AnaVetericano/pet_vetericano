@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ArrayAdapter
 import android.widget.LinearLayout
+import androidx.core.content.ContextCompat
 import com.example.petvetericano.R
 import com.example.petvetericano.dynamicform.*
 import com.google.android.material.materialswitch.MaterialSwitch
@@ -87,6 +88,10 @@ class DynamicFormRenderer(
             }
             hint = field.label
             setBoxCornerRadii(r, r, r, r)
+            boxBackgroundColor = ContextCompat.getColor(context, R.color.input_background)
+            ContextCompat.getColorStateList(context, R.color.selector_input_stroke)?.let {
+                setBoxStrokeColorStateList(it)
+            }
         }
 
         val et = TextInputEditText(til.context).apply {
@@ -130,6 +135,10 @@ class DynamicFormRenderer(
             }
             hint = field.label
             setBoxCornerRadii(r, r, r, r)
+            boxBackgroundColor = ContextCompat.getColor(context, R.color.input_background)
+            ContextCompat.getColorStateList(context, R.color.selector_input_stroke)?.let {
+                setBoxStrokeColorStateList(it)
+            }
         }
 
         val et = TextInputEditText(til.context).apply {
@@ -173,6 +182,10 @@ class DynamicFormRenderer(
             }
             hint = field.label
             setBoxCornerRadii(r, r, r, r)
+            boxBackgroundColor = ContextCompat.getColor(context, R.color.input_background)
+            ContextCompat.getColorStateList(context, R.color.selector_input_stroke)?.let {
+                setBoxStrokeColorStateList(it)
+            }
         }
 
         val actv = MaterialAutoCompleteTextView(til.context).apply {

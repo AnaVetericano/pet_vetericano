@@ -81,6 +81,11 @@
     <string name="hint_nueva_contrasena">Nueva contraseña</string>
     <string name="lbl_cambiar_contrasena">CAMBIAR CONTRASEÑA</string>
     <string name="btn_cancelar_volver_al_login">Cancelar / Volver al Login</string>
+    <string name="lbl_verificar_correo_titulo">Verifica tu correo</string>
+    <string name="lbl_verificar_correo_instruccion">Ingresa el código de 6 dígitos que enviamos a tu bandeja de entrada para confirmar que el correo es real:</string>
+    <string name="btn_verificar_y_crear_cuenta">Verificar y Crear Cuenta</string>
+    <string name="btn_reenviar_codigo">Reenviar código</string>
+    <string name="btn_corregir_correo_registro">Corregir correo / Volver</string>
     <string name="cd_google">Google</string>
     <string name="btn_seleccionar_una_cuenta">Seleccionar una cuenta</string>
     <string name="lbl_elige_tu_cuenta_de_google">Elige tu cuenta de Google para Vetericano</string>
@@ -831,4 +836,20 @@
     <string name="facial_sesion_expirada">Tu sesión biométrica venció o fue revocada. Inicia sesión con correo y contraseña para reactivarla.</string>
     <string name="facial_verificando_servidor">Validando sesión con el servidor…</string>
     <string name="cd_reconocimiento_facial">Reconocimiento facial</string>
+
+    <!-- Barra de navegación inferior (ambos roles) -->
+    <string name="nav_inicio">Inicio</string>
+    <string name="nav_reportes">Reportes</string>
+    <string name="nav_eventos">Eventos</string>
+    <string name="nav_peticiones">Peticiones</string>
+    <string name="nav_maletin">Maletín</string>
+    <string name="nav_perfil">Perfil</string>
+
+    <!-- Perfiles unificados (ambos roles) -->
+    <string name="lbl_datos_personales">Datos personales</string>
+    <string name="lbl_preferencias_y_seguridad">Preferencias y seguridad</string>
+    <string name="lbl_rol_ciudadano_corto">Ciudadano</string>
+    <string name="lbl_cambios_sin_guardar">Tienes cambios sin guardar</string>
+    <string name="lbl_solo_lectura_seguridad">Verificado · No editable por seguridad</string>
+    <string name="lbl_dato_sensible_bloqueado">No se puede modificar por ser un dato sensible</string>
 </resources>

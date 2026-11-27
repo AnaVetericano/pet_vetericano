@@ -9,6 +9,8 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:orientation="vertical"
         android:padding="22dp">
 
@@ -68,6 +70,8 @@
             android:id="@+id/layoutPasoPregunta"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:orientation="vertical">
 
             <!-- Fotografia previa devuelta por el backend -->
@@ -137,7 +141,9 @@
                 android:layout_marginBottom="14dp"
                 app:cardBackgroundColor="@color/primary_soft"
                 app:cardCornerRadius="14dp"
-                app:cardElevation="0dp">
+                app:cardElevation="0dp"
+                app:strokeColor="@color/card_stroke"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -150,7 +156,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:fontFamily="@font/nunito_bold"
-                        android:textColor="@color/primary_dark"
+                        android:textColor="@color/text_primary"
                         android:textSize="14sp"
                         android:visibility="gone"
                         tools:text="Similitud visual estimada: 78 %"
@@ -199,12 +205,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
                 android:fontFamily="@font/nunito_bold"
+                android:stateListAnimator="@animator/anim_levitate_button"
                 android:text="@string/duplicado_ciudadano_btn_si_mismo"
                 android:textAllCaps="false"
                 android:textColor="@color/primary"
                 android:textSize="15sp"
                 app:backgroundTint="@color/primary_light"
-                app:cornerRadius="14dp" />
+                app:cornerRadius="14dp"
+                app:elevation="3dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnNoContinuarEnvio"
@@ -212,12 +220,17 @@
                 android:layout_height="52dp"
                 android:layout_marginTop="8dp"
                 android:fontFamily="@font/nunito_bold"
+                android:outlineAmbientShadowColor="@color/primary_dark"
+                android:outlineSpotShadowColor="@color/primary_dark"
+                android:stateListAnimator="@animator/anim_levitate_button"
                 android:text="@string/duplicado_ciudadano_btn_no_continuar"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="15sp"
                 app:backgroundTint="@color/blue"
-                app:cornerRadius="14dp" />
+                app:cornerRadius="14dp"
+                app:elevation="4dp"
+                tools:targetApi="p" />
         </LinearLayout>
 
         <!-- Paso 2 (si el usuario responde "Si"): aviso de reporte existente + cancelacion -->
@@ -225,6 +238,8 @@
             android:id="@+id/layoutPasoYaExiste"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:orientation="vertical"
             android:visibility="gone"
             tools:visibility="gone">
@@ -256,12 +271,14 @@
                 android:layout_width="match_parent"
                 android:layout_height="52dp"
                 android:fontFamily="@font/nunito_bold"
+                android:stateListAnimator="@animator/anim_levitate_button"
                 android:text="@string/duplicado_ciudadano_btn_cancelar_nuevo_envio"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="15sp"
                 app:backgroundTint="@color/error_dark"
-                app:cornerRadius="14dp" />
+                app:cornerRadius="14dp"
+                app:elevation="4dp" />
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnVolverPregunta"
@@ -270,10 +287,13 @@
                 android:layout_height="48dp"
                 android:layout_marginTop="8dp"
                 android:fontFamily="@font/nunito_bold"
+                android:stateListAnimator="@animator/anim_levitate_button"
                 android:text="@string/duplicado_ciudadano_btn_volver_borrador"
                 android:textAllCaps="false"
                 android:textColor="@color/text_secondary"
+                app:backgroundTint="@color/card_background"
                 app:cornerRadius="14dp"
+                app:elevation="3dp"
                 app:strokeColor="@color/card_stroke" />
         </LinearLayout>
 

@@ -24,9 +24,26 @@ class SharedPreferencesManager(context: Context) {
     }
 
     fun limpiarDatosGoogleLegacy() {
+        val editor = googlePrefs.edit()
+        var modificado = false
         if (googlePrefs.contains("KNOWN_GOOGLE_ACCOUNTS")) {
-            googlePrefs.edit().remove("KNOWN_GOOGLE_ACCOUNTS").apply()
+            editor.remove("KNOWN_GOOGLE_ACCOUNTS")
+            modificado = true
         }
+        googlePrefs.all.keys.forEach { key ->
+            if (key.startsWith("GOOGLE_CRED_")) {
+                editor.remove(key)
+                modificado = true
+            }
+        }
+        if (modificado) {
+            editor.apply()
+        }
+    }
+
+    fun clearGoogleAccountPassword(email: String) {
+        if (email.isEmpty()) return
+        googlePrefs.edit().remove("GOOGLE_CRED_${email.lowercase().trim()}").apply()
     }
 
     fun saveGoogleAccountPassword(email: String, password: String) {

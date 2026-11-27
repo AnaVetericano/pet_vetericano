@@ -23,7 +23,9 @@
         <item name="textAppearanceBodyMedium">@style/TextAppearance.Vetericano.BodyMedium</item>
         <item name="textAppearanceHeadlineSmall">@style/TextAppearance.Vetericano.HeadlineSmall</item>
 
-        <!-- Diálogos emergentes con diseño Material 3 -->
+        <!-- Diálogos emergentes y bottom sheets con diseño Material 3 -->
+        <item name="elevationOverlayEnabled">false</item>
+        <item name="bottomSheetDialogTheme">@style/ThemeOverlay.Vetericano.BottomSheetDialog</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.Vetericano.MaterialAlertDialog</item>
         <item name="alertDialogTheme">@style/ThemeOverlay.Vetericano.MaterialAlertDialog</item>
     </style>

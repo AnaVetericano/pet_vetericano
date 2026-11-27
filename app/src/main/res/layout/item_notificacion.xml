@@ -3,18 +3,21 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/cardNotificacion"
-    style="?attr/materialCardViewFilledStyle"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:layout_marginHorizontal="16dp"
     android:layout_marginVertical="6dp"
     android:clickable="true"
     android:focusable="true"
+    android:outlineAmbientShadowColor="@color/primary_dark"
+    android:outlineSpotShadowColor="@color/primary_dark"
+    android:stateListAnimator="@animator/anim_levitate_card"
     app:cardBackgroundColor="@color/card_background"
     app:cardCornerRadius="16dp"
-    app:cardElevation="0dp"
+    app:cardElevation="2dp"
     app:strokeColor="@color/card_stroke"
-    app:strokeWidth="1dp">
+    app:strokeWidth="1dp"
+    tools:targetApi="p">
 
     <LinearLayout
         android:layout_width="match_parent"

@@ -1,20 +1,23 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_screen"
-    android:fitsSystemWindows="true"
     android:orientation="vertical">
 
     <!-- Encabezado con botón regresar -->
     <RelativeLayout
+        android:id="@+id/layoutHeaderEventos"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/card_background"
         android:elevation="2dp"
+        android:outlineSpotShadowColor="@color/primary_dark"
         android:paddingHorizontal="16dp"
-        android:paddingVertical="12dp">
+        android:paddingVertical="12dp"
+        tools:targetApi="p">
 
         <ImageButton
             android:id="@+id/btnAtras"
@@ -79,7 +82,14 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:clipChildren="false"
         android:clipToPadding="false"
         android:padding="16dp" />
+
+    <include
+        android:id="@+id/bottomNavCiudadano"
+        layout="@layout/layout_bottom_nav_ciudadano"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content" />
 
 </LinearLayout>

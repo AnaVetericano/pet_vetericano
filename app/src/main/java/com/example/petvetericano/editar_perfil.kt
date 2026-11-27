@@ -71,6 +71,9 @@ class editar_perfil : AppCompatActivity() {
         binding = ActivityEditarPerfilBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
+        BottomNavHelper.aplicarInsetSuperior(binding.toolbarPerfil)
+        binding.btnBack.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
+
         prefs = SharedPreferencesManager(this)
 
         configurarFiltrosDeCampos()
@@ -79,6 +82,27 @@ class editar_perfil : AppCompatActivity() {
         cargarDatosPerfil()
         sincronizarConApi()
         setupMenuListeners()
+
+        BottomNavHelper.setupCiudadano(
+            activity = this,
+            binding = binding.bottomNavCiudadano,
+            activeTab = BottomNavHelper.CiudadanoTab.PERFIL,
+            onBeforeNavigate = { proceed ->
+                if (hayCambiosSinGuardar() && !guardando) {
+                    mostrarConfirmacionDescartar(
+                        onDescartar = {
+                            descartarCambios()
+                            proceed()
+                        }
+                    )
+                } else {
+                    proceed()
+                }
+            },
+            onReselectCurrent = {
+                binding.scrollPerfil.smoothScrollTo(0, 0)
+            }
+        )
 
         // Interceptar atrás del sistema si hay cambios sin guardar.
         onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
@@ -233,6 +257,23 @@ class editar_perfil : AppCompatActivity() {
         } else {
             ProfilePhotoHelper.cargarFotoPerfil(this, binding.ivProfile, fotoOriginal)
         }
+
+        actualizarEncabezadoUsuario(nombre, apellido, email)
+    }
+
+    private fun actualizarEncabezadoUsuario(nombre: String, apellido: String, email: String) {
+        val nombreCompleto = if (apellido.isNotEmpty() && !nombre.contains(apellido, ignoreCase = true)) {
+            "$nombre $apellido"
+        } else {
+            nombre
+        }
+        binding.tvProfileUserName.text = nombreCompleto.ifEmpty { "Mi cuenta" }
+        if (email.isNotEmpty()) {
+            binding.tvProfileUserEmail.text = email
+            binding.tvProfileUserEmail.visibility = View.VISIBLE
+        } else {
+            binding.tvProfileUserEmail.visibility = View.GONE
+        }
     }
 
     private fun sincronizarConApi() {
@@ -321,12 +362,14 @@ class editar_perfil : AppCompatActivity() {
             binding.btnGuardarPerfil.isEnabled = false
             binding.btnGuardarPerfil.text = "Guardando…"
             binding.btnDescartarPerfil.visibility = View.GONE
+            binding.bannerCambiosPendientes.visibility = View.GONE
             return
         }
         val hayCambios = hayCambiosSinGuardar()
         binding.btnGuardarPerfil.isEnabled = hayCambios
         binding.btnGuardarPerfil.text = "Guardar Cambios"
         binding.btnDescartarPerfil.visibility = if (hayCambios) View.VISIBLE else View.GONE
+        binding.bannerCambiosPendientes.visibility = if (!guardando && hayCambios) View.VISIBLE else View.GONE
     }
 
     private fun descartarCambios() {
@@ -542,6 +585,11 @@ class editar_perfil : AppCompatActivity() {
                     fotoEliminada = false
                     guardando = false
                     actualizarEstadoBotones()
+                    actualizarEncabezadoUsuario(
+                        nombreGuardado,
+                        apellidoGuardado,
+                        prefs.getUserEmail().trim().take(MAX_LENGTH_EMAIL)
+                    )
                     ProfilePhotoHelper.cargarFotoPerfil(this@editar_perfil, binding.ivProfile, fotoOriginal)
                     Snackbar.make(binding.root, "Perfil actualizado", Snackbar.LENGTH_SHORT).show()
                     binding.root.postDelayed({ irAMenuInicial() }, 900)

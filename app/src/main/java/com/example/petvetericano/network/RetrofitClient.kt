@@ -17,6 +17,11 @@ object RetrofitClient {
     // =================================================================
     internal const val PRODUCTION_BASE_URL = "https://backendvetericano-production.up.railway.app/api/"
     internal val BASE_URL: String = BuildConfig.API_BASE_URL
+    private val LOCAL_DEV_FALLBACK_URLS = listOf(
+        "http://10.0.2.2:8000/api/",
+        "http://127.0.0.1:8000/api/",
+        "http://192.168.101.88:8000/api/"
+    )
 
     // Variable estática global para almacenar el token de acceso
     var authToken: String? = null
@@ -82,6 +87,68 @@ object RetrofitClient {
     /** REST central de notificaciones (contrato v1 §6), mismo cliente autenticado. */
     val notificacionesApi: NotificacionesApi by lazy {
         retrofit.create(NotificacionesApi::class.java)
+    }
+
+    private fun crearApiServiceTemporal(baseUrl: String): ApiService {
+        val clientRapido = OkHttpClient.Builder()
+            .addInterceptor(AuthInterceptor { authToken })
+            .addInterceptor(loggingInterceptor)
+            .connectTimeout(4, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .build()
+        return Retrofit.Builder()
+            .baseUrl(baseUrl)
+            .client(clientRapido)
+            .addConverterFactory(GsonConverterFactory.create(gson))
+            .build()
+            .create(ApiService::class.java)
+    }
+
+    /**
+     * Ejecuta una llamada de autenticación (como solicitar-codigo o confirmar-codigo) contra BASE_URL.
+     * Si en modo DEBUG el servidor de Railway aún no tiene desplegado el endpoint (HTTP 404/405)
+     * o está caído (HTTP 502/503/504/5xx), reintenta automáticamente contra el backend Django local
+     * (127.0.0.1 con adb reverse / 10.0.2.2 en emulador / IP LAN).
+     */
+    suspend fun <T> ejecutarConRespaldoLocalDebug(
+        bloque: suspend (ApiService) -> retrofit2.Response<T>
+    ): retrofit2.Response<T> {
+        var respuestaPrimaria: retrofit2.Response<T>? = null
+        var excepcionPrimaria: Exception? = null
+        val debeProbarFallback = { code: Int -> code == 404 || code == 405 || code >= 500 }
+
+        try {
+            val resp = bloque(apiService)
+            if (!BuildConfig.DEBUG || !debeProbarFallback(resp.code())) {
+                return resp
+            }
+            respuestaPrimaria = resp
+        } catch (e: Exception) {
+            if (!BuildConfig.DEBUG) throw e
+            excepcionPrimaria = e
+        }
+
+        // Priorizar 127.0.0.1 (instantáneo con adb reverse en celular físico USB), luego LAN y 10.0.2.2
+        val urlsOrdenadas = listOf(
+            "http://127.0.0.1:8000/api/",
+            "http://192.168.101.88:8000/api/",
+            "http://10.0.2.2:8000/api/"
+        )
+        for (urlLocal in urlsOrdenadas) {
+            if (urlLocal.equals(BASE_URL, ignoreCase = true)) continue
+            try {
+                val apiLocal = crearApiServiceTemporal(urlLocal)
+                val respLocal = bloque(apiLocal)
+                if (!debeProbarFallback(respLocal.code())) {
+                    return respLocal
+                }
+            } catch (_: Exception) {
+                // Continuar probando el siguiente host local
+            }
+        }
+
+        respuestaPrimaria?.let { return it }
+        throw (excepcionPrimaria ?: IllegalStateException("No se pudo conectar con el servidor."))
     }
 }
 

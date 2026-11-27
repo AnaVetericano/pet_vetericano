@@ -131,21 +131,25 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal"
-            android:layout_marginTop="20dp">
+            android:layout_marginTop="20dp"
+            android:clipChildren="false"
+            android:clipToPadding="false"
+            android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnCancelarGrabacion"
                 style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="0dp"
                 android:layout_height="46dp"
-                android:layout_weight="1"
                 android:layout_marginEnd="6dp"
-                android:text="Cancelar"
+                android:layout_weight="1"
                 android:fontFamily="@font/nunito_bold"
+                android:stateListAnimator="@animator/anim_levitate_button"
+                android:text="Cancelar"
                 android:textAllCaps="false"
                 android:textColor="@color/text_secondary"
                 app:cornerRadius="12dp"
+                app:elevation="3dp"
                 app:strokeColor="@color/input_stroke" />
 
             <com.google.android.material.button.MaterialButton
@@ -153,14 +157,16 @@
                 style="?attr/materialButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="46dp"
-                android:layout_weight="1"
                 android:layout_marginStart="6dp"
-                android:text="Iniciar Grabación"
+                android:layout_weight="1"
                 android:fontFamily="@font/nunito_bold"
+                android:stateListAnimator="@animator/anim_levitate_button"
+                android:text="Iniciar Grabación"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 app:backgroundTint="@color/primary"
-                app:cornerRadius="12dp" />
+                app:cornerRadius="12dp"
+                app:elevation="3dp" />
         </LinearLayout>
     </LinearLayout>
 
@@ -268,13 +274,17 @@
             android:id="@+id/rvCamposExtraidos"
             android:layout_width="match_parent"
             android:layout_height="260dp"
+            android:layout_marginBottom="14dp"
+            android:clipToPadding="false"
             android:nestedScrollingEnabled="true"
-            android:layout_marginBottom="14dp" />
+            android:paddingVertical="4dp" />
 
         <!-- Botones de Acción de Confirmación Humana -->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:orientation="horizontal">
 
             <com.google.android.material.button.MaterialButton
@@ -282,13 +292,15 @@
                 style="?attr/materialButtonOutlinedStyle"
                 android:layout_width="0dp"
                 android:layout_height="46dp"
-                android:layout_weight="1"
                 android:layout_marginEnd="6dp"
-                android:text="Volver a Grabar"
+                android:layout_weight="1"
                 android:fontFamily="@font/nunito_bold"
+                android:stateListAnimator="@animator/anim_levitate_button"
+                android:text="Volver a Grabar"
                 android:textAllCaps="false"
                 android:textColor="@color/text_secondary"
                 app:cornerRadius="12dp"
+                app:elevation="3dp"
                 app:strokeColor="@color/input_stroke" />
 
             <com.google.android.material.button.MaterialButton
@@ -296,14 +308,16 @@
                 style="?attr/materialButtonStyle"
                 android:layout_width="0dp"
                 android:layout_height="46dp"
-                android:layout_weight="1"
                 android:layout_marginStart="6dp"
-                android:text="Aplicar al Acta"
+                android:layout_weight="1"
                 android:fontFamily="@font/nunito_bold"
+                android:stateListAnimator="@animator/anim_levitate_button"
+                android:text="Aplicar al Acta"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 app:backgroundTint="@color/radix_grass_solid"
-                app:cornerRadius="12dp" />
+                app:cornerRadius="12dp"
+                app:elevation="3dp" />
         </LinearLayout>
     </LinearLayout>
 
@@ -314,6 +328,8 @@
         android:id="@+id/layoutError"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:orientation="vertical"
         android:gravity="center"
         android:paddingVertical="20dp"
@@ -352,11 +368,13 @@
             android:layout_width="wrap_content"
             android:layout_height="44dp"
             android:layout_marginTop="16dp"
-            android:text="Intentar de Nuevo"
             android:fontFamily="@font/nunito_bold"
+            android:stateListAnimator="@animator/anim_levitate_button"
+            android:text="Intentar de Nuevo"
             android:textAllCaps="false"
+            app:backgroundTint="@color/primary"
             app:cornerRadius="12dp"
-            app:backgroundTint="@color/primary" />
+            app:elevation="3dp" />
     </LinearLayout>
 
 </LinearLayout>

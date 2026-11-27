@@ -12,10 +12,13 @@
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbarPerfil"
         android:layout_width="match_parent"
-        android:layout_height="?attr/actionBarSize"
+        android:layout_height="wrap_content"
         android:background="@color/card_background"
-        android:elevation="1dp"
-        app:layout_constraintTop_toTopOf="parent">
+        android:elevation="2dp"
+        android:minHeight="?attr/actionBarSize"
+        android:outlineSpotShadowColor="@color/primary_dark"
+        app:layout_constraintTop_toTopOf="parent"
+        tools:targetApi="p">
 
         <ImageButton
             android:id="@+id/btnBack"
@@ -37,38 +40,55 @@
             android:textSize="18sp" />
     </com.google.android.material.appbar.MaterialToolbar>
 
+    <View
+        android:id="@+id/dividerToolbar"
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/card_stroke"
+        app:layout_constraintTop_toBottomOf="@id/toolbarPerfil" />
+
     <!-- CONTENEDOR DESPLAZABLE -->
     <ScrollView
-        android:layout_width="match_parent"
+        android:id="@+id/scrollPerfil"
+        android:layout_width="0dp"
         android:layout_height="0dp"
         android:fillViewport="true"
         android:scrollbars="none"
-        app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/toolbarPerfil">
+        app:layout_constraintBottom_toTopOf="@id/bottomNavVeterinario"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/dividerToolbar">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:orientation="vertical"
             android:paddingHorizontal="20dp"
-            android:paddingTop="24dp"
-            android:paddingBottom="36dp">
+            android:paddingTop="20dp"
+            android:paddingBottom="24dp">
 
-            <!-- FOTO DE PERFIL / AVATAR CON BADGE DE CÁMARA M3 -->
+            <!-- CABECERA COMPACTA -->
             <FrameLayout
                 android:id="@+id/containerProfile"
-                android:layout_width="120dp"
-                android:layout_height="120dp"
+                android:layout_width="96dp"
+                android:layout_height="96dp"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="12dp">
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <com.google.android.material.card.MaterialCardView
-                    android:layout_width="120dp"
-                    android:layout_height="120dp"
-                    app:cardCornerRadius="60dp"
-                    app:cardElevation="2dp"
+                    android:layout_width="96dp"
+                    android:layout_height="96dp"
+                    android:outlineAmbientShadowColor="@color/primary_dark"
+                    android:outlineSpotShadowColor="@color/primary_dark"
+                    app:cardBackgroundColor="@color/card_background"
+                    app:cardCornerRadius="48dp"
+                    app:cardElevation="4dp"
                     app:strokeColor="@color/primary_light"
-                    app:strokeWidth="3dp">
+                    app:strokeWidth="3dp"
+                    tools:targetApi="p">
 
                     <com.google.android.material.imageview.ShapeableImageView
                         android:id="@+id/ivEditProfile"
@@ -82,22 +102,24 @@
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/btnChangePhoto"
                     style="?attr/materialCardViewFilledStyle"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
                     android:layout_gravity="bottom|end"
                     android:clickable="true"
                     android:focusable="true"
+                    android:outlineSpotShadowColor="@color/primary_dark"
                     app:cardBackgroundColor="@color/primary"
-                    app:cardCornerRadius="19dp"
+                    app:cardCornerRadius="17dp"
                     app:cardElevation="4dp"
                     app:strokeColor="@color/card_background"
-                    app:strokeWidth="2dp">
+                    app:strokeWidth="2dp"
+                    tools:targetApi="p">
 
                     <ImageView
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:contentDescription="@string/cd_cambiar_foto_de_perfil"
-                        android:padding="9dp"
+                        android:padding="8dp"
                         android:src="@drawable/camera"
                         app:tint="@color/white" />
                 </com.google.android.material.card.MaterialCardView>
@@ -109,7 +131,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="6dp"
+                android:layout_marginTop="12dp"
                 android:fontFamily="@font/nunito_bold"
                 android:textColor="@color/text_primary"
                 android:textSize="20sp"
@@ -121,43 +143,73 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
-                android:layout_marginBottom="24dp"
+                android:layout_marginTop="6dp"
                 android:background="@drawable/bg_rounded_badge"
                 android:backgroundTint="@color/primary_light"
                 android:fontFamily="@font/nunito_bold"
-                android:paddingHorizontal="14dp"
-                android:paddingVertical="5dp"
+                android:paddingHorizontal="12dp"
+                android:paddingVertical="4dp"
                 android:text="@string/lbl_medico_veterinario_oficial"
                 android:textColor="@color/primary"
                 android:textSize="12sp" />
 
-            <!-- TARJETA FORMULARIO MATERIAL 3 -->
+            <!-- CORREO DEL USUARIO ACTUAL -->
+            <TextView
+                android:id="@+id/tvProfileUserEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_horizontal"
+                android:layout_marginTop="4dp"
+                android:layout_marginBottom="20dp"
+                android:fontFamily="@font/nunito"
+                android:textColor="@color/text_secondary"
+                android:textSize="13sp"
+                tools:text="sofia@vetericano.com" />
+
+            <!-- TARJETA 1: FORMULARIO MATERIAL 3 -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardForm"
-                style="?attr/materialCardViewFilledStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="20dp"
+                android:layout_marginBottom="16dp"
+                android:outlineAmbientShadowColor="@color/primary_dark"
+                android:outlineSpotShadowColor="@color/primary_dark"
                 app:cardBackgroundColor="@color/card_background"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="1dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="3dp"
                 app:strokeColor="@color/card_stroke"
-                app:strokeWidth="1dp">
+                app:strokeWidth="1dp"
+                tools:targetApi="p">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="18dp">
 
-                    <TextView
-                        android:layout_width="wrap_content"
+                    <LinearLayout
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="16dp"
-                        android:fontFamily="@font/nunito_bold"
-                        android:text="@string/lbl_informacion_del_funcionario"
-                        android:textColor="@color/text_primary"
-                        android:textSize="15sp" />
+                        android:layout_marginBottom="14dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <ImageView
+                            android:layout_width="18dp"
+                            android:layout_height="18dp"
+                            android:contentDescription="@null"
+                            android:src="@drawable/user"
+                            app:tint="@color/primary" />
+
+                        <TextView
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="8dp"
+                            android:fontFamily="@font/nunito_bold"
+                            android:text="@string/lbl_informacion_del_funcionario"
+                            android:textColor="@color/text_primary"
+                            android:textSize="15sp" />
+                    </LinearLayout>
 
                     <!-- Campo Nombre -->
                     <com.google.android.material.textfield.TextInputLayout
@@ -165,15 +217,16 @@
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="14dp"
+                        android:layout_marginBottom="12dp"
                         android:hint="@string/hint_nombres"
+                        app:boxBackgroundColor="@color/input_background"
                         app:boxCornerRadiusBottomEnd="12dp"
                         app:boxCornerRadiusBottomStart="12dp"
                         app:boxCornerRadiusTopEnd="12dp"
                         app:boxCornerRadiusTopStart="12dp"
-                        app:boxStrokeColor="@color/primary"
-                        app:counterEnabled="true"
-                        app:counterMaxLength="50"
+                        app:boxStrokeColor="@color/selector_input_stroke"
+                        app:boxStrokeWidth="1dp"
+                        app:boxStrokeWidthFocused="2dp"
                         app:errorEnabled="true"
                         app:hintTextColor="@color/primary"
                         app:startIconDrawable="@drawable/user"
@@ -199,15 +252,16 @@
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="14dp"
+                        android:layout_marginBottom="12dp"
                         android:hint="@string/hint_apellidos"
+                        app:boxBackgroundColor="@color/input_background"
                         app:boxCornerRadiusBottomEnd="12dp"
                         app:boxCornerRadiusBottomStart="12dp"
                         app:boxCornerRadiusTopEnd="12dp"
                         app:boxCornerRadiusTopStart="12dp"
-                        app:boxStrokeColor="@color/primary"
-                        app:counterEnabled="true"
-                        app:counterMaxLength="50"
+                        app:boxStrokeColor="@color/selector_input_stroke"
+                        app:boxStrokeWidth="1dp"
+                        app:boxStrokeWidthFocused="2dp"
                         app:errorEnabled="true"
                         app:hintTextColor="@color/primary"
                         app:startIconDrawable="@drawable/user"
@@ -233,15 +287,16 @@
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="14dp"
+                        android:layout_marginBottom="12dp"
                         android:hint="@string/hint_correo_institucional"
+                        app:boxBackgroundColor="@color/input_background"
                         app:boxCornerRadiusBottomEnd="12dp"
                         app:boxCornerRadiusBottomStart="12dp"
                         app:boxCornerRadiusTopEnd="12dp"
                         app:boxCornerRadiusTopStart="12dp"
-                        app:boxStrokeColor="@color/primary"
-                        app:counterEnabled="true"
-                        app:counterMaxLength="50"
+                        app:boxStrokeColor="@color/selector_input_stroke"
+                        app:boxStrokeWidth="1dp"
+                        app:boxStrokeWidthFocused="2dp"
                         app:errorEnabled="true"
                         app:hintTextColor="@color/primary"
                         app:startIconDrawable="@drawable/mail"
@@ -268,13 +323,14 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:hint="@string/hint_telefono_de_contacto"
+                        app:boxBackgroundColor="@color/input_background"
                         app:boxCornerRadiusBottomEnd="12dp"
                         app:boxCornerRadiusBottomStart="12dp"
                         app:boxCornerRadiusTopEnd="12dp"
                         app:boxCornerRadiusTopStart="12dp"
-                        app:boxStrokeColor="@color/primary"
-                        app:counterEnabled="true"
-                        app:counterMaxLength="10"
+                        app:boxStrokeColor="@color/selector_input_stroke"
+                        app:boxStrokeWidth="1dp"
+                        app:boxStrokeWidthFocused="2dp"
                         app:errorEnabled="true"
                         app:hintTextColor="@color/primary"
                         app:startIconDrawable="@drawable/phone"
@@ -297,38 +353,40 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
-            <!-- TARJETA PROFESIONAL / ACREDITACIÓN (COMVEZCOL) -->
+            <!-- TARJETA 2: TARJETA PROFESIONAL / ACREDITACIÓN (COMVEZCOL) -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/cardTarjetaProfesional"
-                style="?attr/materialCardViewFilledStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="24dp"
+                android:layout_marginBottom="0dp"
+                android:outlineAmbientShadowColor="@color/primary_dark"
+                android:outlineSpotShadowColor="@color/primary_dark"
                 app:cardBackgroundColor="@color/card_background"
-                app:cardCornerRadius="18dp"
-                app:cardElevation="1dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="3dp"
                 app:strokeColor="@color/card_stroke"
-                app:strokeWidth="1dp">
+                app:strokeWidth="1dp"
+                tools:targetApi="p">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="vertical"
-                    android:padding="20dp">
+                    android:padding="18dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:orientation="horizontal"
+                        android:layout_marginBottom="6dp"
                         android:gravity="center_vertical"
-                        android:layout_marginBottom="6dp">
+                        android:orientation="horizontal">
 
                         <ImageView
                             android:layout_width="22dp"
                             android:layout_height="22dp"
+                            android:contentDescription="@null"
                             android:src="@drawable/id_card"
-                            app:tint="@color/primary"
-                            android:contentDescription="@null" />
+                            app:tint="@color/primary" />
 
                         <TextView
                             android:layout_width="wrap_content"
@@ -355,18 +413,19 @@
                         style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginBottom="14dp"
+                        android:layout_marginBottom="12dp"
                         android:hint="@string/hint_matricula_profesional"
-                        app:helperText="@string/helper_recomendado_ingresa_tu_matricula_profesional"
-                        app:helperTextTextColor="@color/primary"
+                        app:boxBackgroundColor="@color/input_background"
                         app:boxCornerRadiusBottomEnd="12dp"
                         app:boxCornerRadiusBottomStart="12dp"
                         app:boxCornerRadiusTopEnd="12dp"
                         app:boxCornerRadiusTopStart="12dp"
-                        app:boxStrokeColor="@color/primary"
-                        app:counterEnabled="true"
-                        app:counterMaxLength="10"
+                        app:boxStrokeColor="@color/selector_input_stroke"
+                        app:boxStrokeWidth="1dp"
+                        app:boxStrokeWidthFocused="2dp"
                         app:errorEnabled="true"
+                        app:helperText="@string/helper_recomendado_ingresa_tu_matricula_profesional"
+                        app:helperTextTextColor="@color/primary"
                         app:hintTextColor="@color/primary"
                         app:startIconDrawable="@drawable/id_card"
                         app:startIconTint="@color/primary">
@@ -378,7 +437,7 @@
                             android:fontFamily="@font/nunito"
                             android:imeOptions="actionDone"
                             android:inputType="textCapCharacters"
-                            android:maxLength="10"
+                            android:maxLength="15"
                             android:maxLines="1"
                             android:singleLine="true"
                             android:textColor="@color/text_primary"
@@ -393,17 +452,23 @@
                         android:layout_height="wrap_content"
                         android:enabled="false"
                         android:hint="@string/hint_cedula_documento_de_identidad_d"
-                        app:helperText="No se puede modificar por ser un dato sensible"
-                        app:helperTextEnabled="true"
-                        app:helperTextTextColor="@color/text_muted"
+                        app:boxBackgroundColor="@color/chip_bg_neutral"
                         app:boxCornerRadiusBottomEnd="12dp"
                         app:boxCornerRadiusBottomStart="12dp"
                         app:boxCornerRadiusTopEnd="12dp"
                         app:boxCornerRadiusTopStart="12dp"
-                        app:boxStrokeColor="@color/primary"
+                        app:boxStrokeColor="@color/divider"
+                        app:boxStrokeWidth="1dp"
+                        app:boxStrokeWidthFocused="2dp"
+                        app:endIconDrawable="@drawable/lock_icon"
+                        app:endIconMode="custom"
+                        app:endIconTint="@color/text_muted"
+                        app:helperText="@string/lbl_dato_sensible_bloqueado"
+                        app:helperTextEnabled="true"
+                        app:helperTextTextColor="@color/text_muted"
                         app:hintTextColor="@color/primary"
                         app:startIconDrawable="@drawable/user"
-                        app:startIconTint="@color/primary">
+                        app:startIconTint="@color/text_muted">
 
                         <com.google.android.material.textfield.TextInputEditText
                             android:id="@+id/etIdentificacion"
@@ -424,133 +489,238 @@
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
 
+            <!-- BANNER CAMBIOS SIN GUARDAR -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/bannerCambiosPendientes"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:visibility="gone"
+                app:cardBackgroundColor="@color/secondary_light"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp"
+                app:strokeColor="@color/secondary_dark"
+                app:strokeWidth="1dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="14dp"
+                    android:paddingVertical="10dp">
+
+                    <ImageView
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
+                        android:contentDescription="@null"
+                        android:src="@drawable/ic_info_circle"
+                        app:tint="@color/secondary_dark" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="10dp"
+                        android:fontFamily="@font/nunito_bold"
+                        android:text="@string/lbl_cambios_sin_guardar"
+                        android:textColor="@color/secondary_dark"
+                        android:textSize="13sp" />
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
             <!-- BOTÓN GUARDAR CAMBIOS (Material 3 Filled) -->
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnSave"
                 style="@style/Widget.Material3.Button"
                 android:layout_width="match_parent"
-                android:layout_height="54dp"
-                android:layout_marginBottom="24dp"
-                android:backgroundTint="@color/primary"
+                android:layout_height="52dp"
+                android:layout_marginTop="14dp"
+                android:enabled="false"
                 android:fontFamily="@font/nunito_bold"
+                android:outlineAmbientShadowColor="@color/primary_dark"
+                android:outlineSpotShadowColor="@color/primary_dark"
+                android:stateListAnimator="@animator/anim_levitate_button"
                 android:text="@string/btn_guardar_cambios"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="15sp"
+                app:backgroundTint="@color/primary"
                 app:cornerRadius="14dp"
-                app:elevation="2dp" />
+                app:elevation="4dp"
+                tools:targetApi="p" />
 
-            <!-- AJUSTE MODO OSCURO MATERIAL 3 -->
+            <!-- BOTÓN DESCARTAR CAMBIOS -->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnDescartarPerfil"
+                style="@style/Widget.Material3.Button.OutlinedButton"
+                android:layout_width="match_parent"
+                android:layout_height="52dp"
+                android:layout_marginTop="10dp"
+                android:fontFamily="@font/nunito_bold"
+                android:outlineAmbientShadowColor="@color/primary_dark"
+                android:outlineSpotShadowColor="@color/primary_dark"
+                android:stateListAnimator="@animator/anim_levitate_button"
+                android:text="@string/lbl_descartar"
+                android:textAllCaps="false"
+                android:textColor="@color/primary"
+                android:textSize="15sp"
+                android:visibility="gone"
+                app:backgroundTint="@color/card_background"
+                app:cornerRadius="14dp"
+                app:strokeColor="@color/primary"
+                app:strokeWidth="1dp"
+                tools:targetApi="p" />
+
+            <!-- TARJETA 3 AGRUPADA: PREFERENCIAS Y SEGURIDAD -->
             <com.google.android.material.card.MaterialCardView
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
+                android:layout_marginTop="16dp"
+                android:outlineAmbientShadowColor="@color/primary_dark"
+                android:outlineSpotShadowColor="@color/primary_dark"
                 app:cardBackgroundColor="@color/card_background"
-                app:cardCornerRadius="14dp"
-                app:cardElevation="0dp"
+                app:cardCornerRadius="16dp"
+                app:cardElevation="3dp"
                 app:strokeColor="@color/card_stroke"
-                app:strokeWidth="1dp">
+                app:strokeWidth="1dp"
+                tools:targetApi="p">
 
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="14dp">
+                    android:orientation="vertical">
 
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:contentDescription="@null"
-                        android:src="@drawable/baseline_dark_mode_24"
-                        app:tint="@color/primary" />
-
-                    <LinearLayout
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/nunito_bold"
-                            android:text="@string/lbl_modo_oscuro"
-                            android:textColor="@color/text_primary"
-                            android:textSize="15sp" />
-
-                        <TextView
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:fontFamily="@font/nunito"
-                            android:text="@string/desc_modo_oscuro"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="12sp" />
-                    </LinearLayout>
-
-                    <com.google.android.material.switchmaterial.SwitchMaterial
-                        android:id="@+id/switchDarkMode"
+                    <TextView
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        app:thumbTint="@color/primary" />
-                </LinearLayout>
-            </com.google.android.material.card.MaterialCardView>
+                        android:fontFamily="@font/nunito_bold"
+                        android:paddingHorizontal="16dp"
+                        android:paddingTop="14dp"
+                        android:paddingBottom="6dp"
+                        android:text="@string/lbl_preferencias_y_seguridad"
+                        android:textColor="@color/text_secondary"
+                        android:textSize="12sp" />
 
-            <!-- RECONOCIMIENTO FACIAL ON-DEVICE MATERIAL 3 -->
-            <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardReconocimientoFacial"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                android:clickable="true"
-                android:focusable="true"
-                app:cardBackgroundColor="@color/card_background"
-                app:cardCornerRadius="14dp"
-                app:cardElevation="0dp"
-                app:strokeColor="@color/card_stroke"
-                app:strokeWidth="1dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:background="?attr/selectableItemBackground"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingHorizontal="16dp"
-                    android:paddingVertical="14dp">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:contentDescription="@string/cd_reconocimiento_facial"
-                        android:src="@drawable/ic_face_recognition"
-                        app:tint="@color/primary" />
-
+                    <!-- Fila Modo Oscuro -->
                     <LinearLayout
-                        android:layout_width="0dp"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:layout_weight="1"
-                        android:orientation="vertical">
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="12dp">
 
-                        <TextView
+                        <FrameLayout
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_tile_icon">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:layout_gravity="center"
+                                android:contentDescription="@null"
+                                android:src="@drawable/baseline_dark_mode_24"
+                                app:tint="@color/primary" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="14dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/nunito_bold"
+                                android:text="@string/lbl_modo_oscuro"
+                                android:textColor="@color/text_primary"
+                                android:textSize="15sp" />
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/nunito"
+                                android:text="@string/desc_modo_oscuro"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <com.google.android.material.switchmaterial.SwitchMaterial
+                            android:id="@+id/switchDarkMode"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:fontFamily="@font/nunito_bold"
-                            android:text="@string/facial_perfil_titulo"
-                            android:textColor="@color/text_primary"
-                            android:textSize="15sp" />
+                            app:thumbTint="@color/primary" />
+                    </LinearLayout>
 
-                        <TextView
-                            android:id="@+id/tvEstadoFacial"
-                            android:layout_width="wrap_content"
+                    <View
+                        android:layout_width="match_parent"
+                        android:layout_height="1dp"
+                        android:layout_marginHorizontal="16dp"
+                        android:background="@color/divider" />
+
+                    <!-- Fila Reconocimiento Facial On-Device -->
+                    <LinearLayout
+                        android:id="@+id/cardReconocimientoFacial"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="?attr/selectableItemBackground"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal"
+                        android:paddingHorizontal="16dp"
+                        android:paddingVertical="14dp">
+
+                        <FrameLayout
+                            android:layout_width="40dp"
+                            android:layout_height="40dp"
+                            android:background="@drawable/bg_tile_icon">
+
+                            <ImageView
+                                android:layout_width="20dp"
+                                android:layout_height="20dp"
+                                android:layout_gravity="center"
+                                android:contentDescription="@string/cd_reconocimiento_facial"
+                                android:src="@drawable/ic_face_recognition"
+                                app:tint="@color/primary" />
+                        </FrameLayout>
+
+                        <LinearLayout
+                            android:layout_width="0dp"
                             android:layout_height="wrap_content"
-                            android:fontFamily="@font/nunito"
-                            android:text="@string/facial_perfil_estado_inactivo"
-                            android:textColor="@color/text_secondary"
-                            android:textSize="12sp" />
+                            android:layout_marginStart="14dp"
+                            android:layout_marginEnd="8dp"
+                            android:layout_weight="1"
+                            android:orientation="vertical">
+
+                            <TextView
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/nunito_bold"
+                                android:text="@string/facial_perfil_titulo"
+                                android:textColor="@color/text_primary"
+                                android:textSize="15sp" />
+
+                            <TextView
+                                android:id="@+id/tvEstadoFacial"
+                                android:layout_width="wrap_content"
+                                android:layout_height="wrap_content"
+                                android:fontFamily="@font/nunito"
+                                android:text="@string/facial_perfil_estado_inactivo"
+                                android:textColor="@color/text_secondary"
+                                android:textSize="12sp" />
+                        </LinearLayout>
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:importantForAccessibility="no"
+                            android:src="@drawable/ic_chevron_right"
+                            app:tint="@color/text_muted" />
                     </LinearLayout>
                 </LinearLayout>
             </com.google.android.material.card.MaterialCardView>
@@ -559,13 +729,13 @@
             <View
                 android:layout_width="match_parent"
                 android:layout_height="1dp"
-                android:layout_marginBottom="20dp"
+                android:layout_marginTop="20dp"
+                android:layout_marginBottom="14dp"
                 android:background="@color/divider" />
 
-            <!-- BOTÓN CERRAR SESIÓN (Material 3 Outlined / Danger) -->
+            <!-- BOTÓN CERRAR SESIÓN SOBRIO -->
             <com.google.android.material.card.MaterialCardView
                 android:id="@+id/btnLogout"
-                style="?attr/materialCardViewFilledStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:clickable="true"
@@ -573,12 +743,12 @@
                 app:cardBackgroundColor="@color/card_background"
                 app:cardCornerRadius="14dp"
                 app:cardElevation="0dp"
-                app:strokeColor="@color/error"
-                app:strokeWidth="1.2dp">
+                app:strokeColor="@color/card_stroke"
+                app:strokeWidth="1dp">
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="52dp"
+                    android:layout_height="48dp"
                     android:background="?attr/selectableItemBackground"
                     android:gravity="center"
                     android:orientation="horizontal"
@@ -604,5 +774,14 @@
 
         </LinearLayout>
     </ScrollView>
+
+    <include
+        android:id="@+id/bottomNavVeterinario"
+        layout="@layout/layout_bottom_nav_veterinario"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

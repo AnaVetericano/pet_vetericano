@@ -64,7 +64,9 @@ class RecuperarContrasenia(context: Context) : Dialog(context) {
                 try {
                     val request = RecuperarPasswordRequest(email = email)
                     val response = withContext(Dispatchers.IO) {
-                        RetrofitClient.apiService.solicitarRecuperacion(request)
+                        RetrofitClient.ejecutarConRespaldoLocalDebug { api ->
+                            api.solicitarRecuperacion(request)
+                        }
                     }
 
                     if (response.isSuccessful) {
@@ -113,6 +115,13 @@ class RecuperarContrasenia(context: Context) : Dialog(context) {
                 edtNuevaContrasena.requestFocus()
                 return@setOnClickListener
             }
+            val tieneMayuscula = Regex("[A-Z]").containsMatchIn(nuevaPassword)
+            val tieneNumero = Regex("[0-9]").containsMatchIn(nuevaPassword)
+            if (nuevaPassword.length < 8 || !tieneMayuscula || !tieneNumero) {
+                edtNuevaContrasena.error = "Mín. 8 caracteres, una mayúscula y un número"
+                edtNuevaContrasena.requestFocus()
+                return@setOnClickListener
+            }
 
             btnCambiarContrasena.isEnabled = false
             btnCambiarContrasena.text = "PROCESANDO..."
@@ -125,7 +134,9 @@ class RecuperarContrasenia(context: Context) : Dialog(context) {
                         nuevaPassword = nuevaPassword
                     )
                     val response = withContext(Dispatchers.IO) {
-                        RetrofitClient.apiService.confirmarRecuperacion(request)
+                        RetrofitClient.ejecutarConRespaldoLocalDebug { api ->
+                            api.confirmarRecuperacion(request)
+                        }
                     }
 
                     if (response.isSuccessful) {

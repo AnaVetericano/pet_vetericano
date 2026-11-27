@@ -81,6 +81,11 @@
     <string name="hint_nueva_contrasena">Nueva contraseña</string>
     <string name="lbl_cambiar_contrasena">CAMBIAR CONTRASEÑA</string>
     <string name="btn_cancelar_volver_al_login">Cancelar / Volver al Login</string>
+    <string name="lbl_verificar_correo_titulo">Verifica tu correo</string>
+    <string name="lbl_verificar_correo_instruccion">Ingresa el código de 6 dígitos que enviamos a tu bandeja de entrada para confirmar que el correo es real:</string>
+    <string name="btn_verificar_y_crear_cuenta">Verificar y Crear Cuenta</string>
+    <string name="btn_reenviar_codigo">Reenviar código</string>
+    <string name="btn_corregir_correo_registro">Corregir correo / Volver</string>
     <string name="cd_google">Google</string>
     <string name="btn_seleccionar_una_cuenta">Seleccionar una cuenta</string>
     <string name="lbl_elige_tu_cuenta_de_google">Elige tu cuenta de Google para Vetericano</string>

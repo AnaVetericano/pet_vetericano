@@ -9,6 +9,8 @@ class AuthInterceptor(private val tokenProvider: () -> String?) : Interceptor {
         private val PUBLIC_AUTH_PATHS = listOf(
             "/usuarios/login/",
             "/usuarios/register/",
+            "/usuarios/register/solicitar-codigo/",
+            "/usuarios/register/confirmar-codigo/",
             "/usuarios/google-login/",
             "/usuarios/recuperar-password/",
             "/usuarios/confirmar-password/",

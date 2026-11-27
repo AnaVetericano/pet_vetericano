@@ -2,12 +2,14 @@ package com.example.petvetericano.network
 
 import com.example.petvetericano.models.ActualizarPerfilRequest
 import com.example.petvetericano.models.AdopcionAnimalResponse
+import com.example.petvetericano.models.ConfirmarCodigoRegistroRequest
 import com.example.petvetericano.models.DashboardResponse
 import com.example.petvetericano.models.GenericResponse
 import com.example.petvetericano.models.GoogleLoginRequest
 import com.example.petvetericano.models.IniciarPeticionResponse
 import com.example.petvetericano.models.LoginRequest
 import com.example.petvetericano.models.LoginResponse
+import com.example.petvetericano.models.SolicitarCodigoRegistroResponse
 import com.example.petvetericano.models.TipoPeticionResponse
 import com.example.petvetericano.models.UsuarioPerfilResponse
 import com.example.petvetericano.models.confirmarpeticion
@@ -49,6 +51,12 @@ interface ApiService {
     // MÉTODO RESTAURADO PARA EL REGISTRO
     @POST("usuarios/register/")
     suspend fun registro(@Body request: Any): Response<RegistroResponse>
+
+    @POST("usuarios/register/solicitar-codigo/")
+    suspend fun solicitarCodigoRegistro(@Body request: Any): Response<SolicitarCodigoRegistroResponse>
+
+    @POST("usuarios/register/confirmar-codigo/")
+    suspend fun confirmarCodigoRegistro(@Body request: ConfirmarCodigoRegistroRequest): Response<RegistroResponse>
 
     @POST("usuarios/recuperar-password/")
     suspend fun solicitarRecuperacion(@Body request: Any): Response<GenericResponse>

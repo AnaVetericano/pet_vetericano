@@ -67,7 +67,7 @@ data class TokenRefreshResponse(
     val refresh: String? = null
 )
 
-// --- Registro (Actualizado con teléfono) ---
+// --- Registro (Actualizado con teléfono y verificación OTP) ---
 data class RegisterRequest(
     val email: String,
     val identificacion: String,
@@ -75,6 +75,20 @@ data class RegisterRequest(
     val nombre: String,
     val apellido: String,
     val telefono: String
+)
+
+data class ConfirmarCodigoRegistroRequest(
+    val email: String,
+    val codigo: String
+)
+
+data class SolicitarCodigoRegistroResponse(
+    val mensaje: String?,
+    val email: String?,
+    @SerializedName("cooldown_segundos") val cooldownSegundos: Int? = 60,
+    @SerializedName("expira_en_segundos") val expiraEnSegundos: Int? = 600,
+    val error: String? = null,
+    val detail: String? = null
 )
 
 // --- Recuperar Contraseña ---

@@ -62,6 +62,10 @@ class inicio_sesion : AppCompatActivity() {
                 return mensajeJson
             }
 
+            if (code == 429) {
+                return "Cuenta bloqueada temporalmente por demasiados intentos fallidos. Intenta en 15 minutos."
+            }
+
             return if (code == 400 || code == 401 || code == 403) {
                 "Correo o contraseña incorrectos"
             } else {
@@ -307,7 +311,9 @@ class inicio_sesion : AppCompatActivity() {
             try {
                 // Evita que un token previo vencido/inválido en memoria interfiera con /usuarios/login/
                 RetrofitClient.authToken = null
-                val respuesta = RetrofitClient.apiService.login(loginRequest)
+                val respuesta = RetrofitClient.ejecutarConRespaldoLocalDebug { api ->
+                    api.login(loginRequest)
+                }
 
                 if (respuesta.isSuccessful) {
                     val datos = respuesta.body()

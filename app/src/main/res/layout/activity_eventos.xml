@@ -7,39 +7,30 @@
     android:background="@color/bg_screen"
     android:orientation="vertical">
 
-    <!-- Encabezado con botón regresar -->
-    <RelativeLayout
+    <!-- Encabezado principal sin flecha atrás (tab fija en barra inferior) -->
+    <LinearLayout
         android:id="@+id/layoutHeaderEventos"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:background="@color/card_background"
-        android:elevation="2dp"
-        android:outlineSpotShadowColor="@color/primary_dark"
-        android:paddingHorizontal="16dp"
-        android:paddingVertical="12dp"
-        tools:targetApi="p">
-
-        <ImageButton
-            android:id="@+id/btnAtras"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:layout_alignParentStart="true"
-            android:layout_centerVertical="true"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/cd_regresar"
-            android:src="@drawable/outline_arrow_back_ios_24"
-            app:tint="@color/blue" />
+        android:orientation="vertical">
 
         <TextView
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_centerInParent="true"
             android:fontFamily="@font/nunito_display"
+            android:paddingHorizontal="20dp"
+            android:paddingVertical="14dp"
             android:text="@string/lbl_eventos_y_jornadas"
-            android:textColor="@color/blue"
+            android:textColor="@color/text_primary"
             android:textSize="20sp"
             android:textStyle="bold" />
-    </RelativeLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/card_stroke" />
+    </LinearLayout>
 
     <!-- Descripción -->
     <TextView

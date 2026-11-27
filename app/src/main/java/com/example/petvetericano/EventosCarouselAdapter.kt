@@ -21,7 +21,7 @@ class EventosCarouselAdapter(
             val fechaLimpia = evento.fecha.replace("\"", "").trim()
 
             binding.carouselTitulo.text = tituloLimpio
-            binding.carouselFecha.text = "📅 $fechaLimpia"
+            binding.carouselFecha.text = fechaLimpia
 
             Glide.with(itemView.context)
                 .load(evento.imagen)

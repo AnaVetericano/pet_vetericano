@@ -7,7 +7,7 @@ import android.text.InputFilter
 import android.util.Log
 import android.view.View
 import android.view.inputmethod.EditorInfo
-import androidx.activity.OnBackPressedCallback
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -67,12 +67,12 @@ class editar_perfil : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         binding = ActivityEditarPerfilBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
         BottomNavHelper.aplicarInsetSuperior(binding.toolbarPerfil)
-        binding.btnBack.setOnClickListener { onBackPressedDispatcher.onBackPressed() }
 
         prefs = SharedPreferencesManager(this)
 
@@ -103,24 +103,6 @@ class editar_perfil : AppCompatActivity() {
                 binding.scrollPerfil.smoothScrollTo(0, 0)
             }
         )
-
-        // Interceptar atrás del sistema si hay cambios sin guardar.
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (hayCambiosSinGuardar()) {
-                    mostrarConfirmacionDescartar(
-                        onDescartar = {
-                            descartarCambios()
-                            isEnabled = false
-                            onBackPressedDispatcher.onBackPressed()
-                        }
-                    )
-                } else {
-                    isEnabled = false
-                    onBackPressedDispatcher.onBackPressed()
-                }
-            }
-        })
     }
 
     override fun onResume() {

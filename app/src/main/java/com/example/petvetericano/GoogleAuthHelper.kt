@@ -158,7 +158,7 @@ object GoogleAuthHelper {
         if (rootView != null && !activity.isFinishing && !activity.isDestroyed) {
             val snackbar = Snackbar.make(rootView, mensaje, Snackbar.LENGTH_LONG)
             val sbView = snackbar.view
-            val bgColor = if (esError) R.color.error_dark else R.color.blue
+            val bgColor = if (esError) R.color.error_dark else R.color.button_primary_bg
             sbView.setBackgroundTintList(ContextCompat.getColorStateList(activity, bgColor))
             val textView = sbView.findViewById<TextView>(com.google.android.material.R.id.snackbar_text)
             textView?.setTextColor(ContextCompat.getColor(activity, R.color.white))

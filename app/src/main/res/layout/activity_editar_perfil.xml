@@ -8,7 +8,7 @@
     android:background="@color/bg_screen"
     tools:context=".editar_perfil">
 
-    <!-- Barra superior -->
+    <!-- Barra superior (tab fija en barra inferior, sin flecha atrás redundante) -->
     <com.google.android.material.appbar.MaterialToolbar
         android:id="@+id/toolbarPerfil"
         android:layout_width="match_parent"
@@ -22,20 +22,11 @@
         app:layout_constraintTop_toTopOf="parent"
         tools:targetApi="p">
 
-        <ImageButton
-            android:id="@+id/btnBack"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:contentDescription="@string/cd_regresar"
-            android:src="@drawable/outline_arrow_back_ios_24"
-            app:tint="@color/text_primary" />
-
         <TextView
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_marginStart="4dp"
             android:fontFamily="@font/nunito_bold"
             android:text="@string/lbl_mi_perfil"
             android:textColor="@color/text_primary"
@@ -110,7 +101,7 @@
                     android:clickable="true"
                     android:focusable="true"
                     android:outlineSpotShadowColor="@color/primary_dark"
-                    app:cardBackgroundColor="@color/primary"
+                    app:cardBackgroundColor="@color/button_primary_bg"
                     app:cardCornerRadius="17dp"
                     app:cardElevation="4dp"
                     app:strokeColor="@color/card_background"
@@ -416,7 +407,7 @@
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="15sp"
-                app:backgroundTint="@color/primary"
+                app:backgroundTint="@color/button_primary_bg"
                 app:cornerRadius="14dp"
                 tools:targetApi="p" />
 

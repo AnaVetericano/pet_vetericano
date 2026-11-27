@@ -1,7 +1,6 @@
 package com.example.petvetericano
 
 import android.content.res.ColorStateList
-import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.RadioButton
@@ -256,7 +255,7 @@ class UpdateStatusActivity : AppCompatActivity() {
         when {
             estadoNorm.contains("fallecid") -> {
                 mostrarDialogoConfirmacion(
-                    titulo = "⚠️ Confirmar reporte de fallecimiento",
+                    titulo = "Confirmar reporte de fallecimiento",
                     mensaje = "Estás a punto de registrar al paciente como FALLECIDO.\n\nEsta acción es irreversible y finalizará definitivamente el caso clínico. ¿Deseas continuar?",
                     botonPositivo = "Confirmar fallecimiento"
                 ) {
@@ -362,37 +361,37 @@ class UpdateStatusActivity : AppCompatActivity() {
 
     private fun actualizarEstiloBadgeActual(estado: String) {
         val st = estado.lowercase()
-        val (colorTexto, colorFondo) = when {
+        val (colorTextoRes, colorFondoRes) = when {
             st.contains("fallecido") -> {
-                Color.parseColor("#B91C1C") to Color.parseColor("#FEE2E2")
+                R.color.badge_urgente_text to R.color.badge_urgente_bg
             }
             st.contains("evaluac") || st.contains("pendient") -> {
-                Color.parseColor("#B45309") to Color.parseColor("#FEF3C7")
+                R.color.radix_amber_text to R.color.badge_proceso_bg
             }
             st.contains("tratamient") -> {
-                Color.parseColor("#1D4ED8") to Color.parseColor("#DBEAFE")
+                R.color.badge_asignada_text to R.color.badge_asignada_bg
             }
             st.contains("observac") -> {
-                Color.parseColor("#0F766E") to Color.parseColor("#CCFBF1")
+                R.color.badge_observacion_text to R.color.badge_observacion_bg
             }
             st.contains("alta") -> {
-                Color.parseColor("#047857") to Color.parseColor("#D1FAE5")
+                R.color.badge_alta_text to R.color.badge_alta_bg
             }
             st.contains("transferid") -> {
-                Color.parseColor("#6D28D9") to Color.parseColor("#EDE9FE")
+                R.color.badge_transferido_text to R.color.badge_transferido_bg
             }
             else -> {
-                Color.parseColor("#4B5563") to Color.parseColor("#F3F4F6")
+                R.color.text_secondary to R.color.chip_bg_neutral
             }
         }
 
         val backgroundDrawable = android.graphics.drawable.GradientDrawable().apply {
             shape = android.graphics.drawable.GradientDrawable.RECTANGLE
             cornerRadius = resources.displayMetrics.density * 8
-            setColor(colorFondo)
+            setColor(ContextCompat.getColor(this@UpdateStatusActivity, colorFondoRes))
         }
 
         binding.tvBadgeEstadoActual.background = backgroundDrawable
-        binding.tvBadgeEstadoActual.setTextColor(colorTexto)
+        binding.tvBadgeEstadoActual.setTextColor(ContextCompat.getColor(this, colorTextoRes))
     }
 }

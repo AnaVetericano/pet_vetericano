@@ -88,7 +88,7 @@
                 android:textColor="@color/white"
                 android:textSize="13sp"
                 android:textStyle="bold"
-                app:backgroundTint="@color/blue"
+                app:backgroundTint="@color/button_primary_bg"
                 app:cornerRadius="14dp"
                 app:elevation="4dp" />
 

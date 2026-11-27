@@ -14,8 +14,10 @@ import java.util.concurrent.TimeUnit
  * - OkHttp responde automáticamente a los PING RFC 6455 de uvicorn; además permite enviar `{"type":"ping"}`.
  */
 open class VetericanoWebSocketClient(
-    private val httpClient: OkHttpClient = crearClientePorDefecto()
+    httpClient: OkHttpClient? = null
 ) {
+
+    private val httpClient: OkHttpClient by lazy { httpClient ?: crearClientePorDefecto() }
 
     interface Listener {
         fun alAbrir()

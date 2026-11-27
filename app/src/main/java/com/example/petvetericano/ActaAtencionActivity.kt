@@ -292,7 +292,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
             programarGuardado()
 
-            Toast.makeText(this, "Foto capturada y optimizada 📷", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, "Foto capturada y optimizada", Toast.LENGTH_SHORT).show()
 
         }
 
@@ -318,7 +318,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                 programarGuardado()
 
-                Toast.makeText(this, "Foto adjunta al acta 📷", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Foto adjunta al acta", Toast.LENGTH_SHORT).show()
 
             }
 
@@ -364,7 +364,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                 programarGuardado()
 
-                Toast.makeText(this, "Video grabado correctamente 🎥", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Video grabado correctamente", Toast.LENGTH_SHORT).show()
 
             }
 
@@ -392,7 +392,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                 programarGuardado()
 
-                Toast.makeText(this, "Video adjunto al acta 🎥", Toast.LENGTH_SHORT).show()
+                Toast.makeText(this, "Video adjunto al acta", Toast.LENGTH_SHORT).show()
 
             }
 
@@ -6762,7 +6762,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                             }
 
-                            mensajeExito += "\n\n⚠️ Advertencia de stock en farmacia:\n$descConflictos"
+                            mensajeExito += "\n\nAdvertencia de stock en farmacia:\n$descConflictos"
 
                         }
 
@@ -6814,7 +6814,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                             }
 
-                            var mensajeProactivo = "$mensajeExito\n\n⚠️ Medicamento(s) administrado(s) en esta atención que requieren reposición urgente:\n$resumenGastados\n\n¿Deseas enviar una Solicitud de Reposición automática (1 Clic) a Farmacia CBA?"
+                            var mensajeProactivo = "$mensajeExito\n\nMedicamento(s) administrado(s) en esta atención que requieren reposición urgente:\n$resumenGastados\n\n¿Deseas enviar una Solicitud de Reposición automática (1 Clic) a Farmacia CBA?"
 
 
 
@@ -6830,7 +6830,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                                 }
 
-                                mensajeProactivo += "\n\n⏳ Ya en trámite ante farmacia:\n$detalleTramite"
+                                mensajeProactivo += "\n\nYa en trámite ante farmacia:\n$detalleTramite"
 
                             }
 
@@ -9586,7 +9586,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                 .setIcon(R.drawable.ic_sync)
 
-                .setTitle("📱 Solicitud guardada sin conexión")
+                .setTitle("Solicitud guardada sin conexión")
 
                 .setMessage("No hay señal de red en este momento.\n\nLa reposición de 1 clic para los medicamentos consumidos ha quedado en tu bandeja de salida y se enviará a Farmacia CBA apenas recuperes conectividad.")
 
@@ -9648,7 +9648,7 @@ class ActaAtencionActivity : AppCompatActivity() {
 
                             .setTitle("Reposición radicada con éxito")
 
-                            .setMessage("✅ Se radicó la Solicitud #${if (idSol > 0) idSol.toString() else ""} ante Farmacia CBA para reponer las existencias del maletín.")
+                            .setMessage("Se radicó la Solicitud #${if (idSol > 0) idSol.toString() else ""} ante Farmacia CBA para reponer las existencias del maletín.")
 
                             .setPositiveButton("Finalizar") { dialog, _ ->
 

@@ -2,17 +2,20 @@
     <!-- Base application theme para Modo Oscuro (Dark Theme) -->
     <style name="Base.Theme.PetVetericano" parent="Theme.Material3.DayNight.NoActionBar">
         <!-- Paleta principal en Modo Oscuro -->
-        <item name="colorPrimary">@color/primary</item>
+        <item name="colorPrimary">@color/button_primary_bg</item>
+        <item name="colorOnPrimary">@color/white</item>
         <item name="colorPrimaryDark">@color/primary_dark</item>
         <item name="colorSecondary">@color/secondary</item>
+        <item name="colorSecondaryContainer">@color/primary_light</item>
+        <item name="colorOnSecondaryContainer">@color/primary</item>
         <item name="colorSurface">@color/card_background</item>
-        <item name="colorSurfaceContainer">@color/card_background</item>
-        <item name="colorSurfaceContainerHigh">@color/card_background</item>
+        <item name="colorSurfaceContainer">@color/nav_surface</item>
+        <item name="colorSurfaceContainerHigh">@color/nav_surface</item>
         <item name="colorOnSurface">@color/text_primary</item>
         <item name="colorOnBackground">@color/text_primary</item>
 
         <!-- Barra de estado y fondo de pantalla -->
-        <item name="android:statusBarColor">@color/card_background</item>
+        <item name="android:statusBarColor">@color/bg_screen</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
         <item name="android:windowBackground">@color/bg_screen</item>
 
@@ -25,10 +28,20 @@
 
         <!-- Diálogos emergentes y bottom sheets con diseño Material 3 -->
         <item name="elevationOverlayEnabled">false</item>
+        <item name="android:windowActivityTransitions">true</item>
         <item name="bottomSheetDialogTheme">@style/ThemeOverlay.Vetericano.BottomSheetDialog</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.Vetericano.MaterialAlertDialog</item>
         <item name="alertDialogTheme">@style/ThemeOverlay.Vetericano.MaterialAlertDialog</item>
     </style>
 
     <style name="Theme.PetVetericano" parent="Base.Theme.PetVetericano" />
+
+    <!-- ===== Tema dedicado para SplashActivity (Android 11 y anteriores - Modo Oscuro) ===== -->
+    <style name="Theme.PetVetericano.Splash" parent="Theme.PetVetericano">
+        <item name="android:windowBackground">@color/bg_screen</item>
+        <item name="android:statusBarColor">@color/bg_screen</item>
+        <item name="android:navigationBarColor">@color/bg_screen</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
+    </style>
 </resources>

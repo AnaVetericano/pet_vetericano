@@ -13,6 +13,7 @@ import androidx.core.content.ContextCompat
 import com.example.petvetericano.MainActivity
 import com.example.petvetericano.Registro
 import com.example.petvetericano.SharedPreferencesManager
+import com.example.petvetericano.SplashActivity
 import com.example.petvetericano.bienvenida
 import com.example.petvetericano.inicio_sesion
 import com.example.petvetericano.models.DesactivarDispositivoRequest
@@ -202,7 +203,7 @@ object FcmTokenManager {
         context.applicationContext.getSharedPreferences(PREFS, Context.MODE_PRIVATE)
 
     private fun esPantallaDeAcceso(activity: Activity): Boolean =
-        activity is MainActivity || activity is inicio_sesion || activity is Registro
+        activity is SplashActivity || activity is MainActivity || activity is inicio_sesion || activity is Registro
 
     /**
      * - Tras el login pide `POST_NOTIFICATIONS` en la primera pantalla de la sesión (no bloquea si lo niegan).

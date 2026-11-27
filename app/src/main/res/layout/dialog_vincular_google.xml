@@ -174,7 +174,7 @@
                 android:textColor="@color/white"
                 android:textSize="15sp"
                 android:textStyle="bold"
-                app:backgroundTint="@color/primary"
+                app:backgroundTint="@color/button_primary_bg"
                 app:cornerRadius="16dp"
                 app:elevation="4dp" />
 

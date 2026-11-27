@@ -173,7 +173,7 @@ class ActaVoiceDictationBottomSheet : BottomSheetDialogFragment() {
         binding.cardBotonMic.strokeColor = ContextCompat.getColor(requireContext(), R.color.primary)
         binding.ivMicPrincipal.setColorFilter(ContextCompat.getColor(requireContext(), R.color.primary))
         binding.btnAccionGrabacion.text = "Iniciar Grabación"
-        binding.btnAccionGrabacion.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.primary))
+        binding.btnAccionGrabacion.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.button_primary_bg))
 
         if (audioFile == null || !audioFile.exists() || audioFile.length() < 100) {
             Toast.makeText(requireContext(), "La grabación fue muy corta o vacía.", Toast.LENGTH_SHORT).show()

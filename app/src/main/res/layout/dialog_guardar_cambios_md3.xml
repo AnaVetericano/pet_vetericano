@@ -136,7 +136,7 @@
                     android:textAllCaps="false"
                     android:textColor="@color/white"
                     android:textSize="14sp"
-                    app:backgroundTint="@color/primary"
+                    app:backgroundTint="@color/button_primary_bg"
                     app:cornerRadius="14dp"
                     app:elevation="4dp" />
             </LinearLayout>

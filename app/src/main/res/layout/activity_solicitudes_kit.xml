@@ -121,21 +121,33 @@
                         style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="⏳ En Trámite" />
+                        android:text="En Trámite"
+                        app:chipIcon="@drawable/ic_clock_line"
+                        app:chipIconSize="16dp"
+                        app:chipIconTint="@color/radix_amber_text"
+                        app:chipIconVisible="true" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipSolAprobadas"
                         style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="✅ Aprobadas" />
+                        android:text="Aprobadas"
+                        app:chipIcon="@drawable/ic_check_circle_line"
+                        app:chipIconSize="16dp"
+                        app:chipIconTint="@color/badge_alta_text"
+                        app:chipIconVisible="true" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipSolOffline"
                         style="@style/Widget.Material3.Chip.Filter"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="📱 En Cola Offline" />
+                        android:text="En Cola Offline"
+                        app:chipIcon="@drawable/ic_cloud_off_line"
+                        app:chipIconSize="16dp"
+                        app:chipIconTint="@color/text_secondary"
+                        app:chipIconVisible="true" />
 
                     <com.google.android.material.chip.Chip
                         android:id="@+id/chipSolOtras"

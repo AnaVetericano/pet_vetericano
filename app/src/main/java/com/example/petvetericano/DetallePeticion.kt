@@ -399,7 +399,7 @@ class DetallePeticion : AppCompatActivity() {
         } else {
             binding.btnAtender.text = getString(R.string.acta_offline_btn_atender)
             binding.btnAtender.icon = null
-            binding.btnAtender.setBackgroundColor(ContextCompat.getColor(this, R.color.primary))
+            binding.btnAtender.setBackgroundColor(ContextCompat.getColor(this, R.color.button_primary_bg))
         }
     }
 

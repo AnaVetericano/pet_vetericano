@@ -1,362 +1,237 @@
 <?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/bg_screen"
+    android:clipToPadding="false"
     android:fillViewport="true"
+    android:overScrollMode="ifContentScrolls"
     tools:context=".Registro">
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:clipChildren="false"
         android:clipToPadding="false"
-        android:paddingHorizontal="28dp"
-        android:paddingVertical="32dp">
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="12dp"
+        android:paddingBottom="24dp">
 
-        <ImageView
-            android:id="@+id/logoVetericanoTop"
-            android:layout_width="88dp"
-            android:layout_height="88dp"
-            android:layout_marginTop="8dp"
-            android:contentDescription="@string/logovetericano"
-            android:scaleType="fitCenter"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toTopOf="parent"
-            app:srcCompat="@drawable/vectorlogovetericano" />
+        <!-- Encabezado compacto: botón Atrás + título y subtítulo -->
+        <ImageButton
+            android:id="@+id/btnBackRegistro"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:layout_marginStart="-10dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:contentDescription="@string/cd_atras"
+            android:padding="10dp"
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_back"
+            app:tint="@color/text_primary" />
 
         <TextView
             android:id="@+id/txtVetericano"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
+            android:layout_marginTop="8dp"
             android:fontFamily="@font/nunito_display"
-            android:text="@string/title_welcome"
-            android:textColor="@color/blue"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/logoVetericanoTop" />
+            android:text="@string/registro_titulo"
+            android:textColor="@color/text_primary"
+            android:textSize="26sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/txtregistercontinue"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
             android:fontFamily="@font/nunito"
-            android:text="@string/registercontinues"
+            android:lineSpacingExtra="2dp"
+            android:text="@string/registro_subtitulo"
             android:textColor="@color/text_secondary"
-            android:textSize="15sp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtVetericano" />
+            android:textSize="14.5sp" />
 
-        <!-- 1. Input Correo -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardEmail"
+        <!-- Fila 1: Nombre y Apellido (50% / 50% con separación de 12dp) -->
+        <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="24dp"
-            app:cardBackgroundColor="@android:color/transparent"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/txtregistercontinue">
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:addStatesFromChildren="true"
-                android:background="@drawable/bg_field_sunk"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp">
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilNombre"
+                style="@style/Widget.Vetericano.TextInputLayout.Auth"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginEnd="6dp"
+                android:layout_weight="1"
+                android:hint="@string/edt_Name"
+                app:startIconDrawable="@drawable/user">
 
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:src="@drawable/mail"
-                    app:tint="@color/blue" />
-
-                <EditText
-                    android:id="@+id/editTextTextEmailAddress"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@null"
-                    android:hint="@string/edt_email_phone"
-                    android:inputType="textEmailAddress"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:textColor="@color/text_primary"
-                    android:textColorHint="@color/text_muted"
-                    android:textSize="14sp" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- 2. Input ID -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardId"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="12dp"
-            app:cardBackgroundColor="@android:color/transparent"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/cardEmail">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:addStatesFromChildren="true"
-                android:background="@drawable/bg_field_sunk"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp">
-
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:src="@drawable/id_card"
-                    app:tint="@color/blue" />
-
-                <EditText
-                    android:id="@+id/edtxtemailorphone"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@null"
-                    android:hint="@string/edt_ID"
-                    android:inputType="number"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:textColor="@color/text_primary"
-                    android:textColorHint="@color/text_muted"
-                    android:textSize="14sp" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- 3. Input Nombre -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardName"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="12dp"
-            app:cardBackgroundColor="@android:color/transparent"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/cardId">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:addStatesFromChildren="true"
-                android:background="@drawable/bg_field_sunk"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp">
-
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:src="@drawable/user"
-                    app:tint="@color/blue" />
-
-                <EditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edtxtID"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@null"
-                    android:hint="@string/edt_Name"
-                    android:inputType="textPersonName"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
+                    android:layout_height="wrap_content"
+                    android:autofillHints="givenName"
+                    android:fontFamily="@font/nunito"
+                    android:imeOptions="actionNext"
+                    android:inputType="textPersonName|textCapWords"
+                    android:maxLines="1"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                    android:singleLine="true"
                     android:textColor="@color/text_primary"
-                    android:textColorHint="@color/text_muted"
                     android:textSize="14sp" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+            </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- 4. Input Apellido -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardApellido"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="12dp"
-            app:cardBackgroundColor="@android:color/transparent"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/cardName">
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilApellido"
+                style="@style/Widget.Vetericano.TextInputLayout.Auth"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:layout_weight="1"
+                android:hint="@string/hint_apellido"
+                app:startIconDrawable="@drawable/user">
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:addStatesFromChildren="true"
-                android:background="@drawable/bg_field_sunk"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp">
-
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:src="@drawable/user"
-                    app:tint="@color/blue" />
-
-                <EditText
+                <com.google.android.material.textfield.TextInputEditText
                     android:id="@+id/edtxtApellido"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@null"
-                    android:hint="@string/hint_apellido"
-                    android:inputType="textPersonName"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
+                    android:layout_height="wrap_content"
+                    android:autofillHints="familyName"
+                    android:fontFamily="@font/nunito"
+                    android:imeOptions="actionNext"
+                    android:inputType="textPersonName|textCapWords"
+                    android:maxLines="1"
+                    android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                    android:singleLine="true"
                     android:textColor="@color/text_primary"
-                    android:textColorHint="@color/text_muted"
                     android:textSize="14sp" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
+            </com.google.android.material.textfield.TextInputLayout>
+        </LinearLayout>
 
-        <!-- 5. Input Teléfono -->
-        <com.google.android.material.card.MaterialCardView
-            android:id="@+id/cardTelefono"
-            android:layout_width="match_parent"
-            android:layout_height="54dp"
-            android:layout_marginTop="12dp"
-            app:cardBackgroundColor="@android:color/transparent"
-            app:cardCornerRadius="16dp"
-            app:cardElevation="0dp"
-            app:strokeWidth="0dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/cardApellido">
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:addStatesFromChildren="true"
-                android:background="@drawable/bg_field_sunk"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="16dp">
-
-                <ImageView
-                    android:layout_width="22dp"
-                    android:layout_height="22dp"
-                    android:src="@drawable/phone"
-                    app:tint="@color/blue" />
-
-                <EditText
-                    android:id="@+id/edtxtTelefono"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:background="@null"
-                    android:hint="@string/hint_telefono_min_10_digitos"
-                    android:inputType="phone"
-                    android:maxLength="15"
-                    android:paddingStart="12dp"
-                    android:paddingEnd="12dp"
-                    android:textColor="@color/text_primary"
-                    android:textColorHint="@color/text_muted"
-                    android:textSize="14sp" />
-            </LinearLayout>
-        </com.google.android.material.card.MaterialCardView>
-
-        <!-- 6. Input Contraseña (MD3 con Helper Text y Toggle de Ojo nativo) -->
+        <!-- Fila 2: Documento de identidad -->
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/tilPassword"
+            android:id="@+id/tilDocumento"
+            style="@style/Widget.Vetericano.TextInputLayout.Auth"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="12dp"
-            android:hint="@string/edt_Password"
-            app:boxBackgroundColor="@color/input_background"
-            app:boxBackgroundMode="outline"
-            app:boxCornerRadiusBottomEnd="16dp"
-            app:boxCornerRadiusBottomStart="16dp"
-            app:boxCornerRadiusTopEnd="16dp"
-            app:boxCornerRadiusTopStart="16dp"
-            app:boxStrokeColor="@color/selector_input_stroke"
-            app:boxStrokeWidth="1dp"
-            app:boxStrokeWidthFocused="2dp"
-            app:endIconMode="password_toggle"
-            app:endIconTint="@color/blue"
-            app:errorEnabled="true"
-            app:helperText="@string/helper_min_8_caracteres_una_mayuscula"
-            app:helperTextTextColor="@color/text_muted"
-            app:hintTextColor="@color/blue"
-            app:startIconDrawable="@drawable/lock_icon"
-            app:startIconTint="@color/blue"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/cardTelefono">
+            android:hint="@string/hint_documento_identidad"
+            app:startIconDrawable="@drawable/id_card">
 
             <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/edtxtPassword"
+                android:id="@+id/edtxtemailorphone"
                 android:layout_width="match_parent"
-                android:layout_height="54dp"
-                android:background="@null"
-                android:inputType="textPassword"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/nunito"
+                android:imeOptions="actionNext"
+                android:inputType="number"
                 android:maxLines="1"
+                android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
                 android:singleLine="true"
                 android:textColor="@color/text_primary"
                 android:textSize="14sp" />
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- Enlace a iniciar sesión -->
-        <LinearLayout
-            android:id="@+id/layoutLoginRedirect"
-            android:layout_width="wrap_content"
+        <!-- Fila 3: Teléfono -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilTelefono"
+            style="@style/Widget.Vetericano.TextInputLayout.Auth"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="20dp"
-            android:gravity="center"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/tilPassword">
+            android:layout_marginTop="12dp"
+            android:hint="@string/hint_telefono"
+            app:startIconDrawable="@drawable/phone">
 
-            <TextView
-                android:id="@+id/txtaccountexist"
-                android:layout_width="wrap_content"
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtxtTelefono"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:autofillHints="phone"
                 android:fontFamily="@font/nunito"
-                android:text="@string/existingAccount"
-                android:textColor="@color/text_secondary"
+                android:imeOptions="actionNext"
+                android:inputType="phone"
+                android:maxLength="15"
+                android:maxLines="1"
+                android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                android:singleLine="true"
+                android:textColor="@color/text_primary"
                 android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
 
-            <TextView
-                android:id="@+id/txtlogin"
-                android:layout_width="wrap_content"
+        <!-- Fila 4: Correo electrónico -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilEmail"
+            style="@style/Widget.Vetericano.TextInputLayout.Auth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="@string/hint_correo_electronico"
+            app:startIconDrawable="@drawable/mail">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/editTextTextEmailAddress"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="6dp"
+                android:autofillHints="emailAddress"
                 android:fontFamily="@font/nunito"
-                android:padding="4dp"
-                android:text="@string/existingAccountRedirection"
-                android:textColor="@color/blue"
-                android:textSize="14sp"
-                android:textStyle="bold" />
-        </LinearLayout>
+                android:imeOptions="actionNext"
+                android:inputType="textEmailAddress"
+                android:maxLines="1"
+                android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                android:singleLine="true"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
 
+        <!-- Fila 5: Contraseña -->
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilPassword"
+            style="@style/Widget.Vetericano.TextInputLayout.Auth"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="12dp"
+            android:hint="@string/edt_Password"
+            app:endIconMode="password_toggle"
+            app:errorEnabled="true"
+            app:helperText="@string/helper_min_8_caracteres_una_mayuscula"
+            app:helperTextEnabled="true"
+            app:startIconDrawable="@drawable/lock_icon">
+
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/edtxtPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:autofillHints="password"
+                android:fontFamily="@font/nunito"
+                android:imeOptions="actionDone"
+                android:inputType="textPassword"
+                android:maxLines="1"
+                android:paddingTop="14dp"
+                    android:paddingBottom="14dp"
+                android:singleLine="true"
+                android:textColor="@color/text_primary"
+                android:textSize="14sp" />
+        </com.google.android.material.textfield.TextInputLayout>
+
+        <!-- 1. Botón primario: Crear cuenta -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnSignUp"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="54dp"
             android:layout_marginTop="16dp"
-            android:fontFamily="@font/nunito"
+            android:fontFamily="@font/nunito_bold"
             android:outlineAmbientShadowColor="@color/primary_dark"
             android:outlineSpotShadowColor="@color/primary_dark"
             android:stateListAnimator="@animator/anim_levitate_button"
@@ -364,26 +239,19 @@
             android:textAllCaps="false"
             android:textColor="@color/white"
             android:textSize="16sp"
-            android:textStyle="bold"
-            app:backgroundTint="@color/blue"
+            app:backgroundTint="@color/button_primary_bg"
             app:cornerRadius="16dp"
             app:elevation="4dp"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/layoutLoginRedirect"
             tools:targetApi="p" />
 
-        <!-- Separador O continúa con -->
+        <!-- 2. Divisor sutil: o continúa con -->
         <LinearLayout
             android:id="@+id/layoutDividerGoogleRegistro"
-            android:layout_width="0dp"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:gravity="center_vertical"
-            android:orientation="horizontal"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/btnSignUp">
+            android:orientation="horizontal">
 
             <View
                 android:layout_width="0dp"
@@ -407,38 +275,71 @@
                 android:background="@color/divider" />
         </LinearLayout>
 
-        <!-- Botón Registrarse con Google -->
+        <!-- 3. Botón secundario: Continuar con Google -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/btnGoogleSignUp"
             style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:layout_marginTop="12dp"
-            android:layout_marginBottom="16dp"
-            android:fontFamily="@font/nunito"
+            android:layout_height="54dp"
+            android:layout_marginTop="14dp"
+            android:fontFamily="@font/nunito_bold"
             android:outlineAmbientShadowColor="@color/primary_dark"
             android:outlineSpotShadowColor="@color/primary_dark"
             android:stateListAnimator="@animator/anim_levitate_button"
-            android:text="@string/registrarse_con_google"
+            android:text="@string/continuar_con_google"
             android:textAllCaps="false"
             android:textColor="@color/text_primary"
             android:textSize="15sp"
-            android:textStyle="bold"
             app:backgroundTint="@color/card_background"
             app:cornerRadius="16dp"
-            app:elevation="3dp"
+            app:elevation="2dp"
             app:icon="@drawable/ic_google"
             app:iconGravity="textStart"
             app:iconPadding="12dp"
-            app:iconSize="22dp"
+            app:iconSize="20dp"
             app:iconTint="@null"
             app:strokeColor="@color/input_stroke"
             app:strokeWidth="1.5dp"
-            app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toEndOf="parent"
-            app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/layoutDividerGoogleRegistro"
             tools:targetApi="p" />
 
-    </androidx.constraintlayout.widget.ConstraintLayout>
-</ScrollView>
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1"
+            android:minHeight="16dp" />
+
+        <!-- 4. Al final, centrado con aire inferior -->
+        <LinearLayout
+            android:id="@+id/layoutLoginRedirect"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:orientation="horizontal"
+            android:paddingVertical="6dp">
+
+            <TextView
+                android:id="@+id/txtaccountexist"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:fontFamily="@font/nunito"
+                android:text="@string/existingAccount"
+                android:textColor="@color/text_secondary"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/txtlogin"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="6dp"
+                android:fontFamily="@font/nunito_bold"
+                android:paddingHorizontal="6dp"
+                android:paddingVertical="4dp"
+                android:text="@string/existingAccountRedirection"
+                android:textColor="@color/primary"
+                android:textSize="14sp" />
+        </LinearLayout>
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

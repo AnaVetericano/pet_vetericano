@@ -153,10 +153,10 @@
                 android:outlineAmbientShadowColor="@color/primary_dark"
                 android:outlineSpotShadowColor="@color/primary_dark"
                 android:stateListAnimator="@animator/anim_levitate_card"
-                app:cardBackgroundColor="@color/yellow"
+                app:cardBackgroundColor="@color/hero_report_bg"
                 app:cardCornerRadius="20dp"
                 app:cardElevation="5dp"
-                app:strokeColor="@color/secondary_dark"
+                app:strokeColor="@color/hero_report_stroke"
                 app:strokeWidth="1dp"
                 tools:targetApi="p">
 
@@ -181,7 +181,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="@font/nunito_display"
                             android:text="@string/lbl_reportar_incidencia"
-                            android:textColor="@color/darkblue"
+                            android:textColor="@color/hero_report_title"
                             android:textSize="22sp"
                             android:textStyle="bold" />
 
@@ -191,7 +191,7 @@
                             android:layout_marginTop="6dp"
                             android:fontFamily="@font/nunito"
                             android:text="@string/lbl_notifica_animales_heridos_en_calle"
-                            android:textColor="@color/darkblue2"
+                            android:textColor="@color/hero_report_subtitle"
                             android:textSize="13sp" />
                     </LinearLayout>
 
@@ -199,10 +199,10 @@
                         android:layout_width="72dp"
                         android:layout_height="72dp"
                         android:layout_marginStart="12dp"
-                        app:cardBackgroundColor="@color/card_background"
+                        app:cardBackgroundColor="@color/hero_report_icon_bg"
                         app:cardCornerRadius="36dp"
                         app:cardElevation="2dp"
-                        app:strokeColor="@color/card_stroke"
+                        app:strokeColor="@color/hero_report_icon_stroke"
                         app:strokeWidth="1dp">
 
                         <ImageView
@@ -213,7 +213,7 @@
                             android:contentDescription="@string/cd_reportar_peticion"
                             android:scaleType="fitCenter"
                             android:src="@drawable/paw_cat"
-                            app:tint="@color/darkblue" />
+                            app:tint="@color/hero_report_icon_tint" />
                     </com.google.android.material.card.MaterialCardView>
 
                 </LinearLayout>

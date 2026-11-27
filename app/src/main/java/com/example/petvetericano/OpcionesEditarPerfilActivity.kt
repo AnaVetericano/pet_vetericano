@@ -7,7 +7,7 @@ import android.text.InputFilter
 import android.util.Log
 import android.util.Patterns
 import android.widget.Toast
-import androidx.activity.OnBackPressedCallback
+import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.app.AppCompatDelegate
@@ -79,6 +79,7 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         binding = ActivityOpcionesEditarPerfilBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -91,26 +92,6 @@ class OpcionesEditarPerfilActivity : AppCompatActivity() {
         setupListeners()
         cargarDatosPerfil()
         sincronizarConApi()
-
-        onBackPressedDispatcher.addCallback(this, object : OnBackPressedCallback(true) {
-            override fun handleOnBackPressed() {
-                if (hayCambiosSinGuardar() && !guardando) {
-                    mostrarConfirmacionSalirSinGuardar()
-                } else {
-                    isEnabled = false
-                    onBackPressedDispatcher.onBackPressed()
-                }
-            }
-        })
-
-        // Acción de clic para el botón de regreso
-        binding.btnBack.setOnClickListener {
-            if (hayCambiosSinGuardar() && !guardando) {
-                mostrarConfirmacionSalirSinGuardar()
-            } else {
-                finish()
-            }
-        }
 
         // Acción de clic para cambiar o eliminar foto de perfil (PopupMenu compacto)
         binding.btnChangePhoto.setOnClickListener {

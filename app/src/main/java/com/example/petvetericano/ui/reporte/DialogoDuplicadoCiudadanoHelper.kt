@@ -37,7 +37,7 @@ object DialogoDuplicadoCiudadanoHelper {
             binding.layoutFotoPrivada.visibility = View.GONE
             Glide.with(context)
                 .load(urlSegura)
-                .centerCrop()
+                .fitCenter()
                 .placeholder(R.color.chip_bg_neutral)
                 .error(R.color.chip_bg_neutral)
                 .into(binding.ivFotoAutorizada)

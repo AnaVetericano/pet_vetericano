@@ -2,6 +2,7 @@ package com.example.petvetericano.ui.reporte
 
 import com.example.petvetericano.models.CandidatoDuplicadoCiudadano
 import com.example.petvetericano.models.DetectarDuplicadosCiudadanoResponse
+import com.example.petvetericano.offline.EvidenciaReporteItem
 import kotlin.math.roundToInt
 
 /**
@@ -75,5 +76,27 @@ object DuplicadoCiudadanoPolicy {
             val redondeado = (acotado * 10.0).roundToInt() / 10.0
             "$redondeado %"
         }
+    }
+
+    /**
+     * Construye `fotos_autorizadas_duplicados` automaticamente con las URLs HTTP(S) de imagenes
+     * ya subidas al enviar el reporte ciudadano, excluyendo videos y rutas locales.
+     */
+    fun construirFotosAutorizadasParaEnvio(
+        evidencias: List<EvidenciaReporteItem>
+    ): List<String>? {
+        val urlsFotos = evidencias
+            .asSequence()
+            .filter { !it.esVideo }
+            .mapNotNull { it.urlRemota?.trim() }
+            .filter { url ->
+                url.isNotEmpty() &&
+                    (url.startsWith("https://", ignoreCase = true) ||
+                        url.startsWith("http://", ignoreCase = true))
+            }
+            .distinct()
+            .take(5)
+            .toList()
+        return urlsFotos.takeIf { it.isNotEmpty() }
     }
 }

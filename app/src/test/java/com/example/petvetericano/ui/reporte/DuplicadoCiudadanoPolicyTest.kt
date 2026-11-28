@@ -4,6 +4,7 @@ import com.example.petvetericano.models.CandidatoDuplicadoCiudadano
 import com.example.petvetericano.models.DetectarDuplicadosCiudadanoRequest
 import com.example.petvetericano.models.DetectarDuplicadosCiudadanoResponse
 import com.example.petvetericano.models.confirmarpeticion
+import com.example.petvetericano.offline.EvidenciaReporteItem
 import com.google.gson.GsonBuilder
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
@@ -140,7 +141,7 @@ class DuplicadoCiudadanoPolicyTest {
     }
 
     @Test
-    fun confirmarPeticion_serializaSinCampoFotosAutorizadasDuplicados() {
+    fun confirmarPeticion_serializaFotosAutorizadasDuplicadosAutomaticamente() {
         val peticion = confirmarpeticion(
             id_tipo = 1,
             id_estado = 1,
@@ -151,12 +152,33 @@ class DuplicadoCiudadanoPolicyTest {
             latitud = 4.651234,
             longitud = -74.062345,
             foto = "https://res.cloudinary.com/demo/image/upload/foto1.jpg",
-            fotos = listOf("https://res.cloudinary.com/demo/image/upload/foto1.jpg")
+            fotos = listOf("https://res.cloudinary.com/demo/image/upload/foto1.jpg"),
+            fotos_autorizadas_duplicados = listOf("https://res.cloudinary.com/demo/image/upload/foto1.jpg")
         )
         val json = gson.toJson(peticion)
-        assertFalse(json.contains("fotos_autorizadas_duplicados"))
+        assertTrue(json.contains("\"fotos_autorizadas_duplicados\":[\"https://res.cloudinary.com/demo/image/upload/foto1.jpg\"]"))
         assertTrue(json.contains("\"foto\":\"https://res.cloudinary.com/demo/image/upload/foto1.jpg\""))
         assertTrue(json.contains("\"fotos\":[\"https://res.cloudinary.com/demo/image/upload/foto1.jpg\"]"))
+    }
+
+    @Test
+    fun construirFotosAutorizadasParaEnvio_filtraVideosYRutasLocalesSinConfirmacionExtra() {
+        val evidencias = listOf(
+            EvidenciaReporteItem("/local/v.mp4", esVideo = true, urlRemota = "https://res.cloudinary.com/demo/video/upload/v1.mp4"),
+            EvidenciaReporteItem("/local/f1.jpg", esVideo = false, urlRemota = "https://res.cloudinary.com/demo/image/upload/f1.jpg"),
+            EvidenciaReporteItem("/local/f1_dup.jpg", esVideo = false, urlRemota = "https://res.cloudinary.com/demo/image/upload/f1.jpg"),
+            EvidenciaReporteItem("/local/f2.jpg", esVideo = false, urlRemota = "/storage/emulated/0/f2.jpg"),
+            EvidenciaReporteItem("/local/f3.jpg", esVideo = false, urlRemota = null),
+            EvidenciaReporteItem("/local/f4.jpg", esVideo = false, urlRemota = "https://res.cloudinary.com/demo/image/upload/f4.jpg")
+        )
+        val resultado = DuplicadoCiudadanoPolicy.construirFotosAutorizadasParaEnvio(evidencias)
+        assertEquals(
+            listOf(
+                "https://res.cloudinary.com/demo/image/upload/f1.jpg",
+                "https://res.cloudinary.com/demo/image/upload/f4.jpg"
+            ),
+            resultado
+        )
     }
 
     @Test

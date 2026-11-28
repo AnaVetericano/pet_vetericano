@@ -153,8 +153,8 @@ class ReporteLocalRepository private constructor(context: Context) {
                 if (entity.idPeticionRemota != null) put(ReporteLocalDbHelper.COL_ID_PETICION_REMOTA, entity.idPeticionRemota) else putNull(ReporteLocalDbHelper.COL_ID_PETICION_REMOTA)
                 put(ReporteLocalDbHelper.COL_NUMERO_RADICADO, entity.numeroRadicado)
                 if (entity.enviadoEn != null) put(ReporteLocalDbHelper.COL_ENVIADO_EN, entity.enviadoEn) else putNull(ReporteLocalDbHelper.COL_ENVIADO_EN)
-                // Mantiene valor 0 por compatibilidad con el esquema SQLite v2 existente
-                put(ReporteLocalDbHelper.COL_AUTORIZAR_FOTOS_DUPLICADOS, 0)
+                // Habilitado automaticamente sin confirmacion extra manteniendo compatibilidad SQLite v2
+                put(ReporteLocalDbHelper.COL_AUTORIZAR_FOTOS_DUPLICADOS, 1)
             }
             val id = db.insertOrThrow(ReporteLocalDbHelper.TABLE_REPORTES, null, cv)
             db.setTransactionSuccessful()

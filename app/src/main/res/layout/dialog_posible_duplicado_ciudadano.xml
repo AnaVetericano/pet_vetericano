@@ -98,7 +98,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="190dp"
                     android:contentDescription="@null"
-                    android:scaleType="centerCrop" />
+                    android:scaleType="fitCenter" />
             </com.google.android.material.card.MaterialCardView>
 
             <!-- Aviso discreto cuando el backend no devuelve fotografia -->

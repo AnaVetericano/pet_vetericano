@@ -8,6 +8,7 @@ import com.example.petvetericano.R
 import com.example.petvetericano.SharedPreferencesManager
 import com.example.petvetericano.models.confirmarpeticion
 import com.example.petvetericano.network.RetrofitClient
+import com.example.petvetericano.ui.reporte.DuplicadoCiudadanoPolicy
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.NonCancellable
@@ -172,6 +173,7 @@ class ReporteSyncWorker(
         repo.marcarPostIniciado(idLocal, ahoraPost)
 
         val urlsRemotas = listaEvidencias.mapNotNull { it.urlRemota?.trim() }.filter { it.isNotEmpty() }
+        val fotosAutorizadas = DuplicadoCiudadanoPolicy.construirFotosAutorizadasParaEnvio(listaEvidencias)
         val peticionRequest = confirmarpeticion(
             id_tipo = reporte.idTipo,
             id_estado = 1,
@@ -182,7 +184,8 @@ class ReporteSyncWorker(
             latitud = reporte.latitud.toDoubleOrNull() ?: 0.0,
             longitud = reporte.longitud.toDoubleOrNull() ?: 0.0,
             foto = urlsRemotas.firstOrNull(),
-            fotos = urlsRemotas
+            fotos = urlsRemotas,
+            fotos_autorizadas_duplicados = fotosAutorizadas
         )
 
         // Ejecutar POST

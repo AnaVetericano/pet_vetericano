@@ -1,12 +1,18 @@
 package com.example.petvetericano
 
 import android.app.Activity
+import android.app.ActivityOptions
 import android.content.Context
 import android.content.Intent
 import android.content.res.ColorStateList
+import android.os.Build
 import android.view.View
+import android.view.ViewGroup
+import android.view.animation.DecelerateInterpolator
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.core.content.ContextCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.core.view.ViewCompat
@@ -20,6 +26,17 @@ object BottomNavHelper {
     enum class CiudadanoTab { INICIO, REPORTES, EVENTOS, PERFIL }
 
     enum class VeterinarioTab { INICIO, PETICIONES, MALETIN, PERFIL }
+
+    private const val EXTRA_DESDE_BOTTOM_NAV = "com.example.petvetericano.EXTRA_DESDE_BOTTOM_NAV"
+    private const val DURACION_FADE_CONTENIDO_MS = 120L
+
+    private val historialCiudadano = mutableListOf<CiudadanoTab>()
+    private val historialVeterinario = mutableListOf<VeterinarioTab>()
+
+    fun limpiarHistorial() {
+        historialCiudadano.clear()
+        historialVeterinario.clear()
+    }
 
     fun aplicarInsetSuperior(view: View) {
         val initialTop = view.paddingTop
@@ -39,6 +56,48 @@ object BottomNavHelper {
             insets
         }
         ViewCompat.requestApplyInsets(view)
+    }
+
+    private fun registrarTabCiudadano(activeTab: CiudadanoTab) {
+        historialVeterinario.clear()
+        if (activeTab == CiudadanoTab.INICIO) {
+            historialCiudadano.clear()
+            historialCiudadano.add(CiudadanoTab.INICIO)
+        } else {
+            if (historialCiudadano.isEmpty()) {
+                historialCiudadano.add(CiudadanoTab.INICIO)
+            }
+            historialCiudadano.remove(activeTab)
+            historialCiudadano.add(activeTab)
+        }
+    }
+
+    private fun registrarTabVeterinario(activeTab: VeterinarioTab) {
+        historialCiudadano.clear()
+        if (activeTab == VeterinarioTab.INICIO) {
+            historialVeterinario.clear()
+            historialVeterinario.add(VeterinarioTab.INICIO)
+        } else {
+            if (historialVeterinario.isEmpty()) {
+                historialVeterinario.add(VeterinarioTab.INICIO)
+            }
+            historialVeterinario.remove(activeTab)
+            historialVeterinario.add(activeTab)
+        }
+    }
+
+    private fun claseCiudadano(tab: CiudadanoTab): Class<out Activity> = when (tab) {
+        CiudadanoTab.INICIO -> bienvenida::class.java
+        CiudadanoTab.REPORTES -> MisReportesActivity::class.java
+        CiudadanoTab.EVENTOS -> Eventos::class.java
+        CiudadanoTab.PERFIL -> editar_perfil::class.java
+    }
+
+    private fun claseVeterinario(tab: VeterinarioTab): Class<out Activity> = when (tab) {
+        VeterinarioTab.INICIO -> dahsboard_veterianrio::class.java
+        VeterinarioTab.PETICIONES -> PetitionsListActivity::class.java
+        VeterinarioTab.MALETIN -> MaletinMedicamentosActivity::class.java
+        VeterinarioTab.PERFIL -> OpcionesEditarPerfilActivity::class.java
     }
 
     private fun aplicarEstadoTab(
@@ -76,14 +135,46 @@ object BottomNavHelper {
         if (onBeforeNavigate != null) onBeforeNavigate.invoke(accion) else accion()
     }
 
+    fun navegarACiudadano(activity: Activity, destino: CiudadanoTab) {
+        abrirTab(activity, claseCiudadano(destino))
+    }
+
+    fun navegarAVeterinario(activity: Activity, destino: VeterinarioTab) {
+        abrirTab(activity, claseVeterinario(destino))
+    }
+
+    private fun retrocederCiudadano(activity: Activity, activeTab: CiudadanoTab) {
+        historialCiudadano.remove(activeTab)
+        val destino = historialCiudadano.lastOrNull() ?: CiudadanoTab.INICIO
+        abrirTab(activity, claseCiudadano(destino))
+    }
+
+    private fun retrocederVeterinario(activity: Activity, activeTab: VeterinarioTab) {
+        historialVeterinario.remove(activeTab)
+        val destino = historialVeterinario.lastOrNull() ?: VeterinarioTab.INICIO
+        abrirTab(activity, claseVeterinario(destino))
+    }
+
     fun setupCiudadano(
-        activity: Activity,
+        activity: ComponentActivity,
         binding: LayoutBottomNavCiudadanoBinding,
         activeTab: CiudadanoTab,
         onBeforeNavigate: ((proceed: () -> Unit) -> Unit)? = null,
         onReselectCurrent: (() -> Unit)? = null
     ) {
+        registrarTabCiudadano(activeTab)
         aplicarInsetInferior(binding.root)
+        animarContenidoSiVieneDeNav(activity, binding.root)
+
+        if (activeTab != CiudadanoTab.INICIO) {
+            activity.onBackPressedDispatcher.addCallback(activity, object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    ejecutarNavegacion(onBeforeNavigate) {
+                        retrocederCiudadano(activity, activeTab)
+                    }
+                }
+            })
+        }
 
         aplicarEstadoTab(
             activity,
@@ -123,13 +214,7 @@ object BottomNavHelper {
                 onReselectCurrent?.invoke()
             } else {
                 ejecutarNavegacion(onBeforeNavigate) {
-                    val intent = Intent(activity, bienvenida::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                            Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                            Intent.FLAG_ACTIVITY_NO_ANIMATION
-                    }
-                    activity.startActivity(intent)
-                    activity.finish()
+                    navegarACiudadano(activity, CiudadanoTab.INICIO)
                 }
             }
         }
@@ -139,11 +224,7 @@ object BottomNavHelper {
                 onReselectCurrent?.invoke()
             } else {
                 ejecutarNavegacion(onBeforeNavigate) {
-                    navegarATabHermano(
-                        activity = activity,
-                        destino = MisReportesActivity::class.java,
-                        esDesdeInicio = (activeTab == CiudadanoTab.INICIO)
-                    )
+                    navegarACiudadano(activity, CiudadanoTab.REPORTES)
                 }
             }
         }
@@ -153,11 +234,7 @@ object BottomNavHelper {
                 onReselectCurrent?.invoke()
             } else {
                 ejecutarNavegacion(onBeforeNavigate) {
-                    navegarATabHermano(
-                        activity = activity,
-                        destino = Eventos::class.java,
-                        esDesdeInicio = (activeTab == CiudadanoTab.INICIO)
-                    )
+                    navegarACiudadano(activity, CiudadanoTab.EVENTOS)
                 }
             }
         }
@@ -167,24 +244,32 @@ object BottomNavHelper {
                 onReselectCurrent?.invoke()
             } else {
                 ejecutarNavegacion(onBeforeNavigate) {
-                    navegarATabHermano(
-                        activity = activity,
-                        destino = editar_perfil::class.java,
-                        esDesdeInicio = (activeTab == CiudadanoTab.INICIO)
-                    )
+                    navegarACiudadano(activity, CiudadanoTab.PERFIL)
                 }
             }
         }
     }
 
     fun setupVeterinario(
-        activity: Activity,
+        activity: ComponentActivity,
         binding: LayoutBottomNavVeterinarioBinding,
         activeTab: VeterinarioTab,
         onBeforeNavigate: ((proceed: () -> Unit) -> Unit)? = null,
         onReselectCurrent: (() -> Unit)? = null
     ) {
+        registrarTabVeterinario(activeTab)
         aplicarInsetInferior(binding.root)
+        animarContenidoSiVieneDeNav(activity, binding.root)
+
+        if (activeTab != VeterinarioTab.INICIO) {
+            activity.onBackPressedDispatcher.addCallback(activity, object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    ejecutarNavegacion(onBeforeNavigate) {
+                        retrocederVeterinario(activity, activeTab)
+                    }
+                }
+            })
+        }
 
         aplicarEstadoTab(
             activity,
@@ -224,13 +309,7 @@ object BottomNavHelper {
                 onReselectCurrent?.invoke()
             } else {
                 ejecutarNavegacion(onBeforeNavigate) {
-                    val intent = Intent(activity, dahsboard_veterianrio::class.java).apply {
-                        flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or
-                            Intent.FLAG_ACTIVITY_SINGLE_TOP or
-                            Intent.FLAG_ACTIVITY_NO_ANIMATION
-                    }
-                    activity.startActivity(intent)
-                    activity.finish()
+                    navegarAVeterinario(activity, VeterinarioTab.INICIO)
                 }
             }
         }
@@ -240,11 +319,7 @@ object BottomNavHelper {
                 onReselectCurrent?.invoke()
             } else {
                 ejecutarNavegacion(onBeforeNavigate) {
-                    navegarATabHermano(
-                        activity = activity,
-                        destino = PetitionsListActivity::class.java,
-                        esDesdeInicio = (activeTab == VeterinarioTab.INICIO)
-                    )
+                    navegarAVeterinario(activity, VeterinarioTab.PETICIONES)
                 }
             }
         }
@@ -254,11 +329,7 @@ object BottomNavHelper {
                 onReselectCurrent?.invoke()
             } else {
                 ejecutarNavegacion(onBeforeNavigate) {
-                    navegarATabHermano(
-                        activity = activity,
-                        destino = MaletinMedicamentosActivity::class.java,
-                        esDesdeInicio = (activeTab == VeterinarioTab.INICIO)
-                    )
+                    navegarAVeterinario(activity, VeterinarioTab.MALETIN)
                 }
             }
         }
@@ -268,27 +339,57 @@ object BottomNavHelper {
                 onReselectCurrent?.invoke()
             } else {
                 ejecutarNavegacion(onBeforeNavigate) {
-                    navegarATabHermano(
-                        activity = activity,
-                        destino = OpcionesEditarPerfilActivity::class.java,
-                        esDesdeInicio = (activeTab == VeterinarioTab.INICIO)
-                    )
+                    navegarAVeterinario(activity, VeterinarioTab.PERFIL)
                 }
             }
         }
     }
 
-    private fun navegarATabHermano(
-        activity: Activity,
-        destino: Class<out Activity>,
-        esDesdeInicio: Boolean
-    ) {
+    private fun abrirTab(activity: Activity, destino: Class<out Activity>) {
         val intent = Intent(activity, destino).apply {
-            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP or Intent.FLAG_ACTIVITY_NO_ANIMATION
+            putExtra(EXTRA_DESDE_BOTTOM_NAV, true)
+            flags = Intent.FLAG_ACTIVITY_SINGLE_TOP
         }
-        activity.startActivity(intent)
-        if (!esDesdeInicio) {
-            activity.finish()
+        val options = ActivityOptions.makeCustomAnimation(activity, 0, 0).toBundle()
+        activity.startActivity(intent, options)
+        desactivarAnimacionCierre(activity)
+        activity.finish()
+    }
+
+    private fun animarContenidoSiVieneDeNav(activity: Activity, bottomNavRoot: View) {
+        val desdeNav = activity.intent?.getBooleanExtra(EXTRA_DESDE_BOTTOM_NAV, false) == true
+        if (!desdeNav) return
+        activity.intent?.removeExtra(EXTRA_DESDE_BOTTOM_NAV)
+        desactivarAnimacionApertura(activity)
+        val parent = bottomNavRoot.parent as? ViewGroup ?: return
+        val interpolator = DecelerateInterpolator()
+        for (i in 0 until parent.childCount) {
+            val child = parent.getChildAt(i)
+            if (child === bottomNavRoot) continue
+            child.alpha = 0f
+            child.animate()
+                .alpha(1f)
+                .setDuration(DURACION_FADE_CONTENIDO_MS)
+                .setInterpolator(interpolator)
+                .start()
+        }
+    }
+
+    private fun desactivarAnimacionApertura(activity: Activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            activity.overrideActivityTransition(Activity.OVERRIDE_TRANSITION_OPEN, 0, 0)
+        } else {
+            @Suppress("DEPRECATION")
+            activity.overridePendingTransition(0, 0)
+        }
+    }
+
+    private fun desactivarAnimacionCierre(activity: Activity) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.UPSIDE_DOWN_CAKE) {
+            activity.overrideActivityTransition(Activity.OVERRIDE_TRANSITION_CLOSE, 0, 0)
+        } else {
+            @Suppress("DEPRECATION")
+            activity.overridePendingTransition(0, 0)
         }
     }
 }

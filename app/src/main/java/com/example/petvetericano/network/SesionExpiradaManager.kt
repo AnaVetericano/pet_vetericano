@@ -14,6 +14,7 @@ import com.example.petvetericano.MainActivity
 import com.example.petvetericano.R
 import com.example.petvetericano.Registro
 import com.example.petvetericano.SharedPreferencesManager
+import com.example.petvetericano.SplashActivity
 import com.example.petvetericano.inicio_sesion
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
@@ -57,6 +58,8 @@ object SesionExpiradaManager : Application.ActivityLifecycleCallbacks {
         }
     }
 
+    private fun esPantallaSplash(activity: Activity): Boolean = activity is SplashActivity
+
     private fun esPantallaLogin(activity: Activity): Boolean {
         return activity is MainActivity || activity is inicio_sesion || activity is Registro
     }
@@ -66,6 +69,10 @@ object SesionExpiradaManager : Application.ActivityLifecycleCallbacks {
         if (activity == null || activity.isFinishing || activity.isDestroyed) {
             // No hay Activity resumida en primer plano; queda avisoPendiente = true
             // y se mostrará en el siguiente onActivityResumed.
+            return
+        }
+
+        if (esPantallaSplash(activity)) {
             return
         }
 
@@ -159,6 +166,9 @@ object SesionExpiradaManager : Application.ActivityLifecycleCallbacks {
 
     override fun onActivityResumed(activity: Activity) {
         currentActivityRef = WeakReference(activity)
+        if (esPantallaSplash(activity)) {
+            return
+        }
         if (esPantallaLogin(activity)) {
             avisoPendiente = false
             return

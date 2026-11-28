@@ -43,11 +43,6 @@ class Eventos : AppCompatActivity() {
     }
 
     private fun configurarVistas() {
-        // Botón regresar
-        binding.btnAtras.setOnClickListener {
-            finish()
-        }
-
         // 👈 Se especifica <VoluntariadoEventos> para que Kotlin no tenga dudas
         adapter = EventoAdapter(emptyList<VoluntariadoEventos>()) { evento: VoluntariadoEventos ->
             // Paso 1 M3: dialogo informativo (no ejecuta la accion)
@@ -118,7 +113,7 @@ class Eventos : AppCompatActivity() {
 
         AlertDialog.Builder(this)
             .setTitle(titulo)
-            .setMessage("$descripcion\n\n📅 Fecha: $fecha")
+            .setMessage("$descripcion\n\nFecha: $fecha")
             .setNegativeButton("Cerrar") { dialog, _ -> dialog.dismiss() }
             .setPositiveButton("Postularse") { dialog, _ ->
                 dialog.dismiss()

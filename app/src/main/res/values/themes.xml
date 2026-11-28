@@ -7,7 +7,7 @@
         <item name="colorSecondary">@color/secondary</item>
         <item name="colorSurface">@color/card_background</item>
         <item name="colorOnSurface">@color/text_primary</item>
-        <item name="android:statusBarColor">@color/card_background</item>
+        <item name="android:statusBarColor">@color/bg_screen</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
         <item name="android:windowBackground">@color/bg_screen</item>
 
@@ -21,6 +21,7 @@
 
         <!-- Diálogos emergentes y bottom sheets con diseño Material 3 -->
         <item name="elevationOverlayEnabled">false</item>
+        <item name="android:windowActivityTransitions">true</item>
         <item name="bottomSheetDialogTheme">@style/ThemeOverlay.Vetericano.BottomSheetDialog</item>
         <item name="materialAlertDialogTheme">@style/ThemeOverlay.Vetericano.MaterialAlertDialog</item>
         <item name="alertDialogTheme">@style/ThemeOverlay.Vetericano.MaterialAlertDialog</item>
@@ -64,7 +65,7 @@
     </style>
 
     <style name="Widget.Vetericano.Button.Primary" parent="Widget.Material3.Button">
-        <item name="backgroundTint">@color/primary</item>
+        <item name="backgroundTint">@color/button_primary_bg</item>
         <item name="android:textColor">@color/white</item>
         <item name="cornerRadius">14dp</item>
         <item name="elevation">4dp</item>
@@ -119,6 +120,29 @@
         <item name="boxCornerRadiusTopEnd">12dp</item>
         <item name="boxCornerRadiusBottomStart">12dp</item>
         <item name="boxCornerRadiusBottomEnd">12dp</item>
+    </style>
+
+    <!-- Campos unificados de autenticación (consistentes en Claro y Midnight Indigo) -->
+    <style name="Widget.Vetericano.TextInputLayout.Auth" parent="Widget.Material3.TextInputLayout.OutlinedBox">
+        <item name="boxBackgroundMode">outline</item>
+        <item name="boxBackgroundColor">@color/card_background</item>
+        <item name="boxStrokeColor">@color/selector_input_stroke</item>
+        <item name="boxStrokeErrorColor">@color/error</item>
+        <item name="boxStrokeWidth">1.2dp</item>
+        <item name="boxStrokeWidthFocused">2dp</item>
+        <item name="boxCornerRadiusTopStart">14dp</item>
+        <item name="boxCornerRadiusTopEnd">14dp</item>
+        <item name="boxCornerRadiusBottomStart">14dp</item>
+        <item name="boxCornerRadiusBottomEnd">14dp</item>
+        <item name="android:textColorHint">@color/text_secondary</item>
+        <item name="hintTextColor">@color/primary</item>
+        <item name="placeholderTextColor">@color/text_muted</item>
+        <item name="startIconTint">@color/primary</item>
+        <item name="startIconMinSize">40dp</item>
+        <item name="endIconTint">@color/primary</item>
+        <item name="errorIconDrawable">@null</item>
+        <item name="helperTextTextColor">@color/text_secondary</item>
+        <item name="errorTextColor">@color/error</item>
     </style>
 
     <!-- ===== Tipografía (Nunito) para componentes Material ===== -->
@@ -206,5 +230,14 @@
         <item name="android:textColor">@color/text_secondary</item>
         <item name="android:fontFamily">@font/nunito_bold</item>
         <item name="android:textSize">14sp</item>
+    </style>
+
+    <!-- ===== Tema dedicado para SplashActivity (Android 11 y anteriores - Modo Claro) ===== -->
+    <style name="Theme.PetVetericano.Splash" parent="Theme.PetVetericano">
+        <item name="android:windowBackground">@color/bg_screen</item>
+        <item name="android:statusBarColor">@color/bg_screen</item>
+        <item name="android:navigationBarColor">@color/bg_screen</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
     </style>
 </resources>

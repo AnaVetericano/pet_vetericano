@@ -2,6 +2,7 @@ package com.example.petvetericano
 
 import android.os.Bundle
 import android.view.View
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,6 +19,7 @@ class MisReportesActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         binding = ActivityMisReportesBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
@@ -28,10 +30,6 @@ class MisReportesActivity : AppCompatActivity() {
             BottomNavHelper.CiudadanoTab.REPORTES
         ) {
             binding.rvMisReportes.smoothScrollToPosition(0)
-        }
-
-        binding.btnAtras.setOnClickListener {
-            finish()
         }
 
         binding.rvMisReportes.layoutManager = LinearLayoutManager(this)

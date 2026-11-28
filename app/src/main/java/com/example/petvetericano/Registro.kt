@@ -9,7 +9,11 @@ import android.os.CountDownTimer
 import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.ViewCompat
+import androidx.core.view.WindowInsetsCompat
+import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.example.petvetericano.databinding.ActivityRegistroBinding
 import com.example.petvetericano.models.ConfirmarCodigoRegistroRequest
@@ -30,15 +34,45 @@ class Registro : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
 
         binding = ActivityRegistroBinding.inflate(layoutInflater)
         setContentView(binding.root)
+
+        val paddingIzq = binding.main.paddingLeft
+        val paddingSup = binding.main.paddingTop
+        val paddingDer = binding.main.paddingRight
+        val paddingInf = binding.main.paddingBottom
+        ViewCompat.setOnApplyWindowInsetsListener(binding.main) { view, insets ->
+            val bars = insets.getInsets(
+                WindowInsetsCompat.Type.systemBars() or WindowInsetsCompat.Type.ime()
+            )
+            view.setPadding(
+                paddingIzq + bars.left,
+                paddingSup + bars.top,
+                paddingDer + bars.right,
+                paddingInf + bars.bottom
+            )
+            insets
+        }
+        ViewCompat.requestApplyInsets(binding.main)
 
         prefs = SharedPreferencesManager(this)
 
         // Estado limpio antes de iniciar registro manual o con Google
         RetrofitClient.authToken = null
         com.example.petvetericano.network.SesionExpiradaManager.refreshMuerto = null
+
+        binding.btnBackRegistro.setOnClickListener {
+            onBackPressedDispatcher.onBackPressed()
+        }
+
+        binding.edtxtID.doAfterTextChanged { binding.tilNombre.error = null }
+        binding.edtxtApellido.doAfterTextChanged { binding.tilApellido.error = null }
+        binding.edtxtemailorphone.doAfterTextChanged { binding.tilDocumento.error = null }
+        binding.edtxtTelefono.doAfterTextChanged { binding.tilTelefono.error = null }
+        binding.editTextTextEmailAddress.doAfterTextChanged { binding.tilEmail.error = null }
+        binding.edtxtPassword.doAfterTextChanged { binding.tilPassword.error = null }
 
         binding.btnSignUp.setOnClickListener {
             registrarUsuario()
@@ -74,7 +108,7 @@ class Registro : AppCompatActivity() {
                         binding.btnGoogleSignUp.text = if (cargando) {
                             "Registrando con Google..."
                         } else {
-                            getString(R.string.registrarse_con_google)
+                            getString(R.string.continuar_con_google)
                         }
                     }
                 }
@@ -90,36 +124,41 @@ class Registro : AppCompatActivity() {
         val telefono = binding.edtxtTelefono.text.toString().trim()
         val password = binding.edtxtPassword.text.toString().trim()
 
-        // Limpiamos errores previos en TextInputLayout
+        // Limpiamos errores previos en todos los TextInputLayout
+        binding.tilNombre.error = null
+        binding.tilApellido.error = null
+        binding.tilDocumento.error = null
+        binding.tilTelefono.error = null
+        binding.tilEmail.error = null
         binding.tilPassword.error = null
 
-        if (email.isEmpty()) {
-            binding.editTextTextEmailAddress.error = "Ingrese su correo electrónico"
-            binding.editTextTextEmailAddress.requestFocus()
-            return
-        }
-
-        if (identificacion.isEmpty()) {
-            binding.edtxtemailorphone.error = "Ingrese su documento o ID"
-            binding.edtxtemailorphone.requestFocus()
-            return
-        }
-
         if (nombre.isEmpty()) {
-            binding.edtxtID.error = "Ingrese su nombre"
+            binding.tilNombre.error = "Ingrese su nombre"
             binding.edtxtID.requestFocus()
             return
         }
 
         if (apellido.isEmpty()) {
-            binding.edtxtApellido.error = "Ingrese su apellido"
+            binding.tilApellido.error = "Ingrese su apellido"
             binding.edtxtApellido.requestFocus()
             return
         }
 
+        if (identificacion.isEmpty()) {
+            binding.tilDocumento.error = "Ingrese su documento o ID"
+            binding.edtxtemailorphone.requestFocus()
+            return
+        }
+
         if (telefono.isEmpty() || telefono.length < 10) {
-            binding.edtxtTelefono.error = "Ingrese un número de teléfono válido (mínimo 10 dígitos)"
+            binding.tilTelefono.error = "Ingrese un número de teléfono válido (mínimo 10 dígitos)"
             binding.edtxtTelefono.requestFocus()
+            return
+        }
+
+        if (email.isEmpty()) {
+            binding.tilEmail.error = "Ingrese su correo electrónico"
+            binding.editTextTextEmailAddress.requestFocus()
             return
         }
 

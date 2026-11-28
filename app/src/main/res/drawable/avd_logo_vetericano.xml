@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<animated-vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:drawable="@drawable/ic_logo_vetericano_anim_base">
+
+    <!-- 0 ms - 450 ms: Trazo del arco superior de izquierda a derecha -->
+    <target
+        android:name="path_arc"
+        android:animation="@animator/logo_arc_trim" />
+
+    <!-- 180 ms - 580 ms: Entrada ascendente de la silueta perro/gato -->
+    <target
+        android:name="grp_silhouette"
+        android:animation="@animator/logo_silhouette_translate" />
+    <target
+        android:name="path_silhouette"
+        android:animation="@animator/logo_silhouette_alpha" />
+
+    <!-- 420 ms - 680 ms: Almohadilla principal de la huella -->
+    <target
+        android:name="grp_paw_pad"
+        android:animation="@animator/logo_paw_pad_scale" />
+    <target
+        android:name="path_paw_pad"
+        android:animation="@animator/logo_paw_pad_alpha" />
+
+    <!-- 520 ms - 880 ms: 4 dedos escalonados de izquierda a derecha (+40 ms c/u) -->
+    <target
+        android:name="grp_paw_toe_1"
+        android:animation="@animator/logo_paw_toe_1_scale" />
+    <target
+        android:name="path_paw_toe_1"
+        android:animation="@animator/logo_paw_toe_1_alpha" />
+
+    <target
+        android:name="grp_paw_toe_2"
+        android:animation="@animator/logo_paw_toe_2_scale" />
+    <target
+        android:name="path_paw_toe_2"
+        android:animation="@animator/logo_paw_toe_2_alpha" />
+
+    <target
+        android:name="grp_paw_toe_3"
+        android:animation="@animator/logo_paw_toe_3_scale" />
+    <target
+        android:name="path_paw_toe_3"
+        android:animation="@animator/logo_paw_toe_3_alpha" />
+
+    <target
+        android:name="grp_paw_toe_4"
+        android:animation="@animator/logo_paw_toe_4_scale" />
+    <target
+        android:name="path_paw_toe_4"
+        android:animation="@animator/logo_paw_toe_4_alpha" />
+
+</animated-vector>

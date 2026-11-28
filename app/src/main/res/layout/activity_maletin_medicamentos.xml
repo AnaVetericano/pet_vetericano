@@ -23,8 +23,6 @@
             android:id="@+id/toolbarMaletin"
             android:layout_width="match_parent"
             android:layout_height="?attr/actionBarSize"
-            app:navigationIcon="@drawable/baseline_arrow_back_24"
-            app:navigationIconTint="@color/text_primary"
             app:title="@string/title_maletin_de_medicamentos"
             app:titleCentered="false"
             app:titleTextAppearance="@style/TextAppearance.Material3.TitleMedium"
@@ -372,14 +370,22 @@
                             style="@style/Widget.Material3.Chip.Filter"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="⚠️ Críticos / Faltantes" />
+                            android:text="Críticos / Faltantes"
+                            app:chipIcon="@drawable/ic_alert_triangle_line"
+                            app:chipIconSize="16dp"
+                            app:chipIconTint="@color/badge_urgente_text"
+                            app:chipIconVisible="true" />
 
                         <com.google.android.material.chip.Chip
                             android:id="@+id/chipCatOptimos"
                             style="@style/Widget.Material3.Chip.Filter"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="🟢 En Cuota" />
+                            android:text="En Cuota"
+                            app:chipIcon="@drawable/ic_check_circle_line"
+                            app:chipIconSize="16dp"
+                            app:chipIconTint="@color/badge_alta_text"
+                            app:chipIconVisible="true" />
 
                         <com.google.android.material.chip.Chip
                             android:id="@+id/chipCatAine"
@@ -510,7 +516,7 @@
         android:stateListAnimator="@animator/anim_levitate_button"
         android:text="Solicitar reposición"
         android:textColor="@color/white"
-        app:backgroundTint="@color/primary"
+        app:backgroundTint="@color/button_primary_bg"
         app:elevation="6dp"
         app:icon="@drawable/ic_sync"
         app:iconTint="@color/white"

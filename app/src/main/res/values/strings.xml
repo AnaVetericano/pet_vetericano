@@ -2,14 +2,21 @@
     <!-- ============================================================ -->
     <!-- 0. RECURSOS EXISTENTES PREVIOS                             -->
     <!-- ============================================================ -->
-    <string name="app_name">PetVetericano</string>
+    <string name="app_name">Vetericano</string>
     <string name="welcome_login_register">Bienvenido a</string>
     <string name="vetericano_login_register">VETERICANO</string>
     <string name="care_login_register">Cuidamos a quienes no tienen voz</string>
-    <string name="btn_login_login_register">Iniciar Sesión</string>
-    <string name="btn_sign_login_register">Registrar</string>
+    <string name="welcome_badge_cba">BIENESTAR ANIMAL · CBA</string>
+    <string name="welcome_headline_minimal">Cada vida importa. Cada acción protege.</string>
+    <string name="welcome_subtitle_minimal">Reporta animales en riesgo, sigue cada caso y participa en las jornadas del CBA.</string>
+    <string name="welcome_footer_cba">Centro de Bienestar Animal · Popayán</string>
+    <string name="btn_login_login_register">Iniciar sesión</string>
+    <string name="btn_sign_login_register">Crear cuenta</string>
     <string name="title_welcome">Bienvenido</string>
     <string name="registercontinues">Registrate para continuar</string>
+    <string name="registro_titulo">Crea tu cuenta</string>
+    <string name="registro_subtitulo">Completa tus datos para reportar y hacer seguimiento.</string>
+    <string name="hint_documento_identidad">Documento de identidad</string>
     <string name="edt_email_phone">Correo</string>
     <string name="edt_ID">Número de identificación</string>
     <string name="edt_Name">Nombre</string>
@@ -418,7 +425,7 @@
     <string name="lbl_en_evaluacion">En evaluación</string>
     <string name="cd_alerta_caso_cerrado">Alerta caso cerrado</string>
     <string name="lbl_este_caso_se_encuentra_finalizado">Este caso se encuentra finalizado. No se permiten nuevas modificaciones de estado para garantizar la trazabilidad médica y legal.</string>
-    <string name="lbl_el_paso_de_en_evaluacion">💡 El paso de \'En evaluación\' a \'En observación\' o \'En tratamiento\' se realiza automáticamente al guardar el Acta de Atención. También puedes registrar aquí un traslado externo o desenlace si aplica.</string>
+    <string name="lbl_el_paso_de_en_evaluacion">El paso de \'En evaluación\' a \'En observación\' o \'En tratamiento\' se realiza automáticamente al guardar el Acta de Atención. También puedes registrar aquí un traslado externo o desenlace si aplica.</string>
     <string name="lbl_evolucion_clinica_del_paciente">Evolución clínica del paciente</string>
     <string name="lbl_fase_activa_del_paciente_durante">Fase activa del paciente durante su estadía médica</string>
     <string name="lbl_en_observacion">En observación</string>
@@ -496,20 +503,20 @@
     <string name="cd_regresar">Regresar</string>
     <string name="lbl_adopciones">ADOPCIONES</string>
     <string name="lbl_no_hay_adopciones_disponibles_por">No hay adopciones disponibles por el momento.</string>
-    <string name="lbl_eventos_y_jornadas">Eventos y Jornadas 🐾</string>
+    <string name="lbl_eventos_y_jornadas">Eventos y Jornadas</string>
     <string name="lbl_conoce_nuestras_proximas_actividades_y">Conoce nuestras próximas actividades y jornadas de apoyo</string>
     <string name="lbl_no_hay_eventos_disponibles_por">No hay eventos disponibles por el momento.</string>
     <string name="lbl_voluntariado_2">VOLUNTARIADO</string>
     <string name="cd_imagen_del_evento">Imagen del evento</string>
     <string name="lbl_evento">Evento</string>
-    <string name="lbl_2026_10_15">📅 2026-10-15</string>
+    <string name="lbl_2026_10_15">2026-10-15</string>
     <string name="lbl_postularse">Postularse</string>
     <string name="lbl_adopcion_2">ADOPCIÓN</string>
     <string name="lbl_gran_jornada_de_adopcion">Gran Jornada de Adopción</string>
     <string name="lbl_descripcion_del_evento">Descripción del evento</string>
-    <string name="lbl_15_de_septiembre_de_2026">📅 15 de septiembre de 2026</string>
-    <string name="lbl_9_00_am_3_00">🕐 9:00 AM - 3:00 PM</string>
-    <string name="lbl_parque_central">📍 Parque Central</string>
+    <string name="lbl_15_de_septiembre_de_2026">15 de septiembre de 2026</string>
+    <string name="lbl_9_00_am_3_00">9:00 AM - 3:00 PM</string>
+    <string name="lbl_parque_central">Parque Central</string>
     <string name="cd_postularse_al_evento">Postularse al evento</string>
 
     <!-- ============================================================ -->
@@ -780,6 +787,8 @@
     <string name="notif_btn_reintentar">Reintentar</string>
     <string name="notif_vacio_titulo">No tienes notificaciones</string>
     <string name="notif_vacio_subtitulo">Aquí verás las asignaciones, solicitudes y avisos de tu cuenta.</string>
+    <string name="notif_vacio_subtitulo_ciudadano">Aquí verás cambios de estado de tus reportes y respuestas a tus postulaciones.</string>
+    <string name="notif_vacio_subtitulo_veterinario">Aquí verás las asignaciones, solicitudes de maletín y avisos de tu cuenta.</string>
     <string name="notif_error_titulo">No se pudieron cargar las notificaciones</string>
     <string name="notif_error_cargar">Revisa tu conexión e inténtalo de nuevo.</string>
     <string name="notif_error_marcar">No se pudo actualizar la notificación. Inténtalo de nuevo.</string>

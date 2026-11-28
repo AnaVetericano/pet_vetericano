@@ -74,7 +74,7 @@ class dahsboard_veterianrio : AppCompatActivity() {
 
         // Tarjeta de Maletín de Medicamentos
         binding.cardMaletinMedicamentos.setOnClickListener {
-            startActivity(Intent(this, MaletinMedicamentosActivity::class.java))
+            BottomNavHelper.navegarAVeterinario(this, BottomNavHelper.VeterinarioTab.MALETIN)
         }
 
         // Bottom Navigation

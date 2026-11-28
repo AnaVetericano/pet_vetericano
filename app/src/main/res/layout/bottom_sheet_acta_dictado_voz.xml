@@ -164,7 +164,7 @@
                 android:text="Iniciar Grabación"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
-                app:backgroundTint="@color/primary"
+                app:backgroundTint="@color/button_primary_bg"
                 app:cornerRadius="12dp"
                 app:elevation="3dp" />
         </LinearLayout>
@@ -372,7 +372,7 @@
             android:stateListAnimator="@animator/anim_levitate_button"
             android:text="Intentar de Nuevo"
             android:textAllCaps="false"
-            app:backgroundTint="@color/primary"
+            app:backgroundTint="@color/button_primary_bg"
             app:cornerRadius="12dp"
             app:elevation="3dp" />
     </LinearLayout>

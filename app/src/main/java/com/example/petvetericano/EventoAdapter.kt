@@ -27,7 +27,7 @@ class EventoAdapter(
             binding.txtTipo.text = "VOLUNTARIADO"
             binding.txtTitulo.text = tituloLimpio
             binding.txtDescripcion.text = descripcionLimpia
-            binding.txtFecha.text = "📅 $fechaLimpia"
+            binding.txtFecha.text = fechaLimpia
 
             // Ocultar campos que no vienen de la API para mantener el diseño limpio
             binding.txtHora.visibility = View.GONE

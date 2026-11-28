@@ -205,6 +205,7 @@ class SharedPreferencesManager(context: Context) {
         // Cierra la conexión WebSocket y desactiva el token FCM en el backend antes de borrar la sesión.
         WebSocketConnectionManager.onLogout()
         FcmTokenManager.desactivarEnLogout(appContext)
+        BottomNavHelper.limpiarHistorial()
         val currentUserId = getUserId()
         if (currentUserId > 0) {
             MaletinManager.limpiarCacheUsuario(appContext, currentUserId)

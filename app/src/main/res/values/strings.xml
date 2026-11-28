@@ -861,4 +861,10 @@
     <string name="lbl_cambios_sin_guardar">Tienes cambios sin guardar</string>
     <string name="lbl_solo_lectura_seguridad">Verificado · No editable por seguridad</string>
     <string name="lbl_dato_sensible_bloqueado">No se puede modificar por ser un dato sensible</string>
+
+    <!-- Completar perfil tras primer ingreso con Google -->
+    <string name="google_completar_datos_titulo">Completa tu perfil</string>
+    <string name="google_completar_datos_mensaje">Para continuar con Google por primera vez, ingresa tu documento de identidad y número de teléfono:</string>
+    <string name="btn_guardar_y_continuar">Guardar y continuar</string>
+    <string name="google_completar_datos_cancelado">Debes completar tu identificación y teléfono para continuar.</string>
 </resources>

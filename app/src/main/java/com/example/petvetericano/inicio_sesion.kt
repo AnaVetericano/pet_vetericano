@@ -158,7 +158,8 @@ class inicio_sesion : AppCompatActivity() {
             startActivity(intent)
         }
         binding.txtRecoverPassword.setOnClickListener {
-            val dialogRecuperar = RecuperarContrasenia(this@inicio_sesion)
+            val correoActual = binding.editTextText.text?.toString()?.trim().orEmpty()
+            val dialogRecuperar = RecuperarContrasenia(this@inicio_sesion, emailInicial = correoActual)
             dialogRecuperar.show()
         }
     }
@@ -296,6 +297,12 @@ class inicio_sesion : AppCompatActivity() {
             return
         }
 
+        if (!com.example.petvetericano.auth.AuthValidators.esEmailValido(email)) {
+            binding.editTextText.error = "Ingrese un correo electrónico válido"
+            binding.editTextText.requestFocus()
+            return
+        }
+
         if (password.isEmpty()) {
             binding.tilPassword.error = "Ingrese su contraseña"
             binding.edtPassword.requestFocus()
@@ -334,9 +341,12 @@ class inicio_sesion : AppCompatActivity() {
                         prefs.saveUserData(
                             name  = datos.nombre ?: "",
                             email = datos.email,
-                            phone = ""
+                            phone = datos.telefono?.trim().orEmpty()
                         )
                         prefs.saveUserLastName(datos.apellido ?: "")
+                        if (!datos.matriculaProfesional.isNullOrBlank()) {
+                            prefs.saveUserMatriculaProfesional(datos.matriculaProfesional)
+                        }
                         prefs.saveProfileImagePath(datos.fotoPerfil ?: datos.foto ?: "")
                         prefs.saveAccessToken(accessToken)
                         if (refreshToken.isNotEmpty()) {

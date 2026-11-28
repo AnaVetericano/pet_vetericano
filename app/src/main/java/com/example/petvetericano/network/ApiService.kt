@@ -2,6 +2,7 @@ package com.example.petvetericano.network
 
 import com.example.petvetericano.models.ActualizarPerfilRequest
 import com.example.petvetericano.models.AdopcionAnimalResponse
+import com.example.petvetericano.models.CompletarDatosGoogleRequest
 import com.example.petvetericano.models.ConfirmarCodigoRegistroRequest
 import com.example.petvetericano.models.DashboardResponse
 import com.example.petvetericano.models.GenericResponse
@@ -64,12 +65,20 @@ interface ApiService {
     @POST("usuarios/confirmar-password/")
     suspend fun confirmarRecuperacion(@Body request: Any): Response<GenericResponse>
 
+    @POST("token/refresh/")
+    suspend fun refreshToken(
+        @Body request: com.example.petvetericano.models.TokenRefreshRequest
+    ): Response<com.example.petvetericano.models.TokenRefreshResponse>
+
     // --- PERFIL DE USUARIO ---
     @GET("peticiones/perfil/")
     suspend fun obtenerPerfil(): Response<UsuarioPerfilResponse>
 
     @PATCH("peticiones/perfil/")
     suspend fun actualizarPerfil(@Body request: ActualizarPerfilRequest): Response<UsuarioPerfilResponse>
+
+    @PATCH("peticiones/perfil/")
+    suspend fun completarDatosPerfil(@Body request: CompletarDatosGoogleRequest): Response<UsuarioPerfilResponse>
 
     // --- PETICIONES / REPORTES ---
     @GET("peticiones/tipos/")

@@ -12,90 +12,34 @@ class SharedPreferencesManager(context: Context) {
         context.getSharedPreferences("PetVetericanoPrefs", Context.MODE_PRIVATE)
     private val googlePrefs: SharedPreferences =
         context.getSharedPreferences(GOOGLE_LEGACY_PREFS_NAME, Context.MODE_PRIVATE)
+    private val googleLinkVaultPrefs: SharedPreferences =
+        context.getSharedPreferences(GOOGLE_LINK_VAULT_PREFS_NAME, Context.MODE_PRIVATE)
 
     companion object {
         private const val GOOGLE_LEGACY_PREFS_NAME = "PetVetericanoGoogleAuthPrefs"
+        private const val GOOGLE_LINK_VAULT_PREFS_NAME = "PetVetericanoGoogleLinkVault"
         private const val MAX_LENGTH_NOMBRE = 50
         private const val MAX_LENGTH_APELLIDO = 50
         private const val MAX_LENGTH_EMAIL = 100
-        private const val MAX_LENGTH_TELEFONO = 10
-        private const val MAX_LENGTH_IDENTIFICACION = 12
+        private const val MAX_LENGTH_TELEFONO = 15
+        private const val MAX_LENGTH_IDENTIFICACION = 20
         private const val MAX_LENGTH_MATRICULA = 15
     }
 
     fun limpiarDatosGoogleLegacy() {
-        val editor = googlePrefs.edit()
-        var modificado = false
-        if (googlePrefs.contains("KNOWN_GOOGLE_ACCOUNTS")) {
-            editor.remove("KNOWN_GOOGLE_ACCOUNTS")
-            modificado = true
+        if (googlePrefs.all.isNotEmpty()) {
+            googlePrefs.edit().clear().apply()
         }
-        googlePrefs.all.keys.forEach { key ->
-            if (key.startsWith("GOOGLE_CRED_")) {
-                editor.remove(key)
-                modificado = true
-            }
-        }
-        if (modificado) {
-            editor.apply()
+        if (googleLinkVaultPrefs.all.isNotEmpty()) {
+            googleLinkVaultPrefs.edit().clear().apply()
         }
     }
 
-    fun clearGoogleAccountPassword(email: String) {
-        if (email.isEmpty()) return
-        googlePrefs.edit().remove("GOOGLE_CRED_${email.lowercase().trim()}").apply()
-    }
-
-    fun saveGoogleAccountPassword(email: String, password: String) {
-        if (email.isNotEmpty() && password.isNotEmpty()) {
-            val cleanEmail = email.lowercase().trim()
-            googlePrefs.edit().putString("GOOGLE_CRED_$cleanEmail", password).apply()
-            saveKnownGoogleAccount(cleanEmail)
-        }
-    }
-
-    fun getGoogleAccountPassword(email: String): String {
-        if (email.isEmpty()) return ""
-        return googlePrefs.getString("GOOGLE_CRED_${email.lowercase().trim()}", "") ?: ""
-    }
-
-    fun saveKnownGoogleAccount(email: String) {
-        val cleanEmail = email.lowercase().trim()
-        if (cleanEmail.isEmpty() || !cleanEmail.contains("@")) return
-        val actuales = googlePrefs.getStringSet("DEVICE_GOOGLE_ACCOUNTS_V2", emptySet())?.toMutableSet()
-            ?: mutableSetOf()
-        actuales.add(cleanEmail)
-        googlePrefs.edit().putStringSet("DEVICE_GOOGLE_ACCOUNTS_V2", actuales).apply()
-    }
-
-    fun getKnownGoogleAccounts(): List<String> {
-        if (googlePrefs.contains("KNOWN_GOOGLE_ACCOUNTS")) {
-            googlePrefs.edit().remove("KNOWN_GOOGLE_ACCOUNTS").apply()
-        }
-
-        val resultado = linkedSetOf<String>()
-
-        googlePrefs.getStringSet("DEVICE_GOOGLE_ACCOUNTS_V2", emptySet())?.forEach { email ->
-            val clean = email.lowercase().trim()
-            if (clean.contains("@")) resultado.add(clean)
-        }
-
-        googlePrefs.all.keys.forEach { key ->
-            if (key.startsWith("GOOGLE_CRED_")) {
-                val clean = key.removePrefix("GOOGLE_CRED_").lowercase().trim()
-                if (clean.contains("@")) resultado.add(clean)
-            }
-        }
-
-        val currentEmail = getUserEmail().lowercase().trim()
-        if (currentEmail.contains("@")) {
-            resultado.add(currentEmail)
-        }
-
-        return resultado.toList()
-    }
-
-    fun saveUserData(name: String, email: String, phone: String) {
+    fun saveUserData(
+        name: String,
+        email: String,
+        phone: String
+    ) {
         val cleanName = name.trim().replace("\\s+".toRegex(), " ").take(MAX_LENGTH_NOMBRE)
         val cleanEmail = email.trim().take(MAX_LENGTH_EMAIL)
         val cleanPhone = phone.trim().take(MAX_LENGTH_TELEFONO)
@@ -105,9 +49,6 @@ class SharedPreferencesManager(context: Context) {
             if (cleanEmail.isNotEmpty()) putString("USER_EMAIL", cleanEmail)
             if (cleanPhone.isNotEmpty()) putString("USER_PHONE", cleanPhone)
             apply()
-        }
-        if (cleanEmail.isNotEmpty()) {
-            saveKnownGoogleAccount(cleanEmail)
         }
     }
 
@@ -211,7 +152,8 @@ class SharedPreferencesManager(context: Context) {
             MaletinManager.limpiarCacheUsuario(appContext, currentUserId)
             PeticionesCacheManager.limpiarCacheVeterinario(appContext, currentUserId)
         }
-        prefs.edit().clear().apply()
+        val idiomaGuardado = getLanguage()
+        prefs.edit().clear().putString("APP_LANGUAGE", idiomaGuardado).apply()
         limpiarDatosGoogleLegacy()
         try {
             val legacyFile = java.io.File(appContext.filesDir, "profile_picture.jpg")

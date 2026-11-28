@@ -4,24 +4,70 @@ import android.content.Context
 import android.util.Log
 import com.example.petvetericano.SharedPreferencesManager
 import com.example.petvetericano.facial.FacialStorageManager
+import com.google.gson.Gson
+import com.google.gson.JsonParser
 import okhttp3.Authenticator
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody.Companion.toRequestBody
 import okhttp3.Response
 import okhttp3.Route
-import org.json.JSONObject
 import java.io.IOException
 
-class TokenAuthenticator(
-    private val contextProvider: () -> Context?
+interface TokenStore {
+    fun getAccessToken(): String
+    fun getRefreshToken(): String
+    fun getUserId(): Int
+    fun saveAccessToken(token: String)
+    fun saveRefreshToken(token: String)
+    fun onRefreshTokenRotado(userId: Int, nuevoRefreshToken: String)
+}
+
+internal class SharedPreferencesTokenStore(private val context: Context) : TokenStore {
+    private val prefs = SharedPreferencesManager(context)
+
+    override fun getAccessToken(): String = prefs.getAccessToken()
+    override fun getRefreshToken(): String = prefs.getRefreshToken()
+    override fun getUserId(): Int = prefs.getUserId()
+    override fun saveAccessToken(token: String) = prefs.saveAccessToken(token)
+    override fun saveRefreshToken(token: String) = prefs.saveRefreshToken(token)
+
+    override fun onRefreshTokenRotado(userId: Int, nuevoRefreshToken: String) {
+        try {
+            FacialStorageManager(context).actualizarRefreshTokenSiCoincide(
+                userId = userId,
+                nuevoRefreshToken = nuevoRefreshToken
+            )
+        } catch (_: Exception) {
+        }
+    }
+}
+
+class TokenAuthenticator internal constructor(
+    private val tokenStoreProvider: () -> TokenStore?,
+    private val baseUrlProvider: () -> String,
+    private val clientProvider: () -> OkHttpClient,
+    private val onSesionMuerta: (String) -> Unit,
+    private val getRefreshMuerto: () -> String?,
+    private val onAuthTokenActualizado: (String) -> Unit
 ) : Authenticator {
+
+    constructor(contextProvider: () -> Context?) : this(
+        tokenStoreProvider = { contextProvider()?.let { SharedPreferencesTokenStore(it) } },
+        baseUrlProvider = { RetrofitClient.baseUrlActiva() },
+        clientProvider = { RetrofitClient.cleanClient },
+        onSesionMuerta = { SesionExpiradaManager.marcarSesionMuerta(it) },
+        getRefreshMuerto = { SesionExpiradaManager.refreshMuerto },
+        onAuthTokenActualizado = { RetrofitClient.authToken = it }
+    )
 
     constructor(context: Context) : this({ context.applicationContext })
 
     companion object {
         private const val TAG = "TokenAuthenticator"
         private val lock = Any()
+        private val gson = Gson()
 
         private val EXCLUDED_PATH_SUBSTRINGS = listOf(
             "/login/",
@@ -31,6 +77,30 @@ class TokenAuthenticator(
             "/confirmar-password/",
             "/token/refresh/"
         )
+
+        internal fun parsearTokensRefresh(rawBody: String): Pair<String, String?>? {
+            if (rawBody.isBlank()) return null
+            return try {
+                val json = JsonParser.parseString(rawBody).asJsonObject
+                val accessEl = json.get("access")
+                val access = if (accessEl != null && accessEl.isJsonPrimitive) {
+                    accessEl.asString.trim()
+                } else {
+                    ""
+                }
+                if (access.isEmpty()) return null
+
+                val refreshEl = json.get("refresh")
+                val refresh = if (refreshEl != null && refreshEl.isJsonPrimitive) {
+                    refreshEl.asString.trim().ifEmpty { null }
+                } else {
+                    null
+                }
+                Pair(access, refresh)
+            } catch (_: Exception) {
+                null
+            }
+        }
     }
 
     override fun authenticate(route: Route?, response: Response): Request? {
@@ -48,31 +118,29 @@ class TokenAuthenticator(
             return null
         }
 
-        val context = contextProvider() ?: return null
-        val prefs = SharedPreferencesManager(context)
+        val tokenStore = tokenStoreProvider() ?: return null
 
         synchronized(lock) {
-            val currentAccess = prefs.getAccessToken().trim()
+            val currentAccess = tokenStore.getAccessToken().trim()
             if (currentAccess.isNotEmpty() && "Bearer $currentAccess" != failedAuthHeader) {
                 return response.request.newBuilder()
                     .header("Authorization", "Bearer $currentAccess")
                     .build()
             }
 
-            val refreshToken = prefs.getRefreshToken().trim()
+            val refreshToken = tokenStore.getRefreshToken().trim()
             if (refreshToken.isEmpty()) {
                 return null
             }
 
-            if (refreshToken == SesionExpiradaManager.refreshMuerto) {
+            if (refreshToken == getRefreshMuerto()) {
                 return null
             }
 
-            val refreshUrl = "${RetrofitClient.BASE_URL}token/refresh/"
+            val baseUrl = baseUrlProvider().let { if (it.endsWith("/")) it else "$it/" }
+            val refreshUrl = "${baseUrl}token/refresh/"
             val mediaType = "application/json; charset=utf-8".toMediaType()
-            val requestJson = JSONObject().apply {
-                put("refresh", refreshToken)
-            }.toString()
+            val requestJson = gson.toJson(mapOf("refresh" to refreshToken))
 
             val refreshRequest = Request.Builder()
                 .url(refreshUrl)
@@ -80,72 +148,66 @@ class TokenAuthenticator(
                 .build()
 
             val refreshResponse = try {
-                RetrofitClient.cleanClient.newCall(refreshRequest).execute()
+                clientProvider().newCall(refreshRequest).execute()
             } catch (e: IOException) {
-                Log.w(TAG, "IOException al contactar endpoint de refresh: ${e.message}")
+                logWarn("IOException al contactar endpoint de refresh: ${e.message}")
                 return null
             } catch (e: Exception) {
-                Log.e(TAG, "Error inesperado al contactar endpoint de refresh: ${e.message}")
+                logError("Error inesperado al contactar endpoint de refresh: ${e.message}")
                 return null
             }
 
             refreshResponse.use { resp ->
                 val code = resp.code
                 if (code == 400 || code == 401) {
-                    Log.w(TAG, "Refresh token inválido o vencido (HTTP $code)")
-                    SesionExpiradaManager.marcarSesionMuerta(refreshToken)
+                    logWarn("Refresh token inválido o vencido (HTTP $code)")
+                    onSesionMuerta(refreshToken)
                     return null
                 }
 
                 if (code in 500..599) {
-                    Log.w(TAG, "Error de servidor en refresh (HTTP $code)")
+                    logWarn("Error de servidor en refresh (HTTP $code)")
                     return null
                 }
 
                 if (!resp.isSuccessful) {
-                    Log.w(TAG, "Refresh no exitoso (HTTP $code)")
+                    logWarn("Refresh no exitoso (HTTP $code)")
                     return null
                 }
 
                 val rawBody = resp.body?.string().orEmpty()
-                if (rawBody.isBlank()) {
-                    Log.w(TAG, "Cuerpo de respuesta vacío en refresh")
+                val parsed = parsearTokensRefresh(rawBody)
+                if (parsed == null) {
+                    logError("Respuesta de refresh inválida o sin access token")
                     return null
                 }
 
-                val (newAccess, newRefresh) = try {
-                    val json = JSONObject(rawBody)
-                    val access = json.optString("access", "").trim()
-                    val refresh = if (json.has("refresh") && !json.isNull("refresh")) {
-                        json.optString("refresh", "").trim()
-                    } else {
-                        null
-                    }
-                    Pair(access, refresh)
-                } catch (e: Exception) {
-                    Log.e(TAG, "Error al parsear JSON de refresh: ${e.message}")
-                    return null
-                }
-
-                if (newAccess.isEmpty()) {
-                    Log.w(TAG, "El token de acceso recibido está vacío")
-                    return null
-                }
-
-                prefs.saveAccessToken(newAccess)
+                val (newAccess, newRefresh) = parsed
+                tokenStore.saveAccessToken(newAccess)
                 if (!newRefresh.isNullOrEmpty()) {
-                    prefs.saveRefreshToken(newRefresh)
-                    FacialStorageManager(context).actualizarRefreshTokenSiCoincide(
-                        userId = prefs.getUserId(),
-                        nuevoRefreshToken = newRefresh
-                    )
+                    tokenStore.saveRefreshToken(newRefresh)
+                    tokenStore.onRefreshTokenRotado(tokenStore.getUserId(), newRefresh)
                 }
-                RetrofitClient.authToken = newAccess
+                onAuthTokenActualizado(newAccess)
 
                 return response.request.newBuilder()
                     .header("Authorization", "Bearer $newAccess")
                     .build()
             }
+        }
+    }
+
+    private fun logWarn(msg: String) {
+        try {
+            Log.w(TAG, msg)
+        } catch (_: RuntimeException) {
+        }
+    }
+
+    private fun logError(msg: String) {
+        try {
+            Log.e(TAG, msg)
+        } catch (_: RuntimeException) {
         }
     }
 }

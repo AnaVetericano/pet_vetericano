@@ -251,14 +251,18 @@ class SplashActivity : AppCompatActivity() {
         val userId = prefs.getUserId()
         val userRole = prefs.getUserRole()
 
-        val tieneToken = accessToken.isNotEmpty() || refreshToken.isNotEmpty()
-        val rolValido = userRole > 0
+        val destinoSesion = com.example.petvetericano.auth.SessionRouter.resolverDestino(
+            accessToken = accessToken,
+            refreshToken = refreshToken,
+            userId = userId,
+            userRole = userRole
+        )
 
-        if (tieneToken && userId > 0 && rolValido) {
+        if (destinoSesion != com.example.petvetericano.auth.SessionRouter.DestinoSesion.WELCOME) {
             if (accessToken.isNotEmpty()) {
                 RetrofitClient.authToken = accessToken
             }
-            val destino = if (userRole == inicio_sesion.ROL_VETERINARIO) {
+            val destino = if (destinoSesion == com.example.petvetericano.auth.SessionRouter.DestinoSesion.VETERINARIO) {
                 Intent(this, dahsboard_veterianrio::class.java)
             } else {
                 Intent(this, bienvenida::class.java)

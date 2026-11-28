@@ -100,8 +100,6 @@ class bienvenida : AppCompatActivity() {
                             prefs.saveAccessToken(acc)
                             if (ref.isNotEmpty()) {
                                 prefs.saveRefreshToken(ref)
-                                com.example.petvetericano.auth.GoogleLinkedSessionVault(this@bienvenida)
-                                    .actualizarRefreshTokenSiCoincide(prefs.getUserId(), ref)
                             }
                             RetrofitClient.authToken = acc
                             acc

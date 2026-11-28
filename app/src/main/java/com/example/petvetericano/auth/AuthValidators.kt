@@ -13,10 +13,19 @@ object AuthValidators {
     private val EMAIL_REGEX = Regex(
         "^[A-Za-z0-9+_.-]+@[A-Za-z0-9.-]+\\.[A-Za-z]{2,}$"
     )
+    private val IDENTIFICACION_DIGITOS_REGEX = Regex("^[0-9]{5,20}$")
     private val TELEFONO_DIGITOS_REGEX = Regex("^[0-9]{10,15}$")
     private val OTP_REGEX = Regex("^[0-9]{6}$")
     private val MAYUSCULA_REGEX = Regex("[A-Z]")
     private val DIGITO_REGEX = Regex("[0-9]")
+
+    data class ResultadoValidacionDatosGoogle(
+        val errorIdentificacion: String? = null,
+        val errorTelefono: String? = null
+    ) {
+        val esValido: Boolean
+            get() = errorIdentificacion == null && errorTelefono == null
+    }
 
     data class ResultadoValidacionRegistro(
         val errorNombre: String? = null,
@@ -51,9 +60,37 @@ object AuthValidators {
         return limpio.isNotEmpty() && limpio.length <= 150 && EMAIL_REGEX.matches(limpio)
     }
 
+    fun esIdentificacionValida(identificacion: String?): Boolean {
+        val limpio = identificacion?.trim().orEmpty()
+        return IDENTIFICACION_DIGITOS_REGEX.matches(limpio)
+    }
+
     fun esTelefonoValido(telefono: String?): Boolean {
         val limpio = telefono?.trim().orEmpty()
         return TELEFONO_DIGITOS_REGEX.matches(limpio)
+    }
+
+    fun validarDatosComplementariosGoogle(
+        identificacion: String,
+        telefono: String
+    ): ResultadoValidacionDatosGoogle {
+        val docLimpio = identificacion.trim()
+        val telLimpio = telefono.trim()
+
+        val errorDoc = when {
+            docLimpio.isEmpty() -> "Ingresa tu número de identificación"
+            !esIdentificacionValida(docLimpio) -> "Ingresa una identificación válida (5 a 20 dígitos)"
+            else -> null
+        }
+        val errorTel = when {
+            telLimpio.isEmpty() -> "Ingresa tu número de teléfono"
+            !esTelefonoValido(telLimpio) -> "Ingresa un número de teléfono válido (10 a 15 dígitos)"
+            else -> null
+        }
+        return ResultadoValidacionDatosGoogle(
+            errorIdentificacion = errorDoc,
+            errorTelefono = errorTel
+        )
     }
 
     fun esPasswordFuerte(password: String?): Boolean {

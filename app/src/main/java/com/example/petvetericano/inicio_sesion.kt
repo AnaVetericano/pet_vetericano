@@ -360,16 +360,6 @@ class inicio_sesion : AppCompatActivity() {
                                 telefono = datos.telefono,
                                 matriculaProfesional = datos.matriculaProfesional
                             )
-                            com.example.petvetericano.auth.GoogleLinkedSessionVault(this@inicio_sesion)
-                                .actualizarRefreshTokenSiCoincide(
-                                    userId = datos.idUsuario,
-                                    nuevoRefreshToken = refreshToken,
-                                    nombre = datos.nombre,
-                                    apellido = datos.apellido,
-                                    fotoPerfil = datos.fotoPerfil ?: datos.foto,
-                                    telefono = datos.telefono?.trim(),
-                                    matriculaProfesional = datos.matriculaProfesional
-                                )
                         }
                         prefs.saveUserId(datos.idUsuario)
                         prefs.saveUserRole(datos.idRol)

@@ -10,7 +10,6 @@ import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.replaceText
 import androidx.test.espresso.action.ViewActions.scrollTo
-import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.intent.Intents
 import androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent
@@ -21,6 +20,7 @@ import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.example.petvetericano.GoogleAuthHelper
 import com.example.petvetericano.R
 import com.example.petvetericano.SharedPreferencesManager
+import com.example.petvetericano.bienvenida
 import com.example.petvetericano.dahsboard_veterianrio
 import com.example.petvetericano.inicio_sesion
 import com.example.petvetericano.network.RetrofitClient
@@ -29,6 +29,7 @@ import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
 import org.junit.After
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
@@ -44,7 +45,6 @@ class GoogleSignInPersistentUiTest {
     fun setUp() {
         appContext = ApplicationProvider.getApplicationContext()
         SharedPreferencesManager(appContext).clearSession()
-        GoogleLinkedSessionVault(appContext).limpiarTodo()
         RetrofitClient.authToken = null
 
         server = MockWebServer()
@@ -56,6 +56,8 @@ class GoogleSignInPersistentUiTest {
         Intents.init()
         Intents.intending(hasComponent(dahsboard_veterianrio::class.java.name))
             .respondWith(Instrumentation.ActivityResult(Activity.RESULT_OK, null))
+        Intents.intending(hasComponent(bienvenida::class.java.name))
+            .respondWith(Instrumentation.ActivityResult(Activity.RESULT_OK, null))
     }
 
     @After
@@ -64,14 +66,12 @@ class GoogleSignInPersistentUiTest {
         GoogleAuthHelper.restaurarConfiguracion()
         RetrofitClient.restaurarConfiguracion()
         SharedPreferencesManager(appContext).clearSession()
-        GoogleLinkedSessionVault(appContext).limpiarTodo()
         server.shutdown()
     }
 
     @Test
-    fun googleSignInOAuth_primerInicio_logout_segundoInicio_noPideContrasena() {
+    fun googleSignInEstandar_usuarioCompleto_primerInicio_logout_segundoInicio_sinContrasena() {
         val jwt = "eyJhbGciOiJSUzI1NiJ9.eyJlbWFpbCI6ImpkcXVpbnRlcm9AdW5pY2F1Y2EuZWR1LmNvIn0.sigval"
-        var passwordPrompts = 0
         GoogleAuthHelper.configurarParaPruebas(
             proveedorToken = {
                 GoogleAuthHelper.ResultadoObtenerToken.Exito(
@@ -82,8 +82,7 @@ class GoogleSignInPersistentUiTest {
                         apellido = "Quintero"
                     )
                 )
-            },
-            onDialogoPasswordMostrado = { passwordPrompts++ }
+            }
         )
 
         val loginBody1 = """
@@ -96,121 +95,204 @@ class GoogleSignInPersistentUiTest {
               "telefono": "3123456789",
               "matricula_profesional": "MV-9001",
               "id_rol": 3,
-              "es_nuevo_usuario": true,
+              "es_nuevo_usuario": false,
               "tokens": {"refresh": "ref-google-1", "access": "acc-google-1"}
             }
         """.trimIndent()
-        val loginBody2 = loginBody1.replace("\"es_nuevo_usuario\": true", "\"es_nuevo_usuario\": false")
+        val loginBody2 = loginBody1
             .replace("acc-google-1", "acc-google-2")
             .replace("ref-google-1", "ref-google-2")
+        val perfilCompleto = """
+            {
+              "id_usuario": 42,
+              "email": "jdquintero@unicauca.edu.co",
+              "nombre": "Juan",
+              "apellido": "Quintero",
+              "identificacion": "1061789123",
+              "telefono": "3123456789",
+              "matricula_profesional": "MV-9001"
+            }
+        """.trimIndent()
 
+        // 1er inicio: google-login + GET perfil
         server.enqueue(MockResponse().setResponseCode(200).setBody(loginBody1))
+        server.enqueue(MockResponse().setResponseCode(200).setBody(perfilCompleto))
+        // 2do inicio tras logout: google-login + GET perfil
         server.enqueue(MockResponse().setResponseCode(200).setBody(loginBody2))
+        server.enqueue(MockResponse().setResponseCode(200).setBody(perfilCompleto))
 
-        // 1er inicio con Google
         ActivityScenario.launch(inicio_sesion::class.java).use {
             onView(withId(R.id.btnGoogleLogin)).perform(scrollTo(), click())
             AuthUiTestHelper.esperarHasta {
                 SharedPreferencesManager(appContext).getAccessToken() == "acc-google-1"
             }
         }
-        assertEquals(0, passwordPrompts)
 
-        // Simula cerrar sesión desde Perfil Profesional
+        // Cierre de sesión normal
         runBlocking { GoogleAuthHelper.cerrarSesionGoogle(appContext) }
         SharedPreferencesManager(appContext).clearSession()
         RetrofitClient.authToken = null
         assertTrue(SharedPreferencesManager(appContext).getAccessToken().isEmpty())
 
-        // 2do inicio con Google tras logout: no debe pedir contraseña
+        // 2do inicio con Google tras logout: entra directo sin pedir contraseña ni modal de datos
         ActivityScenario.launch(inicio_sesion::class.java).use {
             onView(withId(R.id.btnGoogleLogin)).perform(scrollTo(), click())
             AuthUiTestHelper.esperarHasta {
                 SharedPreferencesManager(appContext).getAccessToken() == "acc-google-2"
             }
         }
-        assertEquals(0, passwordPrompts)
         AuthUiTestHelper.esperarAsercion {
             Intents.intended(hasComponent(dahsboard_veterianrio::class.java.name), Intents.times(2))
         }
     }
 
     @Test
-    fun respaldoGoogleMD3_primeraVerificacionUnaVez_trasLogoutNoVuelveAPedirContrasena() {
-        var passwordPrompts = 0
+    fun googleSignInEstandar_primerIngresoSinTelefonoNiIdentificacion_exigeCompletarDatosYEntra() {
+        val jwt = "eyJhbGciOiJSUzI1NiJ9.eyJlbWFpbCI6Im51ZXZvQGdtYWlsLmNvbSJ9.signuevo"
         GoogleAuthHelper.configurarParaPruebas(
             proveedorToken = {
-                GoogleAuthHelper.ResultadoObtenerToken.Error(
-                    mensajeUsuario = "Fallo simulado OAuth [28444]",
-                    usarRespaldoSelectorMD3 = true
+                GoogleAuthHelper.ResultadoObtenerToken.Exito(
+                    GoogleAuthHelper.CredencialGoogleExtraida(
+                        idToken = jwt,
+                        email = "nuevo@gmail.com",
+                        nombre = "Laura",
+                        apellido = "Gómez"
+                    )
                 )
-            },
-            selectorCuentaMd3 = {
-                GoogleAuthHelper.CredencialGoogleExtraida(
-                    idToken = "",
-                    email = "jdquintero@unicauca.edu.co",
-                    nombre = "Juan",
-                    apellido = "Quintero"
-                )
-            },
-            onDialogoPasswordMostrado = { passwordPrompts++ }
+            }
         )
 
-        // 1er login: POST /api/usuarios/login/ tras ingresar contraseña una sola vez
         server.enqueue(
             MockResponse().setResponseCode(200).setBody(
                 """
                 {
-                  "mensaje": "Bienvenido, Juan Quintero",
-                  "email": "jdquintero@unicauca.edu.co",
-                  "id_usuario": 42,
-                  "nombre": "Juan",
-                  "apellido": "Quintero",
-                  "telefono": "3123456789",
-                  "matricula_profesional": "MV-9001",
-                  "id_rol": 3,
-                  "tokens": {"refresh": "ref-vinculado-1", "access": "acc-vinculado-1"}
+                  "mensaje": "Bienvenido, Laura Gómez",
+                  "email": "nuevo@gmail.com",
+                  "id_usuario": 77,
+                  "nombre": "Laura",
+                  "apellido": "Gómez",
+                  "telefono": null,
+                  "id_rol": 4,
+                  "es_nuevo_usuario": true,
+                  "tokens": {"refresh": "ref-nuevo-1", "access": "acc-nuevo-1"}
                 }
                 """.trimIndent()
             )
         )
-        // 2do login tras logout: POST /api/token/refresh/ automático sin pedir contraseña
         server.enqueue(
             MockResponse().setResponseCode(200).setBody(
-                """{"access":"acc-vinculado-2","refresh":"ref-vinculado-2"}"""
+                """
+                {
+                  "id_usuario": 77,
+                  "email": "nuevo@gmail.com",
+                  "nombre": "Laura",
+                  "apellido": "Gómez",
+                  "identificacion": null,
+                  "telefono": null
+                }
+                """.trimIndent()
+            )
+        )
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """
+                {
+                  "id_usuario": 77,
+                  "email": "nuevo@gmail.com",
+                  "nombre": "Laura",
+                  "apellido": "Gómez",
+                  "identificacion": "1061700800",
+                  "telefono": "3104567890"
+                }
+                """.trimIndent()
             )
         )
 
-        // 1er inicio: solicita contraseña una sola vez y guarda vínculo cifrado en Android Keystore
         ActivityScenario.launch(inicio_sesion::class.java).use {
             onView(withId(R.id.btnGoogleLogin)).perform(scrollTo(), click())
-            onView(withId(R.id.edtPasswordGoogleDialog)).inRoot(isDialog()).check(matches(isDisplayed()))
-            onView(withId(R.id.edtPasswordGoogleDialog))
+
+            onView(withId(R.id.edtIdentificacionGoogle)).inRoot(isDialog()).check(matches(isDisplayed()))
+            onView(withId(R.id.edtIdentificacionGoogle))
                 .inRoot(isDialog())
-                .perform(replaceText("ClaveSegura123"), closeSoftKeyboard())
-            onView(withId(R.id.btnConfirmarDialogGoogle)).inRoot(isDialog()).perform(click())
+                .perform(replaceText("1061700800"), closeSoftKeyboard())
+            onView(withId(R.id.edtTelefonoGoogle))
+                .inRoot(isDialog())
+                .perform(replaceText("3104567890"), closeSoftKeyboard())
+            onView(withId(R.id.btnGuardarDatosGoogle)).inRoot(isDialog()).perform(click())
+
             AuthUiTestHelper.esperarHasta {
-                SharedPreferencesManager(appContext).getAccessToken() == "acc-vinculado-1"
+                SharedPreferencesManager(appContext).getAccessToken() == "acc-nuevo-1"
             }
         }
-        assertEquals(1, passwordPrompts)
 
-        // Cierre de sesión desde Perfil Profesional
-        runBlocking { GoogleAuthHelper.cerrarSesionGoogle(appContext) }
-        SharedPreferencesManager(appContext).clearSession()
-        RetrofitClient.authToken = null
+        val prefs = SharedPreferencesManager(appContext)
+        assertEquals("1061700800", prefs.getUserIdentification())
+        assertEquals("3104567890", prefs.getUserPhone())
+        AuthUiTestHelper.esperarAsercion {
+            Intents.intended(hasComponent(bienvenida::class.java.name), Intents.times(1))
+        }
+    }
 
-        // 2do inicio con la misma cuenta: NO debe abrir el modal de contraseña
+    @Test
+    fun googleSignInEstandar_cancelarDialogoCompletarDatos_noPersisteSesion() {
+        val jwt = "eyJhbGciOiJSUzI1NiJ9.eyJlbWFpbCI6ImNhbmNlbGFkb0BnbWFpbC5jb20ifQ.sigcancel"
+        GoogleAuthHelper.configurarParaPruebas(
+            proveedorToken = {
+                GoogleAuthHelper.ResultadoObtenerToken.Exito(
+                    GoogleAuthHelper.CredencialGoogleExtraida(
+                        idToken = jwt,
+                        email = "cancelado@gmail.com",
+                        nombre = "Carlos",
+                        apellido = "Ruiz"
+                    )
+                )
+            }
+        )
+
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """
+                {
+                  "mensaje": "Bienvenido, Carlos Ruiz",
+                  "email": "cancelado@gmail.com",
+                  "id_usuario": 88,
+                  "nombre": "Carlos",
+                  "apellido": "Ruiz",
+                  "telefono": null,
+                  "id_rol": 4,
+                  "es_nuevo_usuario": true,
+                  "tokens": {"refresh": "ref-cancel", "access": "acc-cancel"}
+                }
+                """.trimIndent()
+            )
+        )
+        server.enqueue(
+            MockResponse().setResponseCode(200).setBody(
+                """
+                {
+                  "id_usuario": 88,
+                  "email": "cancelado@gmail.com",
+                  "nombre": "Carlos",
+                  "apellido": "Ruiz",
+                  "identificacion": null,
+                  "telefono": null
+                }
+                """.trimIndent()
+            )
+        )
+
         ActivityScenario.launch(inicio_sesion::class.java).use {
             onView(withId(R.id.btnGoogleLogin)).perform(scrollTo(), click())
+
+            onView(withId(R.id.edtIdentificacionGoogle)).inRoot(isDialog()).check(matches(isDisplayed()))
+            onView(withId(R.id.btnCancelarCompletarGoogle)).inRoot(isDialog()).perform(click())
+
             AuthUiTestHelper.esperarHasta {
-                SharedPreferencesManager(appContext).getAccessToken() == "acc-vinculado-2"
+                RetrofitClient.authToken == null
             }
         }
-        assertEquals("No debe volver a pedir contraseña en el segundo inicio", 1, passwordPrompts)
-        assertEquals("ref-vinculado-2", SharedPreferencesManager(appContext).getRefreshToken())
-        AuthUiTestHelper.esperarAsercion {
-            Intents.intended(hasComponent(dahsboard_veterianrio::class.java.name), Intents.times(2))
-        }
+
+        assertTrue(SharedPreferencesManager(appContext).getAccessToken().isEmpty())
+        assertNull(RetrofitClient.authToken)
     }
 }

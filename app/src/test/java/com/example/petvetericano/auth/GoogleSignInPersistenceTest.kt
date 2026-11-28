@@ -2,7 +2,9 @@ package com.example.petvetericano.auth
 
 import com.example.petvetericano.GoogleAuthHelper
 import com.example.petvetericano.inicio_sesion
+import com.example.petvetericano.models.CompletarDatosGoogleRequest
 import com.example.petvetericano.network.RetrofitClient
+import com.google.gson.GsonBuilder
 import kotlinx.coroutines.test.runTest
 import okhttp3.mockwebserver.MockResponse
 import okhttp3.mockwebserver.MockWebServer
@@ -14,57 +16,10 @@ import org.junit.Assert.assertNull
 import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
-import java.util.Locale
 
 class GoogleSignInPersistenceTest {
 
     private lateinit var server: MockWebServer
-
-    private class FakeAlmacenVinculoGoogle : AlmacenVinculoGoogle {
-        private val store = mutableMapOf<String, CuentaGoogleVinculada>()
-
-        override fun guardarCuentaVinculada(cuenta: CuentaGoogleVinculada): Boolean {
-            val key = cuenta.email.trim().lowercase(Locale.ROOT)
-            if (key.isEmpty() || cuenta.refreshToken.isBlank()) return false
-            store[key] = cuenta.copy(email = key)
-            return true
-        }
-
-        override fun obtenerCuentaVinculada(email: String): CuentaGoogleVinculada? =
-            store[email.trim().lowercase(Locale.ROOT)]
-
-        override fun actualizarRefreshTokenSiCoincide(
-            userId: Int,
-            nuevoRefreshToken: String,
-            nombre: String?,
-            apellido: String?,
-            fotoPerfil: String?,
-            telefono: String?,
-            matriculaProfesional: String?
-        ) {
-            for ((k, v) in store.entries.toList()) {
-                if (v.userId == userId) {
-                    store[k] = v.copy(
-                        refreshToken = nuevoRefreshToken.trim(),
-                        nombre = nombre?.takeIf { it.isNotBlank() } ?: v.nombre,
-                        apellido = apellido?.takeIf { it.isNotBlank() } ?: v.apellido,
-                        fotoPerfil = fotoPerfil ?: v.fotoPerfil,
-                        telefono = telefono?.takeIf { it.isNotBlank() } ?: v.telefono,
-                        matriculaProfesional = matriculaProfesional?.takeIf { it.isNotBlank() }
-                            ?: v.matriculaProfesional
-                    )
-                }
-            }
-        }
-
-        override fun eliminarCuentaVinculada(email: String) {
-            store.remove(email.trim().lowercase(Locale.ROOT))
-        }
-
-        override fun limpiarTodo() {
-            store.clear()
-        }
-    }
 
     @Before
     fun setUp() {
@@ -86,7 +41,7 @@ class GoogleSignInPersistenceTest {
     }
 
     @Test
-    fun googleSignInOAuth_primerInicio_logout_segundoInicio_sinPedirContrasena() = runTest {
+    fun googleSignInEstandar_primerInicio_logout_segundoInicio_sinContrasena() = runTest {
         val jwtGoogle1 = "eyJhbGciOiJSUzI1NiJ9.eyJlbWFpbCI6ImpkcXVpbnRlcm9AdW5pY2F1Y2EuZWR1LmNvIn0.sig1"
         val jwtGoogle2 = "eyJhbGciOiJSUzI1NiJ9.eyJlbWFpbCI6ImpkcXVpbnRlcm9AdW5pY2F1Y2EuZWR1LmNvIn0.sig2"
 
@@ -127,11 +82,6 @@ class GoogleSignInPersistenceTest {
             )
         )
 
-        val almacen = FakeAlmacenVinculoGoogle()
-        var dialogosPasswordMostrados = 0
-        GoogleAuthHelper.onDialogoPasswordMostradoPrueba = { dialogosPasswordMostrados++ }
-
-        // 1er inicio con Google
         val req1 = GoogleAuthHelper.construirGoogleLoginRequest(
             GoogleAuthHelper.CredencialGoogleExtraida(
                 idToken = jwtGoogle1,
@@ -140,161 +90,131 @@ class GoogleSignInPersistenceTest {
                 apellido = "Quintero"
             )
         )
+        assertNull(req1.email)
+        assertNull(req1.nombre)
+        assertNull(req1.apellido)
+
         val resp1 = RetrofitClient.ejecutarConRespaldoLocalDebug { it.loginConGoogle(req1) }
         assertTrue(resp1.isSuccessful)
         val datos1 = resp1.body()!!
         assertEquals(inicio_sesion.ROL_VETERINARIO, datos1.idRol)
-        assertTrue(
-            almacen.guardarCuentaVinculada(
-                CuentaGoogleVinculada(
-                    userId = datos1.idUsuario,
-                    email = datos1.email,
-                    nombre = datos1.nombre.orEmpty(),
-                    apellido = datos1.apellido.orEmpty(),
-                    telefono = datos1.telefono.orEmpty(),
-                    fotoPerfil = "",
-                    matriculaProfesional = datos1.matriculaProfesional.orEmpty(),
-                    idRol = datos1.idRol,
-                    refreshToken = datos1.tokens.refresh
-                )
-            )
-        )
+        assertEquals("access-google-1", datos1.tokens.access)
 
-        // Simula cierre de sesión (limpia token en memoria, pero conserva la bóveda Google cifrada)
+        val recorded1 = server.takeRequest()
+        assertEquals("/api/usuarios/google-login/", recorded1.path)
+        val body1 = recorded1.body.readUtf8()
+        assertTrue(body1.contains(jwtGoogle1))
+
+        // Simula cierre de sesión
         RetrofitClient.authToken = null
-        assertNotNull(almacen.obtenerCuentaVinculada("jdquintero@unicauca.edu.co"))
 
-        // 2do inicio con Google tras logout
+        // 2do inicio con Google tras logout: nuevo ID Token directo contra /api/usuarios/google-login/
         val req2 = GoogleAuthHelper.construirGoogleLoginRequest(
-            GoogleAuthHelper.CredencialGoogleExtraida(
-                idToken = jwtGoogle2,
-                email = "jdquintero@unicauca.edu.co"
-            )
+            GoogleAuthHelper.CredencialGoogleExtraida(idToken = jwtGoogle2)
         )
         val resp2 = RetrofitClient.ejecutarConRespaldoLocalDebug { it.loginConGoogle(req2) }
         assertTrue(resp2.isSuccessful)
         val datos2 = resp2.body()!!
         assertEquals(false, datos2.esNuevoUsuario)
         assertEquals("access-google-2", datos2.tokens.access)
-        assertEquals(0, dialogosPasswordMostrados)
     }
 
     @Test
-    fun respaldoGoogleVinculado_trasLogout_reanudaConRefreshSinPedirContrasena() = runTest {
-        val almacen = FakeAlmacenVinculoGoogle()
-        almacen.guardarCuentaVinculada(
-            CuentaGoogleVinculada(
-                userId = 42,
-                email = "jdquintero@unicauca.edu.co",
-                nombre = "Juan",
-                apellido = "Quintero",
-                telefono = "3123456789",
-                fotoPerfil = "https://cdn.vetericano.test/vet.jpg",
-                matriculaProfesional = "MV-9001",
-                idRol = inicio_sesion.ROL_VETERINARIO,
-                refreshToken = "refresh-vinculado-v1"
+    fun requiereCompletarDatosPerfil_detectaFaltantesDeIdentificacionOTelefono() {
+        assertTrue(GoogleAuthHelper.requiereCompletarDatosPerfil(null, null))
+        assertTrue(GoogleAuthHelper.requiereCompletarDatosPerfil("", ""))
+        assertTrue(GoogleAuthHelper.requiereCompletarDatosPerfil("   ", "3123456789"))
+        assertTrue(GoogleAuthHelper.requiereCompletarDatosPerfil("1061789123", null))
+        assertTrue(GoogleAuthHelper.requiereCompletarDatosPerfil("1061789123", "   "))
+        assertFalse(GoogleAuthHelper.requiereCompletarDatosPerfil("1061789123", "3123456789"))
+    }
+
+    @Test
+    fun validarDatosComplementariosGoogle_validaFormatoDocumentoYTelefono() {
+        val vacios = AuthValidators.validarDatosComplementariosGoogle("", "")
+        assertFalse(vacios.esValido)
+        assertNotNull(vacios.errorIdentificacion)
+        assertNotNull(vacios.errorTelefono)
+
+        val docCorto = AuthValidators.validarDatosComplementariosGoogle("123", "3123456789")
+        assertFalse(docCorto.esValido)
+        assertNotNull(docCorto.errorIdentificacion)
+        assertNull(docCorto.errorTelefono)
+
+        val docLetras = AuthValidators.validarDatosComplementariosGoogle("ABC12345", "3123456789")
+        assertFalse(docLetras.esValido)
+        assertNotNull(docLetras.errorIdentificacion)
+
+        val telCorto = AuthValidators.validarDatosComplementariosGoogle("1061789123", "312345")
+        assertFalse(telCorto.esValido)
+        assertNull(telCorto.errorIdentificacion)
+        assertNotNull(telCorto.errorTelefono)
+
+        val valido10 = AuthValidators.validarDatosComplementariosGoogle("1061789123", "3123456789")
+        assertTrue(valido10.esValido)
+        assertNull(valido10.errorIdentificacion)
+        assertNull(valido10.errorTelefono)
+
+        val valido15 = AuthValidators.validarDatosComplementariosGoogle("10617891234567890123", "573123456789012")
+        assertTrue(valido15.esValido)
+    }
+
+    @Test
+    fun completarDatosGoogleRequest_serializaSoloIdentificacionYTelefonoSinNulosExtra() {
+        val gsonConNulos = GsonBuilder().serializeNulls().create()
+        val json = gsonConNulos.toJson(
+            CompletarDatosGoogleRequest(
+                identificacion = "1061789123",
+                telefono = "3123456789"
             )
         )
+        assertEquals("""{"identificacion":"1061789123","telefono":"3123456789"}""", json)
+        assertFalse(json.contains("foto_perfil"))
+        assertFalse(json.contains("email"))
+    }
+
+    @Test
+    fun completarDatosPerfil_apiPatchExitosoYErrorIdentificacionDuplicada400() = runTest {
+        RetrofitClient.authToken = "access-google-temp"
 
         server.enqueue(
             MockResponse().setResponseCode(200).setBody(
-                """{"access":"access-nuevo-v2","refresh":"refresh-rotado-v2"}"""
+                """
+                {
+                  "id_usuario": 55,
+                  "email": "ciudadano@gmail.com",
+                  "nombre": "Laura",
+                  "apellido": "Rios",
+                  "identificacion": "1061789123",
+                  "telefono": "3123456789",
+                  "foto_perfil": "https://lh3.googleusercontent.com/a/avatar"
+                }
+                """.trimIndent()
             )
         )
-
-        val cuenta = almacen.obtenerCuentaVinculada("JDQUINTERO@UNICAUCA.EDU.CO")
-        assertNotNull(cuenta)
-
-        val resultado = GoogleAuthHelper.reanudarSesionGoogleVinculada(cuenta!!, almacen)
-        assertTrue("Debe reanudar sesión sin pedir contraseña", resultado is GoogleAuthHelper.ResultadoReanudarVinculo.Exito)
-
-        val exito = resultado as GoogleAuthHelper.ResultadoReanudarVinculo.Exito
-        assertEquals("access-nuevo-v2", exito.loginResponse.tokens.access)
-        assertEquals("refresh-rotado-v2", exito.loginResponse.tokens.refresh)
-        assertEquals(inicio_sesion.ROL_VETERINARIO, exito.loginResponse.idRol)
-        assertEquals(false, exito.loginResponse.esNuevoUsuario)
-
-        // Verifica que el refresh rotado quedó persistido para el siguiente logout/login
-        val actualizada = almacen.obtenerCuentaVinculada("jdquintero@unicauca.edu.co")
-        assertEquals("refresh-rotado-v2", actualizada?.refreshToken)
-
-        val recorded = server.takeRequest()
-        assertEquals("/api/token/refresh/", recorded.path)
-        assertTrue(recorded.body.readUtf8().contains("refresh-vinculado-v1"))
-    }
-
-    @Test
-    fun respaldoGoogleVinculado_cuentaDesactivada401_eliminaVinculoYRechazaSinPedirPassword() = runTest {
-        val almacen = FakeAlmacenVinculoGoogle()
-        val cuenta = CuentaGoogleVinculada(
-            userId = 42,
-            email = "inactivo@unicauca.edu.co",
-            nombre = "Juan",
-            apellido = "Quintero",
-            telefono = "",
-            fotoPerfil = "",
-            matriculaProfesional = "",
-            idRol = 4,
-            refreshToken = "refresh-inactivo"
-        )
-        almacen.guardarCuentaVinculada(cuenta)
-
         server.enqueue(
-            MockResponse().setResponseCode(401).setBody(
-                """{"detail":"El usuario está desactivado."}"""
+            MockResponse().setResponseCode(400).setBody(
+                """{"identificacion":["Ya existe un usuario registrado con este número de identificación."]}"""
             )
         )
 
-        val resultado = GoogleAuthHelper.reanudarSesionGoogleVinculada(cuenta, almacen)
-        assertTrue(resultado is GoogleAuthHelper.ResultadoReanudarVinculo.CuentaRechazada)
-        assertNull("Debe purgar vínculo de cuenta desactivada", almacen.obtenerCuentaVinculada(cuenta.email))
-    }
+        val respOk = RetrofitClient.ejecutarConRespaldoLocalDebug {
+            it.completarDatosPerfil(CompletarDatosGoogleRequest("1061789123", "3123456789"))
+        }
+        assertTrue(respOk.isSuccessful)
+        assertEquals("1061789123", respOk.body()?.identificacion)
+        assertEquals("3123456789", respOk.body()?.telefono)
 
-    @Test
-    fun respaldoGoogleVinculado_tokenExpirado401_limpiaVinculoYSolicitaReverificacion() = runTest {
-        val almacen = FakeAlmacenVinculoGoogle()
-        val cuenta = CuentaGoogleVinculada(
-            userId = 42,
-            email = "expirado@unicauca.edu.co",
-            nombre = "Juan",
-            apellido = "Quintero",
-            telefono = "",
-            fotoPerfil = "",
-            matriculaProfesional = "",
-            idRol = 3,
-            refreshToken = "refresh-vencido"
-        )
-        almacen.guardarCuentaVinculada(cuenta)
+        val reqOk = server.takeRequest()
+        assertEquals("PATCH", reqOk.method)
+        assertEquals("/api/peticiones/perfil/", reqOk.path)
 
-        server.enqueue(
-            MockResponse().setResponseCode(401).setBody(
-                """{"detail":"Token is invalid or expired"}"""
-            )
-        )
-
-        val resultado = GoogleAuthHelper.reanudarSesionGoogleVinculada(cuenta, almacen)
-        assertTrue(resultado is GoogleAuthHelper.ResultadoReanudarVinculo.RequiereVerificacionPassword)
-        assertNull(almacen.obtenerCuentaVinculada(cuenta.email))
-    }
-
-    @Test
-    fun bovedaGoogle_serializacionNuncaIncluyeContrasena() {
-        val mapa = mapOf(
-            "jdquintero@unicauca.edu.co" to CuentaGoogleVinculada(
-                userId = 42,
-                email = "jdquintero@unicauca.edu.co",
-                nombre = "Juan",
-                apellido = "Quintero",
-                telefono = "3123456789",
-                fotoPerfil = "",
-                matriculaProfesional = "MV-1",
-                idRol = 3,
-                refreshToken = "jwt-refresh-seguro"
-            )
-        )
-        val json = GoogleLinkedSessionVault.serializarMapaAJson(mapa)
-        assertFalse(json.contains("password", ignoreCase = true))
-        val restaurado = GoogleLinkedSessionVault.deserializarMapaDesdeJson(json)
-        assertEquals("jwt-refresh-seguro", restaurado["jdquintero@unicauca.edu.co"]?.refreshToken)
+        val respDup = RetrofitClient.ejecutarConRespaldoLocalDebug {
+            it.completarDatosPerfil(CompletarDatosGoogleRequest("1061789123", "3123456789"))
+        }
+        assertFalse(respDup.isSuccessful)
+        assertEquals(400, respDup.code())
+        val parsed = AuthValidators.parsearErrorRegistroHttp(respDup.code(), respDup.errorBody()?.string())
+        assertTrue(parsed.errorDocumento?.contains("identificación", ignoreCase = true) == true)
     }
 }

@@ -35,18 +35,18 @@
                     android:src="@drawable/ic_google" />
 
                 <TextView
-                    android:id="@+id/tvTituloDialogGoogle"
+                    android:id="@+id/tvTituloCompletarGoogle"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
                     android:fontFamily="@font/nunito_display"
-                    android:text="@string/lbl_vincular_cuenta_existente"
+                    android:text="@string/google_completar_datos_titulo"
                     android:textColor="@color/blue"
                     android:textSize="20sp"
                     android:textStyle="bold" />
 
                 <TextView
-                    android:id="@+id/btnCerrarDialogGoogle"
+                    android:id="@+id/btnCerrarCompletarGoogle"
                     android:layout_width="36dp"
                     android:layout_height="36dp"
                     android:background="?attr/selectableItemBackgroundBorderless"
@@ -59,9 +59,8 @@
                     android:textStyle="bold" />
             </LinearLayout>
 
-            <!-- Badge del correo seleccionado -->
+            <!-- Badge del correo autenticado con Google -->
             <com.google.android.material.card.MaterialCardView
-                android:id="@+id/cardEmailBadgeGoogle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
@@ -82,11 +81,12 @@
                     <ImageView
                         android:layout_width="18dp"
                         android:layout_height="18dp"
+                        android:contentDescription="@string/imgemail"
                         android:src="@drawable/mail"
                         app:tint="@color/blue" />
 
                     <TextView
-                        android:id="@+id/tvEmailSeleccionadoGoogle"
+                        android:id="@+id/tvEmailCompletarGoogle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="10dp"
@@ -102,23 +102,23 @@
 
             <!-- Mensaje descriptivo -->
             <TextView
-                android:id="@+id/tvMensajeDialogGoogle"
+                android:id="@+id/tvMensajeCompletarGoogle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="14dp"
                 android:fontFamily="@font/nunito"
                 android:lineSpacingExtra="2dp"
-                android:text="@string/lbl_esta_cuenta_ya_esta_registrada"
+                android:text="@string/google_completar_datos_mensaje"
                 android:textColor="@color/text_secondary"
                 android:textSize="14sp" />
 
-            <!-- Input MD3 con Ojito (password_toggle) para visualizar contraseña -->
+            <!-- Documento de identidad / Cédula -->
             <com.google.android.material.textfield.TextInputLayout
-                android:id="@+id/tilPasswordGoogleDialog"
+                android:id="@+id/tilIdentificacionGoogle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="16dp"
-                android:hint="@string/ingresar_contrase_a"
+                android:hint="@string/hint_documento_identidad"
                 app:boxBackgroundColor="@color/input_background"
                 app:boxBackgroundMode="outline"
                 app:boxCornerRadiusBottomEnd="16dp"
@@ -128,48 +128,72 @@
                 app:boxStrokeColor="@color/selector_input_stroke"
                 app:boxStrokeWidth="1.5dp"
                 app:boxStrokeWidthFocused="2dp"
-                app:endIconMode="password_toggle"
-                app:endIconTint="@color/blue"
                 app:errorEnabled="true"
                 app:hintTextColor="@color/blue"
-                app:startIconDrawable="@drawable/lock_icon"
+                app:startIconDrawable="@drawable/id_card"
                 app:startIconTint="@color/blue">
 
                 <com.google.android.material.textfield.TextInputEditText
-                    android:id="@+id/edtPasswordGoogleDialog"
+                    android:id="@+id/edtIdentificacionGoogle"
                     android:layout_width="match_parent"
                     android:layout_height="56dp"
                     android:background="@null"
                     android:fontFamily="@font/nunito"
-                    android:inputType="textPassword"
+                    android:imeOptions="actionNext"
+                    android:inputType="number"
+                    android:maxLength="20"
                     android:maxLines="1"
                     android:singleLine="true"
                     android:textColor="@color/text_primary"
                     android:textSize="15sp" />
             </com.google.android.material.textfield.TextInputLayout>
 
-            <!-- Enlace a recuperar contraseña si no la recuerda -->
-            <TextView
-                android:id="@+id/tvOlvidastePasswordGoogle"
-                android:layout_width="wrap_content"
+            <!-- Número de teléfono -->
+            <com.google.android.material.textfield.TextInputLayout
+                android:id="@+id/tilTelefonoGoogle"
+                android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_gravity="end"
-                android:fontFamily="@font/nunito"
-                android:padding="4dp"
-                android:text="@string/recoverPassword"
-                android:textColor="@color/blue"
-                android:textSize="13sp"
-                android:textStyle="bold" />
+                android:layout_marginTop="10dp"
+                android:hint="@string/hint_telefono"
+                app:boxBackgroundColor="@color/input_background"
+                app:boxBackgroundMode="outline"
+                app:boxCornerRadiusBottomEnd="16dp"
+                app:boxCornerRadiusBottomStart="16dp"
+                app:boxCornerRadiusTopEnd="16dp"
+                app:boxCornerRadiusTopStart="16dp"
+                app:boxStrokeColor="@color/selector_input_stroke"
+                app:boxStrokeWidth="1.5dp"
+                app:boxStrokeWidthFocused="2dp"
+                app:errorEnabled="true"
+                app:hintTextColor="@color/blue"
+                app:startIconDrawable="@drawable/phone"
+                app:startIconTint="@color/blue">
+
+                <com.google.android.material.textfield.TextInputEditText
+                    android:id="@+id/edtTelefonoGoogle"
+                    android:layout_width="match_parent"
+                    android:layout_height="56dp"
+                    android:autofillHints="phone"
+                    android:background="@null"
+                    android:fontFamily="@font/nunito"
+                    android:imeOptions="actionDone"
+                    android:inputType="phone"
+                    android:maxLength="15"
+                    android:maxLines="1"
+                    android:singleLine="true"
+                    android:textColor="@color/text_primary"
+                    android:textSize="15sp" />
+            </com.google.android.material.textfield.TextInputLayout>
 
             <!-- Botón principal Material 3 -->
             <com.google.android.material.button.MaterialButton
-                android:id="@+id/btnConfirmarDialogGoogle"
+                android:id="@+id/btnGuardarDatosGoogle"
                 android:layout_width="match_parent"
                 android:layout_height="54dp"
                 android:layout_marginTop="14dp"
                 android:fontFamily="@font/nunito"
                 android:stateListAnimator="@animator/anim_levitate_button"
-                android:text="@string/lbl_vincular_e_iniciar_sesion"
+                android:text="@string/btn_guardar_y_continuar"
                 android:textAllCaps="false"
                 android:textColor="@color/white"
                 android:textSize="15sp"
@@ -180,7 +204,7 @@
 
             <!-- Botón cancelar -->
             <TextView
-                android:id="@+id/btnCancelarDialogGoogle"
+                android:id="@+id/btnCancelarCompletarGoogle"
                 android:layout_width="match_parent"
                 android:layout_height="44dp"
                 android:layout_marginTop="6dp"

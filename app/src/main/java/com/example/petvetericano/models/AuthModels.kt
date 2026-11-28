@@ -15,6 +15,11 @@ data class GoogleLoginRequest(
     val apellido: String? = null
 )
 
+data class CompletarDatosGoogleRequest(
+    val identificacion: String,
+    val telefono: String
+)
+
 data class PeticionPendiente(
     val id_peticion: Int = 0,
     val titulo: String,

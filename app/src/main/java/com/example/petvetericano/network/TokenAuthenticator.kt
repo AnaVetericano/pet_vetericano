@@ -3,7 +3,6 @@ package com.example.petvetericano.network
 import android.content.Context
 import android.util.Log
 import com.example.petvetericano.SharedPreferencesManager
-import com.example.petvetericano.auth.GoogleLinkedSessionVault
 import com.example.petvetericano.facial.FacialStorageManager
 import com.google.gson.Gson
 import com.google.gson.JsonParser
@@ -37,13 +36,6 @@ internal class SharedPreferencesTokenStore(private val context: Context) : Token
     override fun onRefreshTokenRotado(userId: Int, nuevoRefreshToken: String) {
         try {
             FacialStorageManager(context).actualizarRefreshTokenSiCoincide(
-                userId = userId,
-                nuevoRefreshToken = nuevoRefreshToken
-            )
-        } catch (_: Exception) {
-        }
-        try {
-            GoogleLinkedSessionVault(context).actualizarRefreshTokenSiCoincide(
                 userId = userId,
                 nuevoRefreshToken = nuevoRefreshToken
             )

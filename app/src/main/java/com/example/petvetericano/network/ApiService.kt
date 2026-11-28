@@ -2,6 +2,7 @@ package com.example.petvetericano.network
 
 import com.example.petvetericano.models.ActualizarPerfilRequest
 import com.example.petvetericano.models.AdopcionAnimalResponse
+import com.example.petvetericano.models.CompletarDatosGoogleRequest
 import com.example.petvetericano.models.ConfirmarCodigoRegistroRequest
 import com.example.petvetericano.models.DashboardResponse
 import com.example.petvetericano.models.GenericResponse
@@ -75,6 +76,9 @@ interface ApiService {
 
     @PATCH("peticiones/perfil/")
     suspend fun actualizarPerfil(@Body request: ActualizarPerfilRequest): Response<UsuarioPerfilResponse>
+
+    @PATCH("peticiones/perfil/")
+    suspend fun completarDatosPerfil(@Body request: CompletarDatosGoogleRequest): Response<UsuarioPerfilResponse>
 
     // --- PETICIONES / REPORTES ---
     @GET("peticiones/tipos/")

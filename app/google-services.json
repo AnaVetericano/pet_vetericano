@@ -15,11 +15,11 @@
       },
       "oauth_client": [
         {
-          "client_id": "414064158617-vqebf0gb77dtuc27jrq40s6r9ochdbef.apps.googleusercontent.com",
+          "client_id": "414064158617-mnspqaehgp42134i7u48cqurvm00tdro.apps.googleusercontent.com",
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.petvetericano",
-            "certificate_hash": "a5e89a6b6bd4891e5290dae1fcb706086efe9a90"
+            "certificate_hash": "6961dfad0f93cd012d3da5633ef3c2d6e2f9d8ed"
           }
         },
         {
@@ -27,7 +27,7 @@
           "client_type": 1,
           "android_info": {
             "package_name": "com.example.petvetericano",
-            "certificate_hash": "6961dfad0f93cd012d3da5633ef3c2d6e2f9d8ed"
+            "certificate_hash": "a5e89a6b6bd4891e5290dae1fcb706086efe9a90"
           }
         },
         {

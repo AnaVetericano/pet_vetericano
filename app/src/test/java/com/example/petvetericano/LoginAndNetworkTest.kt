@@ -190,9 +190,9 @@ class LoginAndNetworkTest {
             )
         )
         assertEquals(jwt, req.idToken)
-        assertEquals("user@gmail.com", req.email)
-        assertEquals("Ana", req.nombre)
-        assertEquals("Perez", req.apellido)
+        assertNull(req.email)
+        assertNull(req.nombre)
+        assertNull(req.apellido)
     }
 
     @Test
@@ -283,32 +283,26 @@ class LoginAndNetworkTest {
     fun mapearExcepcionCredentialManager_noTragaFallosOAuthDisfrazadosDeCancelacion() {
         val sha1Local = "69:61:DF:AD:0F:93:CD:01:2D:3D:A5:63:3E:F3:C2:D6:E2:F9:D8:ED"
 
-        // 1. Cancelación dentro del fallback GetSignInWithGoogleOption tras NoCredentialException ([28444]/[16])
-        val resFallbackCancel = GoogleAuthHelper.mapearExcepcionCredentialManager(
-            e = GetCredentialCancellationException("activity is cancelled by the user."),
-            vinoDeFallbackNoCredential = true,
-            duracionMs = 3500L,
-            sha1Actual = sha1Local
-        )
-        assertTrue(resFallbackCancel is GoogleAuthHelper.ResultadoObtenerToken.Error)
-        val msgFallback = (resFallbackCancel as GoogleAuthHelper.ResultadoObtenerToken.Error).mensajeUsuario
-        assertTrue(msgFallback.contains("SHA-1", ignoreCase = true))
-        assertTrue(msgFallback.contains(sha1Local))
-
-        // 2. Cancelación legítima del usuario en el selector primario (> 1800ms y sin fallback)
+        // 1. Cancelación legítima del usuario (sin errores OAuth) siempre retorna Cancelado
         val resUserCancel = GoogleAuthHelper.mapearExcepcionCredentialManager(
             e = GetCredentialCancellationException("user cancelled"),
-            vinoDeFallbackNoCredential = false,
-            duracionMs = 4200L,
             sha1Actual = sha1Local
         )
         assertTrue(resUserCancel is GoogleAuthHelper.ResultadoObtenerToken.Cancelado)
 
+        // 2. Error OAuth [16] Account reauth failed reportado como cancelación
+        val resReauthCancel = GoogleAuthHelper.mapearExcepcionCredentialManager(
+            e = GetCredentialCancellationException("[16] Account reauth failed."),
+            sha1Actual = sha1Local
+        )
+        assertTrue(resReauthCancel is GoogleAuthHelper.ResultadoObtenerToken.Error)
+        val msgReauth = (resReauthCancel as GoogleAuthHelper.ResultadoObtenerToken.Error).mensajeUsuario
+        assertTrue(msgReauth.contains("SHA-1", ignoreCase = true))
+        assertTrue(msgReauth.contains(sha1Local))
+
         // 3. Error explícito [28444] / DeveloperError / UNREGISTERED_ON_API_CONSOLE
         val resDevError = GoogleAuthHelper.mapearExcepcionCredentialManager(
             e = GetCredentialCustomException("TYPE_DEVELOPER_ERROR", "[28444] Developer console is not set up correctly."),
-            vinoDeFallbackNoCredential = false,
-            duracionMs = 500L,
             sha1Actual = sha1Local
         )
         assertTrue(resDevError is GoogleAuthHelper.ResultadoObtenerToken.Error)
@@ -319,21 +313,16 @@ class LoginAndNetworkTest {
         // 4. Falta proveedor / Play Services
         val resProvider = GoogleAuthHelper.mapearExcepcionCredentialManager(
             e = GetCredentialProviderConfigurationException("no provider"),
-            vinoDeFallbackNoCredential = false,
-            duracionMs = 100L,
             sha1Actual = sha1Local
         )
         assertTrue(resProvider is GoogleAuthHelper.ResultadoObtenerToken.Error)
 
-        // 5. NoCredentialException incluye el SHA-1 actual para diagnóstico
+        // 5. NoCredentialException
         val resNoCred = GoogleAuthHelper.mapearExcepcionCredentialManager(
             e = NoCredentialException("No credentials available"),
-            vinoDeFallbackNoCredential = true,
-            duracionMs = 900L,
             sha1Actual = sha1Local
         )
         assertTrue(resNoCred is GoogleAuthHelper.ResultadoObtenerToken.Error)
-        assertTrue((resNoCred as GoogleAuthHelper.ResultadoObtenerToken.Error).mensajeUsuario.contains(sha1Local))
     }
 
     @Test
